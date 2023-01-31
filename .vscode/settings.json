@@ -1,0 +1,30 @@
+{
+    "python.linting.flake8Enabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.pylintEnabled": true,
+    "isort.args": [
+        "--settings-path=${workspaceFolder}/pyproject.toml"
+    ],
+    "terminal.integrated.profiles.linux": {
+        "tools shell": {
+            "overrideName": true,
+            "path": "docker",
+            "icon": "cloud",
+            "color": "terminal.ansiBlue",
+            "args": [
+                "exec",
+                "-it",
+                "-u",
+                "danboorutools",
+                "-w",
+                "/code",
+                "danboorutools",
+                "env",
+                "TERM=xterm-256color",
+                "/bin/bash",
+                "poetry",
+                "shell"
+            ]
+        },
+    },
+}

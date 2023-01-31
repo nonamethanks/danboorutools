@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  danboorutools:
+    container_name: danboorutools
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    init: true  # protects from chromedriver zombie processes
+    command: tail -F anything
+    volumes:
+      # development
+      - ./danboorutools:/code/danboorutools/:ro
+      - ./logs:/code/logs/
+      - ./cookies:/code/cookies/
+      - ./screenshots:/code/screenshots/
+    tmpfs:
+      - /tmp

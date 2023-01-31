@@ -1,0 +1,10 @@
+logs
+dist
+screenshots
+cookies
+.env
+
+.coverage
+
+.mypy_cache
+__pycache__
