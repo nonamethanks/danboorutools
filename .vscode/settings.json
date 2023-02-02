@@ -27,4 +27,7 @@
             ]
         },
     },
+    "terminal.integrated.commandsToSkipShell": [
+        "-workbench.action.terminal.paste"
+    ]
 }
