@@ -20,7 +20,8 @@ def main(ehentai_url: str, search_tags_str: str) -> None:
     logger.info(f"Replacing the posts under {search_tags} with the gallery {ehentai_url}")
 
     parsed_url = parse_url(ehentai_url)
-    assert isinstance(parsed_url, EHentaiGalleryUrl)
+    if not isinstance(parsed_url, EHentaiGalleryUrl):
+        raise ValueError("ehentai_url parameter must be a gallery link")
 
     posts = danbooru_api.posts(list(search_tags))
     if len(posts) == 200:
