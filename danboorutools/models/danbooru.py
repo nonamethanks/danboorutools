@@ -38,8 +38,7 @@ class DanbooruModel:
         self.url = "https://danbooru.donmai.us" + self.model_path
 
     def delete(self) -> None:
-        # self.api.danbooru_request("DELETE", endpoint=self.model_path)
-        pass
+        self.api.danbooru_request("DELETE", endpoint=self.model_path)
 
     @classmethod
     def from_id(cls, model_id: int) -> Self:  # type: ignore  # XXX false positive

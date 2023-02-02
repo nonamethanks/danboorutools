@@ -40,5 +40,5 @@ def nuke_votes(model: str, user_id: int) -> None:
         for vote in votes:
             assert vote.user.id == user_id  # sanity check
             logger.info(f"Nuking {model} vote for {model} {getattr(vote, model).url}. At vote {count}...")
-            # vote.delete()
+            vote.delete()
             count += 1
