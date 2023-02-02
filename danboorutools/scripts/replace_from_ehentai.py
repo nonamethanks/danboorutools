@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import click
-from loguru import logger
 
+from danboorutools import logger
 from danboorutools.logical import danbooru_api
 from danboorutools.logical.strategies import parse_url
 from danboorutools.logical.strategies.ehentai import EHentaiGalleryUrl

@@ -1,8 +1,7 @@
 import os
 from typing import Literal
 
-from loguru import logger
-
+from danboorutools import logger
 from danboorutools.exceptions import DanbooruHTTPError
 from danboorutools.logical.session import Session
 from danboorutools.models.base_url import BaseUrl
@@ -68,10 +67,27 @@ class DanbooruApi(Session):
                 "success": True
             }
 
-    def posts(self, tags: list[str]) -> list[DanbooruPost]:
-        response = self.danbooru_request("GET", "posts.json", params={"tags": " ".join(tags)})
+    def posts(self, tags: list[str], page: int | str = 1) -> list[DanbooruPost]:
+        params = {
+            "tags": " ".join(tags),
+            "page": page
+        }
+        response = self.danbooru_request("GET", "posts.json", params=params)
         posts = [DanbooruPost(post_data) for post_data in response]
         return posts
+
+    def all_posts(self, tags: list[str]) -> list[DanbooruPost]:
+        posts: list[DanbooruPost] = []
+        page: int | str = 1
+        while True:
+            logger.info(f"Collecting posts: at page {page}, found: {len(posts)}")
+            found_posts = self.posts(tags, page=page)
+            if not found_posts:
+                logger.info(f"Done. Found {len(posts)}")
+                return posts
+            posts += found_posts
+            lowest_id = min(found_posts, key=lambda post: post.id).id
+            page = f"b{lowest_id}"
 
     def users(self, **kwargs) -> list[DanbooruUser]:
         params = kwargs_to_include(**kwargs)

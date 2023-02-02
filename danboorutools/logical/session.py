@@ -3,11 +3,11 @@ import time
 from functools import cached_property
 from pathlib import Path
 
-from loguru import logger
 from ratelimit import limits, sleep_and_retry
 from requests import Response
 from requests import Session as RequestsSession
 
+from danboorutools import logger
 from danboorutools.exceptions import DownloadError
 from danboorutools.logical.browser import Browser
 from danboorutools.models.file import File, FileSubclass

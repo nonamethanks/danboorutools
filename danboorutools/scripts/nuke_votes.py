@@ -2,8 +2,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import click
-from loguru import logger
 
+from danboorutools import logger
 from danboorutools.logical import danbooru_api
 
 if TYPE_CHECKING:

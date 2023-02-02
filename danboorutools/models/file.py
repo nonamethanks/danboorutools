@@ -66,7 +66,7 @@ class File:
         return hash_md5.hexdigest()
 
     def __str__(self) -> str:
-        return f"File<{self.path.name}>"
+        return f"File[{self.path.name}]"
 
     def __repr__(self) -> str:
         return self.__str__()

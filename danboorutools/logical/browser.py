@@ -6,13 +6,13 @@ import random
 import time
 from pathlib import Path
 
-from loguru import logger
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
+from danboorutools import logger
 from danboorutools.exceptions import NoCookiesForDomain
 
 

@@ -1,10 +1,10 @@
 import os
 
 import regex
-from loguru import logger
 from requests import Response
-from danboorutools.logical.session import Session
 
+from danboorutools import logger
+from danboorutools.logical.session import Session
 from danboorutools.models.gelbooru import GelbooruPost
 from danboorutools.version import version
 
