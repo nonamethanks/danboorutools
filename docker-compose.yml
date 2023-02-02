@@ -13,8 +13,10 @@ services:
     volumes:
       # development
       - ./danboorutools:/code/danboorutools/:ro
+      - ./pyproject.toml:/code/pyproject.toml:ro
       - ./logs:/code/logs/
       - ./cookies:/code/cookies/
       - ./screenshots:/code/screenshots/
+      - ./.ipython/profile_default:/home/danboorutools/.ipython/profile_default  # ipython interpreter history persistence
     tmpfs:
       - /tmp

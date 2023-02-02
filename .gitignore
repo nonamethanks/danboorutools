@@ -5,6 +5,7 @@ cookies
 .env
 
 .coverage
+.ipython
 
 .mypy_cache
 __pycache__

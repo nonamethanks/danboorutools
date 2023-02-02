@@ -28,6 +28,7 @@ WORKDIR /code
 COPY --chown=danboorutools:danboorutools poetry.lock pyproject.toml /code/
 COPY --chown=danboorutools:danboorutools danboorutools /code/danboorutools
 RUN mkdir /code/screenshots /code/cookies
+RUN mkdir /home/danboorutools/.ipython
 
 RUN poetry install --no-interaction --no-ansi --only main
 
