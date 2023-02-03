@@ -855,6 +855,24 @@ files = [
 ]
 
 [[package]]
+name = "methodtools"
+version = "0.4.5"
+description = "Expand standard functools to methods"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "methodtools-0.4.5.tar.gz", hash = "sha256:9370156e9036789e98cf0e97355b3be3bcd7cc9e520d1e15893a1407719effb2"},
+]
+
+[package.dependencies]
+wirerope = ">=0.4.5"
+
+[package.extras]
+doc = ["sphinx"]
+test = ["functools32 (>=3.2.3-2)", "pytest (==4.6.7)", "pytest-cov (==2.6.1)"]
+
+[[package]]
 name = "mypy"
 version = "0.991"
 description = "Optional static typing for Python"
@@ -1709,6 +1727,24 @@ files = [
 dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 
 [[package]]
+name = "wirerope"
+version = "0.4.6"
+description = "'Turn functions and methods into fully controllable objects'"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "wirerope-0.4.6.tar.gz", hash = "sha256:bd1a151d4133b3ce30ecb76ed92f861505f688151173d22be2e29f4f02e60392"},
+]
+
+[package.dependencies]
+six = ">=1.11.0"
+
+[package.extras]
+doc = ["sphinx"]
+test = ["pytest (==4.6.7)", "pytest-cov (==2.6.1)"]
+
+[[package]]
 name = "wrapt"
 version = "1.14.1"
 description = "Module for decorators, wrappers and monkey patching."
@@ -1800,4 +1836,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "6f8cc355cb6f7bb59bd160a9c7b1c77a8cdf97fe9598cfc260c80b3babe74c34"
+content-hash = "7b7b4403c597fd80165a55a78c950ae4aed194e4e3fd2499ec781ad34e5e4efd"

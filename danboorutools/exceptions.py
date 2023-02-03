@@ -1,6 +1,14 @@
 import requests
 
 
+class UnknownUrlError(Exception):
+    """The url is unexpectedly unknown"""
+
+    def __init__(self, url: object) -> None:
+        message = f"The url {url} was not of the expected type."
+        super().__init__(message)
+
+
 class NoCookiesForDomain(FileNotFoundError):
     """We tried to restore cookies we don't have."""
 

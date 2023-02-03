@@ -27,16 +27,6 @@ class Session(RequestsSession):
 
         self.logged_in = False
 
-    def login(self, force: bool = False) -> None:
-        if self.logged_in and not force:
-            return
-
-        self._login()
-        self.logged_in = True
-
-    def _login(self) -> None:
-        raise NotImplementedError
-
     @cached_property
     def browser(self) -> Browser:
         return Browser()
@@ -52,7 +42,7 @@ class Session(RequestsSession):
         if download_dir is not None:
             download_dir = Path(download_dir)
 
-        kwargs["headers"] |= self._default_headers
+        kwargs["headers"] = kwargs.get("headers") or {} | self._default_headers
 
         download_stream = self.get(url, *args, timeout=self._default_timeout, stream=True, **kwargs)
         if not download_stream.ok:

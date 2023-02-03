@@ -4,7 +4,7 @@ import regex
 from requests import Response
 
 from danboorutools import logger
-from danboorutools.logical.session import Session
+from danboorutools.logical.sessions import Session
 from danboorutools.models.gelbooru import GelbooruPost
 from danboorutools.version import version
 
@@ -13,9 +13,6 @@ class GelbooruApi(Session):
     base_url = "https://gelbooru.com"
 
     csrf_pattern = regex.compile(r'name="csrf-token" value="(\w+)"/>')
-
-    def _login(self) -> None:
-        pass
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

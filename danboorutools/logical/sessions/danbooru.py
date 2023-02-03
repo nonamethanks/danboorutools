@@ -3,7 +3,7 @@ from typing import Literal
 
 from danboorutools import logger
 from danboorutools.exceptions import DanbooruHTTPError
-from danboorutools.logical.session import Session
+from danboorutools.logical.sessions import Session
 from danboorutools.models.base_url import BaseUrl
 from danboorutools.models.danbooru import DanbooruCommentVote, DanbooruPost, DanbooruPostVote, DanbooruUser
 from danboorutools.models.file import File
@@ -11,7 +11,6 @@ from danboorutools.version import version
 
 
 class DanbooruApi(Session):
-    base_url = "https://testbooru.donmai.us"
     bad_source_tags = [
         "bad_source",
         "cropped",
@@ -32,9 +31,6 @@ class DanbooruApi(Session):
         "upscaled",
     ]
 
-    def _login(self) -> None:
-        pass
-
     def __init__(self, *args,
                  domain: Literal["testbooru", "danbooru"] = "testbooru",
                  mode: Literal["main", "bot"] = "main",
@@ -45,6 +41,10 @@ class DanbooruApi(Session):
             self.auth = (os.environ[f"{domain.upper()}_BOT_USERNAME"], os.environ[f"{domain.upper()}_BOT_API_KEY"])
         else:
             self.auth = (os.environ[f"{domain.upper()}_USERNAME"], os.environ[f"{domain.upper()}_API_KEY"])
+
+    def url_for_search(self, tags: list[str]) -> str:
+        tag_string = " ".join(tags)
+        return f"{self.base_url}/posts?tags={tag_string}"
 
     def danbooru_request(self, method: str, endpoint: str, *args, **kwargs) -> list[dict] | dict:
         if method == "GET" and "params" in kwargs:
@@ -83,7 +83,7 @@ class DanbooruApi(Session):
             logger.info(f"Collecting posts: at page {page}, found: {len(posts)}")
             found_posts = self.posts(tags, page=page)
             if not found_posts:
-                logger.info(f"Done. Found {len(posts)}")
+                logger.info(f"Done. Found {len(posts)} posts.")
                 return posts
             posts += found_posts
             lowest_id = min(found_posts, key=lambda post: post.id).id

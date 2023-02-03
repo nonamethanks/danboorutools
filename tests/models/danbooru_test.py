@@ -3,13 +3,13 @@ from danboorutools.logical import danbooru_api
 from danboorutools.models.danbooru import DanbooruUser, DanbooruPost
 
 
-@test("Test fetching an user using danbooru_api", tags=["danbooru_api", "danbooru_users"])
+@test("Test fetching an user using danbooru", tags=["danbooru_api", "danbooru_users"])
 def user_test() -> None:
     user, = danbooru_api.users(id=4)
     test_admin_user(user)
 
 
-@test("Test fetching an user using DanbooruUser", tags=["danbooru_api", "danbooru_users"])
+@test("Test fetching an user using DanbooruUser", tags=["danbooru", "danbooru_users"])
 def user_from_id_test() -> None:
     user = DanbooruUser.from_id(4)
     test_admin_user(user)
@@ -28,13 +28,13 @@ def test_admin_user(user: DanbooruUser) -> None:
     assert user.level_string == "Admin"
 
 
-@test("Test fetching a post using danbooru_api", tags=["danbooru_api", "danbooru_posts"])
+@test("Test fetching a post using danbooru_api", tags=["danbooru", "danbooru_posts"])
 def post_test() -> None:
     post, = danbooru_api.posts(tags=["id:1"])
     test_post(post)
 
 
-@test("Test fetching a post using DanbooruPost", tags=["danbooru_api", "danbooru_posts"])
+@test("Test fetching a post using DanbooruPost", tags=["danbooru", "danbooru_posts"])
 def post_from_id_test() -> None:
     post = DanbooruPost.from_id(1)
     test_post(post)

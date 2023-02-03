@@ -15,7 +15,7 @@ for url_file_path in Path(__file__).parent.glob("*.py"):
             continue
         if any(base.id in ["BaseUrl", "Session"] for base in node.bases if isinstance(base, ast.Name)):
             continue
-        module = importlib.import_module(f"danboorutools.logical.strategies.{url_file_path.stem}")
+        module = importlib.import_module(f"danboorutools.logical.extractors.{url_file_path.stem}")
 
         klass = getattr(module, node.name)
         if not issubclass(klass, BaseUrl):

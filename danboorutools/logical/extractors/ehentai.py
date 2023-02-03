@@ -1,5 +1,7 @@
-from danboorutools.exceptions import DownloadError, EHEntaiRateLimit
-from danboorutools.logical.session import Session
+from functools import cached_property
+
+from danboorutools.exceptions import DownloadError, EHEntaiRateLimit, UnknownUrlError
+from danboorutools.logical.sessions.ehentai import EHentaiSession
 from danboorutools.models.base_url import BaseAssetUrl, BaseGalleryUrl, BasePostUrl, BaseUrl
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.util import compile_url
@@ -8,57 +10,70 @@ BASE_DOMAIN = compile_url(r"(?:g\.)?(?P<subdomain>e(?:-|x)hentai)\.org")
 GALLERY_PATTERN = compile_url(BASE_DOMAIN, r"\/g\/(?P<gallery_id>\d+)\/(?P<gallery_token>\w+)")
 PAGE_PATTERN = compile_url(BASE_DOMAIN, r"\/s\/(?P<page_token>\w+)\/(?P<gallery_id>\d+)-(?P<page_number>\d+)")
 THUMBNAIL_PATTERN = compile_url(r"ehgt\.org\/\w{2}\/\w{2}\/(?P<page_token>\w{10})[\w-]+\.\w+")
-
-
-class EHentaiSession(Session):
-    def _login(self) -> None:
-        verification_url = "https://e-hentai.org/home.php"
-        verification_element = ".homebox"
-
-        if self.browser.attempt_login_with_cookies(domain=EHentaiUrl.site_name,
-                                                   verification_url=verification_url,
-                                                   verification_element=verification_element):
-            return
-
-        self.browser.compile_login_form(
-            domain=EHentaiUrl.site_name,
-            form_url="https://e-hentai.org/bounce_login.php",
-            steps=[{
-                "username": "[name='UserName']",
-                "password": "[name='PassWord']",
-                "submit": "[name='ipb_login_submit']",
-            }],
-            verification_url=verification_url,
-            verification_element=verification_element,
-        )
+PAGE_DOWNLOAD_PATTERN = compile_url(BASE_DOMAIN, r"\/fullimg\.php\?gid=(?P<gallery_id>\d+)&page=(?P<page_number>\d+)&key=\w+")
+IMAGE_DIRECT_PATTERN = compile_url(
+    r".*\.hath\.network:\d+\/h\/[\w-]+\/keystamp=[\w-]+;fileindex=\d+;xres=(?P<sample_size>\d+)\/(?P<filename>\w+)\.\w+"
+)
 
 
 class EHentaiUrl(BaseUrl):
-    site_name = "ehentai"
     session = EHentaiSession()
-    domains = ["e-hentai.org", "exhentai.org", "ehgt.org"]
+    site_name = session.site_name
+    domains = ["e-hentai.org", "exhentai.org", "ehgt.org", "hath.network"]
 
 
 class EHentaiImageUrl(EHentaiUrl, BaseAssetUrl):
-    patterns = {THUMBNAIL_PATTERN: None}
+    patterns = {
+        THUMBNAIL_PATTERN: None,
+        PAGE_DOWNLOAD_PATTERN: None,
+        IMAGE_DIRECT_PATTERN: None,
+    }
 
 
-class EHentaiPageUrl(EHentaiUrl, BasePostUrl[EHentaiImageUrl]):
+class EHentaiPageUrl(EHentaiUrl, BasePostUrl["EHentaiGalleryUrl", EHentaiImageUrl]):
     assets: list["EHentaiImageUrl"]
     patterns = {PAGE_PATTERN: "https://{subdomain}.org/s/{page_token}/{gallery_id}-{page_number}"}
+
+    @cached_property
+    def gallery(self) -> "EHentaiGalleryUrl":
+        gallery_token = self.session.get_gallery_token_from_page_data(**self.properties)
+        return self.build(url_type=EHentaiGalleryUrl,
+                          gallery_token=gallery_token,
+                          gallery_id=self.properties["gallery_id"],
+                          subdomain=self.properties["subdomain"])
+
+    def extract_assets(self) -> None:
+        self.session.browser_login()
+        asset_url = self._get_direct_url()
+        asset_url.download_file(cookies=self.session.browser_cookies)
+        self.assets = [asset_url]
+
+    def _get_direct_url(self) -> EHentaiImageUrl:
+        browser = self.session.browser
+        browser.get(self.normalized_url)
+        get_original_el = browser.find_elements_by_text("Download original", full_match=False)
+        if get_original_el:
+            asset_url = get_original_el[0].get_attribute("href")
+        else:
+            asset_url = browser.find_element_by_css_selector("img#img").get_attribute("src")
+
+        asset_url_parsed = self.from_string(asset_url)
+        if not isinstance(asset_url_parsed, EHentaiImageUrl):
+            raise UnknownUrlError(asset_url_parsed)
+        return asset_url_parsed
 
 
 class EHentaiGalleryUrl(EHentaiUrl, BaseGalleryUrl[EHentaiPageUrl]):
     patterns = {GALLERY_PATTERN: "https://{subdomain}.org/g/{gallery_id}/{gallery_token}"}
 
     def extract_posts(self) -> None:
-        self.session.login()
+        self.session.browser_login()
         self.session.browser.get(self.normalized_url)
 
-        page_urls, thumb_urls = self.collect_page_urls()
-        download_url = self.get_download_url()
+        page_urls, thumb_urls = self._collect_page_urls()
+        download_url = self._get_download_url()
 
-        files = self.download_and_extract_archive(download_url)
+        files = self._download_and_extract_archive(download_url)
 
         pages_thumbs_and_files = zip(page_urls, thumb_urls, files)
         self.posts = []
@@ -67,7 +82,7 @@ class EHentaiGalleryUrl(EHentaiUrl, BaseGalleryUrl[EHentaiPageUrl]):
             page_url.assets = [thumb_url]
             self.posts.append(page_url)
 
-    def collect_page_urls(self) -> tuple[list["EHentaiPageUrl"], list["EHentaiImageUrl"]]:
+    def _collect_page_urls(self) -> tuple[list["EHentaiPageUrl"], list["EHentaiImageUrl"]]:
         browser = self.session.browser
         page_elements = browser.find_elements_by_css_selector(".gdtl > a > img")
 
@@ -86,7 +101,7 @@ class EHentaiGalleryUrl(EHentaiUrl, BaseGalleryUrl[EHentaiPageUrl]):
 
         return urls, thumb_urls  # type: ignore
 
-    def get_download_url(self) -> str:
+    def _get_download_url(self) -> str:
         browser = self.session.browser
 
         archive_button, = browser.find_elements_by_text("Archive Download")
@@ -96,13 +111,10 @@ class EHentaiGalleryUrl(EHentaiUrl, BaseGalleryUrl[EHentaiPageUrl]):
         dl_button = browser.find_elements_by_text("Click Here To Start Downloading")[0].get_attribute("href")
         return dl_button
 
-    def download_and_extract_archive(self, download_url: str) -> list[File]:
-        cookies = {}
-        for browser_cookie in self.session.browser.get_cookies():
-            cookies[browser_cookie["name"]] = browser_cookie["value"]
+    def _download_and_extract_archive(self, download_url: str) -> list[File]:
         headers = {"Referer": self.normalized_url}
         try:
-            archive_file = self.session.download_file(download_url, headers=headers, cookies=cookies)
+            archive_file = self.session.download_file(download_url, headers=headers, cookies=self.session.browser_cookies)
         except DownloadError as e:
             if e.status_code == 410:
                 raise EHEntaiRateLimit(e.response) from e

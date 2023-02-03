@@ -1,9 +1,13 @@
-from typing import Generic, Self, TypeVar, Type
+from functools import cached_property
+from typing import Generic, Self, Type, TypeVar, Sequence
 
 import regex
 
 from danboorutools.models.file import File
 from danboorutools.util import get_url_domain
+from danboorutools.logical.sessions import Session
+
+UrlSubclass = TypeVar("UrlSubclass", bound="BaseUrl")
 
 
 class BaseUrl:
@@ -13,7 +17,7 @@ class BaseUrl:
 
     @classmethod
     def from_string(cls, url: str) -> "BaseUrl":
-        from danboorutools.logical.strategies import parse_url  # pylint: disable=import-outside-toplevel
+        from danboorutools.logical.extractors import parse_url  # pylint: disable=import-outside-toplevel
         return parse_url(url)
 
     @classmethod
@@ -24,7 +28,7 @@ class BaseUrl:
             if not all(f"{{{p}}}" in normalization for p in properties):
                 continue
             url = normalization.format(**properties)
-            return url_type(url=url, normalization=normalization, properties=properties)
+            return url_type(url=url, normalization=normalization, properties=properties)  # type: ignore  # XXX false positive
 
         raise ValueError(url_type, properties)
 
@@ -59,36 +63,34 @@ class BaseUrl:
         return self.__str__()
 
 
-UrlSubclass = TypeVar("UrlSubclass", bound=BaseUrl)
-
-
 class BaseAssetUrl(BaseUrl):
     file: File
 
+    def download_file(self, headers: dict | None = None, cookies: dict | None = None) -> None:
+        downloaded_file = self.session.download_file(self.normalized_url, headers=headers, cookies=cookies)
+        self.file = downloaded_file
+
 
 GenericAsset = TypeVar("GenericAsset", bound="BaseAssetUrl")
+GenericPost = TypeVar("GenericPost", bound="BasePostUrl")
+GenericGallery = TypeVar("GenericGallery", bound="BaseGalleryUrl")
 
 
-class BasePostUrl(BaseUrl, Generic[GenericAsset]):
+class BasePostUrl(BaseUrl, Generic[GenericGallery, GenericAsset]):
     """A post contains multiple files."""
-    assets: list[GenericAsset]
+    assets: Sequence[GenericAsset]
 
     def extract_assets(self) -> None:
         raise NotImplementedError
-        # assets = [self.from_string(url) for url in self._extract_assets()]
-        # assert all(isinstance(asset, BaseAssetUrl) for asset in assets)
-        # self.assets = assets
 
-
-GenericPost = TypeVar("GenericPost", bound="BasePostUrl")
+    @cached_property
+    def gallery(self) -> GenericGallery:
+        raise NotImplementedError
 
 
 class BaseGalleryUrl(BaseUrl, Generic[GenericPost]):
     """A gallery contains multiple posts."""
-    posts: list[GenericPost]
+    posts: Sequence[GenericPost]
 
     def extract_posts(self) -> None:
         raise NotImplementedError
-        # posts = [self.from_string(url) for url in self._extract_posts()]
-        # assert all(isinstance(post, BasePostUrl) for post in posts)
-        # self.posts = posts

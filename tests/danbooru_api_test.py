@@ -3,7 +3,7 @@ import random
 from ward import test
 
 from danboorutools.logical import danbooru_api
-from danboorutools.logical.api.danbooru import kwargs_to_include
+from danboorutools.logical.sessions.danbooru import kwargs_to_include
 
 
 @test("Test the parsing of kwargs", tags=["parsing"])
@@ -47,7 +47,7 @@ def test_kwargs_nested_parsing() -> None:
     assert kwargs_to_include(**kwargs) == expected
 
 
-@test("Test the users.json endpoint", tags=["danbooru_api", "danbooru_users"])
+@test("Test the users.json endpoint", tags=["danbooru", "danbooru_users"])
 def test_users() -> None:
     users = danbooru_api.users(limit=100)
     assert len(users) == 100
@@ -57,7 +57,7 @@ def test_users() -> None:
     assert users[users.index(user) - 1].id - 1 == user.id
 
 
-@test("Test the post_votes.json endpoint", tags=["danbooru_api", "danbooru_posts"])
+@test("Test the post_votes.json endpoint", tags=["danbooru", "danbooru_posts"])
 def test_post_votes() -> None:
     post_votes = danbooru_api.post_votes(limit=100)
     assert len(post_votes) == 100
@@ -67,7 +67,7 @@ def test_post_votes() -> None:
     assert post_votes[post_votes.index(post_vote) - 1].id - 1 == post_vote.id
 
 
-@test("Test the comment_votes.json endpoint", tags=["danbooru_api", "danbooru_comments"])
+@test("Test the comment_votes.json endpoint", tags=["danbooru", "danbooru_comments"])
 def test_comment_votes() -> None:
     comment_votes = danbooru_api.comment_votes(limit=100)
     assert len(comment_votes) == 100
