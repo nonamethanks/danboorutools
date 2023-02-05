@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "danboorutools"
-version = "0.0.1"
+version = "0.0.3"
 description = "A set of danbooru admin tools."
 authors = ["nonamethanks <nonamethanks@nonamethanks.xyz>"]
 
