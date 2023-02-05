@@ -1,7 +1,7 @@
 from ward import test
 
 from danboorutools.logical.extractors import parse_url
-from danboorutools.models.base_url import BaseUrl
+from danboorutools.models.url import Url
 from danboorutools.logical.extractors.ehentai import EHentaiGalleryUrl, EHentaiImageUrl, EHentaiPageUrl
 
 
@@ -14,5 +14,5 @@ def ehentai_parsing_test() -> None:
     assert_parsed("https://ijmfumn.lrwlzmbkzanr.hath.network:2514/h/3eae3a4e3319c5d2477dcb901c69ca1019b75191-120434-1280-1735-jpg/keystamp=1675414800-16624fe708;fileindex=31049863;xres=1280/IMG_0033.jpg", EHentaiImageUrl)  # noqa: E501  # pylint: disable=line-too-long
 
 
-def assert_parsed(string: str, url_type: type[BaseUrl]) -> None:
+def assert_parsed(string: str, url_type: type[Url]) -> None:
     assert isinstance(parsed_type := parse_url(string), url_type), parsed_type

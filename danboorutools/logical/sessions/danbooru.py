@@ -1,13 +1,16 @@
 import os
-from typing import Literal
+from typing import Literal, TypeVar
 
 from danboorutools import logger
 from danboorutools.exceptions import DanbooruHTTPError
 from danboorutools.logical.sessions import Session
-from danboorutools.models.base_url import BaseUrl
-from danboorutools.models.danbooru import DanbooruCommentVote, DanbooruPost, DanbooruPostVote, DanbooruUser
+from danboorutools.models.danbooru import (DanbooruCommentVote, DanbooruModel, DanbooruPost, DanbooruPostVersion, DanbooruPostVote,
+                                           DanbooruUser)
 from danboorutools.models.file import File
+from danboorutools.models.url import Url
 from danboorutools.version import version
+
+GenericModel = TypeVar("GenericModel", bound=DanbooruModel)
 
 
 class DanbooruApi(Session):
@@ -30,6 +33,12 @@ class DanbooruApi(Session):
         "third-party_source",
         "upscaled",
     ]
+
+    only_string_defaults = {
+        "post_vote": "id,created_at,score,is_deleted,user,post",
+        "comment_vote": "id,created_at,score,is_deleted,user,comment",
+        "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags"
+    }
 
     def __init__(self, *args,
                  domain: Literal["testbooru", "danbooru"] = "testbooru",
@@ -54,7 +63,6 @@ class DanbooruApi(Session):
         kwargs["headers"] = {"User-Agent": f"DanbooruTools/{version}"}
 
         endpoint_url = self.base_url.strip("/") + "/" + endpoint.strip("/")
-
         response = self.request(method, endpoint_url, *args, **kwargs)
 
         if not response.ok:
@@ -80,7 +88,7 @@ class DanbooruApi(Session):
         posts: list[DanbooruPost] = []
         page: int | str = 1
         while True:
-            logger.info(f"Collecting posts: at page {page}, found: {len(posts)}")
+            logger.info(f"Collecting posts for the search {tags}: at page {page}, found: {len(posts)}")
             found_posts = self.posts(tags, page=page)
             if not found_posts:
                 logger.info(f"Done. Found {len(posts)} posts.")
@@ -95,25 +103,27 @@ class DanbooruApi(Session):
         users = [DanbooruUser(user_data) for user_data in response]
         return users
 
+    def _generic_endpoint(self, model_type: type[GenericModel], **kwargs) -> list[GenericModel]:
+        only_string = self.only_string_defaults.get(model_type.model_name)
+        params = kwargs_to_include(**kwargs, only=only_string)
+        response = self.danbooru_request("GET", f"{model_type.model_name}s.json", params=params)
+        models = [model_type(model_data) for model_data in response]
+        return models
+
     def post_votes(self, **kwargs) -> list[DanbooruPostVote]:
-        only = "id,created_at,score,is_deleted,user,post"
-        params = kwargs_to_include(**kwargs, only=only)
-        response = self.danbooru_request("GET", "post_votes.json", params=params)
-        post_votes = [DanbooruPostVote(post_vote_data) for post_vote_data in response]
-        return post_votes
+        return self._generic_endpoint(DanbooruPostVote, **kwargs)
 
     def comment_votes(self, **kwargs) -> list[DanbooruCommentVote]:
-        only = "id,created_at,score,is_deleted,user,comment"
-        params = kwargs_to_include(**kwargs, only=only)
-        response = self.danbooru_request("GET", "comment_votes.json", params=params)
-        comment_votes = [DanbooruCommentVote(comment_vote_data) for comment_vote_data in response]
-        return comment_votes
+        return self._generic_endpoint(DanbooruCommentVote, **kwargs)
+
+    def post_versions(self, **kwargs) -> list[DanbooruPostVersion]:
+        return self._generic_endpoint(DanbooruPostVersion, **kwargs)
 
     def replace(self,
                 post: DanbooruPost,
                 replacement_file: File | None = None,
-                replacement_url: BaseUrl | None = None,
-                final_source: BaseUrl | None = None
+                replacement_url: Url | None = None,
+                final_source: Url | None = None
                 ) -> None:
         if not replacement_file and not replacement_url:
             raise ValueError("Either a file or an url must be present.")

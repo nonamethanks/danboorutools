@@ -67,9 +67,7 @@ class File:
 
     def __str__(self) -> str:
         return f"File[{self.path.name}]"
-
-    def __repr__(self) -> str:
-        return self.__str__()
+    __repr__ = __str__
 
 
 class ArchiveFile(File):

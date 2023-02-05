@@ -41,6 +41,12 @@ extractor = DomainExtractor()
 
 
 def get_url_domain(url: str) -> str:
-    url_data = extractor.extract_from_url(url)  # pylint: disable=no-member  # XXX false positive
+    try:
+        url_data = extractor.extract_from_url(url)  # pylint: disable=no-member  # XXX false positive
+    except ValueError as e:
+        if ": no scheme" in str(e):
+            url_data = extractor.extract(url)
+        else:
+            raise
     url_domain = url_data["domain"] + "." + url_data["suffix"]
     return url_domain

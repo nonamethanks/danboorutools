@@ -26,6 +26,10 @@ class Session(RequestsSession):
         super().__init__(*args, **kwargs)
 
         self.logged_in = False
+        if self.__class__ == Session:
+            self.site_name = ""
+        else:
+            self.site_name = self.__class__.__name__.lower().removesuffix("session")  # EHentaiSession -> ehentai
 
     @cached_property
     def browser(self) -> Browser:

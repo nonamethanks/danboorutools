@@ -2,7 +2,7 @@ from functools import cached_property
 
 from danboorutools.exceptions import DownloadError, EHEntaiRateLimit, UnknownUrlError
 from danboorutools.logical.sessions.ehentai import EHentaiSession
-from danboorutools.models.base_url import BaseAssetUrl, BaseGalleryUrl, BasePostUrl, BaseUrl
+from danboorutools.models.url import AssetUrl, GalleryUrl, PostUrl, Url
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.util import compile_url
 
@@ -16,13 +16,12 @@ IMAGE_DIRECT_PATTERN = compile_url(
 )
 
 
-class EHentaiUrl(BaseUrl):
+class EHentaiUrl(Url):
     session = EHentaiSession()
-    site_name = session.site_name
     domains = ["e-hentai.org", "exhentai.org", "ehgt.org", "hath.network"]
 
 
-class EHentaiImageUrl(EHentaiUrl, BaseAssetUrl):
+class EHentaiImageUrl(EHentaiUrl, AssetUrl):
     patterns = {
         THUMBNAIL_PATTERN: None,
         PAGE_DOWNLOAD_PATTERN: None,
@@ -30,7 +29,7 @@ class EHentaiImageUrl(EHentaiUrl, BaseAssetUrl):
     }
 
 
-class EHentaiPageUrl(EHentaiUrl, BasePostUrl["EHentaiGalleryUrl", EHentaiImageUrl]):
+class EHentaiPageUrl(EHentaiUrl, PostUrl["EHentaiGalleryUrl", EHentaiImageUrl]):
     assets: list["EHentaiImageUrl"]
     patterns = {PAGE_PATTERN: "https://{subdomain}.org/s/{page_token}/{gallery_id}-{page_number}"}
 
@@ -45,7 +44,7 @@ class EHentaiPageUrl(EHentaiUrl, BasePostUrl["EHentaiGalleryUrl", EHentaiImageUr
     def extract_assets(self) -> None:
         self.session.browser_login()
         asset_url = self._get_direct_url()
-        asset_url.download_file(cookies=self.session.browser_cookies)
+        asset_url.download_files(cookies=self.session.browser_cookies)
         self.assets = [asset_url]
 
     def _get_direct_url(self) -> EHentaiImageUrl:
@@ -57,13 +56,13 @@ class EHentaiPageUrl(EHentaiUrl, BasePostUrl["EHentaiGalleryUrl", EHentaiImageUr
         else:
             asset_url = browser.find_element_by_css_selector("img#img").get_attribute("src")
 
-        asset_url_parsed = self.from_string(asset_url)
+        asset_url_parsed = self.parse(asset_url)
         if not isinstance(asset_url_parsed, EHentaiImageUrl):
             raise UnknownUrlError(asset_url_parsed)
         return asset_url_parsed
 
 
-class EHentaiGalleryUrl(EHentaiUrl, BaseGalleryUrl[EHentaiPageUrl]):
+class EHentaiGalleryUrl(EHentaiUrl, GalleryUrl[EHentaiPageUrl]):
     patterns = {GALLERY_PATTERN: "https://{subdomain}.org/g/{gallery_id}/{gallery_token}"}
 
     def extract_posts(self) -> None:
@@ -78,7 +77,7 @@ class EHentaiGalleryUrl(EHentaiUrl, BaseGalleryUrl[EHentaiPageUrl]):
         pages_thumbs_and_files = zip(page_urls, thumb_urls, files)
         self.posts = []
         for page_url, thumb_url, file in pages_thumbs_and_files:
-            thumb_url.file = file
+            thumb_url.files = [file]
             page_url.assets = [thumb_url]
             self.posts.append(page_url)
 
@@ -86,7 +85,7 @@ class EHentaiGalleryUrl(EHentaiUrl, BaseGalleryUrl[EHentaiPageUrl]):
         browser = self.session.browser
         page_elements = browser.find_elements_by_css_selector(".gdtl > a > img")
 
-        thumb_urls = [self.from_string(element.get_attribute("src")) for element in page_elements]
+        thumb_urls = [self.parse(element.get_attribute("src")) for element in page_elements]
 
         urls = [
             self.build(
@@ -121,4 +120,4 @@ class EHentaiGalleryUrl(EHentaiUrl, BaseGalleryUrl[EHentaiPageUrl]):
             else:
                 raise
         assert isinstance(archive_file, ArchiveFile)
-        return archive_file.extracted_files  # pylint: disable=no-member  # https://github.com/PyCQA/pylint/issues/4693
+        return archive_file.extracted_files

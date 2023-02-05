@@ -18,3 +18,9 @@ poetry run nuke_votes {comments|posts|all} user_id1 user_id2
 ```
 poetry run replace_ehentai_samples
 ```
+
+
+#### Port the paid_reward tag from danbooru to gelbooru
+```
+poetry run tag_paid_rewards_on_gelbooru {latest|all}
+```

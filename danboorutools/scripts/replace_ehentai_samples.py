@@ -10,7 +10,6 @@ logger.add(f"logs/scripts/{Path(__file__).stem}/" + "{time}.log", retention="7 d
 
 
 def main() -> None:
-
     while True:
         posts = danbooru_api.all_posts("source:*e-hentai* width:1280 age:<1mo".split())
         if not posts:
@@ -66,6 +65,6 @@ def replace_from_gallery(ehentai_url: EHentaiGalleryUrl, search_tags_str: str) -
     for post in posts:
         page, = [page for page in extracted_pages if page.normalized_url == post.source.normalized_url]
         asset, = page.assets
-        post.replace(replacement_file=asset.file, final_source=page)
+        post.replace(replacement_file=asset.files[0], final_source=page)
 
     logger.info("Done!")

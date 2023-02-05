@@ -7,6 +7,7 @@ authors = ["nonamethanks <nonamethanks@nonamethanks.xyz>"]
 [tool.poetry.scripts]
 nuke_votes = "danboorutools.scripts.nuke_votes:main"
 replace_ehentai_samples = "danboorutools.scripts.replace_ehentai_samples:main"
+tag_paid_rewards_on_gelbooru = "danboorutools.scripts.tag_paid_rewards_on_gelbooru:tag_paid_rewards_on_gelbooru"
 
 [tool.poetry.dependencies]
 python = "^3.11"

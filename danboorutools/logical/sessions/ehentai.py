@@ -7,8 +7,6 @@ from danboorutools.logical.sessions import Session
 
 
 class EHentaiSession(Session):
-    site_name = "ehentai"
-
     @lru_cache()
     def browser_login(self) -> None:
         verification_url = "https://e-hentai.org/home.php"

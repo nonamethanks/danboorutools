@@ -2,7 +2,7 @@ from typing import Self
 
 from dateutil import parser as dt_parser
 
-from danboorutools.models.base_url import BaseUrl
+from danboorutools.models.url import Url
 from danboorutools.models.file import File
 
 
@@ -21,7 +21,8 @@ class DanbooruModel:
         self.json_data = json_data
         self.id: int = json_data["id"]
 
-        self.created_at = dt_parser.parse(json_data["created_at"])
+        self.updated_at = dt_parser.parse(json_data["updated_at"]) if "updated_at" in json_data else None
+        self.created_at = dt_parser.parse(json_data["created_at"]) if "created_at" in json_data else self.updated_at
         self.is_deleted: bool = json_data.get("is_deleted", False)
 
         for property_name, property_class in self.__annotations__.items():  # pylint: disable=no-member
@@ -49,9 +50,11 @@ class DanbooruModel:
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}[{self.url}]"
+    __repr__ = __str__
 
-    def __repr__(self) -> str:
-        return self.__str__()
+    def refresh(self) -> None:
+        new_post = self.from_id(self.id)
+        self.apply_json_data(new_post.json_data)  # type: ignore # XXX false positive
 
 
 class DanbooruPost(DanbooruModel):
@@ -61,8 +64,8 @@ class DanbooruPost(DanbooruModel):
     md5: str
 
     @property
-    def source(self) -> BaseUrl:
-        return BaseUrl.from_string(self.json_data["source"])
+    def source(self) -> Url:
+        return Url.parse(self.json_data["source"])
 
     def apply_json_data(self, json_data: dict) -> None:
         super().apply_json_data(json_data)
@@ -73,9 +76,9 @@ class DanbooruPost(DanbooruModel):
         self.meta_tags: list[str] = json_data["tag_string_meta"].split()
 
     def replace(self,
-                replacement_url: BaseUrl | None = None,
+                replacement_url: Url | None = None,
                 replacement_file: File | None = None,
-                final_source: BaseUrl | None = None,
+                final_source: Url | None = None,
                 refresh: bool = False
                 ) -> None:
         if not replacement_file:
@@ -83,8 +86,7 @@ class DanbooruPost(DanbooruModel):
         self.api.replace(self, replacement_url=replacement_url, replacement_file=replacement_file,
                          final_source=final_source or replacement_url)
         if refresh:
-            new_post = self.from_id(self.id)
-            self.apply_json_data(new_post.json_data)  # type: ignore # XXX false positive
+            self.refresh()
 
 
 class DanbooruUser(DanbooruModel):
@@ -123,3 +125,18 @@ class DanbooruCommentVote(DanbooruModel):
     comment: DanbooruComment
     user: DanbooruUser
     score: int
+
+
+class DanbooruPostVersion(DanbooruModel):
+    model_name = "post_version"
+
+    updater: DanbooruUser
+    post: DanbooruPost
+
+    added_tags: list[str]
+    removed_tags: list[str]
+
+    def apply_json_data(self, json_data: dict) -> None:
+        super().apply_json_data(json_data)
+        self.obsolete_removed_tags: list[str] = json_data["obsolete_removed_tags"].split()
+        self.obsolete_added_tags: list[str] = json_data["obsolete_added_tags"].split()
