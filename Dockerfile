@@ -7,7 +7,7 @@ RUN pacman -Syyuu --noconfirm chromium
 
 RUN pacman -Syyuu --noconfirm pyenv
 
-RUN useradd -m danboorutools
+RUN useradd -ms /bin/bash danboorutools
 USER danboorutools
 
 ENV PYTHON_USER danboorutools
