@@ -2,8 +2,8 @@ from functools import cached_property
 
 from danboorutools.exceptions import DownloadError, EHEntaiRateLimit, UnknownUrlError
 from danboorutools.logical.sessions.ehentai import EHentaiSession
-from danboorutools.models.url import AssetUrl, GalleryUrl, PostUrl, Url
 from danboorutools.models.file import ArchiveFile, File
+from danboorutools.models.url import AssetUrl, GalleryUrl, PostUrl, Url
 from danboorutools.util import compile_url
 
 BASE_DOMAIN = compile_url(r"(?:g\.)?(?P<subdomain>e(?:-|x)hentai)\.org")
@@ -44,7 +44,7 @@ class EHentaiPageUrl(EHentaiUrl, PostUrl["EHentaiGalleryUrl", EHentaiImageUrl]):
     def extract_assets(self) -> None:
         self.session.browser_login()
         asset_url = self._get_direct_url()
-        asset_url.download_files(cookies=self.session.browser_cookies)
+        asset_url.download_files()
         self.assets = [asset_url]
 
     def _get_direct_url(self) -> EHentaiImageUrl:
@@ -113,7 +113,7 @@ class EHentaiGalleryUrl(EHentaiUrl, GalleryUrl[EHentaiPageUrl]):
     def _download_and_extract_archive(self, download_url: str) -> list[File]:
         headers = {"Referer": self.normalized_url}
         try:
-            archive_file = self.session.download_file(download_url, headers=headers, cookies=self.session.browser_cookies)
+            archive_file = self.session.download_file(download_url, headers=headers)
         except DownloadError as e:
             if e.status_code == 410:
                 raise EHEntaiRateLimit(e.response) from e

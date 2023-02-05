@@ -53,3 +53,7 @@ class EHentaiSession(Session):
             return json_response["tokenlist"][0]["token"]
         except Exception as e:
             raise NotImplementedError(response.text) from e
+
+    def download_file(self, url, *args, download_dir=None, **kwargs):  # noqa
+        kwargs.pop("cookies", None)
+        return super().download_file(url, *args, download_dir=download_dir, cookies=self.browser_cookies, **kwargs)
