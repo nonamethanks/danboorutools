@@ -2,6 +2,10 @@ A set of tools to make admining danbooru and making bots & automated changes eas
 
 All scripts are under danboorutools/scripts. You're on your own, and if I catch you abusing these on Danbooru I'll ban you.
 
+
+To run the environment, do `docker compose up -d` and then go into the container with `docker exec -it -u danboorutools -w /code danboorutools /bin/bash poetry shell`.
+
+
 ## Scripts
 
 #### Nuke Votes:
