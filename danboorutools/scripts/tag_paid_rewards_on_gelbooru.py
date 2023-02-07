@@ -1,5 +1,6 @@
 import datetime
 from pathlib import Path
+from typing import Literal
 
 import click
 
@@ -17,10 +18,14 @@ global_counter = Counter(print_progress=True)
 
 @click.command()
 @click.argument("mode", type=click.Choice(["all", "latest"]))
-def tag_paid_rewards_on_gelbooru(mode: str) -> None:
+def main(mode: Literal["all"] | Literal["latest"]) -> None:
+    tag_paid_rewards_on_gelbooru(mode)
+
+
+def tag_paid_rewards_on_gelbooru(mode: Literal["all"] | Literal["latest"]) -> None:
     if mode == "all":
         posts = danbooru_api.all_posts(["paid_reward"])
-    else:
+    elif mode == "latest":
         one_month_ago = datetime.datetime.now() - datetime.timedelta(days=30)
         page = 1
         all_versions: list[DanbooruPostVersion] = []
@@ -37,6 +42,8 @@ def tag_paid_rewards_on_gelbooru(mode: str) -> None:
             for post_version in all_versions
             if "paid_reward" in post_version.post.tags
         }.values())
+    else:
+        raise ValueError(mode)
 
     logger.info(f"Found {len(posts)} posts on danbooru tagged paid_reward. Sending the data to gelbooru...")
 
