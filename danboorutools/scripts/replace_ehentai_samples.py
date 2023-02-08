@@ -4,7 +4,7 @@ import click
 
 from danboorutools import logger
 from danboorutools.logical import danbooru_api
-from danboorutools.logical.extractors.ehentai import EHentaiGalleryUrl, EHentaiPageUrl
+from danboorutools.logical.urls.ehentai import EHentaiGalleryUrl, EHentaiPageUrl
 
 logger.add(f"logs/scripts/{Path(__file__).stem}/" + "{time}.log", retention="7 days")
 

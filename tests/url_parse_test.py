@@ -1,8 +1,7 @@
 from ward import test
 
-from danboorutools.logical.extractors import parse_url
+from danboorutools.logical.urls.ehentai import EHentaiGalleryUrl, EHentaiImageUrl, EHentaiPageUrl
 from danboorutools.models.url import Url
-from danboorutools.logical.extractors.ehentai import EHentaiGalleryUrl, EHentaiImageUrl, EHentaiPageUrl
 
 
 @test("Parse ehentai urls", tags=["parsing", "ehentai"])
@@ -15,4 +14,4 @@ def ehentai_parsing_test() -> None:
 
 
 def assert_parsed(string: str, url_type: type[Url]) -> None:
-    assert isinstance(parsed_type := parse_url(string), url_type), parsed_type
+    assert isinstance(parsed_type := Url.parse(string), url_type), parsed_type
