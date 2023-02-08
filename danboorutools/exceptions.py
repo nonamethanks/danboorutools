@@ -36,6 +36,10 @@ class DownloadError(HTTPError):
     """A file download failed with a specific error."""
 
 
+class UrlIsDeleted(HTTPError):
+    """The URL is deleted."""
+
+
 class EHEntaiRateLimit(HTTPError):
     """E-Hentai is ratelimiting."""
 

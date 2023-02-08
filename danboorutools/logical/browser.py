@@ -14,6 +14,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from danboorutools import logger
 from danboorutools.exceptions import NoCookiesForDomain
+from danboorutools.models.url import Url
 
 
 class Browser(Chrome):
@@ -65,7 +66,9 @@ class Browser(Chrome):
         self.cookie_dir.mkdir(exist_ok=True)
         pickle.dump(self.get_cookies(), filename.open("wb+"))
 
-    def get(self, url: str) -> None:
+    def get(self, url: str | Url) -> None:
+        if isinstance(url, Url):
+            url = url.normalized_url
         logger.debug(f"Browser GET request made to {url}")
         return super().get(url)
 

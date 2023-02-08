@@ -11,6 +11,7 @@ from danboorutools import logger
 from danboorutools.exceptions import DownloadError
 from danboorutools.logical.browser import Browser
 from danboorutools.models.file import File, FileSubclass
+from danboorutools.models.url import Url
 from danboorutools.util import random_string
 from danboorutools.util.time import timestamp_from_string
 
@@ -38,17 +39,21 @@ class Session(RequestsSession):
     @sleep_and_retry
     @limits(calls=5, period=1)
     def request(self, *args, **kwargs) -> Response:
-        logger.debug(f"{args[0]} request made to {args[1]}")
-        return super().request(*args, **kwargs)
+        method, url, args = args[0], args[1], args[2:]
+        if isinstance(url, Url):
+            url = url.normalized_url
 
-    def download_file(self, url: str, *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
+        logger.debug(f"{method} request made to {url}")
+        return super().request(method, url, *args, **kwargs)
+
+    def download_file(self, url: str | Url, *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
         tmp_filename = Path("/tmp") / random_string(20)
         if download_dir is not None:
             download_dir = Path(download_dir)
 
         kwargs["headers"] = kwargs.get("headers") or {} | self._default_headers
 
-        download_stream = self.get(url, *args, timeout=self._default_timeout, stream=True, **kwargs)
+        download_stream = self.get(url, *args, timeout=self._default_timeout, stream=True, **kwargs)  # type: ignore
         if not download_stream.ok:
             raise DownloadError(download_stream)
 
