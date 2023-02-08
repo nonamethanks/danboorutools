@@ -5,7 +5,7 @@ from danboorutools import logger
 from danboorutools.exceptions import DanbooruHTTPError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.danbooru import (DanbooruCommentVote, DanbooruModel, DanbooruPost, DanbooruPostVersion, DanbooruPostVote,
-                                           DanbooruUser)
+                                           DanbooruTag, DanbooruUser)
 from danboorutools.models.file import File
 from danboorutools.models.url import Url
 from danboorutools.version import version
@@ -35,9 +35,10 @@ class DanbooruApi(Session):
     ]
 
     only_string_defaults = {
-        "post_vote": "id,created_at,score,is_deleted,user,post",
         "comment_vote": "id,created_at,score,is_deleted,user,comment",
-        "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags"
+        "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
+        "post_vote": "id,created_at,score,is_deleted,user,post",
+        "tag": "id,name,post_count,category,created_at,updated_at,artist,is_deprecated,wiki_page",
     }
 
     def __init__(self, *args,
@@ -110,14 +111,17 @@ class DanbooruApi(Session):
         models = [model_type(model_data) for model_data in response]
         return models
 
-    def post_votes(self, **kwargs) -> list[DanbooruPostVote]:
-        return self._generic_endpoint(DanbooruPostVote, **kwargs)
-
     def comment_votes(self, **kwargs) -> list[DanbooruCommentVote]:
         return self._generic_endpoint(DanbooruCommentVote, **kwargs)
 
     def post_versions(self, **kwargs) -> list[DanbooruPostVersion]:
         return self._generic_endpoint(DanbooruPostVersion, **kwargs)
+
+    def post_votes(self, **kwargs) -> list[DanbooruPostVote]:
+        return self._generic_endpoint(DanbooruPostVote, **kwargs)
+
+    def tags(self, **kwargs) -> list[DanbooruTag]:
+        return self._generic_endpoint(DanbooruTag, **kwargs)
 
     def replace(self,
                 post: DanbooruPost,

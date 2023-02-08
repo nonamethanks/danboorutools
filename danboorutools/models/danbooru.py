@@ -2,8 +2,8 @@ from typing import Self
 
 from dateutil import parser as dt_parser
 
-from danboorutools.models.url import Url
 from danboorutools.models.file import File
+from danboorutools.models.url import Url
 
 
 class DanbooruModel:
@@ -140,3 +140,26 @@ class DanbooruPostVersion(DanbooruModel):
         super().apply_json_data(json_data)
         self.obsolete_removed_tags: list[str] = json_data["obsolete_removed_tags"].split()
         self.obsolete_added_tags: list[str] = json_data["obsolete_added_tags"].split()
+
+
+class DanbooruArtist(DanbooruModel):
+    name: str
+    group_name: str
+    is_banned: bool
+    other_names: list[str]
+
+
+class DanbooruWikiPage(DanbooruModel):
+    title: str
+    body: str
+    is_locked: bool
+    other_names: list[str]
+
+
+class DanbooruTag(DanbooruModel):
+    name: str
+    post_count: int
+    category: int
+    artist: DanbooruArtist
+    is_deprecated: bool
+    wiki_page: DanbooruWikiPage
