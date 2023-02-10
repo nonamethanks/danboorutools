@@ -44,7 +44,7 @@ extractor = DomainExtractor()
 
 def get_url_domain(url: str) -> str:
     try:
-        url_data = extractor.extract_from_url(url)  # pylint: disable=no-member  # XXX false positive
+        url_data = extractor.extract_from_url(url)
     except ValueError as e:
         if ": no scheme" in str(e):
             url_data = extractor.extract(url)

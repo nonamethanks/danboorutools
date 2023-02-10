@@ -26,7 +26,7 @@ class DanbooruModel:
         self.created_at = dt_parser.parse(json_data["created_at"]) if "created_at" in json_data else self.updated_at
         self.is_deleted: bool = json_data.get("is_deleted", False)
 
-        for property_name, property_class in self.__annotations__.items():  # pylint: disable=no-member
+        for property_name, property_class in self.__annotations__.items():
             if (property_data := json_data.get(property_name)) is not None:
                 # if property_class.__origin__ == list:
                 #     property_subclass = property_class.__args__[0]
@@ -43,7 +43,7 @@ class DanbooruModel:
         self.api.danbooru_request("DELETE", endpoint=self.model_path)
 
     @classmethod
-    def from_id(cls, model_id: int) -> Self:  # type: ignore[valid-type]  # XXX false positive
+    def from_id(cls, model_id: int) -> Self:
         from danboorutools.logical.sessions.danbooru import danbooru_api  # pylint: disable=import-outside-toplevel
         json_data = danbooru_api.danbooru_request("GET", f"{cls.model_name}s/{model_id}.json")
         assert isinstance(json_data, dict)
@@ -55,7 +55,7 @@ class DanbooruModel:
 
     def refresh(self) -> None:
         new_post = self.from_id(self.id)
-        self.apply_json_data(new_post.json_data)  # type: ignore[attr-defined] # XXX false positive
+        self.apply_json_data(new_post.json_data)
 
 
 class DanbooruPost(DanbooruModel):
