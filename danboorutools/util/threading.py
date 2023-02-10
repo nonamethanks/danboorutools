@@ -24,20 +24,20 @@ class Counter:
 
     def __add__(self, other: int | float) -> "Counter":
         with self.counter.get_lock():
-            self.counter.value += other  # type: ignore # XXX False positive https://github.com/python/typeshed/issues/8799
+            self.counter.value += other  # type: ignore[attr-defined] # XXX False positive https://github.com/python/typeshed/issues/8799
             if self.print_progress:
-                print(f"At {self.counter.value}...")  # type: ignore
+                print(f"At {self.counter.value}...")  # type: ignore[attr-defined]
         return self
 
     def __sub__(self, other: int | float) -> "Counter":
         with self.counter.get_lock():
-            self.counter.value -= other  # type: ignore
+            self.counter.value -= other  # type: ignore[attr-defined]
             if self.print_progress:
-                print(f"At {self.counter.value}...")  # type: ignore
+                print(f"At {self.counter.value}...")  # type: ignore[attr-defined]
         return self
 
     def __str__(self) -> str:
-        return str(self.counter.value)  # type: ignore
+        return str(self.counter.value)  # type: ignore[attr-defined]
 
     __iadd__ = __add__
     __isub__ = __sub__

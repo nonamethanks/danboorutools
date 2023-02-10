@@ -4,7 +4,7 @@ from pathlib import Path
 
 import filetype
 
-from danboorutools.util import natsort_array, random_string
+from danboorutools.util.misc import natsort_array, random_string
 from danboorutools.util.system import run_external_command
 
 

@@ -1,3 +1,4 @@
+
 from typing import Self
 
 from dateutil import parser as dt_parser
@@ -13,7 +14,7 @@ class DanbooruModel:
         if self.__class__ == DanbooruModel:
             raise RuntimeError("This class cannot be instantiated directly, and must be inherited.")
 
-        from danboorutools.logical import danbooru_api  # pylint: disable=import-outside-toplevel
+        from danboorutools.logical.sessions.danbooru import danbooru_api  # pylint: disable=import-outside-toplevel
         self.api = danbooru_api
         self.apply_json_data(json_data)
 
@@ -42,8 +43,8 @@ class DanbooruModel:
         self.api.danbooru_request("DELETE", endpoint=self.model_path)
 
     @classmethod
-    def from_id(cls, model_id: int) -> Self:  # type: ignore  # XXX false positive
-        from danboorutools.logical import danbooru_api  # pylint: disable=import-outside-toplevel
+    def from_id(cls, model_id: int) -> Self:  # type: ignore[valid-type]  # XXX false positive
+        from danboorutools.logical.sessions.danbooru import danbooru_api  # pylint: disable=import-outside-toplevel
         json_data = danbooru_api.danbooru_request("GET", f"{cls.model_name}s/{model_id}.json")
         assert isinstance(json_data, dict)
         return cls(json_data)
@@ -54,7 +55,7 @@ class DanbooruModel:
 
     def refresh(self) -> None:
         new_post = self.from_id(self.id)
-        self.apply_json_data(new_post.json_data)  # type: ignore # XXX false positive
+        self.apply_json_data(new_post.json_data)  # type: ignore[attr-defined] # XXX false positive
 
 
 class DanbooruPost(DanbooruModel):
@@ -64,7 +65,7 @@ class DanbooruPost(DanbooruModel):
     md5: str
 
     @property
-    def source(self) -> Url:
+    def source(self) -> "Url":
         return Url.parse(self.json_data["source"])
 
     def apply_json_data(self, json_data: dict) -> None:
@@ -76,9 +77,9 @@ class DanbooruPost(DanbooruModel):
         self.meta_tags: list[str] = json_data["tag_string_meta"].split()
 
     def replace(self,
-                replacement_url: Url | None = None,
+                replacement_url: "Url | None" = None,
                 replacement_file: File | None = None,
-                final_source: Url | None = None,
+                final_source: "Url | None" = None,
                 refresh: bool = False
                 ) -> None:
         if not replacement_file:

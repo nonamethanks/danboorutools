@@ -5,16 +5,18 @@ import pickle
 import random
 import time
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
 from danboorutools import logger
 from danboorutools.exceptions import NoCookiesForDomain
-from danboorutools.models.url import Url
+
+if TYPE_CHECKING:
+    from danboorutools.models.url import Url
 
 
 class Browser(Chrome):
@@ -43,10 +45,7 @@ class Browser(Chrome):
     def __del__(self) -> None:
         self.quit()
 
-    def load_cookies(self, domain: str) -> None:
-        """Load cookies for a domain."""
-        self.delete_all_cookies()
-        self.execute_cdp_cmd('Network.enable', {})
+    def _get_cookies_for(self, domain: str) -> list[dict[str, str]]:
         filename = self.cookie_dir / f"cookies-{domain}.pkl"
         try:
             cookies: list[dict] = pickle.load(filename.open("rb"))
@@ -56,8 +55,15 @@ class Browser(Chrome):
             if "expiry" in cookie:
                 cookie["expires"] = cookie["expiry"]
                 del cookie["expiry"]
+        return cookies
+
+    def load_cookies(self, domain: str) -> None:
+        """Load cookies for a domain."""
+        self.delete_all_cookies()
+        self.execute_cdp_cmd('Network.enable', {})
+        cookies = self._get_cookies_for(domain)
+        for cookie in cookies:
             self.execute_cdp_cmd('Network.setCookie', cookie)
-            # self.add_cookie(cookie)
         self.execute_cdp_cmd('Network.disable', {})
 
     def save_cookies(self, domain: str) -> None:
@@ -66,19 +72,14 @@ class Browser(Chrome):
         self.cookie_dir.mkdir(exist_ok=True)
         pickle.dump(self.get_cookies(), filename.open("wb+"))
 
-    def get(self, url: str | Url) -> None:
-        if isinstance(url, Url):
+    def get(self, url: "str | Url") -> None:
+        if not isinstance(url, str):
             url = url.normalized_url
         logger.debug(f"Browser GET request made to {url}")
         return super().get(url)
 
-    def find_elements_by_css_selector(self, css_selector: str) -> list[WebElement]:
-        """Replace the deprecated function."""
-        return self.find_elements(By.CSS_SELECTOR, css_selector)
-
-    def find_element_by_css_selector(self, css_selector: str) -> WebElement:
-        """Replace the deprecated function."""
-        return self.find_element(By.CSS_SELECTOR, css_selector)
+    def get_next_sibling(self, element: WebElement) -> WebElement:
+        return self.execute_script("return arguments[0].nextElementSibling", element)
 
     def find_elements_by_text(self,
                               text: str,
@@ -92,7 +93,7 @@ class Browser(Chrome):
             search_string = f"//*[contains(text(), '{text}')]"
 
         element = element or self
-        elements = element.find_elements(By.XPATH, search_string)
+        elements = element.find_elements("xpath", search_string)
         return elements
 
     def attempt_login_with_cookies(self,
@@ -109,7 +110,7 @@ class Browser(Chrome):
         self.get(verification_url)
 
         try:
-            self.find_element_by_css_selector(verification_element)
+            self.find_element("css selector", verification_element)
         except NoSuchElementException:
             logger.debug(f"Failed to login with cookies for {domain}.")
             return False
@@ -131,7 +132,7 @@ class Browser(Chrome):
             for secret_name, secret_selector in step.items():
 
                 try:
-                    secret_element = self.find_element_by_css_selector(secret_selector)
+                    secret_element = self.find_element("css selector", secret_selector)
                 except NoSuchElementException:
                     logger.debug("Login failed.")
                     self.screenshot()
@@ -141,13 +142,13 @@ class Browser(Chrome):
                 secret_element.send_keys(os.environ[secret_key])
 
             logger.debug("Submitting secrets...")
-            self.find_element_by_css_selector(submit_element).click()
+            self.find_element("css selector", submit_element).click()
             time.sleep(random.randint(2, 5))
 
         self.get(verification_url)
 
         try:
-            self.find_element_by_css_selector(verification_element)
+            self.find_element("css selector", verification_element)
         except NoSuchElementException:
             logger.debug("Login failed.")
             self.screenshot()

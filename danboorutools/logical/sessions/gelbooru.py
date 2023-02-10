@@ -2,12 +2,12 @@ import os
 import time
 
 import regex
-from methodtools import lru_cache
 from requests import Response
 
 from danboorutools import logger
 from danboorutools.logical.sessions import Session
 from danboorutools.models.gelbooru import GelbooruPost
+from danboorutools.util.misc import memoize
 from danboorutools.version import version
 
 
@@ -24,7 +24,7 @@ class GelbooruApi(Session):
         self.config_password = os.environ["GELBOORU_PASSWORD"]
         self.auth = (self.config_user_id, os.environ["GELBOORU_API_KEY"])
 
-    @lru_cache()
+    @memoize
     def login(self) -> None:
         data = {
             "user": self.config_username,
@@ -99,3 +99,6 @@ class GelbooruApi(Session):
     def unlock(self, post: GelbooruPost, token: str) -> None:
         lock_url = f"/public/lock.php?id={post.id}&csrf-token={token}"
         self.gelbooru_request("GET", lock_url)
+
+
+gelbooru_api = GelbooruApi()

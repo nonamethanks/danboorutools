@@ -3,8 +3,8 @@ from pathlib import Path
 import click
 
 from danboorutools import logger
-from danboorutools.logical import danbooru_api
-from danboorutools.logical.urls.ehentai import EHentaiGalleryUrl, EHentaiPageUrl
+from danboorutools.logical.sessions.danbooru import danbooru_api
+from danboorutools.logical.strategies.ehentai import EHentaiGalleryUrl, EHentaiPageUrl
 
 logger.add(f"logs/scripts/{Path(__file__).stem}/" + "{time}.log", retention="7 days")
 
@@ -17,7 +17,7 @@ def main() -> None:
             return
 
         sources = [post.source for post in posts]
-        gallery_ids = [source.properties["gallery_id"] for source in sources]
+        gallery_ids = [source.url_properties["gallery_id"] for source in sources]
         gallery_id_set = list(dict.fromkeys(gallery_ids))
 
         for index, gallery_id in enumerate(gallery_id_set):
@@ -31,7 +31,7 @@ def main() -> None:
             return
 
         gallery_id = gallery_id_set[value - 1]
-        page_url = [s for s in sources if s.properties["gallery_id"] == gallery_id][0]
+        page_url = [s for s in sources if s.url_properties["gallery_id"] == gallery_id][0]
         assert isinstance(page_url, EHentaiPageUrl)
         gallery_url = page_url.gallery
 
@@ -54,13 +54,11 @@ def replace_from_gallery(ehentai_url: EHentaiGalleryUrl, search_tags_str: str) -
     click.confirm("Continue?", abort=True)
 
     if len(posts) > 5:
-        ehentai_url.extract_posts()
         extracted_pages = ehentai_url.posts
     else:
-        extracted_pages: list[EHentaiPageUrl] = [post.source for post in posts]  # type: ignore
+        extracted_pages: list[EHentaiPageUrl] = [post.source for post in posts]  # type: ignore[no-redef]
         for page in extracted_pages:
             assert isinstance(page, EHentaiPageUrl)
-            page.extract_assets()
 
     for post in posts:
         page, = [page for page in extracted_pages if page.normalized_url == post.source.normalized_url]

@@ -182,3 +182,6 @@ def _parse_to_include(obj: str | dict) -> list[tuple[str, str]]:
         return keys_and_values
     else:
         return [("", obj)]
+
+
+danbooru_api = DanbooruApi(domain="danbooru", mode="bot")

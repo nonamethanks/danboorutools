@@ -5,7 +5,7 @@ from typing import Literal
 import click
 
 from danboorutools import logger
-from danboorutools.logical import danbooru_api
+from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.models.danbooru import DanbooruPost, DanbooruPostVersion
 from danboorutools.models.gelbooru import GelbooruPost
 from danboorutools.util.threading import Counter, run_in_parallel

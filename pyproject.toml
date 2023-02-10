@@ -24,7 +24,8 @@ ratelimit = "^2.2.1"
 pytz = "^2022.7.1"
 filetype = "^1.2.0"
 ipython = "^8.9.0"
-methodtools = "^0.4.5"
+beautifulsoup4 = "^4.11.2"
+html5lib = "^1.1"
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.28.11.8"
@@ -61,11 +62,14 @@ max_line_length = 140
 line_length = 140
 
 [tool.mypy]
+check_untyped_defs = true
+enable_error_code = ["redudant-expr", "ignore-without-code"]
 ignore_missing_imports = true
 no_pretty = true
 show_column_numbers = true
 show_error_codes = true
-check_untyped_defs = true
+strict_equality = true
+warn_unused_ignore = true
 
 [tool.flake8]
 max-line-length=140
@@ -93,6 +97,7 @@ disable=[
     "no-else-raise",
     "no-else-return",
     "no-member", # too many stupid false positives: https://github.com/PyCQA/pylint/issues/4693
+    "protected-access",
     "too-few-public-methods",
     "too-many-arguments",
     "too-many-instance-attributes",

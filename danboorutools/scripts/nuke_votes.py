@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import click
 
 from danboorutools import logger
-from danboorutools.logical import danbooru_api
+from danboorutools.logical.sessions.danbooru import danbooru_api
 
 if TYPE_CHECKING:
     from danboorutools.models.danbooru import DanbooruCommentVote, DanbooruPostVote

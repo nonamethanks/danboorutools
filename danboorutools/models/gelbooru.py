@@ -1,4 +1,5 @@
 from dateutil import parser as dt_parser
+
 from danboorutools import logger
 from danboorutools.models.url import Url
 
@@ -7,7 +8,7 @@ class GelbooruPost:
     @classmethod
     def from_md5(cls, md5: str) -> "GelbooruPost | None":
         """Search for a post using its md5."""
-        from danboorutools.logical import gelbooru_api  # pylint: disable=import-outside-toplevel
+        from danboorutools.logical.sessions.gelbooru import gelbooru_api  # pylint: disable=import-outside-toplevel
 
         posts = gelbooru_api.posts([f"md5:{md5}"])
         if not posts:
@@ -30,7 +31,7 @@ class GelbooruPost:
         self.url = f"https://gelbooru.com/index.php?page=post&s=view&id={self.id}"
         self.file_url: str = json_data["file_url"]
 
-        from danboorutools.logical import gelbooru_api  # pylint: disable=import-outside-toplevel
+        from danboorutools.logical.sessions.gelbooru import gelbooru_api  # pylint: disable=import-outside-toplevel
         self.api = gelbooru_api
 
         self._tags_to_add: set[str] = set()

@@ -2,8 +2,7 @@ import random
 
 from ward import test
 
-from danboorutools.logical import danbooru_api
-from danboorutools.logical.sessions.danbooru import kwargs_to_include
+from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
 
 
 @test("Test the parsing of kwargs", tags=["parsing"])

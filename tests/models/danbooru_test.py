@@ -1,6 +1,7 @@
 from ward import test
-from danboorutools.logical import danbooru_api
-from danboorutools.models.danbooru import DanbooruUser, DanbooruPost
+
+from danboorutools.logical.sessions.danbooru import danbooru_api
+from danboorutools.models.danbooru import DanbooruPost, DanbooruUser
 
 
 @test("Test fetching an user using danbooru", tags=["danbooru_api", "danbooru_users"])

@@ -1,6 +1,6 @@
 from ward import test
 
-from danboorutools.logical.urls.ehentai import EHentaiGalleryUrl, EHentaiImageUrl, EHentaiPageUrl
+from danboorutools.logical.strategies.ehentai import EHentaiGalleryUrl, EHentaiImageUrl, EHentaiPageUrl
 from danboorutools.models.url import Url
 
 

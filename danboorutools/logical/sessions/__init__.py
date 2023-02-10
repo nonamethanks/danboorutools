@@ -2,18 +2,22 @@ import os
 import time
 from functools import cached_property
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+from bs4 import BeautifulSoup
 from ratelimit import limits, sleep_and_retry
 from requests import Response
 from requests import Session as RequestsSession
 
 from danboorutools import logger
-from danboorutools.exceptions import DownloadError
+from danboorutools.exceptions import DownloadError, HTTPError
 from danboorutools.logical.browser import Browser
 from danboorutools.models.file import File, FileSubclass
-from danboorutools.models.url import Url
-from danboorutools.util import random_string
-from danboorutools.util.time import timestamp_from_string
+from danboorutools.util.misc import random_string
+from danboorutools.util.time import datetime_from_string
+
+if TYPE_CHECKING:
+    from danboorutools.models.url import Url
 
 
 class Session(RequestsSession):
@@ -40,20 +44,20 @@ class Session(RequestsSession):
     @limits(calls=5, period=1)
     def request(self, *args, **kwargs) -> Response:
         method, url, args = args[0], args[1], args[2:]
-        if isinstance(url, Url):
+        if not isinstance(url, str):
             url = url.normalized_url
 
         logger.debug(f"{method} request made to {url}")
         return super().request(method, url, *args, **kwargs)
 
-    def download_file(self, url: str | Url, *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
+    def download_file(self, url: "str | Url", *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
         tmp_filename = Path("/tmp") / random_string(20)
         if download_dir is not None:
             download_dir = Path(download_dir)
 
         kwargs["headers"] = kwargs.get("headers") or {} | self._default_headers
 
-        download_stream = self.get(url, *args, timeout=self._default_timeout, stream=True, **kwargs)  # type: ignore
+        download_stream = self.get(url, *args, timeout=self._default_timeout, stream=True, **kwargs)  # type: ignore[arg-type]
         if not download_stream.ok:
             raise DownloadError(download_stream)
 
@@ -66,8 +70,17 @@ class Session(RequestsSession):
         if source_time := download_stream.headers.get("last-modified"):
             # Set modification time based on the source. This is useful when downloading files
             # from sources that do not have an easily available timestamp
-            unix_time = time.mktime(timestamp_from_string(source_time).timetuple())
+            unix_time = time.mktime(datetime_from_string(source_time).timetuple())
             os.utime(tmp_filename, (unix_time, unix_time))
 
         _file = File.identify(tmp_filename, destination_dir=download_dir, md5_as_filename=True)
         return _file
+
+    def get_soup(self, url: "str | Url", *args, **kwargs) -> BeautifulSoup:
+        if not isinstance(url, str):
+            url = url.normalized_url
+        response = self.get(url, *args, **kwargs)
+        if not response.ok:
+            raise HTTPError(response)
+        soup = BeautifulSoup(response.text, "html5lib")
+        return soup

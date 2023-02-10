@@ -1,13 +1,12 @@
-
+import json
 from functools import cached_property
 
-from methodtools import lru_cache
-
 from danboorutools.logical.sessions import Session
+from danboorutools.util.misc import memoize
 
 
 class EHentaiSession(Session):
-    @lru_cache()
+    @memoize
     def browser_login(self) -> None:
         verification_url = "https://e-hentai.org/home.php"
         verification_element = ".homebox"
@@ -15,6 +14,7 @@ class EHentaiSession(Session):
         if self.browser.attempt_login_with_cookies(domain=self.site_name,
                                                    verification_url=verification_url,
                                                    verification_element=verification_element):
+            self.__browser_load_exhentai_cookies()
             return
 
         self.browser.compile_login_form(
@@ -28,6 +28,15 @@ class EHentaiSession(Session):
             verification_url=verification_url,
             verification_element=verification_element,
         )
+        self.__browser_load_exhentai_cookies()
+
+    def __browser_load_exhentai_cookies(self) -> None:
+        cookies = self.browser._get_cookies_for("ehentai")
+        self.browser.execute_cdp_cmd('Network.enable', {})
+        for cookie in cookies:
+            cookie["domain"] = ".exhentai.org"
+            self.browser.execute_cdp_cmd('Network.setCookie', cookie)
+        self.browser.execute_cdp_cmd('Network.disable', {})
 
     @cached_property
     def browser_cookies(self) -> dict:
@@ -49,9 +58,9 @@ class EHentaiSession(Session):
         response = self.post("https://api.e-hentai.org/api.php", json=data)
 
         try:
-            json_response = self.post("https://api.e-hentai.org/api.php", json=data).json()
+            json_response = response.json()
             return json_response["tokenlist"][0]["token"]
-        except Exception as e:
+        except json.JSONDecodeError as e:
             raise NotImplementedError(response.text) from e
 
     def download_file(self, url, *args, download_dir=None, **kwargs):  # noqa
