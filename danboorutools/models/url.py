@@ -1,13 +1,13 @@
 from datetime import datetime
 from functools import cached_property
-from typing import TYPE_CHECKING, Callable, Self, Sequence, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Callable, Sequence, TypeVar
 
 import regex
 from bs4 import BeautifulSoup
 
 from danboorutools.logical.sessions import Session
 from danboorutools.models.file import ArchiveFile, File
-from danboorutools.util.misc import get_url_domain
+from danboorutools.util.misc import get_url_domain, settable_property
 
 if TYPE_CHECKING:
     # https://github.com/python/mypy/issues/5107#issuecomment-529372406
@@ -23,45 +23,15 @@ known_url_types: list[type["Url"]] = []
 UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 
 
-class ExtractableProperties(TypedDict):
-    is_deleted: bool
-
-
-PropertyReturn = TypeVar('PropertyReturn')
-
-
-def injectable_property(method: property) -> property:
-
-    @property  # type: ignore[misc]  # may god forgive me for my sins
-    def wrapper(self):  # noqa
-        assert method.fget
-        variable_name = method.fget.__name__
-        if (variable_value := getattr(self, f"_{variable_name}", None)) is not None:
-            return variable_value
-        variable_value = method.fget(self)
-        setattr(self, f"_{variable_name}", variable_value)
-        return variable_value
-
-    return wrapper  # type: ignore[return-value]
-
-# GenericProperties = TypeVar("GenericProperties", bound="ExtractableProperties")
-# class Url(Generic[ExtractableProperties]):
-
-
 class Url:
-
     """A generic URL model."""
     domains: list[str]
     patterns: dict[regex.Pattern[str], str | None]
-    extractable_properties = list(ExtractableProperties.__annotations__.keys())
 
     session = Session()
 
     def __init_subclass__(cls):
         if Url not in cls.__bases__:
-            for property_name in cls.extractable_properties:
-                method = getattr(cls, property_name)
-                setattr(cls, property_name, injectable_property(method))
             known_url_types.append(cls)
 
     @classmethod
@@ -95,42 +65,22 @@ class Url:
 
         raise ValueError(url_type, url_properties)
 
-    # def inject(self, url: str | "Url", **extracted_properties: Unpack[ExtractableProperties]) -> "Self":
-    #     """Initialize an Url from known extracted properties."""
-    #     for key, value in extracted_properties.items():
-    #         if value is not None and key in self.extractable_properties:
-    #             setattr(self, f"_{key}", value)
-    #     return self
-
-    # https://github.com/microsoft/pylance-release/issues/2541
-    # TODO: use the above implementation once it's implemented in python 3.12, instead of the hack that follows
-    # The above will also make it possible to remove .inject from all subclasses
-
-    def inject(self, *, is_deleted: bool = False, **kwargs) -> "Self":  # type: ignore[valid-type]  # pylint: disable=unused-argument
-        """Initialize an Url from known extracted properties."""
-        starting_arguments = locals() | kwargs
-
-        for key, value in starting_arguments.items():
-            if value is not None and key in self.extractable_properties:
-                setattr(self, f"_{key}", value)
-        return self
-
     def __init__(self, url: str, normalization: str | None, url_properties: dict[str, str]):
         if self.__class__ == Url:
             raise RuntimeError("This abstract class cannot be initialized directly.")
 
         self.original_url = url
-        self.normalization = normalization
-        self.normalized_url = self.normalization.format(**url_properties) if self.normalization else self.original_url
+        self.pattern = normalization
+        self.normalized_url = self.pattern.format(**url_properties) if self.pattern else self.original_url
         self.url_properties = url_properties
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}[{self.normalized_url}]"
     __repr__ = __str__
 
-    @property
+    @settable_property
     def is_deleted(self) -> bool:
-        raise NotImplementedError
+        return self.session.head(self.normalized_url).status_code == 404
 
     @cached_property
     def html(self) -> "BeautifulSoup":
@@ -147,15 +97,7 @@ class Url:
 class UnknownUrl(Url):
     domains = []
     patterns = {}
-
-    @property
-    def related(self) -> list["Url"]:
-        """A list of related urls."""
-        return []
-
-    @property
-    def is_deleted(self) -> bool:
-        return getattr(self, "_is_deleted", False)
+    id_name = None
 
 
 class InfoUrl(Url):  # pylint: disable=abstract-method
@@ -167,115 +109,63 @@ class InfoUrl(Url):  # pylint: disable=abstract-method
         raise NotImplementedError
 
 
-class ExtractableAssetProperties(ExtractableProperties):
-    post: "PostUrl"
-    created_at: datetime
-    files: Sequence[File]
-
-
 class AssetUrl(Url):
     """An asset contains a list of files. It's usually a list of a single file, but it can be a zip file with multiple subfiles."""
 
-    extractable_properties = list(ExtractableAssetProperties.__annotations__.keys())
-
-    # pylint: disable=unused-argument,arguments-differ
-    def inject(self,  # type: ignore[override]
-               post: "PostUrl",
-               created_at: datetime,
-               files: Sequence[File],
-               is_deleted: bool = False
-               ) -> "Self":  # type: ignore[valid-type]
-        _locals = locals().copy()
-        _locals.pop("self")
-        return super().inject(**_locals)
-
-    @property
+    @settable_property
     def post(self) -> "PostUrl":
         raise NotImplementedError
 
-    @property
+    @settable_property
     def created_at(self) -> datetime:
         raise NotImplementedError
 
-    @property
+    @settable_property
     def files(self) -> list[File]:
-        # def download_files(self, headers: dict | None = None, cookies: dict | None = None) -> None:
-        downloaded_file = self.session.download_file(self.normalized_url)  # , headers=headers, cookies=cookies)
+        downloaded_file = self.session.download_file(self.normalized_url)
         if isinstance(downloaded_file, ArchiveFile):
             return downloaded_file.extracted_files
         else:
             return [downloaded_file]
 
-    @property
-    def related(self) -> list["Url"]:
-        """A list of related urls."""
-        return self.post.related
 
-
-class ExtractablePostProperties(ExtractableProperties):
-    gallery: "GalleryUrl"
-    assets: Sequence["PostUrl"]
-    created_at: datetime
-    score: int
+GenericAsset = TypeVar("GenericAsset", bound=AssetUrl)
 
 
 class PostUrl(Url):
     """A post contains multiple assets."""
-    extractable_properties = list(ExtractablePostProperties.__annotations__.keys())
 
-    # pylint: disable=unused-argument,arguments-differ
-    def inject(self,  # type: ignore[override]
-               gallery: "GalleryUrl",
-               assets: Sequence[AssetUrl],
-               created_at: datetime,
-               score: int = 0,
-               is_deleted: bool = False
-               ) -> "Self":  # type: ignore[valid-type]
-        _locals = locals().copy()
-        _locals.pop("self")
-        return super().inject(**_locals)
-
-    @property
+    @settable_property
     def gallery(self) -> "GalleryUrl":
         raise NotImplementedError
 
-    @property
-    def assets(self) -> Sequence[AssetUrl]:
+    @settable_property
+    def assets(self) -> list[AssetUrl]:
         raise NotImplementedError
 
-    @property
+    @settable_property
     def created_at(self) -> datetime:
         raise NotImplementedError
 
-    @property
+    @settable_property
     def score(self) -> int:
         raise NotImplementedError
-
-    @property
-    def related(self) -> list["Url"]:
-        """A list of related urls."""
-        return self.gallery.related
-
-
-class ExtractableGalleryProperties(ExtractableProperties):
-    posts: Sequence[PostUrl]
 
 
 class GalleryUrl(Url):
     """A gallery contains multiple posts."""
-    extractable_properties = list(ExtractableGalleryProperties.__annotations__.keys())
 
-    # pylint: disable=arguments-differ,unused-argument
-    def inject(self,  # type: ignore[override]
-               posts: Sequence[PostUrl],
-               is_deleted: bool = False,
-               ) -> "Self":  # type: ignore[valid-type]
-        _locals = locals().copy()
-        _locals.pop("self")
-        return super().inject(**_locals)
+    @settable_property
+    def posts(self) -> Sequence[PostUrl]:
+        raise NotImplementedError
+
+
+class ArtistUrl(GalleryUrl, Url):
+    """An artist url is a gallery that also has extractable data."""
 
     @property
-    def posts(self) -> Sequence[PostUrl]:
+    def names(self) -> list[str]:
+        """A list of artist names, in order of relevance."""
         raise NotImplementedError
 
     @property

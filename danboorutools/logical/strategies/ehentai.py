@@ -5,7 +5,7 @@ from danboorutools.exceptions import DownloadError, EHEntaiRateLimit, UnknownUrl
 from danboorutools.logical.sessions.ehentai import EHentaiSession
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.models.url import AssetUrl, GalleryUrl, PostUrl, Url
-from danboorutools.util.misc import compile_url, memoize
+from danboorutools.util.misc import compile_url, memoize, settable_property
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -41,16 +41,16 @@ class EHentaiImageUrl(AssetUrl, EHentaiUrl):
         IMAGE_DIRECT_PATTERN: None,
     }
 
-    @property
+    @settable_property
     def created_at(self) -> datetime:
         return self.post.created_at
 
-    @property
+    @settable_property
     def is_deleted(self) -> bool:
         return self.post.is_deleted
 
-    @property
-    def post(self) -> "EHentaiPageUrl":
+    @settable_property
+    def post(self) -> "EHentaiPageUrl":  # type: ignore[override]
         if post := getattr(self, "_post"):
             return post
         else:
@@ -60,22 +60,22 @@ class EHentaiImageUrl(AssetUrl, EHentaiUrl):
 class EHentaiPageUrl(PostUrl, EHentaiUrl):
     patterns = {PAGE_PATTERN: "https://{subdomain}.org/s/{page_token}/{gallery_id}-{page_number}"}
 
-    @property
-    def gallery(self) -> "EHentaiGalleryUrl":
+    @settable_property
+    def gallery(self) -> "EHentaiGalleryUrl":  # type: ignore[override]
         gallery_token = self.session.get_gallery_token_from_page_data(**self.url_properties)
         return self.build(url_type=EHentaiGalleryUrl,
                           gallery_token=gallery_token,
                           gallery_id=self.url_properties["gallery_id"],
                           subdomain=self.url_properties["subdomain"])
 
-    @property
-    def assets(self) -> list[EHentaiImageUrl]:
+    @settable_property
+    def assets(self) -> list[EHentaiImageUrl]:  # type: ignore[override]
         asset = self._get_direct_url()
-        asset.inject(
-            post=self,
-            created_at=self.created_at,
-            files=asset.files
-        )
+
+        asset.post = self
+        asset.created_at = self.created_at
+        asset.files = asset.files
+
         return [asset]
 
     def _get_direct_url(self) -> EHentaiImageUrl:
@@ -93,15 +93,15 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
             raise UnknownUrlError(asset_url_parsed)
         return asset_url_parsed
 
-    @property
+    @settable_property
     def created_at(self) -> datetime:
         return self.gallery.created_at
 
-    @property
+    @settable_property
     def is_deleted(self) -> bool:
         return self.gallery.is_deleted
 
-    @property
+    @settable_property
     def score(self) -> int:
         return self.gallery.score
 
@@ -109,8 +109,8 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
 class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
     patterns = {GALLERY_PATTERN: "https://{subdomain}.org/g/{gallery_id}/{gallery_token}"}
 
-    @property
-    def posts(self) -> list[EHentaiPageUrl]:
+    @settable_property
+    def posts(self) -> list[EHentaiPageUrl]:  # type: ignore[override]
         raw_thumb_urls = self._get_thumb_urls()
 
         download_url = self._get_download_url()
@@ -128,41 +128,33 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
                 page_number=raw_thumb_urls.index(raw_thumb_url) + 1,
             )
 
-            image.inject(
-                post=page,
-                created_at=self.created_at,
-                files=[file],
-            )
+            image.post = page
+            image.created_at = self.created_at
+            image.files = [file]
 
-            page.inject(
-                gallery=self,
-                assets=[image],
-                created_at=self.created_at,
-                score=self.score,
-            )
+            page.gallery = self
+            page.assets = [image]
+            page.created_at = self.created_at
+            page.score = self.score
 
             pages.append(page)
         return pages
 
-    @property
+    @settable_property
     def created_at(self) -> datetime:
         element, = self.html.select('#gmid .gdt1:-soup-contains-own("Posted:")')
         datetime_element, = element.parent.select(".gdt2")
         return datetime_from_string(datetime_element.text)
 
-    @property
+    @settable_property
     def score(self) -> int:
         element, = self.html.select('#gmid .gdt1:-soup-contains-own("Favorited:")')
         score_element, = element.parent.select(".gdt2")
         return int(score_element.text.split()[0])
 
-    @property
+    @settable_property
     def is_deleted(self) -> bool:
         return bool(not self.html.select(".ptt td"))
-
-    @property
-    def related(self) -> list[Url]:
-        return []
 
     @memoize
     def _get_thumb_urls(self) -> list[str]:
