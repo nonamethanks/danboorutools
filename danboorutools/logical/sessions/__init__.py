@@ -13,7 +13,7 @@ from danboorutools import logger
 from danboorutools.exceptions import DownloadError, HTTPError
 from danboorutools.logical.browser import Browser
 from danboorutools.models.file import File, FileSubclass
-from danboorutools.util.misc import random_string
+from danboorutools.util.misc import get_url_domain, random_string
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -36,6 +36,15 @@ class Session(RequestsSession):
         else:
             self.site_name = self.__class__.__name__.lower().removesuffix("session")  # EHentaiSession -> ehentai
 
+        self.proxied_domains: dict[str, dict] = {}
+
+        for envvar in os.environ:
+            if envvar.endswith("_PROXY"):
+                proxy = os.environ[envvar]
+                domain = envvar.removesuffix("_PROXY").lower().replace("_", ".")
+                self.proxied_domains[domain] = {"http": proxy, "https": proxy}
+                logger.debug(f"Setting a proxy for all connections to {domain}.")
+
     @cached_property
     def browser(self) -> Browser:
         return Browser()
@@ -47,8 +56,11 @@ class Session(RequestsSession):
         if not isinstance(url, str):
             url = url.normalized_url
 
+        url_domain = get_url_domain(url)
+        proxies = self.proxied_domains.get(url_domain)
+
         logger.debug(f"{method} request made to {url}")
-        return super().request(method, url, *args, **kwargs)
+        return super().request(method, url, *args, proxies=proxies, **kwargs)  # type: ignore
 
     def download_file(self, url: "str | Url", *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
         tmp_filename = Path("/tmp") / random_string(20)
