@@ -40,6 +40,7 @@ class EHentaiImageUrl(AssetUrl, EHentaiUrl):
         PAGE_DOWNLOAD_PATTERN: None,
         IMAGE_DIRECT_PATTERN: None,
     }
+    id_name = None
 
     @settable_property
     def created_at(self) -> datetime:
@@ -59,13 +60,14 @@ class EHentaiImageUrl(AssetUrl, EHentaiUrl):
 
 class EHentaiPageUrl(PostUrl, EHentaiUrl):
     patterns = {PAGE_PATTERN: "https://{subdomain}.org/s/{page_token}/{gallery_id}-{page_number}"}
+    id_name = "page_token"
 
     @settable_property
     def gallery(self) -> "EHentaiGalleryUrl":  # type: ignore[override]
         gallery_token = self.session.get_gallery_token_from_page_data(**self.url_properties)
         return self.build(url_type=EHentaiGalleryUrl,
                           gallery_token=gallery_token,
-                          gallery_id=self.url_properties["gallery_id"],
+                          gallery_id=self.id,
                           subdomain=self.url_properties["subdomain"])
 
     @settable_property
@@ -108,6 +110,7 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
 
 class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
     patterns = {GALLERY_PATTERN: "https://{subdomain}.org/g/{gallery_id}/{gallery_token}"}
+    id_name = "gallery_id"
 
     @settable_property
     def posts(self) -> list[EHentaiPageUrl]:  # type: ignore[override]
@@ -124,7 +127,7 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
                 url_type=EHentaiPageUrl,
                 subdomain=self.url_properties["subdomain"],
                 page_token=image.url_properties["page_token"],
-                gallery_id=self.url_properties["gallery_id"],
+                gallery_id=self.id,
                 page_number=raw_thumb_urls.index(raw_thumb_url) + 1,
             )
 

@@ -17,7 +17,7 @@ def main() -> None:
             return
 
         sources = [post.source for post in posts]
-        gallery_ids = [source.url_properties["gallery_id"] for source in sources]
+        gallery_ids = [source.id for source in sources]
         gallery_id_set = list(dict.fromkeys(gallery_ids))
 
         for index, gallery_id in enumerate(gallery_id_set):
@@ -31,8 +31,7 @@ def main() -> None:
             return
 
         gallery_id = gallery_id_set[value - 1]
-        page_url = [s for s in sources if s.url_properties["gallery_id"] == gallery_id][0]
-        assert isinstance(page_url, EHentaiPageUrl)
+        page_url = [source for source in sources if isinstance(source, EHentaiPageUrl) and source.id == gallery_id][0]
         gallery_url = page_url.gallery
 
         search = f"source:*e*hentai.org/*{gallery_id}*"

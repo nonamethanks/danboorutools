@@ -29,6 +29,7 @@ class Url:
     patterns: dict[regex.Pattern[str], str | None]
 
     session = Session()
+    id_name: str | None
 
     def __init_subclass__(cls):
         if Url not in cls.__bases__:
@@ -73,6 +74,7 @@ class Url:
         self.pattern = normalization
         self.normalized_url = self.pattern.format(**url_properties) if self.pattern else self.original_url
         self.url_properties = url_properties
+        self.id = self.url_properties[self.id_name] if self.id_name else None
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}[{self.normalized_url}]"
