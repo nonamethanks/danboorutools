@@ -40,7 +40,7 @@ class EHentaiImageUrl(AssetUrl, EHentaiUrl):
         PAGE_DOWNLOAD_PATTERN: None,
         IMAGE_DIRECT_PATTERN: None,
     }
-    id_name = None
+    id_name = ""
 
     @settable_property
     def created_at(self) -> datetime:

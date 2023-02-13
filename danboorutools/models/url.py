@@ -29,7 +29,7 @@ class Url:
     patterns: dict[regex.Pattern[str], str | None]
 
     session = Session()
-    id_name: str | None
+    id_name: str
 
     def __init_subclass__(cls):
         if Url not in cls.__bases__:
@@ -75,7 +75,7 @@ class Url:
         self.pattern = normalization
         self.normalized_url = self.pattern.format(**url_properties) if self.pattern else self.original_url
         self.url_properties = url_properties
-        self.id = self.url_properties[self.id_name] if self.id_name else None
+        self.id = self.url_properties[self.id_name] if self.id_name else ""
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}[{self.normalized_url}]"
@@ -102,7 +102,7 @@ class Url:
 class UnknownUrl(Url):
     domains = []
     patterns = {}
-    id_name = None
+    id_name = ""
 
 
 class InfoUrl(Url):  # pylint: disable=abstract-method
@@ -110,6 +110,11 @@ class InfoUrl(Url):  # pylint: disable=abstract-method
     @property
     def related(self) -> list["Url"]:
         """A list of related urls."""
+        raise NotImplementedError
+
+    @property
+    def names(self) -> list[str]:
+        """A list of artist names, in order of relevance."""
         raise NotImplementedError
 
 
@@ -161,13 +166,8 @@ class GalleryUrl(Url):
         raise NotImplementedError
 
 
-class ArtistUrl(GalleryUrl, InfoUrl):
+class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
     """An artist url is a gallery but also has other extractable data."""
-
-    @property
-    def names(self) -> list[str]:
-        """A list of artist names, in order of relevance."""
-        raise NotImplementedError
 
 
 class RedirectUrl(Url):
@@ -191,6 +191,7 @@ def init_url_subclasses() -> None:
     # Due to circular imports this has to be loaded after Url declaration, in order to trigger __init_subclass__
     # pylint: disable=import-outside-toplevel,unused-import
     import danboorutools.logical.strategies.ehentai  # noqa
+    import danboorutools.logical.strategies.pixiv  # noqa
 
 
 init_url_subclasses()
