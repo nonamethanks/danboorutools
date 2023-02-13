@@ -22,7 +22,7 @@ def main(mode: Literal["all"] | Literal["latest"]) -> None:
     tag_paid_rewards_on_gelbooru(mode)
 
 
-def tag_paid_rewards_on_gelbooru(mode: Literal["all"] | Literal["latest"]) -> None:
+def tag_paid_rewards_on_gelbooru(mode: Literal["all", "latest"]) -> None:
     if mode == "all":
         posts = danbooru_api.all_posts(["paid_reward"])
     elif mode == "latest":
