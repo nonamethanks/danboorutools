@@ -18,7 +18,7 @@ STACC_PATTERN = compile_url(r"https?:\/\/(?:www\.)?pixiv(\.net\/stacc|\.cc)\/(?P
 class PixivUrl(Url):  # pylint: disable=abstract-method
     session = PixivSession()
     domains = ["pixiv.net"]
-    excluded_paths = ["sketch.pixiv.net/", "img-sketch.pixiv.net/"]
+    excluded_paths = ["sketch.pixiv.net/", "img-sketch.pixiv.net/", "img-sketch.pximg.net/"]
 
 
 class PixivImageUrl(AssetUrl, PixivUrl):
@@ -37,7 +37,6 @@ class PixivImageUrl(AssetUrl, PixivUrl):
         "http://i1.pixiv.net/img-inf/img/2011/05/01/23/28/04/18557054_s.png",
     ]
     domains = ["pximg.net", "pixiv.net"]
-    excluded_paths = ["img-sketch.pximg.net/"]
     id_name = "post_id"
     patterns = [IMAGE_PATTERN]
 
