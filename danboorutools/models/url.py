@@ -106,8 +106,7 @@ class UnknownUrl(Url):
 
 
 class InfoUrl(Url):  # pylint: disable=abstract-method
-    """An info url is an url that contains only non-asset data, such as a stacc pixiv url or a carrd page."""
-
+    """An info url is an url that contains non-asset data, such as related artist urls and names."""
     @property
     def related(self) -> list["Url"]:
         """A list of related urls."""
@@ -132,9 +131,6 @@ class AssetUrl(Url):
             return downloaded_file.extracted_files
         else:
             return [downloaded_file]
-
-
-GenericAsset = TypeVar("GenericAsset", bound=AssetUrl)
 
 
 class PostUrl(Url):
@@ -165,18 +161,30 @@ class GalleryUrl(Url):
         raise NotImplementedError
 
 
-class ArtistUrl(GalleryUrl, Url):
-    """An artist url is a gallery that also has extractable data."""
+class ArtistUrl(GalleryUrl, InfoUrl):
+    """An artist url is a gallery but also has other extractable data."""
 
     @property
     def names(self) -> list[str]:
         """A list of artist names, in order of relevance."""
         raise NotImplementedError
 
+
+class RedirectUrl(Url):
+    """An url that redirects somewhere else."""
+    @cached_property
+    def resolved(self) -> Url:
+        return self.parse(self.session.unscramble(self.normalized_url))
+
     @property
-    def related(self) -> list["Url"]:
-        """A list of related urls."""
-        raise NotImplementedError
+    def related(self) -> list[Url]:
+        if isinstance(self.resolved, InfoUrl):
+            return self.resolved.related
+        return []
+
+    @settable_property
+    def is_deleted(self) -> bool:
+        return self.resolved.is_deleted
 
 
 def init_url_subclasses() -> None:
