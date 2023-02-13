@@ -91,11 +91,6 @@ class settable_property(property, Generic[SettableValue]):  # pylint: disable=in
         self.public_name = fget.__name__
 
     if TYPE_CHECKING:
-        # Type-safe descriptor protocol for property retrieval methods (`__get__`)
-        # see https://docs.python.org/3/howto/descriptor.html
-        # These are under `typing.TYPE_CHECKING` because we don't need
-        # to modify their implementation from `builtins.property`, but
-        # just need to add type-safety.
         @overload  # type: ignore[override, no-overload-impl]
         def __get__(self, instance: None, Class: type, /) -> settable_property[SettableValue]:
             """ Retrieving a property from on a class retrieves the property object (`settable_property[SettableValue]`) """
@@ -112,11 +107,20 @@ class settable_property(property, Generic[SettableValue]):  # pylint: disable=in
             self.__set__(instance, init_value)
         return getattr(instance, self.private_name)
 
-    def __set__(self, instance: Any, value: Any) -> None:  # noqa: ANN401
+    def __set__(self, instance: object, value: SettableValue) -> None:  # noqa: ANN401
         """
         Type-safe setter method. Grabs the name of the function first decorated with
         `@settable_property`, then calls `setattr` on the given value with an attribute name of
         '_<function name>'.
         """
 
-        setattr(instance, f"_{self.fget.__name__}", value)
+        setattr(instance, self.private_name, value)
+
+    def __delete__(self, instance: object) -> None:
+        if instance is None:
+            return
+
+        try:
+            delattr(instance, self.private_name)
+        except AttributeError:
+            pass
