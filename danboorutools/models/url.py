@@ -80,7 +80,11 @@ class Url:
         self.id = self.url_properties[self.id_name] if self.id_name else ""
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}[{self.normalized_url}]"
+        try:
+            return f"{self.__class__.__name__}[{self.normalized_url}]"
+        except AttributeError:  # nasty bug in the test suite: if __str__ doesn't return properly at all times, then the whole shit crashes
+            return f"{self.__class__.__name__}[{self.original_url}]"
+
     __repr__ = __str__
 
     def __eq__(self, __o: object) -> bool:
@@ -193,10 +197,11 @@ def init_url_subclasses() -> list:
     # pylint: disable=import-outside-toplevel
     # Due to circular imports this has to be loaded after Url declaration, in order to trigger __init_subclass__
 
-    from danboorutools.logical.strategies import ehentai, pixiv, pixiv_sketch
+    from danboorutools.logical.strategies import ehentai, fanbox, pixiv, pixiv_sketch
 
     return [
         ehentai,
+        fanbox,
         pixiv,
         pixiv_sketch,
     ]
