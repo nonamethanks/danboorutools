@@ -61,6 +61,7 @@ class Url:
                 continue
             if not all(f"{{{p}}}" in normalization for p in url_properties):
                 continue
+            assert not any(v is None for v in url_properties.values()), url_properties
             url = normalization.format(**url_properties)
             return url_type(url=url, normalization=normalization, url_properties=url_properties)
 
@@ -85,6 +86,9 @@ class Url:
             return False
 
         return __o.normalized_url == self.normalized_url
+
+    def __hash__(self) -> int:  # needed for Ward tests
+        return hash(self.__str__())
 
     @settable_property
     def is_deleted(self) -> bool:
