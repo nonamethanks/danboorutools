@@ -80,6 +80,12 @@ class Url:
         return f"{self.__class__.__name__}[{self.normalized_url}]"
     __repr__ = __str__
 
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, type(self)):
+            return False
+
+        return __o.normalized_url == self.normalized_url
+
     @settable_property
     def is_deleted(self) -> bool:
         return self.session.head(self.normalized_url).status_code == 404
