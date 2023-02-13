@@ -43,7 +43,6 @@ class Session(RequestsSession):
                 proxy = os.environ[envvar]
                 domain = envvar.removesuffix("_PROXY").lower().replace("_", ".")
                 self.proxied_domains[domain] = {"http": proxy, "https": proxy}
-                logger.debug(f"Setting a proxy for all connections to {domain}.")
 
     @cached_property
     def browser(self) -> Browser:
