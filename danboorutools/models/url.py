@@ -92,14 +92,7 @@ class Url:
 
     @cached_property
     def html(self) -> "BeautifulSoup":
-        browser = self.session.browser
-        if hasattr(self.session, "browser_login"):
-            self.session.browser_login()
-
-        if browser.current_url != self.normalized_url:
-            browser.get(self.normalized_url)
-
-        return BeautifulSoup(browser.page_source, "html5lib")
+        return self.session.get_html(self.normalized_url)
 
 
 class UnknownUrl(Url):

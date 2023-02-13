@@ -1,8 +1,15 @@
 import json
 from functools import cached_property
+from typing import TYPE_CHECKING
+
+from bs4 import BeautifulSoup
 
 from danboorutools.logical.sessions import Session
 from danboorutools.util.misc import memoize
+
+if TYPE_CHECKING:
+
+    from danboorutools.models.url import Url
 
 
 class EHentaiSession(Session):
@@ -45,6 +52,16 @@ class EHentaiSession(Session):
         for browser_cookie in self.browser.get_cookies():
             cookies[browser_cookie["name"]] = browser_cookie["value"]
         return cookies
+
+    def get_html(self, url: "str | Url", *args, **kwargs) -> BeautifulSoup:
+        self.browser_login()
+        if not isinstance(url, str):
+            url = url.normalized_url
+
+        if self.browser.current_url != url:
+            self.browser.get(url)
+
+        return BeautifulSoup(self.browser.page_source, "html5lib")
 
     def get_gallery_token_from_page_data(self, gallery_id: int | str, page_token: str, page_number: int | str, **kwargs) -> str:
         # pylint: disable=unused-argument

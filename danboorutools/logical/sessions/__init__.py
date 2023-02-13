@@ -89,7 +89,7 @@ class Session(RequestsSession):
         _file = File.identify(tmp_filename, destination_dir=download_dir, md5_as_filename=True)
         return _file
 
-    def get_soup(self, url: "str | Url", *args, **kwargs) -> BeautifulSoup:
+    def get_html(self, url: "str | Url", *args, **kwargs) -> BeautifulSoup:
         if not isinstance(url, str):
             url = url.normalized_url
         response = self.get(url, *args, **kwargs)
