@@ -14,14 +14,10 @@ IMAGE_PATTERN = compile_url(r"https?:\/\/i[\w-]*\.(?:pximg\.net|pixiv\.net)\/.*?
 ME_PATTERN = compile_url(r"https?:\/\/(?:www\.)?pixiv\.me\/(?P<me_id>[^\/]+)")
 STACC_PATTERN = compile_url(r"https?:\/\/(?:www\.)?pixiv(\.net\/stacc|\.cc)\/(?P<stacc_id>[^\/]+)\/?")
 
-EXCLUDED_MAIN_PATHS = ["sketch.pixiv.net/", "pixiv.net/fanbox/", "fanbox.pixiv.net/"]
-EXCLUDED_IMAGE_PATHS = ["img-sketch.pixiv.net/", "img-sketch.pximg.net/", "pixiv.pximg.net/fanbox"]
-
 
 class PixivUrl(Url):  # pylint: disable=abstract-method
     session = PixivSession()
     domains = ["pixiv.net"]
-    excluded_paths = EXCLUDED_MAIN_PATHS
 
 
 class PixivImageUrl(AssetUrl, PixivUrl):
@@ -39,7 +35,6 @@ class PixivImageUrl(AssetUrl, PixivUrl):
         "https://i.pximg.net/img-original/img/2019/05/27/17/59/33/74932152_ugoira0.jpg",
         "https://i.pximg.net/img-zip-ugoira/img/2016/04/09/14/25/29/56268141_ugoira1920x1080.zip",
     ]
-    excluded_paths = EXCLUDED_MAIN_PATHS + EXCLUDED_IMAGE_PATHS
     domains = ["pximg.net", "pixiv.net"]
     id_name = "post_id"
     pattern = IMAGE_PATTERN
@@ -212,7 +207,6 @@ class PixivMeUrl(RedirectUrl, PixivUrl):
         "http://www.pixiv.me/noizave",
     ]
     domains = ["pixiv.me"]
-    excluded_paths = []
     id_name = "me_id"
     pattern = ME_PATTERN
     normalization = "https://pixiv.me/{me_id}"

@@ -39,6 +39,8 @@ flake8 = "^6.0.0"
 flake8-annotations = "^3.0.0"
 flake8-pyproject = "^1.2.2"
 types-pytz = "^2022.7.1.0"
+pyinstrument = "^4.4.0"
+line-profiler = "^4.0.2"
 
 [tool.poetry.group.test.dependencies]
 ward = "^0.67.2b0"

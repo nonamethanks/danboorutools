@@ -26,7 +26,6 @@ UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 class Url:
     """A generic URL model."""
     domains: list[str]
-    excluded_paths: list[str] = []
     pattern: regex.Pattern[str]
     normalization: str | None = None
     test_cases: list[str]
@@ -42,15 +41,18 @@ class Url:
     @lru_cache
     def parse(cls, url: "str | Url") -> "Url":
         """Parse an Url from a string."""
+        return cls._parse(url)
+
+    @staticmethod
+    def _parse(url: "str | Url") -> "Url":
+        # This is split for profiling reasons
         if isinstance(url, Url):
             return url
-        assert isinstance(url, str)
         url_domain = get_url_domain(url)
         for url_strategy in known_url_types:
             if url_domain not in url_strategy.domains:
                 continue
-            if any(excluded_path in url for excluded_path in url_strategy.excluded_paths):
-                continue
+            # note to self: trying to pre-exclude by path actually gave worse performance than just going through all regexes
             if match := url_strategy.pattern.match(url):
                 return url_strategy(url, match.groupdict())
 
