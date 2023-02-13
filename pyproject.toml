@@ -8,6 +8,7 @@ authors = ["nonamethanks <nonamethanks@nonamethanks.xyz>"]
 nuke_votes = "danboorutools.scripts.nuke_votes:main"
 replace_ehentai_samples = "danboorutools.scripts.replace_ehentai_samples:main"
 tag_paid_rewards_on_gelbooru = "danboorutools.scripts.tag_paid_rewards_on_gelbooru:main"
+parsing_benchmark = "danboorutools.scripts.parsing_benchmark:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -105,6 +106,7 @@ disable=[
 ]
 
 [tool.pylint.FORMAT]
+ignore-long-lines= '^\s*(# )?"?<?https?:\/\/\S+>?'
 max-line-length=140
 good-names=[
     "e",

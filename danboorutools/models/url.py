@@ -26,7 +26,10 @@ UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 class Url:
     """A generic URL model."""
     domains: list[str]
-    patterns: dict[regex.Pattern[str], str | None]
+    excluded_paths: list[str] = []
+    patterns: list[regex.Pattern[str]]
+    normalization: str | None = None
+    test_cases: list[str]
 
     session = Session()
     id_name: str
@@ -46,34 +49,32 @@ class Url:
         for url_strategy in known_url_types:
             if url_domain not in url_strategy.domains:
                 continue
-            for pattern, normalization in url_strategy.patterns.items():
+            if any(excluded_path in url for excluded_path in cls.excluded_paths):
+                continue
+            for pattern in url_strategy.patterns:
                 if match := pattern.match(url):
-                    return url_strategy(url, normalization, match.groupdict())
+                    return url_strategy(url, match.groupdict())
 
-        return UnknownUrl(url, None, {})
+        return UnknownUrl(url, {})
 
     @classmethod
     @lru_cache
     def build(cls, url_type: type["UrlSubclass"], **url_properties) -> "UrlSubclass":
         """Build an Url from its url properties."""
-        for normalization in url_type.patterns.values():
-            if not normalization:
-                continue
-            if not all(f"{{{p}}}" in normalization for p in url_properties):
-                continue
-            assert not any(v is None for v in url_properties.values()), url_properties
-            url = normalization.format(**url_properties)
-            return url_type(url=url, normalization=normalization, url_properties=url_properties)
+        if not cls.normalization:
+            raise ValueError(f"{url_type} has no normalization defined.")
+        if not all(f"{{{p}}}" in cls.normalization for p in url_properties):  # pylint: disable=unsupported-membership-test  # False pos.
+            raise ValueError
+        assert not any(v is None for v in url_properties.values()), url_properties
+        url = cls.normalization.format(**url_properties)
+        return url_type(url=url, url_properties=url_properties)
 
-        raise ValueError(url_type, url_properties)
-
-    def __init__(self, url: str, normalization: str | None, url_properties: dict[str, str]):
+    def __init__(self, url: str, url_properties: dict[str, str]):
         if self.__class__ == Url:
             raise RuntimeError("This abstract class cannot be initialized directly.")
 
         self.original_url = url
-        self.pattern = normalization
-        self.normalized_url = self.pattern.format(**url_properties) if self.pattern else self.original_url
+        self.normalized_url = self.normalization.format(**url_properties) if self.normalization else self.original_url
         self.url_properties = url_properties
         self.id = self.url_properties[self.id_name] if self.id_name else ""
 
@@ -101,7 +102,7 @@ class Url:
 
 class UnknownUrl(Url):
     domains = []
-    patterns = {}
+    patterns = []
     id_name = ""
 
 

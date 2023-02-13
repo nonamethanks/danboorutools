@@ -7,28 +7,39 @@ from danboorutools.util.misc import compile_url, memoize, settable_property
 from danboorutools.util.time import datetime_from_string
 
 BASE_DOMAIN = compile_url(r"https?:\/\/(?:(?:www|touch)\.)?pixiv\.net")
-POST_PATTERN = compile_url(BASE_DOMAIN, r"\/(?:member(?:_illust)?.php\?.*illust_id=(?P<post_id>\d+)|(?:en\/)?artworks\/(?P<post_id>\d+))")
-ARTIST_PATTERN = compile_url(BASE_DOMAIN,
-                             r"\/(?:(?:member(?:_illust)?|mypage)\.php[?#]id=|(?:en\/)?(?:u(?:sers)?\/|#id=))(?P<artist_id>\d+)")
-IMAGE_PATTERN = compile_url(
-    r"https?:\/\/(?:i|img)(?:\d*|[\w-]*)\.(?:pximg|pixiv)\.net\/"
-    r"(?:(?:\w)*\/)*img(?:-original|[\w-]*)?\/(?:img\/)?(?:\w*\/)*"
-    r"(?:(?:(?P<post_id>\d{3,})(?:_(?:m|(?:big_)?(?:(?:p|ugoira)(?:\d+)+(?:_master\d+)?)))?)"
-    r"|(?:[\w-]+\/(?P<post_id>\d+)(?:_p\d+)?))(?:_big_p\d+|_ugoira\d+x\d+|_m)?\.(?:png|jpg|gif|jpeg|zip)(?:\?\d+)?"
-)
+POST_PATTERN = compile_url(BASE_DOMAIN, r"\/(?:en\/)?(member_illust\.php?.*?|artworks\/|i\/)(?P<post_id>\d+)")
+ARTIST_PATTERN = compile_url(BASE_DOMAIN, r"\/(?:(?:novel\/)?member\.php\?id=|u|(?:en\/)?users?)\/?(?P<artist_id>\d+)")
+IMAGE_PATTERN = compile_url(r"https?:\/\/i[\w-]*\.(?:pximg\.net|pixiv\.net)\/.*?img\/(?:(?:\d+\/){6}|\w+\/)(?P<post_id>\d+)[\w\.]+")
 
 ME_PATTERN = compile_url(r"https?:\/\/(?:www\.)?pixiv\.me\/(?P<me_id>[^\/]+)")
-STACC_PATTERN = compile_url(r"https?:\/\/(?:www\.)?pixiv\.net\/stacc\/(?P<stacc_id>[^/]+)/?")
+STACC_PATTERN = compile_url(r"https?:\/\/(?:www\.)?pixiv(\.net\/stacc|\.cc)\/(?P<stacc_id>[^\/]+)\/?")
 
 
 class PixivUrl(Url):  # pylint: disable=abstract-method
     session = PixivSession()
+    domains = ["pixiv.net"]
+    excluded_paths = ["sketch.pixiv.net/", "img-sketch.pixiv.net/"]
 
 
 class PixivImageUrl(AssetUrl, PixivUrl):
-    domains = ["pximg.net"]
+    test_cases = [
+        "https://i.pximg.net/img-original/img/2014/10/03/18/10/20/46324488_p0.png",
+        "https://i.pximg.net/img-master/img/2014/10/03/18/10/20/46324488_p0_master1200.jpg",
+        "https://i.pximg.net/c/250x250_80_a2/img-master/img/2014/10/29/09/27/19/46785915_p0_square1200.jpg",
+        "https://i.pximg.net/img-zip-ugoira/img/2016/04/09/14/25/29/56268141_ugoira1920x1080.zip",
+        "https://i.pximg.net/img-original/img/2019/05/27/17/59/33/74932152_ugoira0.jpg",
+        "https://i.pximg.net/c/360x360_70/custom-thumb/img/2022/03/08/00/00/56/96755248_p0_custom1200.jpg",
+        "https://i-f.pximg.net/img-original/img/2020/02/19/00/40/18/79584713_p0.png",
+        "http://img18.pixiv.net/img/evazion/14901720.png",
+        "http://i2.pixiv.net/img18/img/evazion/14901720.png",
+        "http://i1.pixiv.net/img07/img/pasirism/18557054_p1.png",
+        "http://i1.pixiv.net/img-inf/img/2011/05/01/23/28/04/18557054_64x64.jpg",
+        "http://i1.pixiv.net/img-inf/img/2011/05/01/23/28/04/18557054_s.png",
+    ]
+    domains = ["pximg.net", "pixiv.net"]
+    excluded_paths = ["img-sketch.pximg.net/"]
     id_name = "post_id"
-    patterns = {IMAGE_PATTERN: None}
+    patterns = [IMAGE_PATTERN]
 
     @settable_property
     def created_at(self) -> datetime:
@@ -49,9 +60,18 @@ class PixivImageUrl(AssetUrl, PixivUrl):
 
 
 class PixivPostUrl(PostUrl, PixivUrl):
-    domains = ["pixiv.net"]
+    test_cases = [
+        "https://www.pixiv.net/en/artworks/46324488",
+        "https://www.pixiv.net/artworks/46324488",
+        "http://www.pixiv.net/i/18557054",
+        "http://www.pixiv.net/member_illust.php?mode=medium&illust_id=18557054",
+        "http://www.pixiv.net/member_illust.php?mode=big&illust_id=18557054",
+        "http://www.pixiv.net/member_illust.php?mode=manga&illust_id=18557054",
+        "http://www.pixiv.net/member_illust.php?mode=manga_big&illust_id=18557054&page=1",
+    ]
     id_name = "post_id"
-    patterns = {POST_PATTERN: "https://www.pixiv.net/en/artworks/{post_id}"}
+    patterns = [POST_PATTERN]
+    normalization = "https://www.pixiv.net/en/artworks/{post_id}"
 
     @settable_property
     def assets(self) -> list[PixivImageUrl]:  # type: ignore[override]
@@ -93,9 +113,20 @@ class PixivPostUrl(PostUrl, PixivUrl):
 
 
 class PixivArtistUrl(ArtistUrl, PixivUrl):
-    domains = ["pixiv.net"]
+    test_cases = [
+        "https://www.pixiv.net/member.php?id=339253",
+        "http://www.pixiv.net/novel/member.php?id=76567",
+        "https://www.pixiv.net/u/9202877",
+        "https://www.pixiv.net/users/9202877",
+        "https://www.pixiv.net/users/76567/novels",
+        "https://www.pixiv.net/users/39598149/illustrations?p=1",
+        "https://www.pixiv.net/user/13569921/series/81967",
+        "https://www.pixiv.net/en/users/9202877",
+        "https://www.pixiv.net/en/users/76567/novels",
+    ]
     id_name = "artist_id"
-    patterns = {ARTIST_PATTERN: "https://www.pixiv.net/en/users/{artist_id}"}
+    patterns = [ARTIST_PATTERN]
+    normalization = "https://www.pixiv.net/en/users/{artist_id}"
 
     @settable_property
     def posts(self) -> list[PixivPostUrl]:  # type: ignore[override]
@@ -173,15 +204,25 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
 
 
 class PixivMeUrl(RedirectUrl, PixivUrl):
+    # Useful to have separate from Stacc, to get the pixiv ID indirectly
+    test_cases = [
+        "http://www.pixiv.me/noizave",
+    ]
     domains = ["pixiv.me"]
     id_name = "me_id"
-    patterns = {ME_PATTERN: "https://pixiv.me/{me_id}"}
+    patterns = [ME_PATTERN]
+    normalization = "https://pixiv.me/{me_id}"
 
 
 class PixivStaccUrl(InfoUrl, PixivUrl):
-    domains = ["pixiv.net"]
+    domains = ["pixiv.net", "pixiv.cc"]
+    test_cases = [
+        "https://www.pixiv.net/stacc/noizave",
+        "https://pixiv.cc/zerousagi",
+    ]
     id_name = "stacc_id"
-    patterns = {STACC_PATTERN: "https://www.pixiv.net/stacc/{stacc_id}"}
+    patterns = [STACC_PATTERN]
+    normalization = "https://www.pixiv.net/stacc/{stacc_id}"
 
     @property
     def me_from_stacc(self) -> PixivMeUrl:

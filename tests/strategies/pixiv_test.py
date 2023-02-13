@@ -1,27 +1,24 @@
 from ward import test
 
 from danboorutools.logical.strategies.pixiv import PixivArtistUrl, PixivImageUrl, PixivMeUrl, PixivPostUrl, PixivStaccUrl
-from tests.strategies import (assert_artist_url, assert_asset_file, assert_asset_url, assert_info_url, assert_parsed, assert_post_url,
-                              assert_post_url_from_string, assert_redirect_url)
+from tests.strategies import (assert_artist_url, assert_asset_file, assert_asset_url, assert_info_url, assert_parse_test_cases,
+                              assert_post_url, assert_post_url_from_string, assert_redirect_url)
 
 
 @test("Parse pixiv urls", tags=["parsing", "pixiv"])
 def pixiv_parsing_test() -> None:
-    assert_parsed("https://www.pixiv.net/en/artworks/102960826", PixivPostUrl, 102960826)
-    assert_parsed("https://www.pixiv.net/artworks/102960826", PixivPostUrl, 102960826)
-
-    assert_parsed("https://i.pximg.net/img-zip-ugoira/img/2023/02/12/19/41/25/105314959_ugoira1920x1080.zip", PixivImageUrl, 105314959)
-    assert_parsed("https://i.pximg.net/img-original/img/2021/08/08/01/34/48/91802726_p2.png", PixivImageUrl, 91802726)
-
-    assert_parsed("https://www.pixiv.net/users/14761279", PixivArtistUrl, 14761279)
-    assert_parsed("https://www.pixiv.net/stacc/982430143", PixivStaccUrl, 982430143)
-    assert_parsed("https://www.pixiv.me/982430143", PixivMeUrl, 982430143)
+    assert_parse_test_cases(PixivPostUrl)
+    assert_parse_test_cases(PixivImageUrl)
+    assert_parse_test_cases(PixivArtistUrl)
+    assert_parse_test_cases(PixivMeUrl)
+    assert_parse_test_cases(PixivStaccUrl)
 
 
 @test("Scrape pixiv urls", tags=["scraping", "pixiv", "artist"])
 def scrape_pixiv() -> None:
     artist_url = assert_artist_url(
         "https://www.pixiv.net/en/users/10183321/artworks",
+        identifier=10183321,
         is_deleted=False,
         names=['囬巾', '2001sys', 'pixiv #10183321'],
         related=["https://www.pixiv.net/stacc/2001sys", "https://huijin177.lofter.com"],
@@ -40,6 +37,7 @@ def scrape_pixiv() -> None:
 
     assert_post_url(
         post,
+        identifier=95096202,
         normalized_url=post_url,
         gallery=artist_url,
         asset_count=7,
@@ -49,6 +47,7 @@ def scrape_pixiv() -> None:
     )
     assert_post_url_from_string(
         post_url,
+        identifier=95096202,
         normalized_url=post_url,
         gallery=artist_url,
         asset_count=7,
@@ -59,6 +58,7 @@ def scrape_pixiv() -> None:
     asset = post.assets[-1]
     assert_asset_url(
         asset,
+        identifier=95096202,
         normalized_url="https://i.pximg.net/img-original/img/2021/12/28/23/53/02/95096202_p6.png",
         gallery=artist_url,
         created_at=image_revision_datetime,

@@ -39,6 +39,14 @@ def assert_equal(lhs_value: Any, rhs_value: Any) -> None:  # noqa: ANN401
         raise TestFailure(e.message) from e
 
 
+def assert_not(lhs_value: Any, rhs_value: Any) -> None:  # noqa: ANN401
+    message = f"Expected '{lhs_value}' to not be '{rhs_value}'."
+    try:
+        expect.assert_is_not(lhs_value, rhs_value, message)
+    except expect.TestAssertionFailure as e:
+        raise TestFailure(e.message) from e
+
+
 def assert_is_instance(lhs_value: object, rhs_value: type) -> None:
     message = f"Expected '{lhs_value}' to be instance of {rhs_value}"
     try:

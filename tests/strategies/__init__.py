@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TypeVar
 
 from danboorutools.models.url import ArtistUrl, AssetUrl, GalleryUrl, InfoUrl, PostUrl, RedirectUrl, Url
-from tests import assert_comparison, assert_equal, assert_is_instance
+from tests import assert_comparison, assert_equal, assert_is_instance, assert_not
 
 
 def assert_urls_are_same(lhs_value: list[Url] | list[str], rhs_value: list[Url] | list[str]) -> None:
@@ -11,15 +11,9 @@ def assert_urls_are_same(lhs_value: list[Url] | list[str], rhs_value: list[Url] 
     assert_equal(lhs_urls, rhs_urls)
 
 
-def assert_parsed(string: str, url_type: type[Url], url_id: str | int = "") -> None:
-    url = Url.parse(string)
-
-    assert_is_instance(url, url_type)
-    assert_equal(url.id, str(url_id))
-
-
 def assert_artist_url(artist_url: Url | str,
                       /,
+                      identifier: int | str,
                       is_deleted: bool,
                       names: list[str],
                       related: list[Url] | list[str],
@@ -27,6 +21,7 @@ def assert_artist_url(artist_url: Url | str,
                       ) -> ArtistUrl:
     artist_url = assert_casted(artist_url, ArtistUrl)
 
+    assert_equal(artist_url.id, identifier)
     assert_equal(artist_url.is_deleted, is_deleted)
     assert_equal(sorted(artist_url.names), sorted(names))
     assert_urls_are_same(related, artist_url.related)
@@ -38,6 +33,7 @@ def assert_artist_url(artist_url: Url | str,
 
 def assert_post_url(post_url: Url | str,
                     /,
+                    identifier: int | str,
                     normalized_url: str,
                     gallery: GalleryUrl,
                     asset_count: int,
@@ -46,6 +42,7 @@ def assert_post_url(post_url: Url | str,
                     check_from_string: bool = False
                     ) -> PostUrl:
     post_url = assert_casted(post_url, PostUrl)
+    assert_equal(post_url.id, identifier)
     assert_equal(post_url.normalized_url, normalized_url)
     assert_equal(post_url.gallery, gallery)
     assert_equal(post_url.created_at, created_at)
@@ -54,6 +51,7 @@ def assert_post_url(post_url: Url | str,
 
     if check_from_string:
         assert_post_url_from_string(post_url.normalized_url,
+                                    identifier=identifier,
                                     normalized_url=normalized_url,
                                     gallery=gallery,
                                     asset_count=asset_count,
@@ -65,6 +63,7 @@ def assert_post_url(post_url: Url | str,
 
 def assert_post_url_from_string(post_url_string: str,
                                 /,
+                                identifier: int | str,
                                 normalized_url: str,
                                 gallery: GalleryUrl,
                                 asset_count: int,
@@ -74,6 +73,7 @@ def assert_post_url_from_string(post_url_string: str,
 
     post_url_from_string = assert_casted(post_url_string, PostUrl)
     assert_post_url(post_url_from_string,
+                    identifier=identifier,
                     normalized_url=normalized_url,
                     gallery=gallery,
                     asset_count=asset_count,
@@ -84,6 +84,7 @@ def assert_post_url_from_string(post_url_string: str,
 
 def assert_asset_url(asset_url: Url | str,
                      /,
+                     identifier: int | str,
                      normalized_url: str | None = None,
                      file_count: int = 1,
                      gallery: ArtistUrl | None = None,
@@ -93,6 +94,9 @@ def assert_asset_url(asset_url: Url | str,
     asset_url_from_string = assert_casted(asset_url.normalized_url, AssetUrl)
 
     assert_is_instance(asset_url_from_string, type(asset_url))
+
+    assert_equal(asset_url.id, identifier)
+    assert_equal(asset_url.id, asset_url_from_string.id)
 
     if normalized_url:
         assert_equal(asset_url.normalized_url, normalized_url)
@@ -150,3 +154,20 @@ def assert_casted(url: str | Url, to_type: type[Casted]) -> Casted:
     casted_url = to_type.parse(url)
     assert_is_instance(casted_url, to_type)
     return casted_url  # type: ignore[return-value]
+
+
+def assert_parsed(string: str, url_type: type[Url], url_id: str | int = "") -> None:
+    url = Url.parse(string)
+
+    assert_is_instance(url, url_type)
+    assert_equal(url.id, str(url_id))
+
+
+def assert_parse_test_cases(url_type: type[Url]) -> None:
+    for test_case in url_type.test_cases:
+        parsed_url = Url.parse(test_case)
+        assert_is_instance(parsed_url, url_type)
+        if url_type.id_name:
+            assert_not(parsed_url.id, "")
+        else:
+            assert_equal(parsed_url.id, "")
