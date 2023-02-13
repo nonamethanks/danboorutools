@@ -65,6 +65,9 @@ class File:
 
         return hash_md5.hexdigest()
 
+    def delete(self) -> None:
+        self.path.unlink()
+
     def __str__(self) -> str:
         return f"File[{self.path.name}]"
     __repr__ = __str__
