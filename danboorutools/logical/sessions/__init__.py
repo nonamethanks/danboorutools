@@ -57,17 +57,18 @@ class Session(RequestsSession):
             url = url.normalized_url
 
         url_domain = get_url_domain(url)
-        proxies = self.proxied_domains.get(url_domain)
+        kwargs["proxies"] = self.proxied_domains.get(url_domain)
+        kwargs["headers"] = self._default_headers | kwargs.get("headers", {})
 
         logger.debug(f"{method} request made to {url}")
-        return super().request(method, url, *args, proxies=proxies, **kwargs)  # type: ignore
+        return super().request(method, url, *args, **kwargs)
 
     def download_file(self, url: "str | Url", *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
         tmp_filename = Path("/tmp") / random_string(20)
         if download_dir is not None:
             download_dir = Path(download_dir)
 
-        kwargs["headers"] = kwargs.get("headers") or {} | self._default_headers
+        kwargs["headers"] = self._default_headers | kwargs.get("headers", {})
 
         download_stream = self.get(url, *args, timeout=self._default_timeout, stream=True, **kwargs)  # type: ignore[arg-type]
         if not download_stream.ok:
@@ -96,3 +97,9 @@ class Session(RequestsSession):
             raise HTTPError(response)
         soup = BeautifulSoup(response.text, "html5lib")
         return soup
+
+    def unscramble(self, url: str) -> str:
+        resp = self.head(url, allow_redirects=True)
+        if resp.status_code != 200:
+            return url
+        return resp.url
