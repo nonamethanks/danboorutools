@@ -27,7 +27,7 @@ class Url:
     """A generic URL model."""
     domains: list[str]
     excluded_paths: list[str] = []
-    patterns: list[regex.Pattern[str]]
+    pattern: regex.Pattern[str]
     normalization: str | None = None
     test_cases: list[str]
 
@@ -49,11 +49,10 @@ class Url:
         for url_strategy in known_url_types:
             if url_domain not in url_strategy.domains:
                 continue
-            if any(excluded_path in url for excluded_path in cls.excluded_paths):
+            if any(excluded_path in url for excluded_path in url_strategy.excluded_paths):
                 continue
-            for pattern in url_strategy.patterns:
-                if match := pattern.match(url):
-                    return url_strategy(url, match.groupdict())
+            if match := url_strategy.pattern.match(url):
+                return url_strategy(url, match.groupdict())
 
         return UnknownUrl(url, {})
 
@@ -102,7 +101,7 @@ class Url:
 
 class UnknownUrl(Url):
     domains = []
-    patterns = []
+    pattern = regex.compile("(?=a)b")  # impossible
     id_name = ""
 
 

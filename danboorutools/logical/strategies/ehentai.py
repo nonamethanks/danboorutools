@@ -12,14 +12,15 @@ if TYPE_CHECKING:
     from bs4 import BeautifulSoup
 
 _BASE_DOMAIN = r"(?:g\.)?(?P<subdomain>e(?:-|x)hentai)\.org"
+
 BASE_DOMAIN = compile_url(_BASE_DOMAIN)
 GALLERY_PATTERN = compile_url(BASE_DOMAIN, r"\/g\/(?P<gallery_id>\d+)\/(?P<gallery_token>\w+)(?:\/.*)?")
 PAGE_PATTERN = compile_url(BASE_DOMAIN, r"\/s\/(?P<page_token>\w{10})[\w-]*\/(?P<gallery_id>\d+)-(?P<page_number>\d+)")
-THUMBNAIL_PATTERN = compile_url(r"(?:(?:[\w-]+\.)?ehgt\.org|", _BASE_DOMAIN, r")\/(\w+\/)+(?P<page_token>\w{10})[\w-]+\.\w+")
-PAGE_DOWNLOAD_PATTERN = compile_url(BASE_DOMAIN, r"\/fullimg\.php\?gid=(?P<gallery_id>\d+)&page=(?P<page_number>\d+)&key=\w+")
-HATH_NETWORK_PATTERN = compile_url(
-    r".*\.hath\.network:\d+\/h\/[\w-]+\/keystamp=[\w-]+;fileindex=\d+;xres=(?P<sample_size>\d+)\/(?P<filename>\w+)\.\w+"
-)
+
+HATH_NETWORK_PATTERN = r".*\.hath\.network:\d+\/h\/[\w-]+\/keystamp=[\w-]+;fileindex=\d+;xres=(?P<sample_size>\d+)\/(?P<filename>\w+)\.\w+"
+PAGE_DOWNLOAD_PATTERN = _BASE_DOMAIN + r"\/fullimg\.php\?gid=(?P<gallery_id>\d+)&page=(?P<page_number>\d+)&key=\w+"
+THUMBNAIL_PATTERN = r"(?:(?:[\w-]+\.)?ehgt\.org|" + _BASE_DOMAIN + r")\/(?:\w+\/)+(?P<page_token>\w{10})[\w-]+\.\w+"
+IMAGE_PATTERN = compile_url(fr"https?:\/\/(?:{HATH_NETWORK_PATTERN}|{PAGE_DOWNLOAD_PATTERN}|{THUMBNAIL_PATTERN})")
 
 
 class EHentaiUrl(Url):  # pylint: disable=abstract-method
@@ -44,11 +45,7 @@ class EHentaiImageUrl(AssetUrl, EHentaiUrl):
         "http://gt2.ehgt.org/a8/9a/a89a1ecc242a1f64edc56bf253442f46e937cdf3-578970-1000-1000-jpg_m.jpg",
     ]
     domains = ["ehgt.org", "hath.network", "exhentai.org", "e-hentai.org"]
-    patterns = [
-        THUMBNAIL_PATTERN,
-        PAGE_DOWNLOAD_PATTERN,
-        HATH_NETWORK_PATTERN,
-    ]
+    pattern = IMAGE_PATTERN
     id_name = ""
 
     @settable_property
@@ -74,7 +71,7 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
         "https://exhentai.org/s/ad41a3fac6/847994-352",
         "https://e-hentai.org/s/8a1351c78f9e024b9b7b215a79ddc16a02a2bd44-109314-800-600-jpg/69514-122",
     ]
-    patterns = [PAGE_PATTERN]
+    pattern = PAGE_PATTERN
     normalization = "https://{subdomain}.org/s/{page_token}/{gallery_id}-{page_number}"
     id_name = "page_token"
 
@@ -130,7 +127,7 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
         "http://g.e-hentai.org/g/1858690/b62c996bb6/",
         "http://e-hentai.org/g/1858690/b62c996bb6/",
     ]
-    patterns = [GALLERY_PATTERN]
+    pattern = GALLERY_PATTERN
     normalization = "https://{subdomain}.org/g/{gallery_id}/{gallery_token}"
     id_name = "gallery_id"
 

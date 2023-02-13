@@ -14,31 +14,35 @@ IMAGE_PATTERN = compile_url(r"https?:\/\/i[\w-]*\.(?:pximg\.net|pixiv\.net)\/.*?
 ME_PATTERN = compile_url(r"https?:\/\/(?:www\.)?pixiv\.me\/(?P<me_id>[^\/]+)")
 STACC_PATTERN = compile_url(r"https?:\/\/(?:www\.)?pixiv(\.net\/stacc|\.cc)\/(?P<stacc_id>[^\/]+)\/?")
 
+EXCLUDED_MAIN_PATHS = ["sketch.pixiv.net/", "pixiv.net/fanbox/", "fanbox.pixiv.net/"]
+EXCLUDED_IMAGE_PATHS = ["img-sketch.pixiv.net/", "img-sketch.pximg.net/", "pixiv.pximg.net/fanbox"]
+
 
 class PixivUrl(Url):  # pylint: disable=abstract-method
     session = PixivSession()
     domains = ["pixiv.net"]
-    excluded_paths = ["sketch.pixiv.net/", "img-sketch.pixiv.net/", "img-sketch.pximg.net/"]
+    excluded_paths = EXCLUDED_MAIN_PATHS
 
 
 class PixivImageUrl(AssetUrl, PixivUrl):
     test_cases = [
-        "https://i.pximg.net/img-original/img/2014/10/03/18/10/20/46324488_p0.png",
-        "https://i.pximg.net/img-master/img/2014/10/03/18/10/20/46324488_p0_master1200.jpg",
-        "https://i.pximg.net/c/250x250_80_a2/img-master/img/2014/10/29/09/27/19/46785915_p0_square1200.jpg",
-        "https://i.pximg.net/img-zip-ugoira/img/2016/04/09/14/25/29/56268141_ugoira1920x1080.zip",
-        "https://i.pximg.net/img-original/img/2019/05/27/17/59/33/74932152_ugoira0.jpg",
-        "https://i.pximg.net/c/360x360_70/custom-thumb/img/2022/03/08/00/00/56/96755248_p0_custom1200.jpg",
-        "https://i-f.pximg.net/img-original/img/2020/02/19/00/40/18/79584713_p0.png",
-        "http://img18.pixiv.net/img/evazion/14901720.png",
-        "http://i2.pixiv.net/img18/img/evazion/14901720.png",
-        "http://i1.pixiv.net/img07/img/pasirism/18557054_p1.png",
         "http://i1.pixiv.net/img-inf/img/2011/05/01/23/28/04/18557054_64x64.jpg",
         "http://i1.pixiv.net/img-inf/img/2011/05/01/23/28/04/18557054_s.png",
+        "http://i1.pixiv.net/img07/img/pasirism/18557054_p1.png",
+        "http://i2.pixiv.net/img18/img/evazion/14901720.png",
+        "http://img18.pixiv.net/img/evazion/14901720.png",
+        "https://i-f.pximg.net/img-original/img/2020/02/19/00/40/18/79584713_p0.png",
+        "https://i.pximg.net/c/250x250_80_a2/img-master/img/2014/10/29/09/27/19/46785915_p0_square1200.jpg",
+        "https://i.pximg.net/c/360x360_70/custom-thumb/img/2022/03/08/00/00/56/96755248_p0_custom1200.jpg",
+        "https://i.pximg.net/img-master/img/2014/10/03/18/10/20/46324488_p0_master1200.jpg",
+        "https://i.pximg.net/img-original/img/2014/10/03/18/10/20/46324488_p0.png",
+        "https://i.pximg.net/img-original/img/2019/05/27/17/59/33/74932152_ugoira0.jpg",
+        "https://i.pximg.net/img-zip-ugoira/img/2016/04/09/14/25/29/56268141_ugoira1920x1080.zip",
     ]
+    excluded_paths = EXCLUDED_MAIN_PATHS + EXCLUDED_IMAGE_PATHS
     domains = ["pximg.net", "pixiv.net"]
     id_name = "post_id"
-    patterns = [IMAGE_PATTERN]
+    pattern = IMAGE_PATTERN
 
     @settable_property
     def created_at(self) -> datetime:
@@ -69,7 +73,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
         "http://www.pixiv.net/member_illust.php?mode=manga_big&illust_id=18557054&page=1",
     ]
     id_name = "post_id"
-    patterns = [POST_PATTERN]
+    pattern = POST_PATTERN
     normalization = "https://www.pixiv.net/en/artworks/{post_id}"
 
     @settable_property
@@ -124,7 +128,7 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
         "https://www.pixiv.net/en/users/76567/novels",
     ]
     id_name = "artist_id"
-    patterns = [ARTIST_PATTERN]
+    pattern = ARTIST_PATTERN
     normalization = "https://www.pixiv.net/en/users/{artist_id}"
 
     @settable_property
@@ -208,8 +212,9 @@ class PixivMeUrl(RedirectUrl, PixivUrl):
         "http://www.pixiv.me/noizave",
     ]
     domains = ["pixiv.me"]
+    excluded_paths = []
     id_name = "me_id"
-    patterns = [ME_PATTERN]
+    pattern = ME_PATTERN
     normalization = "https://pixiv.me/{me_id}"
 
 
@@ -218,9 +223,10 @@ class PixivStaccUrl(InfoUrl, PixivUrl):
     test_cases = [
         "https://www.pixiv.net/stacc/noizave",
         "https://pixiv.cc/zerousagi",
+        # XXX worth going through all pixiv regexes to match stacc? maybe add whitelist on path segments instead?
     ]
     id_name = "stacc_id"
-    patterns = [STACC_PATTERN]
+    pattern = STACC_PATTERN
     normalization = "https://www.pixiv.net/stacc/{stacc_id}"
 
     @property
