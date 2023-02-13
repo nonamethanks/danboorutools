@@ -187,11 +187,16 @@ class RedirectUrl(Url):
         return self.resolved.is_deleted
 
 
-def init_url_subclasses() -> None:
+def init_url_subclasses() -> list:
+    # pylint: disable=import-outside-toplevel
     # Due to circular imports this has to be loaded after Url declaration, in order to trigger __init_subclass__
-    # pylint: disable=import-outside-toplevel,unused-import
-    import danboorutools.logical.strategies.ehentai  # noqa
-    import danboorutools.logical.strategies.pixiv  # noqa
+
+    from danboorutools.logical.strategies import ehentai, pixiv
+
+    return [
+        ehentai,
+        pixiv
+    ]
 
 
 init_url_subclasses()
