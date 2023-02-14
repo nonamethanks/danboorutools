@@ -197,9 +197,10 @@ def init_url_subclasses() -> list:
     # pylint: disable=import-outside-toplevel
     # Due to circular imports this has to be loaded after Url declaration, in order to trigger __init_subclass__
 
-    from danboorutools.logical.strategies import ehentai, fanbox, pixiv, pixiv_sketch
+    from danboorutools.logical.strategies import artstation, ehentai, fanbox, pixiv, pixiv_sketch
 
     return [
+        artstation,
         ehentai,
         fanbox,
         pixiv,

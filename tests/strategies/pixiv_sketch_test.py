@@ -5,7 +5,7 @@ from tests.strategies import assert_parse_test_cases
 
 
 @test("Parse pixiv sketch urls", tags=["parsing", "pixivsketch"])
-def pixiv_sketch_parsing_test() -> None:
+def parsing_test() -> None:
     assert_parse_test_cases(PixivSketchImageUrl)
     assert_parse_test_cases(PixivSketchArtistUrl)
     assert_parse_test_cases(PixivSketchPostUrl)

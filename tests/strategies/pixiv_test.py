@@ -6,7 +6,7 @@ from tests.strategies import (assert_artist_url, assert_asset_file, assert_asset
 
 
 @test("Parse pixiv urls", tags=["parsing", "pixiv"])
-def pixiv_parsing_test() -> None:
+def parsing_test() -> None:
     assert_parse_test_cases(PixivPostUrl)
     assert_parse_test_cases(PixivImageUrl)
     assert_parse_test_cases(PixivArtistUrl)
