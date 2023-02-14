@@ -15,7 +15,8 @@ logger.add(f"logs/scripts/{Path(__file__).stem}/" + "{time}.log", retention="7 d
 def main(times: int) -> None:
     print(f"Testing URL parsing {times} times.")
 
-    test_cases = [test_case for url_type in known_url_types for test_case in url_type.test_cases]
+    url_types = [url_type for group_of_types in known_url_types.values() for url_type in group_of_types]
+    test_cases = [test_case for url_type in url_types for test_case in url_type.test_cases]
     test_set = [random.choice(test_cases) for i in range(times)]
 
     profiler = LineProfiler()

@@ -1,6 +1,7 @@
+from collections import defaultdict
 from datetime import datetime
 from functools import cached_property
-from typing import TYPE_CHECKING, Callable, Sequence, TypeVar
+from typing import TYPE_CHECKING, Callable, DefaultDict, Sequence, TypeVar
 
 import regex
 from bs4 import BeautifulSoup
@@ -18,7 +19,8 @@ if TYPE_CHECKING:
 else:
     from functools import lru_cache
 
-known_url_types: list[type["Url"]] = []
+
+known_url_types: DefaultDict[str, list[type["Url"]]] = defaultdict(list)
 
 UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 
@@ -35,7 +37,8 @@ class Url:
 
     def __init_subclass__(cls):
         if Url not in cls.__bases__:
-            known_url_types.append(cls)
+            for domain in cls.domains:
+                known_url_types[domain].append(cls)
 
     @classmethod
     @lru_cache
@@ -49,10 +52,8 @@ class Url:
         if isinstance(url, Url):
             return url
         url_domain = get_url_domain(url)
-        for url_strategy in known_url_types:
-            if url_domain not in url_strategy.domains:
-                continue
-            # note to self: trying to pre-exclude by path actually gave worse performance than just going through all regexes
+        matching_strategies = known_url_types[url_domain]
+        for url_strategy in matching_strategies:
             if match := url_strategy.pattern.match(url):
                 return url_strategy(url, match.groupdict())
 
@@ -75,9 +76,18 @@ class Url:
             raise RuntimeError("This abstract class cannot be initialized directly.")
 
         self.original_url = url
-        self.normalized_url = self.normalization.format(**url_properties) if self.normalization else self.original_url
         self.url_properties = url_properties
-        self.id = self.url_properties[self.id_name] if self.id_name else ""
+
+    @property
+    def id(self) -> str:
+        return self.url_properties[self.id_name] if self.id_name else ""
+
+    @cached_property
+    def normalized_url(self) -> str:
+        if self.normalization:
+            return self.normalization.format(**self.url_properties)
+        else:
+            return self.original_url
 
     def __str__(self) -> str:
         try:
