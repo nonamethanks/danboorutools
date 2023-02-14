@@ -84,6 +84,7 @@ ignore= [
     "ANN204",
     "E501", # already handled by pylint
     "W503",
+    "W504",
 ]
 
 [tool.pycodestyle]
