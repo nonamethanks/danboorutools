@@ -82,6 +82,7 @@ ignore= [
     "ANN101",
     "ANN102",
     "ANN204",
+    "E501", # already handled by pylint
     "W503",
 ]
 
