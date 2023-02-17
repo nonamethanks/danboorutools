@@ -33,6 +33,12 @@ class FanboxOldArtistUrl(RedirectUrl, FanboxUrl):
     pixiv_id: int
 
 
+class FanboxArtistImageUrl(PostAssetUrl, FanboxUrl):
+    pixiv_id: int
+    filename: str
+    image_type: str
+
+
 class FanboxImageUrl(PostAssetUrl, FanboxUrl):
     # https://null.fanbox.cc/39714 TODO: use this to get the post
     post_id: int | None

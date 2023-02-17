@@ -3,8 +3,8 @@ from datetime import datetime
 import pytz
 
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
-from danboorutools.logical.strategies.booth import BoothImageUrl, BoothProfileImageUrl
-from danboorutools.logical.strategies.fanbox import FanboxImageUrl
+from danboorutools.logical.strategies.booth import BoothImageUrl, BoothProfileImageUrl, BoothUrl
+from danboorutools.logical.strategies.fanbox import FanboxArtistImageUrl, FanboxImageUrl, FanboxUrl
 from danboorutools.logical.strategies.pixiv import PixivGalleryAssetUrl, PixivImageUrl, PixivNovelImageUrl, PixivProfileImageUrl, PixivUrl
 from danboorutools.logical.strategies.pixiv_sketch import PixivSketchImageUrl
 
@@ -19,7 +19,8 @@ class PximgNetParser(UrlParser):
         FanboxImageUrl: [
             "https://pixiv.pximg.net/c/1200x630_90_a2_g5/fanbox/public/images/post/186919/cover/VCI1Mcs2rbmWPg0mmiTisovn.jpeg",
             "https://pixiv.pximg.net/fanbox/public/images/post/186919/cover/VCI1Mcs2rbmWPg0mmiTisovn.jpeg",
-
+        ],
+        FanboxArtistImageUrl: [
             "https://pixiv.pximg.net/c/400x400_90_a2_g5/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg",
             "https://pixiv.pximg.net/c/1620x580_90_a2_g5/fanbox/public/images/creator/1566167/cover/QqxYtuWdy4XWQx1ZLIqr4wvA.jpeg",
             "https://pixiv.pximg.net/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg",
@@ -68,8 +69,7 @@ class PximgNetParser(UrlParser):
     }
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> (PixivUrl | FanboxImageUrl | PixivSketchImageUrl |
-                                                      BoothImageUrl | BoothProfileImageUrl | None):
+    def match_url(cls, parsable_url: ParsableUrl) -> (PixivUrl | FanboxUrl | PixivSketchImageUrl | BoothUrl | None):
         if parsable_url.subdomain == "i" or (parsable_url.subdomain and parsable_url.subdomain.startswith("i-")):
             return cls._match_i_piximg(parsable_url)
         elif parsable_url.subdomain == "booth":
@@ -118,8 +118,8 @@ class PximgNetParser(UrlParser):
             # https://i.pximg.net/workspace/img/2016/06/23/13/21/30/3968542_1603f967a310f7b03629b07a8f811c13.jpg
             case [*_, ("background" | "workspace"), "img", year, month, day, hour, minute, second, filename]:
                 instance = PixivGalleryAssetUrl(parsable_url.url)
-                instance.created_at = datetime(year=int(year), month=int(month), day=int(day),
-                                               hour=int(hour), minute=int(minute), second=int(second), tzinfo=pytz.UTC)
+                # instance.created_at = datetime(year=int(year), month=int(month), day=int(day),
+                #                                hour=int(hour), minute=int(minute), second=int(second), tzinfo=pytz.UTC)
                 instance.user_id = int(filename.split("_")[0])
 
             # https://i.pximg.net/img25/img/nwqkqr/22218203.jpg
@@ -139,8 +139,8 @@ class PximgNetParser(UrlParser):
         return instance
 
     @staticmethod
-    def _match_booth(parsable_url: ParsableUrl) -> BoothImageUrl | BoothProfileImageUrl | None:
-        instance: BoothProfileImageUrl | BoothImageUrl
+    def _match_booth(parsable_url: ParsableUrl) -> BoothUrl | None:
+        instance: BoothUrl
         match parsable_url.url_parts:
             # https://booth.pximg.net/8bb9e4e3-d171-4027-88df-84480480f79d/i/2864768/00cdfef0-e8d5-454b-8554-4885a7e4827d_base_resized.jpg
             # https://booth.pximg.net/c/300x300_a2_g5/8bb9e4e3-d171-4027-88df-84480480f79d/i/2864768/00cdfef0-e8d5-454b-8554-4885a7e4827d_base_resized.jpg
@@ -164,8 +164,8 @@ class PximgNetParser(UrlParser):
         return instance
 
     @staticmethod
-    def _match_everything_else(parsable_url: ParsableUrl) -> PixivSketchImageUrl | FanboxImageUrl | None:
-        instance: PixivSketchImageUrl | FanboxImageUrl
+    def _match_everything_else(parsable_url: ParsableUrl) -> PixivSketchImageUrl | FanboxUrl | None:
+        instance: PixivSketchImageUrl | FanboxUrl
         match parsable_url.url_parts:
             # https://img-sketch.pximg.net/c!/w=540,f=webp:jpeg/uploads/medium/file/4463372/8906921629213362989.jpg
             case *_, "uploads", "medium", "file", _, _ if parsable_url.subdomain == "img-sketch":  # TODO: figure out these numbers
@@ -184,8 +184,7 @@ class PximgNetParser(UrlParser):
             # https://pixiv.pximg.net/c/1620x580_90_a2_g5/fanbox/public/images/creator/1566167/cover/QqxYtuWdy4XWQx1ZLIqr4wvA.jpeg
             # https://pixiv.pximg.net/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg",  # dead
             case *_, "fanbox", "public", "images", "creator", pixiv_id, ("profile" | "cover") as image_type, filename:
-                instance = FanboxImageUrl(parsable_url.url)
-                instance.post_id = None  # TODO: these should not be FanboxImage, but FanboxUserProfileImage or smth
+                instance = FanboxArtistImageUrl(parsable_url.url)
                 instance.pixiv_id = int(pixiv_id)
                 instance.filename = filename
                 instance.image_type = image_type
