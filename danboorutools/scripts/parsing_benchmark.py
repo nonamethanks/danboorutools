@@ -46,7 +46,7 @@ def main(times: int = 0, position: int = 0) -> None:
         try:
             parse_wrapper(url_string)
         except Exception as e:
-            e.add_note(f"At url {index + 1:_} of {len(test_set):_}.")
+            e.add_note(f"At url {index:_} of {len(test_set):_}.")
             raise
 
     profiler.print_stats()
