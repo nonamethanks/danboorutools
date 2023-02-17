@@ -4,49 +4,32 @@ from typing import TYPE_CHECKING
 from danboorutools.exceptions import DownloadError, EHEntaiRateLimit, UnknownUrlError
 from danboorutools.logical.sessions.ehentai import EHentaiSession
 from danboorutools.models.file import ArchiveFile, File
-from danboorutools.models.url import AssetUrl, GalleryUrl, PostUrl, Url
-from danboorutools.util.misc import compile_url, memoize, settable_property
+from danboorutools.models.url import GalleryUrl, PostAssetUrl, PostUrl, Url
+from danboorutools.util.misc import memoize, settable_property
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
     from bs4 import BeautifulSoup
 
-_BASE_DOMAIN = r"(?:g\.)?(?P<subdomain>e(?:-|x)hentai)\.org"
 
-BASE_DOMAIN = compile_url(_BASE_DOMAIN)
-GALLERY_PATTERN = compile_url(BASE_DOMAIN, r"\/g\/(?P<gallery_id>\d+)\/(?P<gallery_token>\w+)(?:\/.*)?")
-PAGE_PATTERN = compile_url(BASE_DOMAIN, r"\/s\/(?P<page_token>\w{10})[\w-]*\/(?P<gallery_id>\d+)-(?P<page_number>\d+)")
-
-HATH_NETWORK_PATTERN = r".*\.hath\.network:\d+\/h\/[\w-]+\/keystamp=[\w-]+;fileindex=\d+;xres=(?P<sample_size>\d+)\/(?P<filename>\w+)\.\w+"
-PAGE_DOWNLOAD_PATTERN = _BASE_DOMAIN + r"\/fullimg\.php\?gid=(?P<gallery_id>\d+)&page=(?P<page_number>\d+)&key=\w+"
-THUMBNAIL_PATTERN = r"(?:(?:[\w-]+\.)?ehgt\.org|" + _BASE_DOMAIN + r")\/(?:\w+\/)+(?P<page_token>\w{10})[\w-]+\.\w+"
-IMAGE_PATTERN = compile_url(fr"https?:\/\/(?:{HATH_NETWORK_PATTERN}|{PAGE_DOWNLOAD_PATTERN}|{THUMBNAIL_PATTERN})")
-
-
-class EHentaiUrl(Url):  # pylint: disable=abstract-method
+class EHentaiUrl(Url):
     session = EHentaiSession()
-    domains = ["e-hentai.org", "exhentai.org"]
 
     @property
     def html(self) -> "BeautifulSoup":
         if "This gallery has been removed or is unavailable" in super().html.text:
-            self.normalized_url = self.normalized_url.replace(
-                "e-hentai.org", "exhentai.org")
+            self.subsite = "exhentai"  # pylint: disable=attribute-defined-outside-init
+            del self.__dict__["normalized_url"]
             del self.__dict__["html"]
         return super().html
 
 
-class EHentaiImageUrl(AssetUrl, EHentaiUrl):
-    test_cases = [
-        "https://ijmwujr.grduyvrrtxiu.hath.network:40162/h/5bf1c8b26c4d0d35951b7116d151209f6784420e-137816-810-1228-jpg/keystamp=1676307900-1fa0db7a58;fileindex=120969163;xres=2400/4134835_103198602_p0.jpg",  # noqa: E501
-        "https://exhentai.org/fullimg.php?gid=2464842&page=2&key=uinj32c9zag",
-        "https://exhentai.org/t/ac/c6/acc6ee51f27416c3052380dabeea175afb272755-71280-640-880-png_l.jpg",
-        "https://e-hentai.org/t/ac/c6/acc6ee51f27416c3052380dabeea175afb272755-71280-640-880-png_l.jpg",
-        "http://gt2.ehgt.org/a8/9a/a89a1ecc242a1f64edc56bf253442f46e937cdf3-578970-1000-1000-jpg_m.jpg",
-    ]
-    domains = ["ehgt.org", "hath.network", "exhentai.org", "e-hentai.org"]
-    pattern = IMAGE_PATTERN
-    id_name = ""
+class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
+    original_filename: str | None
+    gallery_id: int | None
+    page: int | None
+    page_token: str | None = None  # TODO: is this just file_hash[:10] every time? i don't think so
+    file_hash: str | None  # TODO: use this to find the original gallery, maybe combined with original filename?
 
     @settable_property
     def created_at(self) -> datetime:
@@ -65,23 +48,22 @@ class EHentaiImageUrl(AssetUrl, EHentaiUrl):
 
 
 class EHentaiPageUrl(PostUrl, EHentaiUrl):
-    test_cases = [
-        "https://e-hentai.org/s/ad41a3fac6/847994-352",
-        "https://g.e-hentai.org/s/ad41a3fac6/847994-352",
-        "https://exhentai.org/s/ad41a3fac6/847994-352",
-        "https://e-hentai.org/s/8a1351c78f9e024b9b7b215a79ddc16a02a2bd44-109314-800-600-jpg/69514-122",
-    ]
-    pattern = PAGE_PATTERN
     normalization = "https://{subdomain}.org/s/{page_token}/{gallery_id}-{page_number}"
-    id_name = "page_token"
+
+    gallery_id: int
+    page_number: int
+    page_token: str
+    subsite: str
 
     @settable_property
     def gallery(self) -> "EHentaiGalleryUrl":  # type: ignore[override]
-        gallery_token = self.session.get_gallery_token_from_page_data(**self.url_properties)
+        gallery_token = self.session.get_gallery_token_from_page_data(gallery_id=self.gallery_id,
+                                                                      page_token=self.page_token,
+                                                                      page_number=self.page_number)
         return self.build(url_type=EHentaiGalleryUrl,
                           gallery_token=gallery_token,
-                          gallery_id=self.id,
-                          subdomain=self.url_properties["subdomain"])
+                          gallery_id=self.gallery_id,
+                          subsite=self.subsite)
 
     @settable_property
     def assets(self) -> list[EHentaiImageUrl]:  # type: ignore[override]
@@ -122,14 +104,11 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
 
 
 class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
-    test_cases = [
-        "https://exhentai.org/g/1858690/b62c996bb6/",
-        "http://g.e-hentai.org/g/1858690/b62c996bb6/",
-        "http://e-hentai.org/g/1858690/b62c996bb6/",
-    ]
-    pattern = GALLERY_PATTERN
     normalization = "https://{subdomain}.org/g/{gallery_id}/{gallery_token}"
-    id_name = "gallery_id"
+
+    gallery_id: int
+    gallery_token: str
+    subsite: str
 
     @settable_property
     def posts(self) -> list[EHentaiPageUrl]:  # type: ignore[override]
@@ -141,12 +120,12 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
         pages: list[EHentaiPageUrl] = []
         for raw_thumb_url, file in zip(raw_thumb_urls, files):
             image: EHentaiImageUrl = self.parse(raw_thumb_url)  # type: ignore[assignment]
-
+            assert image.page_token
             page = self.build(
                 url_type=EHentaiPageUrl,
-                subdomain=self.url_properties["subdomain"],
-                page_token=image.url_properties["page_token"],
-                gallery_id=self.id,
+                subdomain=self.subsite,
+                page_token=image.page_token,
+                gallery_id=self.gallery_id,
                 page_number=raw_thumb_urls.index(raw_thumb_url) + 1,
             )
 

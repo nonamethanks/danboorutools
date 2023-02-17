@@ -6,7 +6,7 @@ from typing import Any, Callable, TypeVar
 ParallelItem = TypeVar("ParallelItem")
 
 
-def run_in_parallel(function: Callable[[ParallelItem], Any | None],
+def run_in_parallel(function: Callable[[ParallelItem], Any | None],  # TODO: use paramspec
                     iterable: list[ParallelItem],
                     *arguments,
                     threads: int = 4) -> None:

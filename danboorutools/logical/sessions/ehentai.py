@@ -63,8 +63,7 @@ class EHentaiSession(Session):
 
         return BeautifulSoup(self.browser.page_source, "html5lib")
 
-    def get_gallery_token_from_page_data(self, gallery_id: int | str, page_token: str, page_number: int | str, **kwargs) -> str:
-        # pylint: disable=unused-argument
+    def get_gallery_token_from_page_data(self, gallery_id: int | str, page_token: str, page_number: int | str) -> str:
         data = {
             "method": "gtoken",
             "pagelist": [
@@ -76,9 +75,14 @@ class EHentaiSession(Session):
 
         try:
             json_response = response.json()
-            return json_response["tokenlist"][0]["token"]
         except json.JSONDecodeError as e:
             raise NotImplementedError(response.text) from e
+
+        try:
+            return json_response["tokenlist"][0]["token"]
+        except KeyError as e:
+            e.add_note(f"Response: {json_response}")
+            raise
 
     def download_file(self, url, *args, download_dir=None, **kwargs):  # noqa
         kwargs.pop("cookies", None)

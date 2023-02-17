@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import functools
 import random
+import re
 import weakref
+from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, TypeVar, overload
 
-import regex
 from pydomainextractor import DomainExtractor
 
 
@@ -28,32 +29,23 @@ Variable = TypeVar("Variable")
 def natsort_array(array: Iterable[Variable]) -> list[Variable]:
     """Sort an array of strings naturally."""
     # https://stackoverflow.com/a/4623518/11558993
-    return sorted(array, key=lambda key: [tryint(c) for c in regex.split('([0-9]+)', str(key))])
+    return sorted(array, key=lambda key: [tryint(c) for c in re.split('([0-9]+)', str(key))])
 
 
-def compile_url(*patterns: str | regex.Pattern[str]) -> regex.Pattern[str]:
-    first_pattern = patterns[0] if isinstance(patterns[0], str) else patterns[0].pattern
-    to_compile = r"https?:\/\/(?:www\.)?" if not first_pattern.startswith("http") else ""
-
-    for pattern in patterns:
-        to_compile += pattern.pattern if isinstance(pattern, regex.Pattern) else pattern
-
-    return regex.compile(to_compile)
+domain_extractor = DomainExtractor()
 
 
-extractor = DomainExtractor()
-
-
-def get_url_domain(url: str) -> str:
+@lru_cache
+def get_url_data(url: str) -> dict[str, str]:
     try:
-        url_data = extractor.extract_from_url(url)
+        url_data = domain_extractor.extract_from_url(url)
     except ValueError as e:
         if ": no scheme" in str(e):
-            url_data = extractor.extract(url)
+            url_data = domain_extractor.extract(url)
         else:
             raise
-    url_domain = url_data["domain"] + "." + url_data["suffix"]
-    return url_domain
+    url_data["full_domain"] = url_data["domain"] + "." + url_data["suffix"]
+    return url_data
 
 
 MemoizedFunction = TypeVar("MemoizedFunction", bound=Callable[..., Any])
@@ -124,3 +116,8 @@ class settable_property(property, Generic[SettableValue]):  # pylint: disable=in
             delattr(instance, self.private_name)
         except AttributeError:
             pass
+
+
+def class_name_to_string(klass: type, separator: str = "_") -> str:
+    class_name = klass.__name__
+    return class_name[0].lower() + "".join(f"{separator}{char.lower()}" if char.isupper() else char for char in class_name[1:])

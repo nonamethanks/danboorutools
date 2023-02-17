@@ -4,8 +4,27 @@ import requests
 class UnknownUrlError(Exception):
     """The url is unexpectedly unknown"""
 
+    def __init__(self, url: object, parser: type | None = None) -> None:
+        message = f"Could not parse url '{url}'"
+        if parser:
+            message += f" (parser: {parser.__name__})"
+        message += "."
+        super().__init__(message)
+
+
+class UrlParsingError(Exception):
+    """The url parsing went wrong."""
+
+    def __init__(self, url: object, missing_property: str) -> None:
+        message = f"The url '{url}' was expected to have the missing property '{missing_property}'."
+        super().__init__(message)
+
+
+class UnparsableUrl(Exception):
+    """The url is expectedly unknown."""
+
     def __init__(self, url: object) -> None:
-        message = f"The url {url} was not of the expected type."
+        message = f"The url '{url}' is not parsable."
         super().__init__(message)
 
 

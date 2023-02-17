@@ -9,3 +9,5 @@ cookies
 
 .mypy_cache
 __pycache__
+
+data

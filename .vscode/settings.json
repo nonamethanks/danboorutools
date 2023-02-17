@@ -2,6 +2,7 @@
     "python.linting.flake8Enabled": true,
     "python.linting.mypyEnabled": true,
     "python.linting.pylintEnabled": true,
+    "python.linting.pylintCategorySeverity.refactor": "Information",
     "isort.args": [
         "--settings-path=${workspaceFolder}/pyproject.toml"
     ],
@@ -35,5 +36,5 @@
         "editor.codeActionsOnSave": {
             "source.organizeImports": true,
         },
-    }
+    },
 }

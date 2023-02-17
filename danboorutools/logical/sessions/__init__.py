@@ -13,7 +13,7 @@ from danboorutools import logger
 from danboorutools.exceptions import DownloadError, HTTPError
 from danboorutools.logical.browser import Browser
 from danboorutools.models.file import File, FileSubclass
-from danboorutools.util.misc import get_url_domain, random_string
+from danboorutools.util.misc import get_url_data, random_string
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ class Session(RequestsSession):
         if not isinstance(url, str):
             url = url.normalized_url
 
-        url_domain = get_url_domain(url)
+        url_domain = get_url_data(url)["full_domain"]
         kwargs["proxies"] = self.proxied_domains.get(url_domain)
         kwargs["headers"] = self._default_headers | kwargs.get("headers", {})
 

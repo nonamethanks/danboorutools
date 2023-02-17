@@ -1,7 +1,7 @@
 import os
+import re
 import time
 
-import regex
 from requests import Response
 
 from danboorutools import logger
@@ -14,7 +14,7 @@ from danboorutools.version import version
 class GelbooruApi(Session):
     base_url = "https://gelbooru.com"
 
-    csrf_pattern = regex.compile(r'name="csrf-token" value="(\w+)"/>')
+    csrf_pattern = re.compile(r'name="csrf-token" value="(\w+)"/>')
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

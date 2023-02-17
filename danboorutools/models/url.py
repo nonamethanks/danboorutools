@@ -1,14 +1,14 @@
+import re
 from collections import defaultdict
 from datetime import datetime
 from functools import cached_property
-from typing import TYPE_CHECKING, Callable, DefaultDict, Sequence, TypeVar
+from typing import TYPE_CHECKING, Callable, DefaultDict, Sequence, TypeVar, final
 
-import regex
 from bs4 import BeautifulSoup
 
 from danboorutools.logical.sessions import Session
 from danboorutools.models.file import ArchiveFile, File
-from danboorutools.util.misc import get_url_domain, settable_property
+from danboorutools.util.misc import settable_property
 
 if TYPE_CHECKING:
     # https://github.com/python/mypy/issues/5107#issuecomment-529372406
@@ -24,77 +24,64 @@ known_url_types: DefaultDict[str, list[type["Url"]]] = defaultdict(list)
 
 UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 
+normalization_pattern = re.compile(r"{(\w+)}")
+
 
 class Url:
     """A generic URL model."""
-    domains: list[str]
-    pattern: regex.Pattern[str]
-    normalization: str | None = None
-    test_cases: list[str]
-
-    session = Session()
-    id_name: str
-
-    def __init_subclass__(cls):
-        if Url not in cls.__bases__:
-            for domain in cls.domains:
-                known_url_types[domain].append(cls)
+    session = Session()  # TODO: implement domain-bound rate limitings
 
     @classmethod
-    @lru_cache
-    def parse(cls, url: "str | Url") -> "Url":
-        """Parse an Url from a string."""
-        return cls._parse(url)
-
-    @staticmethod
-    def _parse(url: "str | Url") -> "Url":
-        # This is split for profiling reasons
+    def parse(cls, url: "str |  Url") -> "Url":
         if isinstance(url, Url):
             return url
-        url_domain = get_url_domain(url)
-        matching_strategies = known_url_types[url_domain]
-        for url_strategy in matching_strategies:
-            if match := url_strategy.pattern.match(url):
-                return url_strategy(url, match.groupdict())
+        url_parser = import_parser()
+        return url_parser.parse(url) or UnknownUrl(url)
 
-        return UnknownUrl(url, {})
+    normalization: str | None = None
 
-    @classmethod
-    @lru_cache
-    def build(cls, url_type: type["UrlSubclass"], **url_properties) -> "UrlSubclass":
-        """Build an Url from its url properties."""
+    @cached_property
+    @final
+    def normalized_url(self) -> str:
+        return self._normalize_from_normalization(**self.__dict__) or self._normalize_from_properties(**self.__dict__) or self.original_url
+
+    @classmethod  # don't cache me
+    def _normalize_from_properties(cls, **url_properties) -> str | None:  # pylint: disable=unused-argument
+        return None
+
+    @classmethod  # don't cache me
+    @final
+    def _normalize_from_normalization(cls, **url_properties) -> str | None:
         if not cls.normalization:
-            raise ValueError(f"{url_type} has no normalization defined.")
-        if not all(f"{{{p}}}" in cls.normalization for p in url_properties):  # pylint: disable=unsupported-membership-test  # False pos.
-            raise ValueError
+            return None
         assert not any(v is None for v in url_properties.values()), url_properties
         url = cls.normalization.format(**url_properties)
-        return url_type(url=url, url_properties=url_properties)
+        return url
 
-    def __init__(self, url: str, url_properties: dict[str, str]):
+    @staticmethod
+    @lru_cache
+    @final
+    def build(url_type: type["UrlSubclass"], **url_properties) -> "UrlSubclass":
+        """Build an Url from its url properties."""
+        normalized_url = url_type._normalize_from_normalization(**url_properties) or url_type._normalize_from_properties(**url_properties)
+        if not normalized_url:
+            raise ValueError(normalized_url, url_properties)
+
+        instance = url_type(url=normalized_url)
+        for v_name, v_value in url_properties.items():
+            value_type = url_type.__annotations__[v_name]
+            assert isinstance(v_value, value_type), f"{v_name} was of type {type(v_value)} instead of {value_type}"
+            setattr(instance, v_name, v_value)
+        return instance
+
+    def __init__(self, url: str):
         if self.__class__ == Url:
             raise RuntimeError("This abstract class cannot be initialized directly.")
 
         self.original_url = url
-        self.url_properties = url_properties
-
-    @property
-    def id(self) -> str:
-        return self.url_properties[self.id_name] if self.id_name else ""
-
-    @cached_property
-    def normalized_url(self) -> str:
-        if self.normalization:
-            return self.normalization.format(**self.url_properties)
-        else:
-            return self.original_url
 
     def __str__(self) -> str:
-        try:
-            return f"{self.__class__.__name__}[{self.normalized_url}]"
-        except AttributeError:  # nasty bug in the test suite: if __str__ doesn't return properly at all times, then the whole shit crashes
-            return f"{self.__class__.__name__}[{self.original_url}]"
-
+        return f"{self.__class__.__name__}[{self.original_url}]"
     __repr__ = __str__
 
     def __eq__(self, __o: object) -> bool:
@@ -114,14 +101,16 @@ class Url:
     def html(self) -> "BeautifulSoup":
         return self.session.get_html(self.normalized_url)
 
+########################################################################
+
 
 class UnknownUrl(Url):
-    domains = []
-    pattern = regex.compile("(?=a)b")  # impossible
-    id_name = ""
+    """An unknown url."""
+
+########################################################################
 
 
-class InfoUrl(Url):  # pylint: disable=abstract-method
+class InfoUrl(Url):
     """An info url is an url that contains non-asset data, such as related artist urls and names."""
     @property
     def related(self) -> list["Url"]:
@@ -134,35 +123,39 @@ class InfoUrl(Url):  # pylint: disable=abstract-method
         raise NotImplementedError
 
 
-class AssetUrl(Url):
-    """An asset contains a list of files. It's usually a list of a single file, but it can be a zip file with multiple subfiles."""
+########################################################################
+
+class GalleryUrl(Url):
+    """A gallery contains multiple posts."""
 
     @settable_property
-    def post(self) -> "PostUrl":
+    def posts(self) -> Sequence["PostUrl"]:
         raise NotImplementedError
 
+
+class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
+    """An artist url is a gallery but also has other extractable data."""
+
+
+class ArtistAlbumUrl(GalleryUrl, Url):
+    """An artist album is an album belonging to an artist url that contains other posts."""
+
     @settable_property
-    def created_at(self) -> datetime:
+    def artist(self) -> ArtistUrl:
         raise NotImplementedError
 
-    @settable_property
-    def files(self) -> list[File]:
-        downloaded_file = self.session.download_file(self.normalized_url)
-        if isinstance(downloaded_file, ArchiveFile):
-            return downloaded_file.extracted_files
-        else:
-            return [downloaded_file]
 
+########################################################################
 
 class PostUrl(Url):
     """A post contains multiple assets."""
 
     @settable_property
-    def gallery(self) -> "GalleryUrl":
+    def gallery(self) -> GalleryUrl:
         raise NotImplementedError
 
     @settable_property
-    def assets(self) -> list[AssetUrl]:
+    def assets(self) -> list["PostAssetUrl"]:
         raise NotImplementedError
 
     @settable_property
@@ -173,17 +166,37 @@ class PostUrl(Url):
     def score(self) -> int:
         raise NotImplementedError
 
+########################################################################
 
-class GalleryUrl(Url):
-    """A gallery contains multiple posts."""
 
+class AssetUrl(Url):
+    """An asset contains a list of files. It's usually a list of a single file, but it can be a zip file with multiple subfiles."""
     @settable_property
-    def posts(self) -> Sequence[PostUrl]:
+    def files(self) -> list[File]:
+        downloaded_file = self.session.download_file(self.normalized_url)
+        if isinstance(downloaded_file, ArchiveFile):
+            return downloaded_file.extracted_files
+        else:
+            return [downloaded_file]
+
+
+class PostAssetUrl(AssetUrl, Url):
+    @settable_property
+    def post(self) -> PostUrl:
         raise NotImplementedError
 
+    @settable_property
+    def created_at(self) -> datetime:
+        return self.post.created_at
 
-class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
-    """An artist url is a gallery but also has other extractable data."""
+
+class GalleryAssetUrl(AssetUrl, Url):
+    """An asset belonging to a gallery instead of a post (such as a background image)."""
+    @settable_property
+    def gallery(self) -> PostUrl:
+        raise NotImplementedError
+
+########################################################################
 
 
 class RedirectUrl(Url):
@@ -203,20 +216,12 @@ class RedirectUrl(Url):
         return self.resolved.is_deleted
 
 
-def init_url_subclasses() -> list:
+if TYPE_CHECKING:
+    from danboorutools.logical.parsers import UrlParser
+
+
+@lru_cache
+def import_parser() -> "UrlParser":
     # pylint: disable=import-outside-toplevel
-    # Due to circular imports this has to be loaded after Url declaration, in order to trigger __init_subclass__
-
-    from danboorutools.logical.strategies import artstation, deviantart, ehentai, fanbox, pixiv, pixiv_sketch
-
-    return [
-        artstation,
-        deviantart,
-        ehentai,
-        fanbox,
-        pixiv,
-        pixiv_sketch,
-    ]
-
-
-init_url_subclasses()
+    from danboorutools.logical.parsers import UrlParser
+    return UrlParser()

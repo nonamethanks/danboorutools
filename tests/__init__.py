@@ -33,26 +33,12 @@ def assert_equal(lhs_value: Any, rhs_value: Any) -> None:  # noqa: ANN401
     lhs_value, rhs_value = normalize_values(lhs_value, rhs_value)
 
     message = f"Expected '{lhs_value}' to be equal to '{rhs_value}'."
-    try:
-        expect.assert_equal(lhs_value, rhs_value, message)
-    except expect.TestAssertionFailure as e:
-        raise TestFailure(e.message) from e
+    expect.assert_equal(lhs_value, rhs_value, message)
 
 
 def assert_not(lhs_value: Any, rhs_value: Any) -> None:  # noqa: ANN401
     message = f"Expected '{lhs_value}' to not be '{rhs_value}'."
-    try:
-        expect.assert_is_not(lhs_value, rhs_value, message)
-    except expect.TestAssertionFailure as e:
-        raise TestFailure(e.message) from e
-
-
-def assert_is_instance(lhs_value: object, rhs_value: type) -> None:
-    message = f"Expected '{lhs_value}' to be instance of {rhs_value}"
-    try:
-        expect.assert_is(isinstance(lhs_value, rhs_value), True, message)
-    except expect.TestAssertionFailure as e:
-        raise TestFailure(e.message) from e
+    expect.assert_is_not(lhs_value, rhs_value, message)
 
 
 def assert_comparison(lhs_value: int | float | datetime | Sequence,
@@ -75,21 +61,18 @@ def assert_comparison(lhs_value: int | float | datetime | Sequence,
     else:
         message += f"{rhs_value}"
 
-    try:
-        match operator:
-            case ">=":
-                message = message.replace("{operator}", "greater than or equal to")
-                expect.assert_greater_than_equal_to(lhs_value, rhs_value, message)
-            case "<=":
-                message = message.replace("{operator}", "less than or equal to")
-                expect.assert_less_than_equal_to(lhs_value, rhs_value, message)
-            case ">":
-                message = message.replace("{operator}", "greater than")
-                expect.assert_greater_than(lhs_value, rhs_value, message)
-            case "<":
-                message = message.replace("{operator}", "less than")
-                expect.assert_less_than(lhs_value, rhs_value, message)
-            case _:
-                raise ValueError(operator)
-    except expect.TestAssertionFailure as e:
-        raise TestFailure(e.message) from e
+    match operator:
+        case ">=":
+            message = message.replace("{operator}", "greater than or equal to")
+            expect.assert_greater_than_equal_to(lhs_value, rhs_value, message)
+        case "<=":
+            message = message.replace("{operator}", "less than or equal to")
+            expect.assert_less_than_equal_to(lhs_value, rhs_value, message)
+        case ">":
+            message = message.replace("{operator}", "greater than")
+            expect.assert_greater_than(lhs_value, rhs_value, message)
+        case "<":
+            message = message.replace("{operator}", "less than")
+            expect.assert_less_than(lhs_value, rhs_value, message)
+        case _:
+            raise ValueError(operator)

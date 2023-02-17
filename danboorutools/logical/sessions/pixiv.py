@@ -6,6 +6,11 @@ from danboorutools.exceptions import HTTPError, UrlIsDeleted
 from danboorutools.logical.sessions import Session
 from danboorutools.util.misc import memoize
 
+DELETION_MESSAGES = [
+    "User has left pixiv or the user ID does not exist.",
+    "The creator has limited who can view this content",
+]
+
 
 class PixivSession(Session):
     @cached_property
@@ -14,6 +19,7 @@ class PixivSession(Session):
 
     @memoize
     def get_json(self, url: str) -> dict:
+        self.cookies.clear()  # pixiv does not like it if I send it the cookies from a previous request
         resp = self.get(url, cookies=self.cookies_from_env)
         try:
             json_data: dict = resp.json()
@@ -22,7 +28,7 @@ class PixivSession(Session):
             raise HTTPError(resp) from e
 
         if json_data.get("error", False) is not False:
-            if json_data["message"] == "The creator has limited who can view this content":
+            if json_data["message"] in DELETION_MESSAGES:
                 raise UrlIsDeleted(resp)
             raise NotImplementedError(dict(json_data))
 
