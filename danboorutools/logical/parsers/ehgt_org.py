@@ -16,6 +16,7 @@ class EhgtOrgParser(UrlParser):
                 instance = EHentaiImageUrl(parsable_url)
                 instance.original_filename = None
                 instance.file_hash = filename.split("-")[0]
+                instance.page_token = filename[:10]
                 instance.image_type = "direct"
             case _:
                 return None

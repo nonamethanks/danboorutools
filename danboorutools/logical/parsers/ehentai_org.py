@@ -69,7 +69,7 @@ class EhentaiOrgParser(UrlParser):
                 instance = EHentaiImageUrl(parsable_url)
                 instance.original_filename = None
                 instance.gallery_id = int(parsable_url.params["gid"])
-                instance.page = int(parsable_url.params["page"])
+                instance.page_number = int(parsable_url.params["page"])
                 instance.file_hash = None
                 instance.image_type = "download"
 
