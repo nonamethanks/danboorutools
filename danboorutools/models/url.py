@@ -169,7 +169,7 @@ class PostUrl(Url):
 ########################################################################
 
 
-class AssetUrl(Url):
+class _AssetUrl(Url):
     """An asset contains a list of files. It's usually a list of a single file, but it can be a zip file with multiple subfiles."""
     @settable_property
     def files(self) -> list[File]:
@@ -180,7 +180,7 @@ class AssetUrl(Url):
             return [downloaded_file]
 
 
-class PostAssetUrl(AssetUrl, Url):
+class PostAssetUrl(_AssetUrl, Url):
     @settable_property
     def post(self) -> PostUrl:
         raise NotImplementedError
@@ -190,7 +190,7 @@ class PostAssetUrl(AssetUrl, Url):
         return self.post.created_at
 
 
-class GalleryAssetUrl(AssetUrl, Url):
+class GalleryAssetUrl(_AssetUrl, Url):
     """An asset belonging to a gallery instead of a post (such as a background image)."""
     @settable_property
     def gallery(self) -> PostUrl:
