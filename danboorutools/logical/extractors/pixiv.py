@@ -2,7 +2,6 @@ from datetime import datetime
 
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.sessions.pixiv import PixivSession
-from danboorutools.models.file import File
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.misc import memoize, settable_property
 from danboorutools.util.time import datetime_from_string
@@ -82,16 +81,14 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
     def post(self) -> "PixivPostUrl":  # type: ignore[override]
         return self.build(PixivPostUrl, post_id=self.post_id, unlisted=self.unlisted)
 
-    @settable_property
-    def files(self) -> list[File]:
+    @property
+    def full_asset_url(self) -> str:
         if "img-original" in self.original_url.url_parts or "img-zip-ugoira" in self.original_url.url_parts:
-            file_url = self.original_url.url
+            return self.original_url.url
         else:
             candidates = [asset for asset in self.post.assets if asset.created_at == self.created_at]
             candidate, = [asset for asset in candidates if asset.page == self.page]
-            file_url = candidate.normalized_url
-
-        return self.session.download_file(file_url)
+            return candidate.normalized_url
 
 
 class PixivPostUrl(PostUrl, PixivUrl):

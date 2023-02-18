@@ -171,9 +171,13 @@ class PostUrl(Url):
 
 class _AssetUrl(Url):
     """An asset contains a list of files. It's usually a list of a single file, but it can be a zip file with multiple subfiles."""
+    @property
+    def full_asset_url(self) -> str:
+        raise NotImplementedError
+
     @settable_property
     def files(self) -> list[File]:
-        downloaded_file = self.session.download_file(self.normalized_url)
+        downloaded_file = self.session.download_file(self.full_asset_url)
         if isinstance(downloaded_file, ArchiveFile):
             return downloaded_file.extracted_files
         else:

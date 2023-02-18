@@ -46,6 +46,10 @@ class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
         else:
             raise NotImplementedError
 
+    @property
+    def full_asset_url(self) -> str:
+        raise NotImplementedError(self.original_url)
+
 
 class EHentaiPageUrl(PostUrl, EHentaiUrl):
     normalization = "https://{subdomain}.org/s/{page_token}/{gallery_id}-{page_number}"
