@@ -12,8 +12,9 @@ from requests import Session as RequestsSession
 from danboorutools import logger
 from danboorutools.exceptions import DownloadError, HTTPError
 from danboorutools.logical.browser import Browser
+from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.file import File, FileSubclass
-from danboorutools.util.misc import get_url_data, random_string
+from danboorutools.util.misc import random_string
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -55,8 +56,8 @@ class Session(RequestsSession):
         if not isinstance(url, str):
             url = url.normalized_url
 
-        url_domain = get_url_data(url)["full_domain"]
-        kwargs["proxies"] = self.proxied_domains.get(url_domain)
+        url_hostname = ParsableUrl(url).hostname
+        kwargs["proxies"] = self.proxied_domains.get(url_hostname)
         kwargs["headers"] = self._default_headers | kwargs.get("headers", {})
 
         logger.debug(f"{method} request made to {url}")

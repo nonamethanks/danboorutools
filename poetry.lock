@@ -1106,31 +1106,6 @@ files = [
 ]
 
 [[package]]
-name = "pydomainextractor"
-version = "0.12.0"
-description = "A blazingly fast domain extraction library written in Rust"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "pydomainextractor-0.12.0-cp310-cp310-macosx_10_7_x86_64.whl", hash = "sha256:186c5df295cc00574f0a2d00a31e06d9709ca6eb15268af564c42b7b104b2f28"},
-    {file = "pydomainextractor-0.12.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c0a52a8d56689672afd9359f07b4c1053d63fbd3132289e79ab6c2a6d98957ad"},
-    {file = "pydomainextractor-0.12.0-cp310-none-win_amd64.whl", hash = "sha256:9f8c23b62e9564fedff9593f99ab818a7aacbce09c59286f293dcd0d3bd9852c"},
-    {file = "pydomainextractor-0.12.0-cp311-cp311-macosx_10_7_x86_64.whl", hash = "sha256:d1a05b92c827861e081cd9ddeddb4a88957200f75780211bf9074fe3e1aa6e69"},
-    {file = "pydomainextractor-0.12.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4476ac9be1a578ddac367b36d279a37e1e7aa377c751b1bbe49c08bf7bfd5636"},
-    {file = "pydomainextractor-0.12.0-cp311-none-win_amd64.whl", hash = "sha256:ad294be51893d45c2ac38c3a1531367f08a57a501666cf2438817ad4afe0d480"},
-    {file = "pydomainextractor-0.12.0-cp37-cp37m-macosx_10_7_x86_64.whl", hash = "sha256:88574254f9bb48599d9d035be40e99970a0a254be5bb54e028174b9f253884f7"},
-    {file = "pydomainextractor-0.12.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ae9458fd4b6f81abeb9961f31c08797fe4d73dfbdc9cc57e25eca83aa65f1332"},
-    {file = "pydomainextractor-0.12.0-cp37-none-win_amd64.whl", hash = "sha256:68d9929c6127ccc9b058e98f700f09c13250f128bcbd999f6e54689119eed8ac"},
-    {file = "pydomainextractor-0.12.0-cp38-cp38-macosx_10_7_x86_64.whl", hash = "sha256:4abb32bdc1fcf82b70535e69d3b017725c2404b0eb1072d82fbc983ef872b833"},
-    {file = "pydomainextractor-0.12.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:18fc5563ceadb8fd69cf6a6f5f29c1f539292fd1d0bdc521298f1816262c86ef"},
-    {file = "pydomainextractor-0.12.0-cp38-none-win_amd64.whl", hash = "sha256:de761e4c0bdad546e96599d5c9aa088ce621c32d57fd90ebe242697bc260459c"},
-    {file = "pydomainextractor-0.12.0-cp39-cp39-macosx_10_7_x86_64.whl", hash = "sha256:dbe1ac2556a6ef9e126ba77a769c2cbb78dbed96fb0ca1760ab7524aa011eb52"},
-    {file = "pydomainextractor-0.12.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8ef8efc2d93302b3eeb5d1fd6c62c5d15e77644d39d2459ecbf1d97a5b61c024"},
-    {file = "pydomainextractor-0.12.0-cp39-none-win_amd64.whl", hash = "sha256:37fd087e8fec07daf8dac38a2376bf78e9ae7488209b9712e6cb5bd81bb35a9b"},
-]
-
-[[package]]
 name = "pyflakes"
 version = "3.0.1"
 description = "passive checker of Python programs"
@@ -1793,4 +1768,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "e6d77c67062017cd45a1df0ea0479da6e462737e437b9c7aa735f46fd349a3cf"
+content-hash = "38d078e2cdfbbd826c26d8ac6f02c892c7e77732a4873a9177db104750208f86"

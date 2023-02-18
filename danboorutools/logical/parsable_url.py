@@ -2,10 +2,7 @@ import re
 from dataclasses import dataclass
 from functools import cached_property
 
-from pydomainextractor import DomainExtractor
-
-domain_extractor = DomainExtractor()
-
+from danboorutools.exceptions import UnparsableUrl
 
 url_params_pattern = re.compile(r"(?:\?|\&)?([^=]+)=([^&]+)")
 
@@ -29,7 +26,16 @@ class ParsableUrl:
             url_params = None
 
         hostname = url_parts[0].split(":")[0]
-        _data = domain_extractor.extract(hostname)
+        try:
+            subdomain, domain, tld = hostname.rsplit(".", maxsplit=2)
+            # Technically wrong for stuff like .co.uk, but then again all tld parsers do other stupid shit
+            # like thinking username.carrd.co has "carrd.co" as tld
+        except ValueError:
+            try:
+                domain, tld = hostname.rsplit(".")
+            except ValueError as e:
+                raise UnparsableUrl(self.url) from e
+            subdomain = None
         url_parts = [u for u in url_parts[1:] if u]
 
         return {
@@ -37,8 +43,8 @@ class ParsableUrl:
             "url_parts": url_parts,
             "hostname": hostname,
             "params": url_params,
-            "domain": ".".join([_data["domain"], _data["suffix"]]),
-            "subdomain": _data["subdomain"] or None,
+            "domain": ".".join([domain, tld]),
+            "subdomain": subdomain,
         }
 
     @property

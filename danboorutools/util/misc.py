@@ -4,10 +4,7 @@ import functools
 import random
 import re
 import weakref
-from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, TypeVar, overload
-
-from pydomainextractor import DomainExtractor
 
 
 def random_string(length: int) -> str:
@@ -30,22 +27,6 @@ def natsort_array(array: Iterable[Variable]) -> list[Variable]:
     """Sort an array of strings naturally."""
     # https://stackoverflow.com/a/4623518/11558993
     return sorted(array, key=lambda key: [tryint(c) for c in re.split('([0-9]+)', str(key))])
-
-
-domain_extractor = DomainExtractor()
-
-
-@lru_cache
-def get_url_data(url: str) -> dict[str, str]:
-    try:
-        url_data = domain_extractor.extract_from_url(url)
-    except ValueError as e:
-        if ": no scheme" in str(e):
-            url_data = domain_extractor.extract(url)
-        else:
-            raise
-    url_data["full_domain"] = url_data["domain"] + "." + url_data["suffix"]
-    return url_data
 
 
 MemoizedFunction = TypeVar("MemoizedFunction", bound=Callable[..., Any])

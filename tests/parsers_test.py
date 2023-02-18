@@ -1,12 +1,12 @@
 from ward import test
 
+from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.parsers import UrlParser, parsers
 from danboorutools.models.url import Url
-from danboorutools.util.misc import get_url_data
 
 
 def spawn_url_test(url_string: str, url_type: type[Url]) -> None:
-    domain = get_url_data(url_string)["full_domain"]
+    domain = ParsableUrl(url_string).domain
 
     @test(f"Parsing {domain}: {url_string}", tags=["parsing", domain])
     def _(_url: str = url_string, _url_type: type[Url] = url_type) -> None:
@@ -15,5 +15,5 @@ def spawn_url_test(url_string: str, url_type: type[Url]) -> None:
 
 
 for parser in parsers.values():
-    for url, url_type in [(url, url_type) for url_type, url_group in parser.test_cases.items() for url in url_group]:
-        spawn_url_test(url, url_type)
+    for url, _url_type in [(url, url_type) for url_type, url_group in parser.test_cases.items() for url in url_group]:
+        spawn_url_test(url, _url_type)
