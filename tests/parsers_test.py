@@ -2,10 +2,13 @@ from ward import test
 
 from danboorutools.logical.parsers import UrlParser, parsers
 from danboorutools.models.url import Url
+from danboorutools.util.misc import get_url_data
 
 
 def spawn_url_test(url_string: str, url_type: type[Url]) -> None:
-    @test(f"Parsing url {url_string}", tags=["parsing"])
+    domain = get_url_data(url_string)["full_domain"]
+
+    @test(f"Parsing {domain}: {url_string}", tags=["parsing", domain])
     def _(_url: str = url_string, _url_type: type[Url] = url_type) -> None:
         parsed_url = UrlParser.parse(_url)
         assert isinstance(parsed_url, _url_type)
