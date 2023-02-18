@@ -24,10 +24,10 @@ class WixmpComParser(UrlParser):
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> DeviantArtImageUrl | None:
         if parsable_url.hostname in KnownHosts.DEVIANTART:
-            instance = DeviantArtImageUrl(parsable_url.url)
+            instance = DeviantArtImageUrl(parsable_url)
             instance.parse_filename(parsable_url.url_parts[-1])
             return instance
         elif parsable_url.url.startswith("https://api-da.wixmp.com/_api/download/file"):
-            raise UnparsableUrl(parsable_url.url)
+            raise UnparsableUrl(parsable_url)
 
         return None

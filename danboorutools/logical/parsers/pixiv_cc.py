@@ -15,7 +15,7 @@ class PixivCcParser(UrlParser):
     def match_url(cls, parsable_url: ParsableUrl) -> PixivStaccUrl | None:
         match parsable_url.url_parts:
             case stacc, *_:
-                instance = PixivStaccUrl(parsable_url.url)
+                instance = PixivStaccUrl(parsable_url)
                 instance.stacc = stacc
             case _:
                 return None

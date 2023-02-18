@@ -9,7 +9,7 @@ class DaportfolioComParser(UrlParser):
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> DeviantArtArtistUrl | None:
-        instance = DeviantArtArtistUrl(parsable_url.url)
+        instance = DeviantArtArtistUrl(parsable_url)
         assert parsable_url.subdomain
         instance.username = parsable_url.subdomain
         return instance

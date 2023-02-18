@@ -57,7 +57,7 @@ class FantiaJpParser(UrlParser):
             # https://c.fantia.jp/uploads/product_image/file/219407/main_bd7419c2-2450-4c53-a28a-90101fa466ab.jpg (sample)
             # https://c.fantia.jp/uploads/product_image/file/219407/bd7419c2-2450-4c53-a28a-90101fa466ab.jpg
             case "uploads", image_type, ("file" | "image"), image_id, _:
-                instance = FantiaImageUrl(parsable_url.url)
+                instance = FantiaImageUrl(parsable_url)
                 instance.image_type = image_type
                 instance.image_id = int(image_id)
                 if image_type in ("post", "product"):
@@ -65,16 +65,17 @@ class FantiaJpParser(UrlParser):
                 else:
                     instance.post_id = None
 
+            # https://fantia.jp/posts/343039/post_content_photo/1617547
             # https://fantia.jp/posts/1143951/download/1830956
-            case "posts", post_id, "download", image_id:
-                instance = FantiaImageUrl(parsable_url.url)
-                instance.image_type = "download"
+            case "posts", post_id, ("download" | "post_content_photo") as image_type, image_id:
+                instance = FantiaImageUrl(parsable_url)
+                instance.image_type = image_type
                 instance.image_id = int(image_id)
                 instance.post_id = int(post_id)
 
             # https://fantia.jp/posts/1148334
             case ("posts" | "products") as post_type, post_id, *_:
-                instance = FantiaPostUrl(parsable_url.url)
+                instance = FantiaPostUrl(parsable_url)
                 instance.post_id = int(post_id.split("#")[0])
                 instance.post_type = post_type
 
@@ -82,20 +83,20 @@ class FantiaJpParser(UrlParser):
             # https://fantia.jp/fanclubs/1654/posts
             # https://job.fantia.jp/fanclubs/5734
             case "fanclubs", artist_id, *_:
-                instance = FantiaFanclubUrl(parsable_url.url)
+                instance = FantiaFanclubUrl(parsable_url)
                 instance.fanclub_id = int(artist_id)
                 instance.fanclub_name = None
 
             # https://fantia.jp/asanagi
             # https://fantia.jp/koruri
             case [username]:
-                instance = FantiaFanclubUrl(parsable_url.url)
+                instance = FantiaFanclubUrl(parsable_url)
                 instance.fanclub_name = username
                 instance.fanclub_id = None
 
             # https://c.fantia.jp/uploads/fanclub/cover_image/319092/main_webp_40d41997-fa92-42fa-94d4-93bd9904db32.webp
             case "uploads", "fanclub", "cover_image", fanclub_id, _:
-                instance = FantiaFanclubAssetUrl(parsable_url.url)
+                instance = FantiaFanclubAssetUrl(parsable_url)
                 instance.fanclub_id = int(fanclub_id)
 
             case _:

@@ -21,6 +21,6 @@ class DeviantartNetParser(UrlParser):
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> DeviantArtImageUrl | None:
-        instance = DeviantArtImageUrl(parsable_url.url)
+        instance = DeviantArtImageUrl(parsable_url)
         instance.parse_filename(parsable_url.url_parts[-1])
         return instance

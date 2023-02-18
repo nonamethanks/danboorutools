@@ -13,7 +13,7 @@ class HathNetworkParser(UrlParser):
     def match_url(cls, parsable_url: ParsableUrl) -> EHentaiImageUrl | None:
         match parsable_url.url_parts:
             case "h", file_dir, _, filename:
-                instance = EHentaiImageUrl(parsable_url.url)
+                instance = EHentaiImageUrl(parsable_url)
                 instance.original_filename = filename
                 instance.page = None
                 instance.gallery_id = None

@@ -92,21 +92,21 @@ class PximgNetParser(UrlParser):
             # https://i.pximg.net/img-original/img/2018/03/30/10/50/16/67982747-04d810bf32ebd071927362baec4057b6_p0.png
 
             case [*_, image_dir, "img", year, month, day, hour, minute, second, filename] if image_dir in PixivPaths.main_image_paths:
-                instance = PixivImageUrl(parsable_url.url)
+                instance = PixivImageUrl(parsable_url)
 
                 instance.parse_filename(filename, year, month, day, hour, minute, second)
                 instance.stacc = None
 
             # https://i.pximg.net/user-profile/img/2021/08/25/00/00/40/21290212_0374c372d602a6ec6b311764b0168a13_170.jpg
             case *_, "user-profile", "img", year, month, day, hour, minute, second, filename:
-                instance = PixivProfileImageUrl(parsable_url.url)
+                instance = PixivProfileImageUrl(parsable_url)
                 instance.created_at = datetime(year=int(year), month=int(month), day=int(day),
                                                hour=int(hour), minute=int(minute), second=int(second), tzinfo=pytz.UTC)
 
             # https://i.pximg.net/novel-cover-original/img/2022/11/17/15/07/44/tei336490527346_a4ef4696530c4675fabef4b8e6e186c9.jpg
             # https://i.pximg.net/c/600x600/novel-cover-master/img/2018/08/18/19/45/23/10008846_215387d3665210eed0a7cc564e4c93f3_master1200.jpg
             case [*_, image_dir, "img", year, month, day, hour, minute, second, filename] if image_dir in PixivPaths.novel_image_paths:
-                instance = PixivNovelImageUrl(parsable_url.url)
+                instance = PixivNovelImageUrl(parsable_url)
                 instance.created_at = datetime(year=int(year), month=int(month), day=int(day),
                                                hour=int(hour), minute=int(minute), second=int(second), tzinfo=pytz.UTC)
                 try:
@@ -117,20 +117,20 @@ class PximgNetParser(UrlParser):
             # https://i.pximg.net/background/img/2021/11/19/01/48/36/3767624_473f1bc024142eef43c80d2b0061b25a.jpg
             # https://i.pximg.net/workspace/img/2016/06/23/13/21/30/3968542_1603f967a310f7b03629b07a8f811c13.jpg
             case [*_, ("background" | "workspace"), "img", year, month, day, hour, minute, second, filename]:
-                instance = PixivGalleryAssetUrl(parsable_url.url)
+                instance = PixivGalleryAssetUrl(parsable_url)
                 # instance.created_at = datetime(year=int(year), month=int(month), day=int(day),
                 #                                hour=int(hour), minute=int(minute), second=int(second), tzinfo=pytz.UTC)
                 instance.user_id = int(filename.split("_")[0])
 
             # https://i.pximg.net/img25/img/nwqkqr/22218203.jpg
             case *_, "img", stacc, filename:
-                instance = PixivImageUrl(parsable_url.url)
+                instance = PixivImageUrl(parsable_url)
                 instance.stacc = stacc
                 instance.parse_filename(filename)
 
             # https://i.pximg.net/img96/img/masao_913555/novel/4472318.jpg
             case *_, "img", stacc, "novel", filename:
-                instance = PixivNovelImageUrl(parsable_url.url)
+                instance = PixivNovelImageUrl(parsable_url)
                 instance.stacc = stacc
                 instance.novel_id = int(filename.split(".")[0])
             case _:
@@ -149,13 +149,13 @@ class PximgNetParser(UrlParser):
             # https://booth.pximg.net/b242a7bd-0747-48c4-891d-9e8552edd5d7/i/3746752/52dbee27-7ad2-4048-9c1d-827eee36625c.jpg
 
             case *_, "i", post_id, _:
-                instance = BoothImageUrl(parsable_url.url)
+                instance = BoothImageUrl(parsable_url)
                 instance.item_id = int(post_id)
 
             # https://booth.pximg.net/c/128x128/users/3193929/icon_image/5be9eff4-1d9e-4a79-b097-33c1cd4ad314_base_resized.jpg
             # https://booth.pximg.net/users/3193929/icon_image/5be9eff4-1d9e-4a79-b097-33c1cd4ad314.png
             case *_, "users", user_id, "icon_image", _:
-                instance = BoothProfileImageUrl(parsable_url.url)
+                instance = BoothProfileImageUrl(parsable_url)
                 instance.user_id = int(user_id)
 
             case _:
@@ -169,12 +169,12 @@ class PximgNetParser(UrlParser):
         match parsable_url.url_parts:
             # https://img-sketch.pximg.net/c!/w=540,f=webp:jpeg/uploads/medium/file/4463372/8906921629213362989.jpg
             case *_, "uploads", "medium", "file", _, _ if parsable_url.subdomain == "img-sketch":  # TODO: figure out these numbers
-                instance = PixivSketchImageUrl(parsable_url.url)
+                instance = PixivSketchImageUrl(parsable_url)
 
             # https://pixiv.pximg.net/c/1200x630_90_a2_g5/fanbox/public/images/post/186919/cover/VCI1Mcs2rbmWPg0mmiTisovn.jpeg
             # https://pixiv.pximg.net/fanbox/public/images/post/186919/cover/VCI1Mcs2rbmWPg0mmiTisovn.jpeg
             case *_, "fanbox", "public", "images", "post", post_id, "cover" as image_type, filename:
-                instance = FanboxImageUrl(parsable_url.url)
+                instance = FanboxImageUrl(parsable_url)
                 instance.post_id = int(post_id)
                 instance.pixiv_id = None
                 instance.filename = filename
@@ -184,7 +184,7 @@ class PximgNetParser(UrlParser):
             # https://pixiv.pximg.net/c/1620x580_90_a2_g5/fanbox/public/images/creator/1566167/cover/QqxYtuWdy4XWQx1ZLIqr4wvA.jpeg
             # https://pixiv.pximg.net/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg",  # dead
             case *_, "fanbox", "public", "images", "creator", pixiv_id, ("profile" | "cover") as image_type, filename:
-                instance = FanboxArtistImageUrl(parsable_url.url)
+                instance = FanboxArtistImageUrl(parsable_url)
                 instance.pixiv_id = int(pixiv_id)
                 instance.filename = filename
                 instance.image_type = image_type

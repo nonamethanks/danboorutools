@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Callable, DefaultDict, Sequence, TypeVar, fina
 
 from bs4 import BeautifulSoup
 
+from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.util.misc import settable_property
@@ -36,14 +37,16 @@ class Url:
         if isinstance(url, Url):
             return url
         url_parser = import_parser()
-        return url_parser.parse(url) or UnknownUrl(url)
+        return url_parser.parse(url) or UnknownUrl(ParsableUrl(url))
 
     normalization: str | None = None
 
     @cached_property
     @final
     def normalized_url(self) -> str:
-        return self._normalize_from_normalization(**self.__dict__) or self._normalize_from_properties(**self.__dict__) or self.original_url
+        return self._normalize_from_normalization(**self.__dict__)  \
+            or self._normalize_from_properties(**self.__dict__)     \
+            or self.original_url.url
 
     @classmethod  # don't cache me
     def _normalize_from_properties(cls, **url_properties) -> str | None:  # pylint: disable=unused-argument
@@ -67,21 +70,18 @@ class Url:
         if not normalized_url:
             raise ValueError(normalized_url, url_properties)
 
-        instance = url_type(url=normalized_url)
+        instance = url_type(url=ParsableUrl(normalized_url))
         for v_name, v_value in url_properties.items():
             value_type = url_type.__annotations__[v_name]
             assert isinstance(v_value, value_type), f"{v_name} was of type {type(v_value)} instead of {value_type}"
             setattr(instance, v_name, v_value)
         return instance
 
-    def __init__(self, url: str):
-        if self.__class__ == Url:
-            raise RuntimeError("This abstract class cannot be initialized directly.")
-
+    def __init__(self, url: ParsableUrl):
         self.original_url = url
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}[{self.original_url}]"
+        return f"{self.__class__.__name__}[{self.original_url.url}]"
     __repr__ = __str__
 
     def __eq__(self, __o: object) -> bool:

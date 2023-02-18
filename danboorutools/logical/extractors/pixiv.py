@@ -84,8 +84,8 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
 
     @settable_property
     def files(self) -> list[File]:
-        if "/img-original/" in self.original_url or "/img-zip-ugoira/" in self.original_url:
-            file_url = self.original_url
+        if "img-original" in self.original_url.url_parts or "img-zip-ugoira" in self.original_url.url_parts:
+            file_url = self.original_url.url
         else:
             candidates = [asset for asset in self.post.assets if asset.created_at == self.created_at]
             candidate, = [asset for asset in candidates if asset.page == self.page]

@@ -18,7 +18,7 @@ class StaShParser(UrlParser):
                 ["zip", stash_id] |
                 [stash_id]
             ):
-                instance = StaShUrl(parsable_url.url)
+                instance = StaShUrl(parsable_url)
                 instance.stash_id = stash_id
                 return instance
             case _:

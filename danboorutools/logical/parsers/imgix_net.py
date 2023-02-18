@@ -17,13 +17,13 @@ class ImgixNetParser(UrlParser):
         if parsable_url.subdomain == "anifty":
             return cls._match_anifty(parsable_url)
         else:
-            raise UnparsableUrl(parsable_url.url)
+            raise UnparsableUrl(parsable_url)
 
     @staticmethod
     def _match_anifty(parsable_url: ParsableUrl) -> AniftyUrl | None:
         match parsable_url.url_parts:
             case _, artist_hash, _ if artist_hash.startswith("0x"):
-                instance = AniftyImageUrl(parsable_url.url)
+                instance = AniftyImageUrl(parsable_url)
                 instance.artist_hash = artist_hash
             case _:
                 return None

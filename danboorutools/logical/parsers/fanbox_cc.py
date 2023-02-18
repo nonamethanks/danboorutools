@@ -39,12 +39,12 @@ class FanboxCcParser(UrlParser):
         match parsable_url.url_parts:
             # https://www.fanbox.cc/@tsukiori/posts/1080657
             case username, "posts", post_id:
-                instance = FanboxPostUrl(parsable_url.url)
+                instance = FanboxPostUrl(parsable_url)
                 instance.username = username.removeprefix("@")
                 instance.post_id = int(post_id)
             # https://www.fanbox.cc/@tsukiori
             case username, *_:
-                instance = FanboxArtistUrl(parsable_url.url)
+                instance = FanboxArtistUrl(parsable_url)
                 instance.username = username.removeprefix("@")
             case _:
                 return None
@@ -57,14 +57,14 @@ class FanboxCcParser(UrlParser):
             # https://omu001.fanbox.cc/posts/39714"
             # https://brllbrll.fanbox.cc/posts/626093",  # R18
             case "posts", post_id:
-                instance = FanboxPostUrl(parsable_url.url)
+                instance = FanboxPostUrl(parsable_url)
                 instance.username = parsable_url.subdomain  # type: ignore[assignment]
                 instance.post_id = int(post_id)
             # https://omu001.fanbox.cc
             # https://omu001.fanbox.cc/posts
             # https://omu001.fanbox.cc/plans
             case _:
-                instance = FanboxArtistUrl(parsable_url.url)
+                instance = FanboxArtistUrl(parsable_url)
                 instance.username = parsable_url.subdomain.removeprefix("@")  # type: ignore[union-attr]
         return instance
 
@@ -75,7 +75,7 @@ class FanboxCcParser(UrlParser):
         # https://downloads.fanbox.cc/images/post/39714/w/1200/JvjJal8v1yLgc5DPyEI05YpT.jpeg
         match parsable_url.url_parts:
             case "images", "post", post_id, *_, filename:
-                instance = FanboxImageUrl(parsable_url.url)
+                instance = FanboxImageUrl(parsable_url)
                 instance.post_id = int(post_id)
                 instance.pixiv_id = None
                 instance.filename = filename

@@ -12,6 +12,6 @@ class FavMeParser(UrlParser):
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> FavMeUrl | None:
-        instance = FavMeUrl(parsable_url.url)
+        instance = FavMeUrl(parsable_url)
         instance.favme_id = parsable_url.url_parts[0]
         return instance
