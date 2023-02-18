@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+from typing import Callable
 
 import click
 from line_profiler import LineProfiler
@@ -17,30 +18,29 @@ logger.add(f"logs/scripts/{Path(__file__).stem}/" + "{time}.log", retention="7 d
 @click.option("--resume", is_flag=True, default=False)
 def main(times: int = 0, resume: bool = False) -> None:
 
-    # url_types = [url_type for group_of_types in known_url_types.values() for url_type in group_of_types]
-    # test_cases = [test_case for url_type in url_types for test_case in url_type.test_cases]
-    # test_set = [random.choice(test_cases) for i in range(times)]
-    with open("data/sources.txt", encoding="utf-8") as myf:  # TODO: add script to update this from bq
+    test_set = prepare_test_set(times)
+    print(f"Testing URL parsing {len(test_set)} times.")
+    do_benchmark(test_set, resume)
+
+
+def prepare_test_set(times):
+    with open("data/sources.txt", encoding="utf-8") as myf:
         test_set = [line.strip().strip("\"") for line in myf if line.strip()]
-    with open("data/artist_urls.txt", encoding="utf-8") as myf:  # TODO: add script to update this from bq
+    with open("data/artist_urls.txt", encoding="utf-8") as myf:
+        # TODO: add script to update this and the above from bq
         # https://github.com/danbooru/danbooru/issues/5440 this needs to be fixed first
         test_set += [line.strip().strip("\"") for line in myf if line.strip()]
 
     if times:
         test_set = test_set[:times]
+    return test_set
 
-    print(f"Testing URL parsing {len(test_set)} times.")
+    # TODO: daily bot that validates all new urls and sends me an email with the bad ones
+
+
+def do_benchmark(test_set: list[str], resume: bool) -> None:
     profiler = LineProfiler()
-
-    for parser_type in parsers.values():
-        profiler.add_function(parser_type.match_url)
-        for method in dir(parser_type):
-            if method.startswith("_match"):
-                profiler.add_function(getattr(parser_type, method))
-
-    profiler.add_function(UrlParser.parse.__wrapped__)
-    profiler.add_function(ParsableUrl.url_data.func)  # type: ignore[attr-defined]
-    parse_wrapper = profiler(Url.parse)
+    parse_wrapper = prepare_profiler(profiler)
     start = time.time()
 
     last_fail = PersistentValue("PARSING_BENCHMARK_LAST_FAIL", 0)
@@ -50,9 +50,10 @@ def main(times: int = 0, resume: bool = False) -> None:
             continue
         if index % 100_000 == 0:
             print(f"At url {index:_}, {int(time.time() - start)}s elapsed.")
+            last_fail.value = index
         try:
             parse_wrapper(url_string)
-        except Exception as e:
+        except (Exception, KeyboardInterrupt) as e:
             e.add_note(f"At url {index:_} of {len(test_set):_}.")
             last_fail.value = index
             raise
@@ -61,4 +62,15 @@ def main(times: int = 0, resume: bool = False) -> None:
 
     last_fail.delete()
 
-    # TODO: daily bot that validates all new urls and sends me an email with the bad ones
+
+def prepare_profiler(profiler: LineProfiler) -> Callable:
+    for parser_type in parsers.values():
+        profiler.add_function(parser_type.match_url)
+        for method in dir(parser_type):
+            if method.startswith("_match"):
+                profiler.add_function(getattr(parser_type, method))
+
+    profiler.add_function(UrlParser.parse.__wrapped__)
+    profiler.add_function(ParsableUrl.url_data.func)  # type: ignore[attr-defined]
+    parse_wrapper = profiler(Url.parse)
+    return parse_wrapper
