@@ -10,7 +10,7 @@ from requests import Response
 from requests import Session as RequestsSession
 
 from danboorutools import logger
-from danboorutools.exceptions import DownloadError, HTTPError
+from danboorutools.exceptions import DownloadError, HTTPError, UrlIsDeleted
 from danboorutools.logical.browser import Browser
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.file import File, FileSubclass
@@ -56,12 +56,16 @@ class Session(RequestsSession):
         if not isinstance(url, str):
             url = url.normalized_url
 
-        url_hostname = ParsableUrl(url).hostname
-        kwargs["proxies"] = self.proxied_domains.get(url_hostname)
+        url_domain = ParsableUrl(url).domain
+        kwargs["proxies"] = self.proxied_domains.get(url_domain)
         kwargs["headers"] = self._default_headers | kwargs.get("headers", {})
 
         logger.debug(f"{method} request made to {url}")
-        return super().request(method, url, *args, **kwargs)
+        response = super().request(method, url, *args, **kwargs)
+        if response.status_code == 404:
+            raise UrlIsDeleted(response)
+
+        return response
 
     def download_file(self, url: "str | Url", *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
         tmp_filename = Path("/tmp") / random_string(20)

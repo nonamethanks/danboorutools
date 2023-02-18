@@ -1,7 +1,8 @@
 from datetime import datetime
+from functools import cached_property
 from typing import TYPE_CHECKING
 
-from danboorutools.exceptions import DownloadError, EHEntaiRateLimit, UnknownUrlError
+from danboorutools.exceptions import DownloadError, EHEntaiRateLimit, UnknownUrlError, UrlIsDeleted
 from danboorutools.logical.sessions.ehentai import EHentaiSession
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.models.url import GalleryUrl, PostAssetUrl, PostUrl, Url
@@ -14,14 +15,25 @@ if TYPE_CHECKING:
 
 class EHentaiUrl(Url):
     session = EHentaiSession()
+    subsite: str | None = None
 
-    @property
+    @cached_property
     def html(self) -> "BeautifulSoup":
-        if "This gallery has been removed or is unavailable" in super().html.text:
-            self.subsite = "exhentai"  # pylint: disable=attribute-defined-outside-init
-            del self.__dict__["normalized_url"]
-            del self.__dict__["html"]
-        return super().html
+        if not isinstance(self, (EHentaiPageUrl, EHentaiGalleryUrl)):
+            raise ValueError
+
+        try:
+            html = super().html
+        except UrlIsDeleted:
+            if self.subsite == "exhentai":
+                raise
+        else:
+            return html
+
+        self.subsite = "exhentai"
+        del self.__dict__["normalized_url"]
+        del self.__dict__["html"]
+        return self.html
 
 
 class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
@@ -36,10 +48,6 @@ class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
         return self.post.created_at
 
     @settable_property
-    def is_deleted(self) -> bool:
-        return self.post.is_deleted
-
-    @settable_property
     def post(self) -> "EHentaiPageUrl":  # type: ignore[override]
         if post := getattr(self, "_post"):
             return post
@@ -52,7 +60,7 @@ class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
 
 
 class EHentaiPageUrl(PostUrl, EHentaiUrl):
-    normalization = "https://{subdomain}.org/s/{page_token}/{gallery_id}-{page_number}"
+    normalization = "https://{subsite}.org/s/{page_token}/{gallery_id}-{page_number}"
 
     gallery_id: int
     page_number: int
@@ -99,16 +107,12 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
         return self.gallery.created_at
 
     @settable_property
-    def is_deleted(self) -> bool:
-        return self.gallery.is_deleted
-
-    @settable_property
     def score(self) -> int:
         return self.gallery.score
 
 
 class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
-    normalization = "https://{subdomain}.org/g/{gallery_id}/{gallery_token}"
+    normalization = "https://{subsite}.org/g/{gallery_id}/{gallery_token}"
 
     gallery_id: int
     gallery_token: str
@@ -127,7 +131,7 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
             assert image.page_token
             page = self.build(
                 url_type=EHentaiPageUrl,
-                subdomain=self.subsite,
+                subsite=self.subsite,
                 page_token=image.page_token,
                 gallery_id=self.gallery_id,
                 page_number=raw_thumb_urls.index(raw_thumb_url) + 1,
@@ -156,10 +160,6 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
         element, = self.html.select('#gmid .gdt1:-soup-contains-own("Favorited:")')
         score_element, = element.parent.select(".gdt2")
         return int(score_element.text.split()[0])
-
-    @settable_property
-    def is_deleted(self) -> bool:
-        return bool(not self.html.select(".ptt td"))
 
     @memoize
     def _get_thumb_urls(self) -> list[str]:

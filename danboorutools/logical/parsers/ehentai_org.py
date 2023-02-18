@@ -43,7 +43,7 @@ class EhentaiOrgParser(UrlParser):
                     [instance.gallery_id, instance.page_number] = map(int, gallery_id_and_page_number.split("-"))
                 except ValueError:
                     [instance.gallery_id, instance.page_number] = map(int, gallery_id_and_page_number.split(".")[0].split("-"))
-                instance.subsite = parsable_url.domain
+                instance.subsite = parsable_url.domain.removesuffix(".org")
 
             # https://exhentai.org/g/1858690/b62c996bb6/
             # http://g.e-hentai.org/g/1858690/b62c996bb6/
@@ -53,7 +53,7 @@ class EhentaiOrgParser(UrlParser):
                 instance = EHentaiGalleryUrl(parsable_url)
                 instance.gallery_token = gallery_token
                 instance.gallery_id = int(gallery_id)
-                instance.subsite = parsable_url.domain
+                instance.subsite = parsable_url.domain.removesuffix(".org")
 
             # https://exhentai.org/t/ac/c6/acc6ee51f27416c3052380dabeea175afb272755-71280-640-880-png_l.jpg
             # https://e-hentai.org/t/ac/c6/acc6ee51f27416c3052380dabeea175afb272755-71280-640-880-png_l.jpg

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Callable, DefaultDict, Sequence, TypeVar, fina
 
 from bs4 import BeautifulSoup
 
+from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.file import ArchiveFile, File
@@ -95,7 +96,12 @@ class Url:
 
     @settable_property
     def is_deleted(self) -> bool:
-        return self.session.head(self.normalized_url).status_code == 404
+        try:
+            self.session.head(self.normalized_url)
+        except UrlIsDeleted:
+            return True
+        else:
+            return False
 
     @cached_property
     def html(self) -> "BeautifulSoup":
