@@ -1,9 +1,9 @@
 from danboorutools.exceptions import UnparsableUrl
+from danboorutools.logical.extractors import fanbox as f
+from danboorutools.logical.extractors import pixiv as p
+from danboorutools.logical.extractors import pixiv_comic as c
+from danboorutools.logical.extractors import pixiv_sketch as s
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
-from danboorutools.logical.strategies import fanbox as f
-from danboorutools.logical.strategies import pixiv as p
-from danboorutools.logical.strategies import pixiv_comic as c
-from danboorutools.logical.strategies import pixiv_sketch as s
 
 
 class PixivNetParser(UrlParser):

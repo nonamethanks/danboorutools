@@ -1,5 +1,5 @@
+from danboorutools.logical.extractors.ehentai import EHentaiImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
-from danboorutools.logical.strategies.ehentai import EHentaiImageUrl
 
 
 class EhgtOrgParser(UrlParser):

@@ -2,11 +2,11 @@ from datetime import datetime
 
 import pytz
 
+from danboorutools.logical.extractors.booth import BoothImageUrl, BoothProfileImageUrl, BoothUrl
+from danboorutools.logical.extractors.fanbox import FanboxArtistImageUrl, FanboxImageUrl, FanboxUrl
+from danboorutools.logical.extractors.pixiv import PixivGalleryAssetUrl, PixivImageUrl, PixivNovelImageUrl, PixivProfileImageUrl, PixivUrl
+from danboorutools.logical.extractors.pixiv_sketch import PixivSketchImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
-from danboorutools.logical.strategies.booth import BoothImageUrl, BoothProfileImageUrl, BoothUrl
-from danboorutools.logical.strategies.fanbox import FanboxArtistImageUrl, FanboxImageUrl, FanboxUrl
-from danboorutools.logical.strategies.pixiv import PixivGalleryAssetUrl, PixivImageUrl, PixivNovelImageUrl, PixivProfileImageUrl, PixivUrl
-from danboorutools.logical.strategies.pixiv_sketch import PixivSketchImageUrl
 
 
 class PixivPaths:

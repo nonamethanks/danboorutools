@@ -1,6 +1,6 @@
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
-from danboorutools.logical.strategies.artstation import (ArtStationArtistUrl, ArtStationImageUrl, ArtStationMarketplacePostUrl,
+from danboorutools.logical.extractors.artstation import (ArtStationArtistUrl, ArtStationImageUrl, ArtStationMarketplacePostUrl,
                                                          ArtStationOldPostUrl, ArtStationPostUrl, ArtStationUrl)
+from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 RESERVED_USERNAMES = ["about", "blogs", "challenges", "guides", "jobs", "learning",
                       "marketplace", "prints", "schools", "search", "studios"]

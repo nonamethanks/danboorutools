@@ -1,5 +1,5 @@
+from danboorutools.logical.extractors.deviantart import FavMeUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
-from danboorutools.logical.strategies.deviantart import FavMeUrl
 
 
 class FavMeParser(UrlParser):

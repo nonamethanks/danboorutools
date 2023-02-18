@@ -1,5 +1,5 @@
+from danboorutools.logical.extractors.fanbox import FanboxArtistUrl, FanboxImageUrl, FanboxPostUrl, FanboxUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
-from danboorutools.logical.strategies.fanbox import FanboxArtistUrl, FanboxImageUrl, FanboxPostUrl, FanboxUrl
 
 
 class FanboxCcParser(UrlParser):

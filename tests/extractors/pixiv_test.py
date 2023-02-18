@@ -1,8 +1,8 @@
 from ward import test
 
-from danboorutools.logical.strategies.pixiv import PixivArtistUrl, PixivImageUrl, PixivPostUrl
+from danboorutools.logical.extractors.pixiv import PixivArtistUrl, PixivImageUrl, PixivPostUrl
 from danboorutools.models.url import Url
-from tests.strategies import assert_info_url, assert_redirect_url, generate_artist_test_suite
+from tests.extractors import assert_info_url, assert_redirect_url, generate_artist_test_suite
 
 tests = generate_artist_test_suite(
     url_type=PixivArtistUrl,

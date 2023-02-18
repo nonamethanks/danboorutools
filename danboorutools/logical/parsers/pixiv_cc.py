@@ -1,6 +1,6 @@
 
+from danboorutools.logical.extractors.pixiv import PixivStaccUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
-from danboorutools.logical.strategies.pixiv import PixivStaccUrl
 
 
 class PixivCcParser(UrlParser):

@@ -3,8 +3,8 @@ from pathlib import Path
 import click
 
 from danboorutools import logger
+from danboorutools.logical.extractors.ehentai import EHentaiGalleryUrl, EHentaiPageUrl
 from danboorutools.logical.sessions.danbooru import danbooru_api
-from danboorutools.logical.strategies.ehentai import EHentaiGalleryUrl, EHentaiPageUrl
 
 logger.add(f"logs/scripts/{Path(__file__).stem}/" + "{time}.log", retention="7 days")
 

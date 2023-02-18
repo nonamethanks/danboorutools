@@ -1,7 +1,7 @@
 from danboorutools.exceptions import UnparsableUrl
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
-from danboorutools.logical.strategies.booth import (BoothArtistUrl, BoothImageUrl, BoothItemListUrl, BoothItemUrl, BoothProfileImageUrl,
+from danboorutools.logical.extractors.booth import (BoothArtistUrl, BoothImageUrl, BoothItemListUrl, BoothItemUrl, BoothProfileImageUrl,
                                                     BoothUrl)
+from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
 class BoothPmParser(UrlParser):

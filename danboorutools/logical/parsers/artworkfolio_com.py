@@ -1,5 +1,5 @@
+from danboorutools.logical.extractors.deviantart import DeviantArtArtistUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
-from danboorutools.logical.strategies.deviantart import DeviantArtArtistUrl
 
 
 class ArtworkfolioComParser(UrlParser):
