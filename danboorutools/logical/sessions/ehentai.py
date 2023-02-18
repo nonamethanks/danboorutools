@@ -9,10 +9,23 @@ from danboorutools.util.misc import memoize
 
 if TYPE_CHECKING:
 
+    from requests import Response
+
     from danboorutools.models.url import Url
 
 
 class EHentaiSession(Session):
+    @cached_property
+    def browser_cookies(self) -> dict:
+        self.browser_login()
+        cookies = {}
+        for browser_cookie in self.browser.get_cookies():
+            cookies[browser_cookie["name"]] = browser_cookie["value"]
+        return cookies
+
+    def request(self, *args, **kwargs) -> "Response":
+        return super().request(*args, cookies=self.browser_cookies, **kwargs)
+
     @memoize
     def browser_login(self) -> None:
         verification_url = "https://e-hentai.org/home.php"
@@ -45,19 +58,12 @@ class EHentaiSession(Session):
             self.browser.execute_cdp_cmd('Network.setCookie', cookie)
         self.browser.execute_cdp_cmd('Network.disable', {})
 
-    @cached_property
-    def browser_cookies(self) -> dict:
-        self.browser_login()
-        cookies = {}
-        for browser_cookie in self.browser.get_cookies():
-            cookies[browser_cookie["name"]] = browser_cookie["value"]
-        return cookies
-
     def get_html(self, url: "str | Url", *args, **kwargs) -> BeautifulSoup:
         self.browser_login()
         if not isinstance(url, str):
             url = url.normalized_url
 
+        self.head(url)  # trigger UrlIsDeleted
         if self.browser.current_url != url:
             self.browser.get(url)
 
@@ -86,4 +92,4 @@ class EHentaiSession(Session):
 
     def download_file(self, url, *args, download_dir=None, **kwargs):  # noqa
         kwargs.pop("cookies", None)
-        return super().download_file(url, *args, download_dir=download_dir, cookies=self.browser_cookies, **kwargs)
+        return super().download_file(url, *args, download_dir=download_dir, **kwargs)

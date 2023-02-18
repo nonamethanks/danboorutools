@@ -23,16 +23,13 @@ class EHentaiUrl(Url):
             raise ValueError
 
         try:
-            html = super().html
+            return self.session.get_html(self.normalized_url)
         except UrlIsDeleted:
             if self.subsite == "exhentai":
                 raise
-        else:
-            return html
 
         self.subsite = "exhentai"
         del self.__dict__["normalized_url"]
-        del self.__dict__["html"]
         return self.html
 
 
