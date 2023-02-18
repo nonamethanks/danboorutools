@@ -27,6 +27,10 @@ class EHentaiSession(Session):
         return super().request(*args, cookies=self.browser_cookies, **kwargs)
 
     @memoize
+    def head(self, *args, **kwargs) -> "Response":
+        return super().head(*args, **kwargs)
+
+    @memoize
     def browser_login(self) -> None:
         verification_url = "https://e-hentai.org/home.php"
         verification_element = ".homebox"
