@@ -55,7 +55,6 @@ class Session(RequestsSession):
         method, url, args = args[0], args[1], args[2:]
         if not isinstance(url, str):
             url = url.normalized_url
-
         url_domain = ParsableUrl(url).domain
         kwargs["proxies"] = self.proxied_domains.get(url_domain)
         kwargs["headers"] = self._default_headers | kwargs.get("headers", {})
@@ -97,6 +96,7 @@ class Session(RequestsSession):
         if not isinstance(url, str):
             url = url.normalized_url
         response = self.get(url, *args, **kwargs)
+        print(response)
         if not response.ok:
             raise HTTPError(response)
         soup = BeautifulSoup(response.text, "html5lib")

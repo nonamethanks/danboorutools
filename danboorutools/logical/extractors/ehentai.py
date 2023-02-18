@@ -1,6 +1,6 @@
 from datetime import datetime
 from functools import cached_property
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from danboorutools.exceptions import DownloadError, EHEntaiRateLimit, UnknownUrlError, UrlIsDeleted
 from danboorutools.logical.sessions.ehentai import EHentaiSession
@@ -35,10 +35,11 @@ class EHentaiUrl(Url):
 
 class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
     original_filename: str | None
-    gallery_id: int | None
-    page: int | None
+    gallery_id: int | None = None
+    page: int | None = None
     page_token: str | None = None  # TODO: is this just file_hash[:10] every time? i don't think so
     file_hash: str | None  # TODO: use this to find the original gallery, maybe combined with original filename?
+    image_type: Literal["direct", "thumbnail", "download"]  # TODO: fix the rest of possible url types in other extractors
 
     @settable_property
     def created_at(self) -> datetime:
@@ -53,6 +54,8 @@ class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
 
     @property
     def full_asset_url(self) -> str:
+        if self.image_type == "download":
+            return self.original_url.url
         raise NotImplementedError(self.original_url)
 
 

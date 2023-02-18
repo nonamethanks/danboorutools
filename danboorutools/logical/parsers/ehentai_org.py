@@ -60,10 +60,10 @@ class EhentaiOrgParser(UrlParser):
             case "t", _, _, filename:
                 instance = EHentaiImageUrl(parsable_url)
                 instance.original_filename = None
-                instance.page = None
-                instance.gallery_id = None
                 instance.page_token = filename[:10]
                 instance.file_hash = filename.split("-")[0]
+                instance.image_type = "thumbnail"
+
             # https://exhentai.org/fullimg.php?gid=2464842&page=2&key=uinj32c9zag
             case ["fullimg.php"]:
                 instance = EHentaiImageUrl(parsable_url)
@@ -71,6 +71,7 @@ class EhentaiOrgParser(UrlParser):
                 instance.gallery_id = int(parsable_url.params["gid"])
                 instance.page = int(parsable_url.params["page"])
                 instance.file_hash = None
+                instance.image_type = "download"
 
             # https://g.e-hentai.org/?f_shash=85f4d25b291210a2a6936331a1e7202741392715\u0026fs_from=_039.jpg
             case []:
@@ -80,8 +81,8 @@ class EhentaiOrgParser(UrlParser):
                 instance.file_hash = parsable_url.params["f_shash"]
                 instance.page_token = instance.file_hash[:10]
                 instance.original_filename = parsable_url.params["fs_from"]
-                instance.gallery_id = None
-                instance.page = None
+                instance.image_type = "hash_link"
+
             case _:
                 if parsable_url.url == "https://exhentai.org/img/kokomade.jpg":
                     raise UnparsableUrl(parsable_url)

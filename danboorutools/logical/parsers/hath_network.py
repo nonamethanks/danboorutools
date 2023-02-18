@@ -15,9 +15,9 @@ class HathNetworkParser(UrlParser):
             case "h", file_dir, _, filename:
                 instance = EHentaiImageUrl(parsable_url)
                 instance.original_filename = filename
-                instance.page = None
-                instance.gallery_id = None
                 instance.file_hash = file_dir.split("-")[0]
+                instance.image_type = "direct"
+
             case _:
                 return None
 
