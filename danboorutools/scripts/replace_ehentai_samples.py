@@ -16,7 +16,7 @@ def main() -> None:
             logger.info("No galleries found!")
             return
 
-        sources: list[EHentaiPageUrl] = [post.source for post in posts]  # type: ignore
+        sources: list[EHentaiPageUrl] = [post.source for post in posts]  # type: ignore[misc]
         assert all(isinstance(source, EHentaiPageUrl) for source in sources)
         gallery_ids = [source.gallery_id for source in sources]
         gallery_id_set = list(dict.fromkeys(gallery_ids))
@@ -32,7 +32,7 @@ def main() -> None:
             return
 
         gallery_id = gallery_id_set[value - 1]
-        page_url = [source for source in sources if isinstance(source, EHentaiPageUrl) and source.gallery_id == gallery_id][0]
+        page_url = [source for source in sources if source.gallery_id == gallery_id][0]
         gallery_url = page_url.gallery
 
         search = f"source:*e*hentai.org/*{gallery_id}*"
