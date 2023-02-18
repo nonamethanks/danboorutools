@@ -24,11 +24,11 @@ def main(times: int = 0, resume: bool = False) -> None:
 
 
 def prepare_test_set(times):
-    with open("data/sources.txt", encoding="utf-8") as myf:
-        test_set = [line.strip().strip("\"") for line in myf if line.strip()]
     with open("data/artist_urls.txt", encoding="utf-8") as myf:
-        # TODO: add script to update this and the above from bq
+        # TODO: add script to update this and the below from bq
         # https://github.com/danbooru/danbooru/issues/5440 this needs to be fixed first
+        test_set = [line.strip().strip("\"") for line in myf if line.strip()]
+    with open("data/sources.txt", encoding="utf-8") as myf:
         test_set += [line.strip().strip("\"") for line in myf if line.strip()]
 
     if times:
@@ -65,7 +65,10 @@ def do_benchmark(test_set: list[str], resume: bool) -> None:
 
 def prepare_profiler(profiler: LineProfiler) -> Callable:
     for parser_type in parsers.values():
-        profiler.add_function(parser_type.match_url)
+        try:
+            profiler.add_function(parser_type.match_url)
+        except ValueError:
+            pass
         for method in dir(parser_type):
             if method.startswith("_match"):
                 profiler.add_function(getattr(parser_type, method))
