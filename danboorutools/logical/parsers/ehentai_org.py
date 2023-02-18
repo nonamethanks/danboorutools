@@ -88,6 +88,9 @@ class EhentaiOrgParser(UrlParser):
                 # https://repo.e-hentai.org/bounty/fc/fcf12a1928e4d3b49bebe5280238e00de52027de-455288.jpg-thumb.jpg
                 elif parsable_url.subdomain in ["repo", "forums"]:
                     raise UnparsableUrl(parsable_url.url)
+                # http://g.e-hentai.org/tag/artist%3Ayatsuki
+                elif parsable_url.url_parts[0] in ["tag"]:
+                    raise UnparsableUrl(parsable_url.url)
                 else:
                     return None
 

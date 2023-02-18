@@ -20,7 +20,11 @@ class PixivNetParser(UrlParser):
             return cls._match_fanbox_subdomain(parsable_url)
         elif parsable_url.subdomain == "comic":
             return cls._match_comic_subdomain(parsable_url)
-        elif instance := cls._match_everything_else(parsable_url):
+        elif parsable_url.subdomain == "blog":
+            instance = p.PixivStaccUrl(parsable_url.url)
+            instance.stacc = parsable_url.url_parts[0]
+            return instance
+        elif instance := cls._match_everything_else(parsable_url):  # type: ignore[assignment]
             return instance
         # https://sensei.pixiv.net/ja/course/30
         # http://imgaz.pixiv.net/img_group/200/1024091/d0928738938a2c8ecba3dd3a57a4c2ad.png
@@ -28,7 +32,8 @@ class PixivNetParser(UrlParser):
         # http://dev.pixiv.net/img/event/princessroyale/8.png
         # http://chat.pixiv.net/roomstepimg.php?id=988003&pos=13418 -> redirects to sketch.pixiv.net/lives
         # http://goods.pixiv.net/c76/images/bg_top5.jpg
-        elif parsable_url.subdomain in ["sensei", "imgaz", "source", "dev", "chat", "goods"]:
+        # http://dic.pixiv.net/a/あ～るさん
+        elif parsable_url.subdomain in ["sensei", "imgaz", "source", "dev", "chat", "goods", "dic"]:
             raise UnparsableUrl(parsable_url.url)
         else:
             return None
@@ -120,7 +125,8 @@ class PixivNetParser(UrlParser):
             case _:
                 # https://www.pixiv.net/contest/neuralcloud
                 # http://www.pixiv.net/tags.php?tag=%E5%88%86%E5%89%B2%E9%9C%8A%E5%A4%A2
-                if parsable_url.url_parts[0] in ["tags.php", "tags", "contest"]:
+                # http://www.pixiv.net/group/?id=1992
+                if parsable_url.url_parts[0] in ["tags.php", "tags", "contest", "group"]:
                     raise UnparsableUrl(parsable_url.url)
                 if parsable_url.url_parts[0:1] == ["en", "tags"]:
                     raise UnparsableUrl(parsable_url.url)
@@ -344,6 +350,7 @@ class PixivNetParser(UrlParser):
         ],
         p.PixivStaccUrl: [
             "https://www.pixiv.net/stacc/noizave",
+            "https://blog.pixiv.net/zerousagi/",
         ],
         c.PixivComicStoryUrl: [
             "https://comic.pixiv.net/viewer/stories/107927",
