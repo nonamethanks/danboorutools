@@ -44,7 +44,9 @@ def do_benchmark(test_set: list[str], resume: bool) -> None:
     start = time.time()
 
     last_fail = PersistentValue("PARSING_BENCHMARK_LAST_FAIL", 0)
-    if resume and last_fail.value > 0:
+    if not resume:
+        last_fail.delete()
+    elif last_fail.value > 0:
         print(f"Resuming from {last_fail.value - 20:_}.")
 
     for index, url_string in enumerate(test_set):

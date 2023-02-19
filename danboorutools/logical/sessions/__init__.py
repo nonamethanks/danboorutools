@@ -96,7 +96,6 @@ class Session(RequestsSession):
         if not isinstance(url, str):
             url = url.normalized_url
         response = self.get(url, *args, **kwargs)
-        print(response)
         if not response.ok:
             raise HTTPError(response)
         soup = BeautifulSoup(response.text, "html5lib")
