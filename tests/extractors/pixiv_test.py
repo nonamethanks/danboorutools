@@ -1,8 +1,13 @@
+from typing import TYPE_CHECKING
+
 from ward import test
 
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl, PixivImageUrl, PixivPostUrl
 from danboorutools.models.url import Url
 from tests.extractors import assert_info_url, assert_redirect_url, generate_artist_test_suite
+
+if TYPE_CHECKING:
+    from tests.extractors import ArtistTestKwargs, GalleryTestKwargs, PostAssetTestKwargs, PostTestKwargs  # noqa
 
 tests = generate_artist_test_suite(
     url_type=PixivArtistUrl,
@@ -11,7 +16,7 @@ tests = generate_artist_test_suite(
     related=["https://www.pixiv.net/stacc/2001sys", "https://huijin177.lofter.com"],
     normalized_url="https://www.pixiv.net/en/users/10183321",
     post_count=40,
-    user_id=10183321,
+    url_properties=dict(user_id=10183321),
 
     post=dict(
         url_type=PixivPostUrl,
@@ -19,12 +24,13 @@ tests = generate_artist_test_suite(
         asset_count=7,
         score=2473,
         created_at="2021-12-28 14:53:00",
+        url_properties=dict(post_id=95096202),
 
         asset=dict(
             url_type=PixivImageUrl,
             url="https://i.pximg.net/img-original/img/2021/12/28/23/53/02/95096202_p6.png",
             created_at="2021-12-28 23:53:02",
-            post_id=95096202,
+            url_properties=dict(post_id=95096202),
             file_md5="2abae1fc2d8b52fc2a1d54d6654181c6",
         )
     )

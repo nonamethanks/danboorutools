@@ -13,6 +13,7 @@ services:
     volumes:
       # development
       - ./danboorutools:/code/danboorutools/:ro
+      - ./tests:/code/tests:ro
       - ./pyproject.toml:/code/pyproject.toml:ro
       - ./logs:/code/logs/
       - ./cookies:/code/cookies/

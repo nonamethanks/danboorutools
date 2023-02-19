@@ -1,5 +1,6 @@
+import re
 from datetime import datetime
-from typing import Callable, TypeVar
+from typing import Callable, Generic, NotRequired, TypedDict, TypeVar, Unpack
 
 from danboorutools.logical.parsers import UrlParser
 from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
@@ -12,119 +13,134 @@ def assert_urls_are_same(lhs_value: list[Url] | list[str], rhs_value: list[Url] 
     assert_equal(lhs_urls, rhs_urls)
 
 
+###########################################################
+
 UrlTypeVar = TypeVar("UrlTypeVar", bound=Url)
 GalleryUrlTypeVar = TypeVar("GalleryUrlTypeVar", bound=GalleryUrl)
 ArtistUrlTypeVar = TypeVar("ArtistUrlTypeVar", bound=ArtistUrl)
+InfoUrlTypeVar = TypeVar("InfoUrlTypeVar", bound=InfoUrl)
+PostUrlTypeVar = TypeVar("PostUrlTypeVar", bound=PostUrl)
+PostAssetUrlTypeVar = TypeVar("PostAssetUrlTypeVar", bound=PostAssetUrl)
+
+###########################################################
 
 
-def assert_gallery_url(gallery_url: Url | str,
-                       /,
-                       url_type: type[GalleryUrlTypeVar],
-                       is_deleted: bool,
-                       post_count: int,
-                       normalized_url: str | None = None,
-                       **url_properties
-                       ) -> GalleryUrlTypeVar:
-
-    parsed_gallery_url = assert_casted(gallery_url, url_type)
-
-    if normalized_url:
-        assert_equal(parsed_gallery_url.normalized_url, normalized_url)
-    elif isinstance(parsed_gallery_url, str):
-        assert_equal(parsed_gallery_url.normalized_url, parsed_gallery_url)
-
-    assert_equal(parsed_gallery_url.is_deleted, is_deleted)
-
-    assert_comparison(parsed_gallery_url.posts, ">=", post_count)
-
-    for key, value in url_properties.items():
-        assert_equal(getattr(parsed_gallery_url, key), value)
-
-    return parsed_gallery_url
+class UrlTestKwargs(TypedDict, Generic[UrlTypeVar]):
+    url: str | re.Pattern[str]
+    url_type: type[UrlTypeVar]
+    url_properties: dict[str, str | int]
+    normalized_url: NotRequired[str]
 
 
-def assert_artist_url(artist_url: Url | str,
-                      /,
-                      url_type: type[ArtistUrlTypeVar],
-                      is_deleted: bool,
-                      names: list[str],
-                      related: list[Url] | list[str],
-                      post_count: int,
-                      normalized_url: str | None = None,
-                      **url_properties
-                      ) -> ArtistUrlTypeVar:
-
-    parsed_artist_url = assert_gallery_url(
-        artist_url,
-        url_type=url_type,
-        is_deleted=is_deleted,
-        normalized_url=normalized_url,
-        post_count=post_count,
-    )
-
-    assert_equal(sorted(parsed_artist_url.names), sorted(names))
-    assert_urls_are_same(related, parsed_artist_url.related)
-
-    for key, value in url_properties.items():
-        assert_equal(getattr(parsed_artist_url, key), value)
-
-    return parsed_artist_url
+class PostAssetTestKwargs(UrlTestKwargs[PostAssetUrlTypeVar]):
+    file_md5: str
+    post: NotRequired[PostUrl]
+    file_count: NotRequired[int]
+    created_at: NotRequired[datetime | str]
 
 
-def assert_post_url(post_url: Url | str,
-                    /,
-                    url_type: type[PostUrl],
-                    asset_count: int,
-                    score: int,
-                    created_at: datetime | str,
-                    gallery: GalleryUrl | None = None,
-                    normalized_url: str | None = None,
-                    **kwargs,
-                    ) -> PostUrl:
-    parsed_post_url = assert_casted(post_url, url_type)
+class PostTestKwargs(UrlTestKwargs[PostUrlTypeVar]):
+    gallery: NotRequired[GalleryUrl]
+    score: int
+    asset_count: int
+    created_at: datetime | str
 
-    if normalized_url:
-        assert_equal(parsed_post_url.normalized_url, normalized_url)
-    elif isinstance(post_url, str):
-        assert_equal(parsed_post_url.normalized_url, post_url)
-    if gallery:
-        assert_equal(parsed_post_url.gallery, gallery)
-    assert_equal(parsed_post_url.created_at, created_at)
-    assert_equal(len(parsed_post_url.assets), asset_count)
-    assert_comparison(parsed_post_url.score, ">=", score)
-
-    for key, value in kwargs.items():
-        assert_equal(getattr(parsed_post_url, key), value)
-
-    return parsed_post_url
+    asset: NotRequired[PostAssetTestKwargs]
 
 
-def assert_asset_url(asset_url: Url | str,
-                     /,
-                     url_type: type[PostAssetUrl],
-                     normalized_url: str | None = None,
-                     file_count: int = 1,
-                     created_at: datetime | str | None = None,
-                     post: PostUrl | None = None,
-                     **kwargs,
-                     ) -> PostAssetUrl:
-    asset_url = assert_casted(asset_url, url_type)
+class GalleryTestKwargs(UrlTestKwargs[GalleryUrlTypeVar]):
+    post_count: int
+    is_deleted: NotRequired[bool]
+    post: NotRequired[PostTestKwargs]
 
-    if normalized_url:
-        assert_equal(asset_url.normalized_url, normalized_url)
 
-    if post:
-        assert_equal(post, asset_url.post)
+class InfoTestKwargs(UrlTestKwargs[InfoUrlTypeVar]):
+    names: list[str]
+    related: list[str]
 
-    assert_equal(len(asset_url.files), file_count)
 
-    if created_at:
-        assert_equal(asset_url.created_at, created_at)
+class ArtistTestKwargs(InfoTestKwargs[ArtistUrlTypeVar], GalleryTestKwargs[ArtistUrlTypeVar]):  # type: ignore[misc]
+    ...
 
-    for key, value in kwargs.items():
-        assert_equal(getattr(asset_url, key), value)
+###########################################################
 
-    return asset_url
+
+def assert_gallery_url(**kwargs: Unpack[GalleryTestKwargs[GalleryUrlTypeVar]]) -> GalleryUrlTypeVar:
+    assert isinstance(kwargs["url"], str)
+    gallery = assert_casted(kwargs["url"], kwargs["url_type"])
+    for key, value in kwargs["url_properties"].items():
+        assert_equal(getattr(gallery, key), value)
+
+    if kwargs.get("normalized_url"):
+        assert_equal(gallery.normalized_url, kwargs["normalized_url"])
+    elif isinstance(gallery, str):
+        assert_equal(gallery.normalized_url, gallery)
+
+    assert_equal(gallery.is_deleted, kwargs.get("is_deleted", False))
+
+    assert_comparison(gallery.posts, ">=", kwargs["post_count"])
+
+    return gallery
+
+
+def assert_artist_url(**kwargs: Unpack[ArtistTestKwargs[ArtistUrlTypeVar]]) -> ArtistUrlTypeVar:
+    gallery_data: GalleryTestKwargs[ArtistUrlTypeVar] = {
+        "url": kwargs["url"],
+        "url_type": kwargs["url_type"],
+        "url_properties": kwargs["url_properties"],
+        "post_count": kwargs["post_count"],
+    }
+
+    artist = assert_gallery_url(**gallery_data)
+
+    assert_equal(sorted(artist.names), sorted(kwargs["names"]))
+    assert_urls_are_same(kwargs["related"], artist.related)
+
+    return artist
+
+
+def assert_post_url(**kwargs: Unpack[PostTestKwargs[PostUrlTypeVar]]) -> PostUrl:
+    assert isinstance(kwargs["url"], str)
+    post = assert_casted(kwargs["url"], kwargs["url_type"])
+    for key, value in kwargs["url_properties"].items():
+        assert_equal(getattr(post, key), value)
+
+    if kwargs.get("normalized_url"):
+        assert_equal(post.normalized_url, kwargs["normalized_url"])
+    else:
+        assert_equal(post.normalized_url, kwargs["url"])
+    if kwargs.get("gallery"):
+        assert_equal(post.gallery, kwargs["gallery"])
+
+    assert_equal(post.created_at, kwargs["created_at"])
+    assert_equal(len(post.assets), kwargs["asset_count"])
+    assert_comparison(post.score, ">=", kwargs["score"])
+
+    return post
+
+
+def assert_asset_url(**kwargs: Unpack[PostAssetTestKwargs[PostAssetUrlTypeVar]]) -> PostAssetUrl:
+    assert isinstance(kwargs["url"], str)
+    asset = assert_casted(kwargs["url"], kwargs["url_type"])
+
+    for key, value in kwargs["url_properties"].items():
+        assert_equal(getattr(asset, key), value)
+
+    if kwargs.get("normalized_url"):
+        assert_equal(asset.full_asset_url, kwargs["normalized_url"])
+
+    if kwargs.get("post"):
+        assert_equal(kwargs["post"], asset.post)
+
+    assert_equal(len(asset.files), kwargs.get("file_count", 1))
+
+    if kwargs.get("created_at"):
+        assert_equal(asset.created_at, kwargs["created_at"])
+
+    if kwargs.get("file_md5"):
+        assert any(file.md5 == kwargs["file_md5"] for file in asset.files)
+
+    return asset
 
 
 def assert_asset_file(asset: PostAssetUrl, md5s: list[str]) -> None:
@@ -178,133 +194,82 @@ def prune_cache(method: Callable) -> None:
     method()
 
 
-def generate_gallery_test_suite(url_type: type[GalleryUrl],
-                                url: str,
-                                post_count: int,
-                                normalized_url: str | None = None,
-                                post: dict | None = None,
-                                **url_properties,
-                                ) -> dict:
-
-    gallery = assert_casted(url, url_type)
+def generate_gallery_test_suite(**kwargs: Unpack[GalleryTestKwargs[GalleryUrlTypeVar]]) -> dict:
+    assert isinstance(kwargs["url"], str)
 
     def _run_gallery_test() -> None:
-        _artist = assert_gallery_url(
-            gallery,
-            url_type=url_type,
-            is_deleted=False,
-            normalized_url=normalized_url,
-            post_count=post_count,
-            **url_properties
-        )
-
-        if post:
-            assert any(post["url"] == found_post.normalized_url for found_post in _artist.posts)
+        _gallery = assert_gallery_url(**kwargs)
+        if kwargs["post"]:
+            if isinstance(kwargs["post"]["url"], str):
+                assert any(post for post in _gallery.posts if post.normalized_url == kwargs["post"]["url"])
+            else:
+                _post, = [post for post in _gallery.posts if kwargs["post"]["url"].search(post.normalized_url)]
+                post = kwargs["post"].copy()
+                post["url"] = _post.normalized_url
+                assert_post_url(**post)
 
     tests = {"gallery": _run_gallery_test}
 
-    if post:
-        tests |= generate_post_test_suite(
-            gallery=gallery,
-            **post,
-        )
+    if (post := kwargs["post"]) and isinstance(post["url"], str):  # type: ignore[redundant-expr] # false positive
+        gallery = assert_casted(kwargs["url"], kwargs["url_type"])
+        post["gallery"] = gallery
+        tests |= generate_post_test_suite(**post)
 
     return tests
 
 
-def generate_artist_test_suite(url_type: type[ArtistUrl],
-                               url: str,
-                               names: list[str],
-                               related: list[str],
-                               post_count: int,
-                               normalized_url: str | None = None,
-                               post: dict | None = None,
-                               **url_properties,
-                               ) -> dict:
-
-    artist = assert_casted(url, url_type)
+def generate_artist_test_suite(**kwargs: Unpack[ArtistTestKwargs[ArtistUrlTypeVar]]) -> dict:
+    assert isinstance(kwargs["url"], str)
 
     def _run_artist_test() -> None:
-        _artist = assert_artist_url(
-            artist,
-            url_type=url_type,
-            is_deleted=False,
-            names=names,
-            normalized_url=normalized_url,
-            related=related,
-            post_count=post_count,
-            **url_properties
-        )
-
-        if post:
-            assert any(post["url"] == found_post.normalized_url for found_post in _artist.posts)
+        _artist = assert_artist_url(**kwargs)
+        if kwargs["post"]:
+            if isinstance(kwargs["post"]["url"], str):
+                assert any(post for post in _artist.posts if post.normalized_url == kwargs["post"]["url"])
+            else:
+                _post, = [post for post in _artist.posts if kwargs["post"]["url"].search(post.normalized_url)]
+                post = kwargs["post"].copy()
+                post["url"] = _post.normalized_url
+                assert_post_url(**post)
 
     tests = {"artist": _run_artist_test}
 
-    if post:
-        tests |= generate_post_test_suite(
-            gallery=artist,
-            **post,
-        )
+    if (post := kwargs["post"]) and isinstance(post["url"], str):  # type: ignore[redundant-expr] # false positive
+        artist = assert_casted(kwargs["url"], kwargs["url_type"])
+        post["gallery"] = artist
+        tests |= generate_post_test_suite(**post)
 
     return tests
 
 
-def generate_post_test_suite(url_type: type[PostUrl],
-                             url: str,
-                             asset_count: int,
-                             score: int,
-                             created_at: datetime | str,
-                             gallery: GalleryUrl | None = None,
-                             asset: dict | None = None,
-                             **kwargs,
-                             ) -> dict:
-    post = assert_casted(url, url_type)
+def generate_post_test_suite(**kwargs: Unpack[PostTestKwargs[PostUrlTypeVar]]) -> dict:
+    assert isinstance(kwargs["url"], str)
 
     def _run_post_test() -> None:
-        _post = assert_post_url(
-            url,
-            url_type=url_type,
-            gallery=gallery,
-            asset_count=asset_count,
-            score=score,
-            created_at=created_at,
-            **kwargs,
-        )
-        if asset:
-            if isinstance(asset["url"], str):
-                assert any(asset["url"] == found_asset.normalized_url for found_asset in _post.assets)
+        _post = assert_post_url(**kwargs)
+        if kwargs["asset"]:
+            if isinstance(kwargs["asset"]["url"], str):
+                assert any(asset for asset in _post.assets if asset.normalized_url == kwargs["asset"]["url"])
             else:
-                assert any(asset["url"].match(found_asset.normalized_url) for found_asset in _post.assets)
+                _asset, = [asset for asset in _post.assets if kwargs["asset"]["url"].search(asset.normalized_url)]
+                asset = kwargs["asset"].copy()
+                asset["url"] = _asset.normalized_url
+                assert_asset_url(**asset)
 
     tests = {"post": _run_post_test}
-
-    if asset and isinstance(asset["url"], str):
-        tests |= generate_asset_test_suite(
-            post=post,
-            **asset,
-        )
+    if (asset := kwargs["asset"]) and isinstance(asset["url"], str):  # type: ignore[redundant-expr] # false positive
+        post = assert_casted(kwargs["url"], kwargs["url_type"])
+        asset["post"] = post
+        tests |= generate_asset_test_suite(**asset)
 
     return tests
 
 
-def generate_asset_test_suite(url_type: type[PostAssetUrl],
-                              url: str,
-                              file_md5: str,
-                              post: PostUrl | None = None,
-                              **kwargs,
-                              ) -> dict:
+def generate_asset_test_suite(**kwargs: Unpack[PostAssetTestKwargs[PostAssetUrlTypeVar]]) -> dict:
+    assert isinstance(kwargs["url"], str)
 
     def _run_asset_test() -> None:
-        asset = assert_asset_url(
-            url,
-            url_type=url_type,
-            post=post,
-            **kwargs,
-        )
-
-        if file_md5:
-            assert file_md5 in [f.md5 for f in asset.files]
+        assert_asset_url(**kwargs)
 
     tests = {"asset": _run_asset_test}
 
