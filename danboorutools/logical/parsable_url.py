@@ -1,6 +1,7 @@
 import re
 from dataclasses import dataclass
 from functools import cached_property
+from urllib.parse import unquote
 
 from danboorutools.exceptions import UnparsableUrl
 
@@ -13,9 +14,6 @@ class ParsableUrl:
 
     @cached_property
     def url_data(self) -> dict:
-        if "\\u" in self.url:
-            self.url = self.url.encode("utf-8").decode("unicode-escape")
-
         [scheme, _, *url_parts] = self.url.split("/")
         if scheme not in ("http:", "https:"):
             raise ValueError(self.url)
@@ -65,9 +63,15 @@ class ParsableUrl:
 
     @cached_property
     def params(self) -> dict[str, str]:
-        if not self.url_data["params"]:
+        if not (params := self.url_data["params"]):
             return {}
-        return dict(url_params_pattern.findall(self.url_data["params"]))
+
+        if "%5Cu" in params:
+            params = unquote(params)
+        if "\\u" in params:
+            params = params.encode("utf-8").decode("unicode-escape")
+
+        return dict(url_params_pattern.findall(params))
 
     @property
     def scheme(self) -> str:

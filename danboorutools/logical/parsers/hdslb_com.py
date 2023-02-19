@@ -13,7 +13,7 @@ class HdslbComParser(UrlParser):
             "https://i0.hdslb.com/bfs/album/37f77871d417c76a08a9467527e9670810c4c442.gif",
             "https://i0.hdslb.com/bfs/article/48e75b3871fa5ed62b4e3a16bf60f52f96b1b3b1.jpg@942w_1334h_progressive.webp",
 
-            "https://i0.hdslb.com/bfs/activity-plat/static/2cf2b9af5d3c5781d611d6e36f405144/E738vcDvd3.png",
+            # "https://i0.hdslb.com/bfs/activity-plat/static/2cf2b9af5d3c5781d611d6e36f405144/E738vcDvd3.png",
             "https://i0.hdslb.com/bfs/new_dyn/bb4e6e265174f53672ba9c87fcf23f0f468367.jpg",  # TODO: fix this on danbooru code too: not 8 digits
         ],
     }
