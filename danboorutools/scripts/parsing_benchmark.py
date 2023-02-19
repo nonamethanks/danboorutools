@@ -44,9 +44,11 @@ def do_benchmark(test_set: list[str], resume: bool) -> None:
     start = time.time()
 
     last_fail = PersistentValue("PARSING_BENCHMARK_LAST_FAIL", 0)
+    if resume and last_fail.value > 0:
+        print(f"Resuming from {last_fail.value - 20:_}.")
 
     for index, url_string in enumerate(test_set):
-        if resume and index < last_fail.value:
+        if resume and index < last_fail.value - 20:  # little wiggle room for deleting invalid sources from the files
             continue
         if index % 100_000 == 0:
             print(f"At url {index:_}, {int(time.time() - start)}s elapsed.")
