@@ -66,24 +66,29 @@ for f in Path(__file__).parent.glob("*.py"):
     if "__" not in f.stem:
         import_module(f".{f.stem}", __package__)
 
+
 # from danboorutools.exceptions import UnparsableUrl
-# from danboorutools.logical.extractors.x import XXXUrl
+# from danboorutools.logical.extractors.Xxx import XxxArtistUrl, XxxImageUrl, XxxPostUrl, XxxUrl
 # from danboorutools.logical.parsers import ParsableUrl, UrlParser
-#
-#
+
+
 # class XxxXxxParser(UrlParser):
 #     test_cases = {
-#         XXXUrl: [
-#         ]
+#         XxxArtistUrl: [
+#         ],
+#         XxxImageUrl: [
+#         ],
+#         XxxPostUrl: [
+#         ],
 #     }
-#
+
 #     @classmethod
-#     def match_url(cls, parsable_url: ParsableUrl) -> AniftyUrl | None:
+#     def match_url(cls, parsable_url: ParsableUrl) -> XxxUrl | None:
 #         match parsable_url.url_parts:
 #             case _, _, xxx:
-#                 instance = XXXUrl(parsable_url)
+#                 instance = XxxArtistUrl(parsable_url)
 #                 instance.xxx = xxx
 #             case _:
 #                 return None
-#
+
 #         return instance
