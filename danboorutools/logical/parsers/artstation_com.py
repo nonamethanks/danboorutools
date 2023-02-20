@@ -55,7 +55,7 @@ class ArtstationComParser(UrlParser):
                 instance.post_id = parsable_url.url_parts[2]
                 return instance
 
-        if parsable_url.subdomain is None or parsable_url.subdomain == "www":
+        if parsable_url.subdomain in ["", "www"]:
             return cls._match_username_in_path(parsable_url)
         elif parsable_url.subdomain.startswith("cdn"):
             return cls._match_image(parsable_url)
@@ -138,6 +138,6 @@ class ArtstationComParser(UrlParser):
             # https://sa-dui.artstation.com/projects
             case _:
                 instance = ArtStationArtistUrl(parsable_url)
-                instance.username = parsable_url.subdomain  # type: ignore[assignment]
+                instance.username = parsable_url.subdomain
 
         return instance

@@ -32,7 +32,7 @@ class BoothPmParser(UrlParser):
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> BoothUrl | None:
-        if parsable_url.subdomain not in ("www", None, "s", "s2"):
+        if parsable_url.subdomain not in ("www", "", "s", "s2"):
             return cls._match_username_in_subdomain(parsable_url)
         else:
             return cls._match_everything_else(parsable_url)

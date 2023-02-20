@@ -12,7 +12,7 @@ class PixivNetParser(UrlParser):
     def match_url(cls, parsable_url: ParsableUrl) -> p.PixivUrl | s.PixivSketchUrl | c.PixivComicUrl | f.FanboxUrl | None:
         if parsable_url.url_parts[0] == "fanbox":
             return cls._match_fanbox_path(parsable_url)
-        if parsable_url.subdomain in ("www", None):
+        if parsable_url.subdomain in ("www", ""):
             return cls._match_no_subdomain(parsable_url)
         elif parsable_url.subdomain in ("sketch", "img-sketch"):
             return cls._match_sketch_subdomain(parsable_url)

@@ -19,7 +19,7 @@ class LofterComParser(UrlParser):
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> LofterUrl | None:
         instance: LofterUrl
-        if parsable_url.subdomain in ["www", "i"] or not parsable_url.subdomain:
+        if parsable_url.subdomain in ["www", "i", ""]:
             match parsable_url.url_parts:
                 case ("app" | "blog"), username:
                     instance = LofterArtistUrl(parsable_url)

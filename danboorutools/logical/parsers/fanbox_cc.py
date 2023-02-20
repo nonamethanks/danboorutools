@@ -26,7 +26,7 @@ class FanboxCcParser(UrlParser):
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> FanboxUrl | None:
-        if parsable_url.subdomain is None or parsable_url.subdomain == "www":
+        if parsable_url.subdomain in ["www", ""]:
             return cls._match_username_in_path(parsable_url)
         elif parsable_url.subdomain == "downloads":
             return cls._match_image(parsable_url)
@@ -58,14 +58,14 @@ class FanboxCcParser(UrlParser):
             # https://brllbrll.fanbox.cc/posts/626093",  # R18
             case "posts", post_id:
                 instance = FanboxPostUrl(parsable_url)
-                instance.username = parsable_url.subdomain  # type: ignore[assignment]
+                instance.username = parsable_url.subdomain
                 instance.post_id = int(post_id)
             # https://omu001.fanbox.cc
             # https://omu001.fanbox.cc/posts
             # https://omu001.fanbox.cc/plans
             case _:
                 instance = FanboxArtistUrl(parsable_url)
-                instance.username = parsable_url.subdomain.removeprefix("@")  # type: ignore[union-attr]
+                instance.username = parsable_url.subdomain.removeprefix("@")
         return instance
 
     @staticmethod

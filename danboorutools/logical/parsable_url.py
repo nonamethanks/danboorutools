@@ -33,7 +33,7 @@ class ParsableUrl:
                 domain, tld = hostname.rsplit(".")
             except ValueError as e:
                 raise UnparsableUrl(self.url) from e
-            subdomain = None
+            subdomain = ""
         url_parts = [u for u in url_parts[1:] if u]
 
         return {
@@ -54,7 +54,7 @@ class ParsableUrl:
         return self.url_data["domain"]
 
     @property
-    def subdomain(self) -> str | None:
+    def subdomain(self) -> str:
         return self.url_data["subdomain"]
 
     @property

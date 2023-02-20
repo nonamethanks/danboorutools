@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrl
 from danboorutools.logical.extractors.bilibili import (BilibiliArticleUrl, BilibiliArtistUrl, BilibiliLiveUrl, BilibiliPostUrl, BilibiliUrl,
-                                                       BilibiliVideoUrl)
+                                                       BilibiliVideoPostUrl)
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
@@ -23,7 +23,7 @@ class BilibiliComParser(UrlParser):
         BilibiliArticleUrl: [
             "https://www.bilibili.com/read/cv7360489",
         ],
-        BilibiliVideoUrl: [
+        BilibiliVideoPostUrl: [
             "https://www.bilibili.com/video/BV1dY4y1u7Vi/",
             "http://www.bilibili.tv/video/av439451/",
         ],
@@ -74,7 +74,7 @@ class BilibiliComParser(UrlParser):
                 instance.article_id = int(article_id.removeprefix("cv"))
 
             case *_, "video", video_id:
-                instance = BilibiliVideoUrl(parsable_url)
+                instance = BilibiliVideoPostUrl(parsable_url)
                 instance.video_id = video_id
 
             case "member", "index.php":
@@ -100,7 +100,7 @@ class BilibiliComParser(UrlParser):
                     else:
                         raise
 
-                instance.post_type = parsable_url.subdomain  # type: ignore[assignment]
+                instance.post_type = parsable_url.subdomain
 
             case [live_id] if parsable_url.subdomain == "live":
                 instance = BilibiliLiveUrl(parsable_url)

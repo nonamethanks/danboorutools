@@ -12,6 +12,5 @@ class CarrdCoParser(UrlParser):
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> CarrdUrl | None:
         instance = CarrdUrl(parsable_url)
-        assert parsable_url.subdomain
         instance.username = parsable_url.subdomain
         return instance

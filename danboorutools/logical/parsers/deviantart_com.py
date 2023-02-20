@@ -30,7 +30,7 @@ class DeviantartComParser(UrlParser):
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> DeviantArtUrl | None:
-        if parsable_url.subdomain is None or parsable_url.subdomain == "www":
+        if parsable_url.subdomain in ["", "www"]:
             return cls._match_username_in_path(parsable_url)
         else:
             return cls._match_username_in_subdomain(parsable_url)
@@ -96,6 +96,6 @@ class DeviantartComParser(UrlParser):
             # https://noizave.deviantart.com
             case _:
                 instance = DeviantArtArtistUrl(parsable_url)
-                instance.username = parsable_url.subdomain  # type: ignore[assignment]
+                instance.username = parsable_url.subdomain
 
         return instance

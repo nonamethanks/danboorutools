@@ -70,7 +70,7 @@ class PximgNetParser(UrlParser):
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> (PixivUrl | FanboxUrl | PixivSketchImageUrl | BoothUrl | None):
-        if parsable_url.subdomain == "i" or (parsable_url.subdomain and parsable_url.subdomain.startswith("i-")):
+        if parsable_url.subdomain == "i" or parsable_url.subdomain.startswith("i-"):
             return cls._match_i_piximg(parsable_url)
         elif parsable_url.subdomain == "booth":
             return cls._match_booth(parsable_url)
