@@ -13,9 +13,10 @@ services:
     volumes:
       # development
       - ./danboorutools:/code/danboorutools/:ro
-      - ./tests:/code/tests:ro
       - ./pyproject.toml:/code/pyproject.toml:ro
       - ./logs:/code/logs/
+      - ./data:/code/data/
+      - ./tests:/code/tests:ro
       - ./cookies:/code/cookies/
       - ./screenshots:/code/screenshots/
       - ./.ipython:/home/danboorutools/.ipython  # ipython interpreter history persistence
