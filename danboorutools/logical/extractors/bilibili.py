@@ -7,7 +7,7 @@ class BilibiliUrl(Url):
     pass
 
 
-class BilibiliVideoUrl(PostUrl, BilibiliUrl):
+class BilibiliVideoPostUrl(PostUrl, BilibiliUrl):
     video_id: str
 
     normalization = "https://www.bilibili.com/video/{video_id}"
