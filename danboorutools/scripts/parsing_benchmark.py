@@ -19,7 +19,7 @@ logger.add(f"logs/scripts/{Path(__file__).stem}/" + "{time}.log", retention="7 d
 def main(times: int = 0, resume: bool = False) -> None:
 
     test_set = prepare_test_set(times)
-    print(f"Testing URL parsing {len(test_set)} times.")
+    logger.info(f"Testing URL parsing {len(test_set)} times.")
     do_benchmark(test_set, resume)
 
 
@@ -47,13 +47,13 @@ def do_benchmark(test_set: list[str], resume: bool) -> None:
     if not resume:
         last_fail.delete()
     elif last_fail.value > 0:
-        print(f"Resuming from {last_fail.value - 20:_}.")
+        logger.info(f"Resuming from {last_fail.value - 20:_}.")
 
     for index, url_string in enumerate(test_set):
         if resume and index < last_fail.value - 20:  # little wiggle room for deleting invalid sources from the files
             continue
         if index % 100_000 == 0:
-            print(f"At url {index:_}, {int(time.time() - start)}s elapsed.")
+            logger.info(f"At url {index:_}, {int(time.time() - start)}s elapsed.")
             last_fail.value = index
         try:
             parse_wrapper(url_string)
