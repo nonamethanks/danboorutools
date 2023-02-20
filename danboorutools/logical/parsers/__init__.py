@@ -85,9 +85,9 @@ for f in Path(__file__).parent.glob("*.py"):
 #     @classmethod
 #     def match_url(cls, parsable_url: ParsableUrl) -> XxxUrl | None:
 #         match parsable_url.url_parts:
-#             case _, _, xxx:
+#             case _, _, var:
 #                 instance = XxxArtistUrl(parsable_url)
-#                 instance.xxx = xxx
+#                 instance.var = var
 #             case _:
 #                 return None
 
