@@ -33,3 +33,4 @@ RUN mkdir /home/danboorutools/.ipython
 RUN poetry install --no-interaction --no-ansi
 
 ENV SHELL /bin/bash
+ENV TERM xterm-256color
