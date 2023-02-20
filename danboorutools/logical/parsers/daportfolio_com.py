@@ -3,8 +3,13 @@ from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
 class DaportfolioComParser(UrlParser):
+    domains = ["daportfolio.com", "artworkfolio.com"]
+
     test_cases = {
-        DeviantArtArtistUrl: ["http://nemupanart.daportfolio.com"]
+        DeviantArtArtistUrl: [
+            "http://nemupanart.daportfolio.com",
+            "http://regi-chan.artworkfolio.com",
+        ]
     }
 
     @classmethod
