@@ -62,14 +62,28 @@ class UrlParser:
             parsers[domain] = cls
 
 
-# pylint: disable=import-outside-toplevel
-# Due to circular imports this has to be loaded after Url declaration, in order to trigger __init_subclass__
-
-# autopep8: off
-
 for f in Path(__file__).parent.glob("*.py"):
     if "__" not in f.stem:
         import_module(f".{f.stem}", __package__)
 
-del import_module, Path
-# autopep8: on
+# from danboorutools.exceptions import UnparsableUrl
+# from danboorutools.logical.extractors.x import XXXUrl
+# from danboorutools.logical.parsers import ParsableUrl, UrlParser
+#
+#
+# class XxxXxxParser(UrlParser):
+#     test_cases = {
+#         XXXUrl: [
+#         ]
+#     }
+#
+#     @classmethod
+#     def match_url(cls, parsable_url: ParsableUrl) -> AniftyUrl | None:
+#         match parsable_url.url_parts:
+#             case _, _, xxx:
+#                 instance = XXXUrl(parsable_url)
+#                 instance.xxx = xxx
+#             case _:
+#                 return None
+#
+#         return instance
