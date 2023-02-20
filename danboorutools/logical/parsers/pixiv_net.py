@@ -1,3 +1,5 @@
+import re
+
 from danboorutools.exceptions import UnparsableUrl
 from danboorutools.logical.extractors import fanbox as f
 from danboorutools.logical.extractors import pixiv as p
@@ -5,11 +7,14 @@ from danboorutools.logical.extractors import pixiv_comic as c
 from danboorutools.logical.extractors import pixiv_sketch as s
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
+img_subdomain_pattern = re.compile(r"^i(?:mg)?\d*$")
+
 
 class PixivNetParser(UrlParser):
-
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> p.PixivUrl | s.PixivSketchUrl | c.PixivComicUrl | f.FanboxUrl | None:
+        if img_subdomain_pattern.match(parsable_url.subdomain):
+            return cls._match_i_subdomain(parsable_url)
         if parsable_url.url_parts[0] == "fanbox":
             return cls._match_fanbox_path(parsable_url)
         if parsable_url.subdomain in ("www", ""):
@@ -23,8 +28,6 @@ class PixivNetParser(UrlParser):
         elif parsable_url.subdomain == "blog":
             instance = p.PixivStaccUrl(parsable_url)
             instance.stacc = parsable_url.url_parts[0]
-            return instance
-        elif instance := cls._match_everything_else(parsable_url):  # type: ignore[assignment]
             return instance
         # https://sensei.pixiv.net/ja/course/30
         # http://imgaz.pixiv.net/img_group/200/1024091/d0928738938a2c8ecba3dd3a57a4c2ad.png
@@ -42,18 +45,6 @@ class PixivNetParser(UrlParser):
     def _match_no_subdomain(parsable_url: ParsableUrl) -> p.PixivUrl | None:
         instance: p.PixivUrl
         match parsable_url.url_parts:
-            # https://www.pixiv.net/u/9202877
-            # https://www.pixiv.net/users/9202877
-            # https://www.pixiv.net/users/76567/novels
-            # https://www.pixiv.net/users/39598149/illustrations?p=1
-            # https://www.pixiv.net/user/13569921/series/81967  # TODO: this should be a PixivSeriesUrl
-            # https://www.pixiv.net/en/users/9202877
-            # https://www.pixiv.net/en/users/76567/novels
-            case ([("u" | "users" | "user"), user_id, *_] |
-                  ["en", "users", user_id, *_]):
-                instance = p.PixivArtistUrl(parsable_url)
-                instance.user_id = int(user_id)
-
             # https://www.pixiv.net/en/artworks/46324488
             # https://www.pixiv.net/artworks/46324488
             # http://www.pixiv.net/i/18557054
@@ -76,6 +67,18 @@ class PixivNetParser(UrlParser):
                             instance.stacc = None
                     else:
                         raise
+
+            # https://www.pixiv.net/u/9202877
+            # https://www.pixiv.net/users/9202877
+            # https://www.pixiv.net/users/76567/novels
+            # https://www.pixiv.net/users/39598149/illustrations?p=1
+            # https://www.pixiv.net/user/13569921/series/81967  # TODO: this should be a PixivSeriesUrl
+            # https://www.pixiv.net/en/users/9202877
+            # https://www.pixiv.net/en/users/76567/novels
+            case ([("u" | "users" | "user"), user_id, *_] |
+                  ["en", "users", user_id, *_]):
+                instance = p.PixivArtistUrl(parsable_url)
+                instance.user_id = int(user_id)
 
             # https://www.pixiv.net/en/artworks/unlisted/ntQchboUi1CsqMhDpo5j"
             case *_, "artworks", "unlisted", unlisted_id:
@@ -230,7 +233,7 @@ class PixivNetParser(UrlParser):
         return instance
 
     @staticmethod
-    def _match_everything_else(parsable_url: ParsableUrl) -> p.PixivUrl | None:
+    def _match_i_subdomain(parsable_url: ParsableUrl) -> p.PixivUrl | None:
         instance: p.PixivUrl
         match parsable_url.url_parts:
             # http://i1.pixiv.net/img-inf/img/2011/05/01/23/28/04/18557054_64x64.jpg
@@ -240,6 +243,15 @@ class PixivNetParser(UrlParser):
                 instance = p.PixivImageUrl(parsable_url)
                 instance.parse_filename(filename, year, month, day, hour, minute, second)
                 instance.stacc = None
+
+            # http://i1.pixiv.net/img07/img/pasirism/18557054_p1.png
+            # http://i2.pixiv.net/img18/img/evazion/14901720.png
+            # http://img18.pixiv.net/img/evazion/14901720.png
+            # http://img04.pixiv.net/img/aenobas/20513642_big_p48.jpg
+            case *_, "img", stacc, filename:
+                instance = p.PixivImageUrl(parsable_url)
+                instance.stacc = stacc
+                instance.parse_filename(filename)
 
             # http://i2.pixiv.net/img50/img/ha_ru_17/mobile/38262519_480mw.jpg
             case *_, "img", stacc, "mobile", filename:
@@ -252,15 +264,6 @@ class PixivNetParser(UrlParser):
                 instance = p.PixivNovelImageUrl(parsable_url)
                 instance.stacc = stacc
                 instance.novel_id = int(filename.split(".")[0])
-
-            # http://i1.pixiv.net/img07/img/pasirism/18557054_p1.png
-            # http://i2.pixiv.net/img18/img/evazion/14901720.png
-            # http://img18.pixiv.net/img/evazion/14901720.png
-            # http://img04.pixiv.net/img/aenobas/20513642_big_p48.jpg
-            case *_, "img", stacc, filename:
-                instance = p.PixivImageUrl(parsable_url)
-                instance.stacc = stacc
-                instance.parse_filename(filename)
 
             # https://img17.pixiv.net/yellow_rabbit/3825834.jpg
             case stacc, filename if (parsable_url.subdomain and parsable_url.subdomain.startswith("img")):
