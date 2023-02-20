@@ -138,7 +138,8 @@ def assert_asset_url(**kwargs: Unpack[PostAssetTestKwargs[PostAssetUrlTypeVar]])
         assert_equal(asset.created_at, kwargs["created_at"])
 
     if kwargs.get("file_md5"):
-        assert any(file.md5 == kwargs["file_md5"] for file in asset.files)
+        md5s = [_file.md5 for _file in asset.files]
+        assert kwargs["file_md5"] in md5s
 
     return asset
 
