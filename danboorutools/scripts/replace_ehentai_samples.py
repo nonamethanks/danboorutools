@@ -1,14 +1,13 @@
-from pathlib import Path
-
 import click
 
 from danboorutools import logger
 from danboorutools.logical.extractors.ehentai import EHentaiGalleryUrl, EHentaiPageUrl
 from danboorutools.logical.sessions.danbooru import danbooru_api
 
-logger.add(f"logs/scripts/{Path(__file__).stem}/" + "{time}.log", retention="7 days")
+logger.log_to_file()
 
 
+@logger.catch(reraise=True)
 def main() -> None:
     while True:
         posts = danbooru_api.all_posts("source:*e-hentai* width:1280 age:<1mo".split())

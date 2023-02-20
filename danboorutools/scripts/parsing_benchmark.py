@@ -1,5 +1,4 @@
 import time
-from pathlib import Path
 from typing import Callable
 
 import click
@@ -10,26 +9,33 @@ from danboorutools.logical.parsers import ParsableUrl, UrlParser, parsers
 from danboorutools.models.url import Url  # , known_url_types
 from danboorutools.util.system import PersistentValue
 
-logger.add(f"logs/scripts/{Path(__file__).stem}/" + "{time}.log", retention="7 days")
+log_file = logger.log_to_file()
 
 
 @click.command()
 @click.option("--times", type=int, default=0)
 @click.option("--resume", is_flag=True, default=False)
+@logger.catch(reraise=True)
 def main(times: int = 0, resume: bool = False) -> None:
 
     test_set = prepare_test_set(times)
     logger.info(f"Testing URL parsing {len(test_set)} times.")
+
     do_benchmark(test_set, resume)
 
 
-def prepare_test_set(times):
+def prepare_test_set(times: int) -> list[str]:
+    logger.info("Loading data...")
+    logger.info("Loading artist urls...")
     with open("data/artist_urls.txt", encoding="utf-8") as myf:
         # TODO: add script to update this and the below from bq
         # https://github.com/danbooru/danbooru/issues/5440 this needs to be fixed first
         test_set = [line.strip().strip("\"") for line in myf if line.strip()]
+    logger.info("Artist urls loaded.")
+    logger.info("Loading sources...")
     with open("data/sources.txt", encoding="utf-8") as myf:
         test_set += [line.strip().strip("\"") for line in myf if line.strip()]
+    logger.info("Sources loaded.")
 
     if times:
         test_set = test_set[:times]
@@ -63,6 +69,9 @@ def do_benchmark(test_set: list[str], resume: bool) -> None:
             raise
 
     profiler.print_stats()
+
+    with log_file.open("a+", encoding="utf-8") as log_file_obj:
+        profiler.print_stats(stream=log_file_obj)
 
     last_fail.delete()
 

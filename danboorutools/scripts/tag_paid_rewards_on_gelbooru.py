@@ -1,5 +1,4 @@
 import datetime
-from pathlib import Path
 from typing import Literal
 
 import click
@@ -10,7 +9,7 @@ from danboorutools.models.danbooru import DanbooruPost, DanbooruPostVersion
 from danboorutools.models.gelbooru import GelbooruPost
 from danboorutools.util.threading import Counter, run_in_parallel
 
-logger.add(f"logs/scripts/{Path(__file__).stem}/" + "{time}.log", retention="7 days")
+logger.log_to_file()
 
 
 global_counter = Counter(print_progress=True)
@@ -18,6 +17,7 @@ global_counter = Counter(print_progress=True)
 
 @click.command()
 @click.argument("mode", type=click.Choice(["all", "latest"]))
+@logger.catch(reraise=True)
 def main(mode: Literal["all"] | Literal["latest"]) -> None:
     tag_paid_rewards_on_gelbooru(mode)
 

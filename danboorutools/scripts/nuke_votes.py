@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import click
@@ -9,14 +8,14 @@ from danboorutools.logical.sessions.danbooru import danbooru_api
 if TYPE_CHECKING:
     from danboorutools.models.danbooru import DanbooruCommentVote, DanbooruPostVote
 
-
-logger.add(f"logs/scripts/{Path(__file__).stem}/" + "{time}.log", retention="7 days")
+logger.log_to_file()
 
 
 @click.command()
 @click.argument("mode", type=click.Choice(["comments", "posts", "all"]))
 @click.argument("user_ids", nargs=-1, required=True, type=int)
 @click.confirmation_option(prompt="Are you sure?")
+@logger.catch(reraise=True)
 def main(mode: str, user_ids: list[int]) -> None:
     for user_id in user_ids:
         if mode == "posts":

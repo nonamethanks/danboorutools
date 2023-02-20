@@ -1,13 +1,40 @@
+import inspect
 import os
 import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
-from loguru import logger
+from loguru._logger import Core as _Core
+from loguru._logger import Logger as _Logger
 
 load_dotenv()
 
-logger = logger.opt(colors=True)
-logger.remove()
+
+class Logger(_Logger):
+    def log_to_file(self, folder: str | Path | None = None, retention="7 days") -> Path:
+        if isinstance(folder, str):
+            folder = Path(folder)
+        elif not folder:
+            caller_path = Path(inspect.stack()[1].filename)
+            folder = Path("logs/scripts") / caller_path.stem
+
+        file_handler = self.add(folder / "{time}.log", retention=retention, enqueue=True, level="DEBUG")
+
+        return Path(self._core.handlers[file_handler]._sink._file.name)
+
+
+logger = Logger(
+    core=_Core(),
+    exception=None,
+    depth=0,
+    record=False,
+    lazy=False,
+    colors=True,
+    raw=False,
+    capture=True,
+    patcher=None,
+    extra={},
+)
 
 logger_level = os.environ.get("LOGURU_LEVEL") or os.environ.get("LOG_LEVEL") or "INFO"
 debug = os.environ.get("DEBUG") in ["TRUE", "1"]
