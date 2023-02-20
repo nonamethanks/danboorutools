@@ -44,7 +44,7 @@ class PixivGalleryAssetUrl(GalleryAssetUrl, PixivUrl):
 
 class PixivImageUrl(PostAssetUrl, PixivUrl):
     post_id: int
-    page: int
+    page: int  # starts from 0
 
     unlisted: bool = False
     stacc: str | None
