@@ -34,8 +34,8 @@ class ParsableUrl:
             except ValueError as e:
                 raise UnparsableUrl(self.url) from e
             subdomain = ""
-        url_parts = [u for u in url_parts[1:] if u]
 
+        url_parts = list(filter(bool, url_parts[1:]))  # faster than list comprehension
         return {
             "scheme": scheme,
             "url_parts": url_parts,
