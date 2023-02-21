@@ -1,4 +1,5 @@
 import time
+from collections import Counter
 from typing import Callable
 
 import click
@@ -15,13 +16,33 @@ log_file = logger.log_to_file()
 @click.command()
 @click.option("--times", type=int, default=0)
 @click.option("--resume", is_flag=True, default=False)
+@click.option("--unparsed", is_flag=True, default=False)
 @logger.catch(reraise=True)
-def main(times: int = 0, resume: bool = False) -> None:
-
+def main(times: int = 0, resume: bool = False, unparsed: bool = False) -> None:
     test_set = prepare_test_set(times)
-    logger.info(f"Testing URL parsing {len(test_set)} times.")
 
-    do_benchmark(test_set, resume)
+    if unparsed:
+        print_unparsed(test_set)
+
+    else:
+        logger.info(f"Testing URL parsing {len(test_set)} times.")
+
+        do_benchmark(test_set, resume)
+
+
+def print_unparsed(test_set):
+    unparsed_domains = []
+    for index, url_string in enumerate(test_set):
+        if index % 200_000 == 0:
+            logger.info(f"Computing url {index:_} of {len(test_set):_}...")
+        parsed_url = ParsableUrl(url_string)
+        if parsed_url.domain not in parsers:
+            unparsed_domains.append(parsed_url.domain)
+
+    domains = Counter(unparsed_domains)
+    logger.info("Most common unparsed domains:")
+    for index, (domain, number) in enumerate(domains.most_common(20)):
+        print(f"{index + 1:2d}: {domain} ({number})")
 
 
 def prepare_test_set(times: int) -> list[str]:
