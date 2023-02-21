@@ -65,7 +65,7 @@ class EhentaiOrgParser(UrlParser):
                 instance.image_type = "thumbnail"
 
             # https://exhentai.org/fullimg.php?gid=2464842&page=2&key=uinj32c9zag
-            case ["fullimg.php"]:
+            case "fullimg.php", :
                 instance = EHentaiImageUrl(parsable_url)
                 instance.original_filename = None
                 instance.gallery_id = int(parsable_url.params["gid"])

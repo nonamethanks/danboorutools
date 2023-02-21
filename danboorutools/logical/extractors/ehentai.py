@@ -39,7 +39,7 @@ class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
     page_number: int | None = None
     page_token: str | None = None  # TODO: is this just file_hash[:10] every time? i don't think so
     file_hash: str | None  # TODO: use this to find the original gallery, maybe combined with original filename?
-    image_type: Literal["direct", "thumbnail", "download"]  # TODO: fix the rest of possible url types in other extractors
+    image_type: Literal["direct", "thumbnail", "download", "hash_link"]  # TODO: fix the rest of possible url types in other extractors
 
     @settable_property
     def created_at(self) -> datetime:

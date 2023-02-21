@@ -81,7 +81,7 @@ class BilibiliComParser(UrlParser):
                 instance = BilibiliArtistUrl(parsable_url)
                 instance.user_id = int(parsable_url.params["mid"])
 
-            case ["member"]:
+            case "member", :
                 instance = BilibiliArtistUrl(parsable_url)
                 instance.user_id = int(parsable_url.params["uid"])
 
@@ -89,7 +89,7 @@ class BilibiliComParser(UrlParser):
                 instance = BilibiliArtistUrl(parsable_url)
                 instance.user_id = int(user_id)
 
-            case [post_id] if parsable_url.subdomain in ("t", "h"):
+            case post_id, if parsable_url.subdomain in ("t", "h"):
                 instance = BilibiliPostUrl(parsable_url)
                 try:
                     instance.post_id = int(post_id)
@@ -102,7 +102,7 @@ class BilibiliComParser(UrlParser):
 
                 instance.post_type = parsable_url.subdomain
 
-            case [live_id] if parsable_url.subdomain == "live":
+            case live_id, if parsable_url.subdomain == "live":
                 instance = BilibiliLiveUrl(parsable_url)
                 instance.live_id = int(live_id)
 

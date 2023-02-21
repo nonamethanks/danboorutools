@@ -3,7 +3,7 @@ from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
 class PicdigNetParser(UrlParser):
-    RESERVED_NAMES = ["api", "articles", "images", "my", "privacy-policy", "projects", "terms"]
+    RESERVED_NAMES = {"api", "articles", "images", "my", "privacy-policy", "projects", "terms"}
     test_cases = {
         PicdigArtistUrl: [
             "https://picdig.net/supercanoyan/portfolio",

@@ -8,8 +8,8 @@ dimensions_pattern = re.compile(r"^s\d+x\d+$")
 
 
 class TumblrComParser(UrlParser):
-    RESERVED_NAMES = ["about", "app", "blog", "dashboard", "developers", "explore", "jobs",
-                      "login", "logo", "policy", "press", "register", "security", "tagged", "tips"]
+    RESERVED_NAMES = {"about", "app", "blog", "dashboard", "developers", "explore", "jobs",
+                      "login", "logo", "policy", "press", "register", "security", "tagged", "tips"}
     test_cases = {
         TumblrArtistUrl: [
             "https://www.tumblr.com/blog/view/artofelaineho",
@@ -118,7 +118,7 @@ class TumblrComParser(UrlParser):
                 instance = TumblrArtistUrl(parsable_url)
                 instance.blog_name = blog_name
 
-            case [blog_name] if blog_name not in cls.RESERVED_NAMES:
+            case blog_name, if blog_name not in cls.RESERVED_NAMES:
                 instance = TumblrArtistUrl(parsable_url)
                 instance.blog_name = blog_name
 
@@ -163,7 +163,7 @@ class TumblrComParser(UrlParser):
                 instance.blog_name = parsable_url.subdomain
                 instance.post_id = int(post_id)
 
-            case [*_]:
+            case *_, :
                 instance = TumblrArtistUrl(parsable_url)
                 instance.blog_name = parsable_url.subdomain
 

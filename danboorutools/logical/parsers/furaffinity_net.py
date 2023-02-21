@@ -47,7 +47,7 @@ class FuraffinityNetParser(UrlParser):
             case _, _ if parsable_url.subdomain == "a":
                 instance = FuraffinityArtistImageUrl(parsable_url)
 
-            case [filename] if parsable_url.subdomain == "t" and "@" in filename:
+            case filename, if parsable_url.subdomain == "t" and "@" in filename:
                 instance = FuraffinityImageUrl(parsable_url)
                 instance.post_id = int(filename.split("@")[0])
                 instance.username = None

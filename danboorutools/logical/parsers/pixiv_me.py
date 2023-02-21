@@ -12,7 +12,7 @@ class PixivMeParser(UrlParser):
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> PixivMeUrl | None:
         match parsable_url.url_parts:
-            case [stacc]:
+            case stacc, :
                 instance = PixivMeUrl(parsable_url)
                 instance.stacc = stacc
             case _:

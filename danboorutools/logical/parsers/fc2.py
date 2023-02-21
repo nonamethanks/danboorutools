@@ -146,7 +146,7 @@ class Fc2Parser(UrlParser):
             case char1, char2, username, _, if len(username) == 2 and all(len(char) == 1 for char in [char1, char2]):
                 instance = Fc2ImageUrl(parsable_url)
 
-            case [username]:
+            case username, :
                 instance = Fc2BlogUrl(parsable_url)
 
             case _:
@@ -184,11 +184,11 @@ class Fc2Parser(UrlParser):
             case []:
                 instance = Fc2BlogUrl(parsable_url)
 
-            case [blog_entry] if blog_entry.startswith("blog-entry-"):
+            case blog_entry, if blog_entry.startswith("blog-entry-"):
                 instance = Fc2PostUrl(parsable_url)
                 instance.post_id = int(blog_entry.split(".")[0].split("-")[-1])
 
-            case [html_page] if html_page.endswith(".html"):
+            case html_page, if html_page.endswith(".html"):
                 instance = Fc2BlogUrl(parsable_url)
 
             case "file", _:
@@ -201,10 +201,10 @@ class Fc2Parser(UrlParser):
                 # http://aenmix.blog93.fc2.com/tb.php/46-e4374dd5
                 raise UnparsableUrl(parsable_url)
 
-            case [page] if page.startswith("category"):
+            case page, if page.startswith("category"):
                 instance = Fc2BlogUrl(parsable_url)
 
-            case [page] if any(page.endswith(ext) for ext in [".jpg", "png", "gif"]):
+            case page, if any(page.endswith(ext) for ext in [".jpg", "png", "gif"]):
                 instance = Fc2ImageUrl(parsable_url)
 
             case _:

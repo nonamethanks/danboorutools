@@ -52,10 +52,10 @@ class FoundationAppParser(UrlParser):
                     instance.subdir = "~"
                     instance.post_id = int(post_slug.split("-")[-1])
                     instance.artist_name = artist_name.removeprefix("@")
-                case [artist_name] if artist_name.startswith("@"):
+                case artist_name, if artist_name.startswith("@"):
                     instance = FoundationArtistUrl(parsable_url)
                     instance.artist_name = artist_name[1:]
-                case [artist_hash] if artist_hash.startswith("0x"):
+                case artist_hash, if artist_hash.startswith("0x"):
                     instance = FoundationArtistUrl(parsable_url)
                     instance.artist_hash = artist_hash
                     instance.artist_name = None

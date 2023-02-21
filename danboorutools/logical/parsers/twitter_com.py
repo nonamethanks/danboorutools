@@ -41,7 +41,7 @@ class TwitterComParser(UrlParser):
                 instance = TwitterPostUrl(parsable_url)
                 instance.username = username if username != "i" else None
                 instance.post_id = int(post_id)
-            case [shortener_id] if parsable_url.subdomain == "pic":
+            case shortener_id, if parsable_url.subdomain == "pic":
                 instance = TwitterShortenerUrl(parsable_url)
                 instance.shortener_id = shortener_id
             case username, *_ if username not in ["home", "i", "intent", "search"]:

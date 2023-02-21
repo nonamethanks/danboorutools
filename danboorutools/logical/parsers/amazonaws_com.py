@@ -3,8 +3,8 @@ from danboorutools.logical.extractors.enty import EntyImageUrl
 from danboorutools.logical.extractors.skeb import SkebImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
-RESERVED_NAMES = ["blogs", "en", "messages", "posts", "products", "ranking",
-                  "search", "series", "service_navigations", "signout", "titles", "users"]
+RESERVED_NAMES = {"blogs", "en", "messages", "posts", "products", "ranking",
+                  "search", "series", "service_navigations", "signout", "titles", "users"}
 
 
 class AmazonawsComParser(UrlParser):

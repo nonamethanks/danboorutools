@@ -12,7 +12,7 @@ class TCoParser(UrlParser):
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> TwitterShortenerUrl | None:
         match parsable_url.url_parts:
-            case [shortener_id]:
+            case shortener_id, :
                 instance = TwitterShortenerUrl(parsable_url)
                 instance.shortener_id = shortener_id
             case _:

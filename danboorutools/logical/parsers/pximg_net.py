@@ -91,7 +91,7 @@ class PximgNetParser(UrlParser):
 
             # https://i.pximg.net/img-original/img/2018/03/30/10/50/16/67982747-04d810bf32ebd071927362baec4057b6_p0.png
 
-            case [*_, image_dir, "img", year, month, day, hour, minute, second, filename] if image_dir in PixivPaths.main_image_paths:
+            case *_, image_dir, "img", year, month, day, hour, minute, second, filename if image_dir in PixivPaths.main_image_paths:
                 instance = PixivImageUrl(parsable_url)
 
                 instance.parse_filename(filename, year, month, day, hour, minute, second)
@@ -105,7 +105,7 @@ class PximgNetParser(UrlParser):
 
             # https://i.pximg.net/novel-cover-original/img/2022/11/17/15/07/44/tei336490527346_a4ef4696530c4675fabef4b8e6e186c9.jpg
             # https://i.pximg.net/c/600x600/novel-cover-master/img/2018/08/18/19/45/23/10008846_215387d3665210eed0a7cc564e4c93f3_master1200.jpg
-            case [*_, image_dir, "img", year, month, day, hour, minute, second, filename] if image_dir in PixivPaths.novel_image_paths:
+            case *_, image_dir, "img", year, month, day, hour, minute, second, filename if image_dir in PixivPaths.novel_image_paths:
                 instance = PixivNovelImageUrl(parsable_url)
                 instance.created_at = datetime(year=int(year), month=int(month), day=int(day),
                                                hour=int(hour), minute=int(minute), second=int(second), tzinfo=pytz.UTC)
@@ -116,7 +116,7 @@ class PximgNetParser(UrlParser):
 
             # https://i.pximg.net/background/img/2021/11/19/01/48/36/3767624_473f1bc024142eef43c80d2b0061b25a.jpg
             # https://i.pximg.net/workspace/img/2016/06/23/13/21/30/3968542_1603f967a310f7b03629b07a8f811c13.jpg
-            case [*_, ("background" | "workspace"), "img", year, month, day, hour, minute, second, filename]:
+            case *_, ("background" | "workspace"), "img", year, month, day, hour, minute, second, filename:
                 instance = PixivGalleryAssetUrl(parsable_url)
                 # instance.created_at = datetime(year=int(year), month=int(month), day=int(day),
                 #                                hour=int(hour), minute=int(minute), second=int(second), tzinfo=pytz.UTC)

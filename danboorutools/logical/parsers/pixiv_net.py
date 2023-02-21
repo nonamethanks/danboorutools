@@ -96,7 +96,7 @@ class PixivNetParser(UrlParser):
             # http://www.pixiv.net/member_illust.php?mode=manga&illust_id=18557054
             # http://www.pixiv.net/member_illust.php?mode=manga_big&illust_id=18557054&page=1
             # https://www.pixiv.net/index.php?mode=medium\u0026illust_id=612896
-            case [("member_illust.php" | "index.php")]:
+            case ("member_illust.php" | "index.php"), :
                 instance = p.PixivPostUrl(parsable_url)
                 instance.post_id = int(parsable_url.params["illust_id"])
 

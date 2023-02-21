@@ -34,10 +34,10 @@ class NijieInfoParser(UrlParser):
     def match_url(cls, parsable_url: ParsableUrl) -> NijieUrl | None:
         instance: NijieUrl
         match parsable_url.url_parts:
-            case [("members.php" | "members_illust.php")]:
+            case ("members.php" | "members_illust.php"), :
                 instance = NijieArtistUrl(parsable_url)
                 instance.user_id = int(parsable_url.params["id"])
-            case [("view.php" | "view_popup.php")]:
+            case ("view.php" | "view_popup.php"), :
                 instance = NijiePostUrl(parsable_url)
                 try:
                     instance.post_id = int(parsable_url.params["id"])

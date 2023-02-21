@@ -70,15 +70,15 @@ class HentaiFoundryComParser(UrlParser):
                 instance = HentaiFoundryOldPostUrl(parsable_url)
                 instance.work_id = int(work_id)
 
-            case [artist_slug] if artist_slug.startswith("user-") or artist_slug.startswith("profile-"):
+            case artist_slug, if artist_slug.startswith("user-") or artist_slug.startswith("profile-"):
                 instance = HentaiFoundryArtistUrl(parsable_url)
                 instance.username = artist_slug.split(".")[0].split("-")[-1]
 
-            case [pic_slug] if pic_slug.startswith("pic-") or pic_slug.startswith("pic_"):
+            case pic_slug, if pic_slug.startswith("pic-") or pic_slug.startswith("pic_"):
                 instance = HentaiFoundryOldPostUrl(parsable_url)
                 instance.work_id = int(pic_slug.split(".")[0].split("-")[-1])
 
-            case ["thumb.php"]:
+            case "thumb.php", :
                 instance = HentaiFoundryOldPostUrl(parsable_url)
                 instance.work_id = int(parsable_url.params["pid"])
 

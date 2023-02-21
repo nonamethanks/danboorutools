@@ -89,7 +89,7 @@ class FantiaJpParser(UrlParser):
 
             # https://fantia.jp/asanagi
             # https://fantia.jp/koruri
-            case [username]:
+            case username, :
                 instance = FantiaFanclubUrl(parsable_url)
                 instance.fanclub_name = username
                 instance.fanclub_id = None

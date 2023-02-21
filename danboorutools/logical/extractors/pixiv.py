@@ -73,7 +73,7 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
                         return
                 else:
                     self.page = 0
-            case [post_id]:
+            case post_id, :
                 self.post_id = int(post_id)
                 self.page = 0
 

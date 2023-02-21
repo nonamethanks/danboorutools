@@ -1,8 +1,8 @@
 from danboorutools.logical.extractors.enty import EntyArtistImageUrl, EntyArtistUrl, EntyImageUrl, EntyPostUrl, EntyUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
-RESERVED_NAMES = ["blogs", "en", "messages", "posts", "products", "ranking",
-                  "search", "series", "service_navigations", "signout", "titles", "users"]
+RESERVED_NAMES = {"blogs", "en", "messages", "posts", "products", "ranking",
+                  "search", "series", "service_navigations", "signout", "titles", "users"}
 
 
 class EntyJpParser(UrlParser):
@@ -46,7 +46,7 @@ class EntyJpParser(UrlParser):
                 instance = EntyArtistUrl(parsable_url)
                 instance.username = username
                 instance.user_id = None
-            case [username] if username not in RESERVED_NAMES:
+            case username, if username not in RESERVED_NAMES:
                 instance = EntyArtistUrl(parsable_url)
                 instance.username = username
                 instance.user_id = None
