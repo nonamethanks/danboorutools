@@ -4,7 +4,7 @@ from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
 class Fc2Parser(UrlParser):
-    domains = ["fc2.com", "fc2blog.net", "fc2blog.us"]
+    domains = ["fc2.com", "fc2blog.net", "fc2blog.us", "2nt.com"]
     UNPARSED_SUBSITES = (
         "bbs1",
         "bbs10",            # http://bbs10.fc2.com//bbs/img/_184700/184628/full/184628_1307192498.jpg
@@ -32,6 +32,7 @@ class Fc2Parser(UrlParser):
         Fc2BlogUrl: [
             "http://silencexs.blog.fc2.com",
             "http://silencexs.blog106.fc2.com",
+            "http://chika108.blog.2nt.com",
 
             "http://794ancientkyoto.web.fc2.com",
             "http://yorokobi.x.fc2.com",
@@ -76,9 +77,11 @@ class Fc2Parser(UrlParser):
             "http://doskoinpo.blog133.fc2.com/img/SIBARI03.jpg/",
             "https://blog-imgs-19.fc2.com/5/v//5v/yukkuri0.jpg",
             "http://shohomuga.blog83.fc2.com/20071014181747.jpg",
+            "https://blog-imgs-145-origin.2nt.com/k/a/t/katourennyuu/210626_0003.jpg"
         ],
         Fc2PostUrl: [
             "http://hosystem.blog36.fc2.com/blog-entry-37.html",
+            "http://kozueakari02.blog.2nt.com/blog-entry-115.html",
         ],
         Fc2PiyoPostUrl: [
             "https://piyo.fc2.com/omusubi/26890/",
