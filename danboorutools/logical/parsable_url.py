@@ -14,14 +14,15 @@ class ParsableUrl:
 
     @cached_property
     def url_data(self) -> dict:
-        [scheme, _, *url_parts] = self.url.split("/")
+        if "?" in self.url:
+            _url, url_params = self.url.rsplit("?", maxsplit=1)
+        else:
+            _url = self.url
+            url_params = None
+
+        [scheme, _, *url_parts] = _url.split("/")
         if scheme not in ("http:", "https:"):
             raise ValueError(self.url)
-
-        if "?" in url_parts[-1]:
-            url_parts[-1], url_params = url_parts[-1].rsplit("?", maxsplit=1)
-        else:
-            url_params = None
 
         hostname = url_parts[0].split(":")[0]
         try:
