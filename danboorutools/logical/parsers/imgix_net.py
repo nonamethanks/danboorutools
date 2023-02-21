@@ -2,6 +2,7 @@
 from danboorutools.exceptions import UnparsableUrl
 from danboorutools.logical.extractors.anifty import AniftyImageUrl
 from danboorutools.logical.extractors.foundation import FoundationImageUrl
+from danboorutools.logical.extractors.skeb import SkebImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
@@ -16,15 +17,23 @@ class ImgixNetParser(UrlParser):
             "https://f8n-ipfs-production.imgix.net/QmX4MotNAAj9Rcyew43KdgGDxU1QtXemMHoUTNacMLLSjQ/nft.png?q=80&auto=format%2Ccompress&cs=srgb&max-w=1680&max-h=1680",
             "https://f8n-production-collection-assets.imgix.net/0x3B3ee1931Dc30C1957379FAc9aba94D1C48a5405/128711/QmcBfbeCMSxqYB3L1owPAxFencFx3jLzCPFx6xUBxgSCkH/nft.png",
             "https://f8n-production-collection-assets.imgix.net/0x18e7E64a51bF26e9DcC167C28a52E4c85781d52E/17/nft.png",
+        ],
+        SkebImageUrl: [
+            "https://skeb.imgix.net/requests/199886_0?bg=%23fff&auto=format&w=800&s=5a6a908ab964fcdfc4713fad179fe715",
+            "https://skeb.imgix.net/requests/73290_0?bg=%23fff&auto=format&txtfont=bold&txtshad=70&txtclr=BFFFFFFF&txtalign=middle%2Ccenter&txtsize=150&txt=SAMPLE&w=800&s=4843435cff85d623b1f657209d131526",
+            "https://skeb.imgix.net/requests/53269_1?bg=%23fff&fm=png&dl=53269.png&w=1.0&h=1.0&s=44588ea9c41881049e392adb1df21cce",
+            "https://skeb.imgix.net/uploads/origins/04d62c2f-e396-46f9-903a-3ca8bd69fc7c?bg=%23fff&auto=format&w=800&s=966c5d0389c3b94dc36ac970f812bef4",
         ]
     }
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> AniftyImageUrl | FoundationImageUrl | None:
+    def match_url(cls, parsable_url: ParsableUrl) -> AniftyImageUrl | FoundationImageUrl | SkebImageUrl | None:
         if parsable_url.subdomain == "anifty":
             return cls._match_anifty(parsable_url)
         elif parsable_url.subdomain in ("f8n-ipfs-production", "f8n-production-collection-assets"):
             return cls._match_foundation(parsable_url)
+        elif parsable_url.subdomain == "skeb":
+            return cls._match_skeb(parsable_url)
         else:
             raise UnparsableUrl(parsable_url)
 
@@ -57,6 +66,25 @@ class ImgixNetParser(UrlParser):
                 instance.file_hash = file_hash
                 instance.token_id = None
                 instance.work_id = None
+            case _:
+                return None
+
+        return instance
+
+    @staticmethod
+    def _match_skeb(parsable_url: ParsableUrl) -> SkebImageUrl | None:
+        match parsable_url.url_parts:
+            case "requests", filename:
+                instance = SkebImageUrl(parsable_url)
+                [instance.post_id, instance.page] = map(int, filename.split("_"))
+                instance.image_uuid = None
+
+            case "uploads", "origins", image_uuid:
+                instance = SkebImageUrl(parsable_url)
+                instance.image_uuid = image_uuid
+                instance.page = None
+                instance.post_id = None
+
             case _:
                 return None
 
