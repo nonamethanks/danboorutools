@@ -5,10 +5,11 @@ description = "A set of danbooru admin tools."
 authors = ["nonamethanks <nonamethanks@nonamethanks.xyz>"]
 
 [tool.poetry.scripts]
+nuke_tag_edits = "danboorutools.scripts.nuke_tag_edits:main"
 nuke_votes = "danboorutools.scripts.nuke_votes:main"
+parsing_benchmark = "danboorutools.scripts.parsing_benchmark:main"
 replace_ehentai_samples = "danboorutools.scripts.replace_ehentai_samples:main"
 tag_paid_rewards_on_gelbooru = "danboorutools.scripts.tag_paid_rewards_on_gelbooru:main"
-parsing_benchmark = "danboorutools.scripts.parsing_benchmark:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"

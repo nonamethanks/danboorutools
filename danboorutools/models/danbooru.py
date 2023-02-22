@@ -37,7 +37,10 @@ class DanbooruModel:
                 setattr(self, property_name, None)
 
         self.model_path = f"/{self.model_name}s/{self.id}"
-        self.url = "https://danbooru.donmai.us" + self.model_path
+
+    @property
+    def url(self) -> str:
+        return "https://danbooru.donmai.us" + self.model_path
 
     def delete(self) -> None:
         self.api.danbooru_request("DELETE", endpoint=self.model_path)
@@ -47,6 +50,7 @@ class DanbooruModel:
         from danboorutools.logical.sessions.danbooru import danbooru_api  # pylint: disable=import-outside-toplevel
         json_data = danbooru_api.danbooru_request("GET", f"{cls.model_name}s/{model_id}.json")
         assert isinstance(json_data, dict)
+        assert json_data["id"] == model_id
         return cls(json_data)
 
     def __str__(self) -> str:
@@ -136,6 +140,10 @@ class DanbooruPostVersion(DanbooruModel):
 
     added_tags: list[str]
     removed_tags: list[str]
+
+    @property
+    def url(self) -> str:
+        return f"https://danbooru.donmai.us/post_versions?search[id]={self.id}"
 
     def apply_json_data(self, json_data: dict) -> None:
         super().apply_json_data(json_data)

@@ -59,7 +59,7 @@ class UrlIsDeleted(HTTPError):
     """The URL is deleted."""
 
 
-class EHEntaiRateLimit(HTTPError):
+class EHEntaiRateLimitError(HTTPError):
     """E-Hentai is ratelimiting."""
 
     @property
@@ -71,8 +71,18 @@ class DanbooruHTTPError(HTTPError):
     """A danbooru HTTP error."""
 
     def __init__(self, response: requests.Response, *args, **kwargs) -> None:
+        try:
+            self.json_response = response.json()
+        except requests.exceptions.JSONDecodeError as e:
+            if "Rate limit exceeded" in response.text:
+                self.json_response = {
+                    "error": "RateLimitExceeded",
+                    "message": "You're doing that too fast",
+                    "backtrace": []
+                }
+            else:
+                raise NotImplementedError(response.text) from e
 
-        self.json_response = response.json()
         self.error_type = response.json()["error"]
         self.error_message = response.json()["message"]
         self.backtrace = response.json()["backtrace"]

@@ -123,6 +123,19 @@ class DanbooruApi(Session):
     def tags(self, **kwargs) -> list[DanbooruTag]:
         return self._generic_endpoint(DanbooruTag, **kwargs)
 
+    def update_post_tags(self, post: DanbooruPost, tags: list[str]) -> None:
+        """Update a post's tags."""
+        tag_string = " ".join(tags)
+        data = {
+            "post": {
+                "tag_string": tag_string,
+                "old_tag_string": ""
+            }
+        }
+        logger.info(f"Sending tags {tag_string} to post {post.url}")
+        response = self.danbooru_request("PUT", f"posts/{post.id}", json=data)
+        assert isinstance(response, dict) and response["success"] is True
+
     def replace(self,
                 post: DanbooruPost,
                 replacement_file: File | None = None,

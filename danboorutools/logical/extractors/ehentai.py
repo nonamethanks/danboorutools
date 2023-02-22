@@ -2,7 +2,7 @@ from datetime import datetime
 from functools import cached_property
 from typing import TYPE_CHECKING, Literal
 
-from danboorutools.exceptions import DownloadError, EHEntaiRateLimit, UnknownUrlError, UrlIsDeleted
+from danboorutools.exceptions import DownloadError, EHEntaiRateLimitError, UnknownUrlError, UrlIsDeleted
 from danboorutools.logical.sessions.ehentai import EHentaiSession
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.models.url import GalleryUrl, PostAssetUrl, PostUrl, Url
@@ -189,7 +189,7 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
             archive_file = self.session.download_file(download_url, headers=headers)
         except DownloadError as e:
             if e.status_code == 410:
-                raise EHEntaiRateLimit(e.response) from e
+                raise EHEntaiRateLimitError(e.response) from e
             else:
                 raise
         assert isinstance(archive_file, ArchiveFile)

@@ -1,14 +1,16 @@
 from itertools import repeat
 from multiprocessing import Value
 from multiprocessing.pool import ThreadPool
-from typing import Any, Callable, TypeVar
+from typing import Callable, TypeVar
 
 ParallelItem = TypeVar("ParallelItem")
+Args = TypeVar("Args")
+ReturnTypeOfFunc = TypeVar("ReturnTypeOfFunc")
 
 
-def run_in_parallel(function: Callable[[ParallelItem], Any | None],  # TODO: use paramspec
+def run_in_parallel(function: Callable[[ParallelItem, Args], ReturnTypeOfFunc],
                     iterable: list[ParallelItem],
-                    *arguments,
+                    *arguments: Args,
                     threads: int = 4) -> None:
     """Run a list of iterables in a function, with extra arguments automatically iterated."""
     pool = ThreadPool(threads)

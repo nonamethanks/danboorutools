@@ -1,7 +1,6 @@
 A set of tools to make admining danbooru and making bots & automated changes easier.
 
-All scripts are under danboorutools/scripts. You're on your own, and if I catch you abusing these on Danbooru I'll ban you.
-
+All scripts are under danboorutools/scripts.
 
 To run the environment, do `docker compose up -d` and then go into the container with `docker exec -it -u danboorutools -w /code danboorutools /bin/bash poetry shell`.
 
@@ -11,6 +10,11 @@ To run the environment, do `docker compose up -d` and then go into the container
 #### Nuke Votes:
 ```
 poetry run nuke_votes {comments|posts|all} user_id1 user_id2
+```
+
+#### Nuke tag edits
+```
+poetry run nuke_tag_edits user_id tag_they_added
 ```
 
 
