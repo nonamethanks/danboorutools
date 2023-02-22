@@ -80,3 +80,7 @@ class ParsableUrl:
 
     def __str__(self) -> str:
         return f"ParsableUrl[{self.url}]"
+    __repr__ = __str__
+
+    def __hash__(self) -> int:
+        return hash(self.__str__())
