@@ -17,7 +17,6 @@ log_file = logger.log_to_file()
 @click.option("--times", type=int, default=0)
 @click.option("--resume", is_flag=True, default=False)
 @click.option("--unparsed", is_flag=True, default=False)
-@logger.catch(reraise=True)
 def main(times: int = 0, resume: bool = False, unparsed: bool = False) -> None:
     test_set = prepare_test_set(times)
 

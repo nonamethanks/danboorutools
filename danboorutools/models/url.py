@@ -1,8 +1,6 @@
-import re
-from collections import defaultdict
 from datetime import datetime
 from functools import cached_property
-from typing import TYPE_CHECKING, Callable, DefaultDict, Sequence, TypeVar, final
+from typing import TYPE_CHECKING, Callable, Sequence, TypeVar, final
 
 from bs4 import BeautifulSoup
 
@@ -22,11 +20,7 @@ else:
     from functools import lru_cache
 
 
-known_url_types: DefaultDict[str, list[type["Url"]]] = defaultdict(list)
-
 UrlSubclass = TypeVar("UrlSubclass", bound="Url")
-
-normalization_pattern = re.compile(r"{(\w+)}")
 
 
 class Url:
@@ -107,11 +101,13 @@ class Url:
     def html(self) -> "BeautifulSoup":
         return self.session.get_html(self.normalized_url)
 
+
 ########################################################################
 
 
 class UnknownUrl(Url):
     """An unknown url."""
+
 
 ########################################################################
 
@@ -131,6 +127,7 @@ class InfoUrl(Url):
 
 ########################################################################
 
+
 class GalleryUrl(Url):
     """A gallery contains multiple posts."""
 
@@ -143,6 +140,8 @@ class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
     """An artist url is a gallery but also has other extractable data."""
 
 
+########################################################################
+
 class ArtistAlbumUrl(GalleryUrl, Url):
     """An artist album is an album belonging to an artist url that contains other posts."""
 
@@ -152,6 +151,7 @@ class ArtistAlbumUrl(GalleryUrl, Url):
 
 
 ########################################################################
+
 
 class PostUrl(Url):
     """A post contains multiple assets."""
@@ -171,6 +171,7 @@ class PostUrl(Url):
     @settable_property
     def score(self) -> int:
         raise NotImplementedError
+
 
 ########################################################################
 
@@ -205,6 +206,7 @@ class GalleryAssetUrl(_AssetUrl, Url):
     @settable_property
     def gallery(self) -> PostUrl:
         raise NotImplementedError
+
 
 ########################################################################
 

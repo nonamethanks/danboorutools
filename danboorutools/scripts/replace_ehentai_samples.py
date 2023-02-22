@@ -7,7 +7,6 @@ from danboorutools.logical.sessions.danbooru import danbooru_api
 logger.log_to_file()
 
 
-@logger.catch(reraise=True)
 def main() -> None:
     while True:
         posts = danbooru_api.all_posts("source:*e-hentai* width:1280 age:<1mo".split())
