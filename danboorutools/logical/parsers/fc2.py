@@ -1,5 +1,8 @@
+from urllib.parse import urlencode
+
 from danboorutools.exceptions import UnparsableUrl
-from danboorutools.logical.extractors.fc2 import Fc2BlogUrl, Fc2ImageUrl, Fc2PiyoBlogUrl, Fc2PiyoPostUrl, Fc2PostUrl, Fc2Url
+from danboorutools.logical.extractors.fc2 import (Fc2BlogUrl, Fc2DiaryArtistUrl, Fc2DiaryPostUrl, Fc2ImageUrl, Fc2PiyoBlogUrl,
+                                                  Fc2PiyoPostUrl, Fc2PostUrl, Fc2Url)
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
@@ -43,7 +46,6 @@ class Fc2Parser(UrlParser):
 
             "http://swordsouls.blog131.fc2blog.net",
             "http://swordsouls.blog131.fc2blog.us",
-            "http://diary.fc2.com/cgi-sys/ed.cgi/kazuharoom/?Y=2012&M=10&D=22",
 
             "http://ojimahonpo.web.fc2.com/site/",
             "http://ramepan.web.fc2.com/pict/",
@@ -88,7 +90,13 @@ class Fc2Parser(UrlParser):
         ],
         Fc2PiyoBlogUrl: [
             "https://piyo.fc2.com/omusubi/start/5/",
-        ]
+        ],
+        Fc2DiaryPostUrl: [
+            "http://diary.fc2.com/cgi-sys/ed.cgi/kazuharoom/?Y=2012&M=10&D=22",
+        ],
+        Fc2DiaryArtistUrl: [
+            "http://diary.fc2.com/cgi-sys/ed.cgi/kazuharoom",
+        ],
 
     }
 
@@ -104,10 +112,13 @@ class Fc2Parser(UrlParser):
             instance = cls._match_blog_username_in_subdomain(parsable_url)
             if instance:
                 instance.username = username
+            subsite = "blog"
         elif subsite.startswith("blog"):
             instance = cls._match_blog_only_subdomain(parsable_url)
+            subsite = "blog"
         elif subsite.startswith("diary"):
             instance = cls._match_diary(parsable_url)
+            subsite = "diary"
         elif subsite in ("x", "h", "web", "bbs", "kt", "cart", "sns") and username:
             instance = Fc2BlogUrl(parsable_url)
             instance.username = username
@@ -124,6 +135,7 @@ class Fc2Parser(UrlParser):
             return None
 
         instance.subsite = subsite
+        instance.domain = parsable_url.domain
         return instance
 
     @staticmethod
@@ -163,10 +175,18 @@ class Fc2Parser(UrlParser):
                 instance = Fc2ImageUrl(parsable_url)
 
             case "user", username:
-                instance = Fc2BlogUrl(parsable_url)
+                if "Y" in parsable_url.params and "M" in parsable_url.params:
+                    instance = Fc2DiaryPostUrl(parsable_url)
+                    instance.post_date_string = urlencode(parsable_url.params)
+                else:
+                    instance = Fc2DiaryArtistUrl(parsable_url)
 
             case "cgi-sys", "ed.cgi", username:
-                instance = Fc2BlogUrl(parsable_url)
+                if "Y" in parsable_url.params and "M" in parsable_url.params:
+                    instance = Fc2DiaryPostUrl(parsable_url)
+                    instance.post_date_string = urlencode(parsable_url.params)
+                else:
+                    instance = Fc2DiaryArtistUrl(parsable_url)
 
             case _:
                 return None
@@ -219,6 +239,7 @@ class Fc2Parser(UrlParser):
             case username, post_id if post_id.isnumeric():
                 instance = Fc2PiyoPostUrl(parsable_url)
                 instance.post_id = int(post_id)
+                instance.username = username
             case username, *_:
                 instance = Fc2PiyoBlogUrl(parsable_url)
             case _:
