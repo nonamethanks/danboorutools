@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.logical.extractors.pixiv_sketch import PixivSketchArtistUrl
 from danboorutools.logical.sessions.pixiv import PixivSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.misc import memoize, settable_property
@@ -210,6 +211,13 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
         urls: list[Url] = [
             self.build(PixivStaccUrl, stacc=self._artist_data["user_account"])
         ]
+
+        if self._artist_data["fanbox_details"]:
+            raise NotImplementedError
+
+        sketch_url = self.build(PixivSketchArtistUrl, stacc=self._artist_data["user_account"])
+        if not sketch_url.is_deleted:
+            urls.append(sketch_url)
 
         if user_webpage := self._artist_data.get("user_webpage"):
             urls.append(self.parse(user_webpage))
