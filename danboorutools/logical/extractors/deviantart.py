@@ -1,7 +1,7 @@
 import re
 
 from danboorutools.exceptions import UnparsableUrl
-from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 title_by_username_base36_id = re.compile(r"^(?P<title>.+)_by_(?P<username>.+)[_-]d(?P<base36_deviation_id>[a-z0-9]+)(?:-\w+)?$")
 uid_base36_id = re.compile(r"^[a-f0-9]{32}-d(?P<base36_deviation_id>[a-z0-9]+)$")
@@ -15,27 +15,31 @@ class DeviantArtUrl(Url):
 
 
 class DeviantArtPostUrl(PostUrl, DeviantArtUrl):
-    normalization = "https://www..deviantart.com/{artist_name}/art/{title}-{deviation_id}"
-
     deviation_id: int
     username: str | None
     title: str | None
 
     @classmethod
-    def _normalize_from_properties(cls, **kwargs) -> str:
+    def normalize(cls, **kwargs) -> str:
         deviation_id: int = kwargs["deviation_id"]
         username: str | None = kwargs.get("username")
         title: str | None = kwargs.get("title")
 
         if username and title:
             return f"https://www.deviantart.com/{username}/art/{title}-{deviation_id}"
+        elif username:
+            return f"https://www.deviantart.com/{username}/art/{deviation_id}"
         else:
-            return f"https://deviantart.com/deviation/{deviation_id}"
+            return f"https://www.deviantart.com/deviation/{deviation_id}"
 
 
 class DeviantArtArtistUrl(ArtistUrl, DeviantArtUrl):
-    normalization = "https://www.deviantart.com/{artist_name}"
     username: str
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        username = kwargs["username"]
+        return f"https://www.deviantart.com/{username}"
 
 
 class DeviantArtImageUrl(PostAssetUrl, DeviantArtUrl):
@@ -48,14 +52,14 @@ class DeviantArtImageUrl(PostAssetUrl, DeviantArtUrl):
         try:
             match = next(match for pattern in FILENAME_PATTERNS if (match := pattern.match(filename)))
         except StopIteration as e:
-            raise UnparsableUrl(self.original_url) from e
+            raise UnparsableUrl(self.parsed_url) from e
 
         groups: dict[str, str] = match.groupdict()
         self.title = re.sub(r"_+", " ", groups["title"]).title().replace(" ", "-") if "title" in groups else None
         self.username = groups["username"].replace("_", "-") if "username" in groups else None
         self.deviation_id = int(groups["base36_deviation_id"], 36) if "base36_deviation_id" in groups else None
 
-
-class FavMeUrl(RedirectUrl):
-    # TODO: this doesn't need to do a redirection, it can be converted to a DeviantArtImageUrl which can then fetch the post as required
-    favme_id: str
+    @property
+    def full_size(self) -> str:
+        raise RuntimeError("Can't extract full size.")
+        # gotta go through the post. TODO: make .files fallback on post maybe? maybe rewrite .files here?

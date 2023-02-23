@@ -6,15 +6,21 @@ class PixivComicUrl(Url):
 
 
 class PixivComicStoryUrl(PostUrl, PixivComicUrl):
-    normalization = "https://comic.pixiv.net/viewer/stories/{story_id}"
-
     story_id: int
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        story_id = kwargs["story_id"]
+        return f"https://comic.pixiv.net/viewer/stories/{story_id}"
 
 
 class PixivComicWorkUrl(GalleryUrl, PixivComicUrl):
-    normalization = "https://comic.pixiv.net/works/{work_id}"
+    post_id: int
 
-    work_id: int
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        post_id = kwargs["post_id"]
+        return f"https://comic.pixiv.net/works/{post_id}"
 
 
 class PixivComicImageUrl(PostAssetUrl, PixivComicUrl):

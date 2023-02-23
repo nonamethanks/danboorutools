@@ -52,20 +52,26 @@ class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
         else:
             raise NotImplementedError
 
-    @property
-    def full_asset_url(self) -> str:
+    @cached_property
+    def full_size(self) -> str:
         if self.image_type == "download":
-            return self.original_url.url
-        raise NotImplementedError(self.original_url)
+            return self.parsed_url.raw_url
+        raise NotImplementedError(self.parsed_url)
 
 
 class EHentaiPageUrl(PostUrl, EHentaiUrl):
-    normalization = "https://{subsite}.org/s/{page_token}/{gallery_id}-{page_number}"
-
     gallery_id: int
     page_number: int
     page_token: str
     subsite: str
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        subsite = kwargs["subsite"]
+        page_token = kwargs["page_token"]
+        gallery_id = kwargs["gallery_id"]
+        page_number = kwargs["page_number"]
+        return f"https://{subsite}.org/s/{page_token}/{gallery_id}-{page_number}"
 
     @settable_property
     def gallery(self) -> "EHentaiGalleryUrl":  # type: ignore[override]
@@ -112,11 +118,16 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
 
 
 class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
-    normalization = "https://{subsite}.org/g/{gallery_id}/{gallery_token}"
-
     gallery_id: int
     gallery_token: str
     subsite: str
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        subsite = kwargs["subsite"]
+        gallery_id = kwargs["gallery_id"]
+        gallery_token = kwargs["gallery_token"]
+        return f"https://{subsite}.org/g/{gallery_id}/{gallery_token}"
 
     @settable_property
     def posts(self) -> list[EHentaiPageUrl]:  # type: ignore[override]

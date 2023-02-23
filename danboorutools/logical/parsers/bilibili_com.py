@@ -100,7 +100,7 @@ class BilibiliComParser(UrlParser):
                     else:
                         raise
 
-                instance.post_type = parsable_url.subdomain
+                instance.post_type = parsable_url.subdomain  # type: ignore[assignmet]
 
             case live_id, if parsable_url.subdomain == "live":
                 instance = BilibiliLiveUrl(parsable_url)

@@ -40,9 +40,10 @@ class ImgixNetParser(UrlParser):
     @staticmethod
     def _match_anifty(parsable_url: ParsableUrl) -> AniftyImageUrl | None:
         match parsable_url.url_parts:
-            case _, artist_hash, _ if artist_hash.startswith("0x"):
+            case _, artist_hash, filename if artist_hash.startswith("0x"):
                 instance = AniftyImageUrl(parsable_url)
                 instance.artist_hash = artist_hash
+                instance.filename = filename
             case _:
                 return None
 

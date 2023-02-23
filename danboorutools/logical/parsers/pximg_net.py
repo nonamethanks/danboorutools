@@ -91,10 +91,10 @@ class PximgNetParser(UrlParser):
 
             # https://i.pximg.net/img-original/img/2018/03/30/10/50/16/67982747-04d810bf32ebd071927362baec4057b6_p0.png
 
-            case *_, image_dir, "img", year, month, day, hour, minute, second, filename if image_dir in PixivPaths.main_image_paths:
+            case *_, image_dir, "img", year, month, day, hour, minute, second, _filename if image_dir in PixivPaths.main_image_paths:
                 instance = PixivImageUrl(parsable_url)
 
-                instance.parse_filename(filename, year, month, day, hour, minute, second)
+                instance.parse_filename(parsable_url.stem, year, month, day, hour, minute, second)
                 instance.stacc = None
 
             # https://i.pximg.net/user-profile/img/2021/08/25/00/00/40/21290212_0374c372d602a6ec6b311764b0168a13_170.jpg
@@ -116,23 +116,23 @@ class PximgNetParser(UrlParser):
 
             # https://i.pximg.net/background/img/2021/11/19/01/48/36/3767624_473f1bc024142eef43c80d2b0061b25a.jpg
             # https://i.pximg.net/workspace/img/2016/06/23/13/21/30/3968542_1603f967a310f7b03629b07a8f811c13.jpg
-            case *_, ("background" | "workspace"), "img", year, month, day, hour, minute, second, filename:
+            case *_, ("background" | "workspace"), "img", year, month, day, hour, minute, second, _filename:
                 instance = PixivGalleryAssetUrl(parsable_url)
                 # instance.created_at = datetime(year=int(year), month=int(month), day=int(day),
                 #                                hour=int(hour), minute=int(minute), second=int(second), tzinfo=pytz.UTC)
-                instance.user_id = int(filename.split("_")[0])
+                instance.user_id = int(parsable_url.stem.split("_")[0])
 
             # https://i.pximg.net/img25/img/nwqkqr/22218203.jpg
             case *_, "img", stacc, filename:
                 instance = PixivImageUrl(parsable_url)
                 instance.stacc = stacc
-                instance.parse_filename(filename)
+                instance.parse_filename(parsable_url.stem)
 
             # https://i.pximg.net/img96/img/masao_913555/novel/4472318.jpg
             case *_, "img", stacc, "novel", filename:
                 instance = PixivNovelImageUrl(parsable_url)
                 instance.stacc = stacc
-                instance.novel_id = int(filename.split(".")[0])
+                instance.novel_id = int(parsable_url.stem)
             case _:
                 return None
 

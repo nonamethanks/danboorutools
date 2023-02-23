@@ -48,10 +48,11 @@ class HentaiFoundryComParser(UrlParser):
                 instance = HentaiFoundryImageUrl(parsable_url)
                 instance.username = username
                 instance.work_id = int(work_id)
-            case *_, subdir, username, work_id_filename if len(subdir) == 1:
+
+            case *_, subdir, username, _filename if len(subdir) == 1:
                 instance = HentaiFoundryImageUrl(parsable_url)
                 instance.username = username
-                instance.work_id = int(work_id_filename.split(".")[0])
+                instance.work_id = int(parsable_url.stem)
 
             case "pictures", "user", username, work_id, *_ if work_id.isnumeric():
                 instance = HentaiFoundryPostUrl(parsable_url)
@@ -68,19 +69,19 @@ class HentaiFoundryComParser(UrlParser):
 
             case "pictures", work_id:
                 instance = HentaiFoundryOldPostUrl(parsable_url)
-                instance.work_id = int(work_id)
+                instance.post_id = int(work_id)
 
             case artist_slug, if artist_slug.startswith("user-") or artist_slug.startswith("profile-"):
                 instance = HentaiFoundryArtistUrl(parsable_url)
-                instance.username = artist_slug.split(".")[0].split("-")[-1]
+                instance.username = parsable_url.stem.split("-")[-1]
 
             case pic_slug, if pic_slug.startswith("pic-") or pic_slug.startswith("pic_"):
                 instance = HentaiFoundryOldPostUrl(parsable_url)
-                instance.work_id = int(pic_slug.split(".")[0].split("-")[-1])
+                instance.post_id = int(parsable_url.stem.split("-")[-1])
 
             case "thumb.php", :
                 instance = HentaiFoundryOldPostUrl(parsable_url)
-                instance.work_id = int(parsable_url.params["pid"])
+                instance.post_id = int(parsable_url.params["pid"])
 
             case _:
                 return None

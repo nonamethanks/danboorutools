@@ -127,7 +127,7 @@ def assert_asset_url(**kwargs: Unpack[PostAssetTestKwargs[PostAssetUrlTypeVar]])
         assert_equal(getattr(asset, key), value)
 
     if kwargs.get("normalized_url"):
-        assert_equal(asset.full_asset_url, kwargs["normalized_url"])
+        assert_equal(asset.normalized_url, kwargs["normalized_url"])
 
     if kwargs.get("post"):
         assert_equal(kwargs["post"], asset.post)

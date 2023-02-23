@@ -7,7 +7,6 @@ from danboorutools.logical.parsers import ParsableUrl, UrlParser
 class CloudfrontNetParser(UrlParser):
     test_cases = {
         FoundationImageUrl: [
-            "https://assets.foundation.app/7i/gs/QmU8bbsjaVQpEKMDWbSZdDD6GsPmRYBhQtYRn8bEGv7igs/nft_q4.mp4",
             "https://d2ybmb80bbm9ts.cloudfront.net/zd/BD/QmXiCEoBLcpfvpEwAEanLXe3Tjr5ykYJFzCVfpzDDQzdBD/nft_q4.mp4",
         ]
     }

@@ -30,10 +30,10 @@ class PoipikuComParser(UrlParser):
         instance: PoipikuUrl
 
         match parsable_url.url_parts:
-            case _, user_id, filename if parsable_url.subdomain in ["img-org", "img"]:
+            case _, user_id, _filename if parsable_url.subdomain in ["img-org", "img"]:
                 instance = PoipikuImageUrl(parsable_url)
                 instance.user_id = int(user_id)
-                file_stem_parts = filename.split(".")[0].split("_")
+                file_stem_parts = parsable_url.stem.split("_")
                 if len(file_stem_parts) == 3:
                     [post_id, _, image_hash] = file_stem_parts
                     image_id = int(file_stem_parts[1])  # I wish I could strangle typechecking coders over the internet
@@ -45,7 +45,7 @@ class PoipikuComParser(UrlParser):
                     image_id = None
                     image_hash = None
                 else:
-                    raise ValueError(filename)
+                    raise ValueError(parsable_url.stem)
 
                 instance.post_id = int(post_id)
                 instance.image_id = image_id
@@ -54,7 +54,7 @@ class PoipikuComParser(UrlParser):
             case user_id, filename if user_id.isnumeric():
                 instance = PoipikuPostUrl(parsable_url)
                 instance.user_id = int(user_id)
-                instance.post_id = int(filename.split(".")[0])
+                instance.post_id = int(parsable_url.stem)
 
             case ("IllustListPcV.jsp" | "IllustListGridPcV.jsp" | "ActivityListPcV.jsp"), :
                 instance = PoipikuArtistUrl(parsable_url)

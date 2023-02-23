@@ -56,7 +56,7 @@ class FantiaJpParser(UrlParser):
             # https://c.fantia.jp/uploads/product/image/249638/main_fd5aef8f-c217-49d0-83e8-289efb33dfc4.jpg
             # https://c.fantia.jp/uploads/product_image/file/219407/main_bd7419c2-2450-4c53-a28a-90101fa466ab.jpg (sample)
             # https://c.fantia.jp/uploads/product_image/file/219407/bd7419c2-2450-4c53-a28a-90101fa466ab.jpg
-            case "uploads", image_type, ("file" | "image"), image_id, _:
+            case "uploads", image_type, ("file" | "image"), image_id, _filename:
                 instance = FantiaImageUrl(parsable_url)
                 instance.image_type = image_type
                 instance.image_id = int(image_id)
@@ -65,6 +65,12 @@ class FantiaJpParser(UrlParser):
                 else:
                     instance.post_id = None
 
+                image_uuid = parsable_url.stem.split("_")[-1]
+                if len(image_uuid) == 36:
+                    instance.image_uuid = image_uuid
+                else:
+                    instance.image_uuid = None
+
             # https://fantia.jp/posts/343039/post_content_photo/1617547
             # https://fantia.jp/posts/1143951/download/1830956
             case "posts", post_id, ("download" | "post_content_photo") as image_type, image_id:
@@ -72,6 +78,7 @@ class FantiaJpParser(UrlParser):
                 instance.image_type = image_type
                 instance.image_id = int(image_id)
                 instance.post_id = int(post_id)
+                instance.image_uuid = None
 
             # https://fantia.jp/posts/1148334
             case ("posts" | "products") as post_type, post_id, *_:

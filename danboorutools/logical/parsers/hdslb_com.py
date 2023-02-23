@@ -25,9 +25,9 @@ class HdslbComParser(UrlParser):
 
             # https://i0.hdslb.com/bfs/new_dyn/675526fd8baa2f75d7ea0e7ea957bc0811742550.jpg@1036w.webp
             # https://i0.hdslb.com/bfs/new_dyn/716a9733fc804d11d823cfacb7a3c78b11742550.jpg@208w_208h_1e_1c.webp
-            case "bfs", "new_dyn", filename:
+            case "bfs", "new_dyn", _filename:
                 instance = BilibiliImageUrl(parsable_url)
-                instance.user_id = int(filename.split(".")[0][32:])
+                instance.user_id = int(parsable_url.stem[32:])
 
             # https://i0.hdslb.com/bfs/album/37f77871d417c76a08a9467527e9670810c4c442.gif@1036w.webp
             # https://i0.hdslb.com/bfs/album/37f77871d417c76a08a9467527e9670810c4c442.gif

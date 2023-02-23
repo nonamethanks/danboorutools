@@ -36,9 +36,9 @@ class PlurkComParser(UrlParser):
             case "m", username:
                 instance = PlurkArtistUrl(parsable_url)
                 instance.username = username
-            case filename, if parsable_url.subdomain == "images":
+            case _filename, if parsable_url.subdomain == "images":
                 instance = PlurkImageUrl(parsable_url)
-                instance.image_id = filename.split(".")[0].removeprefix("mx_")
+                instance.image_id = parsable_url.stem.removeprefix("mx_")
             case username, *_:
                 instance = PlurkArtistUrl(parsable_url)
                 instance.username = username

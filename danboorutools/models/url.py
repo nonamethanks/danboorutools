@@ -34,34 +34,20 @@ class Url:
         url_parser = import_parser()
         return url_parser.parse(url) or UnknownUrl(ParsableUrl(url))
 
-    normalization: str | None = None
-
     @cached_property
-    @final
     def normalized_url(self) -> str:
-        return self._normalize_from_normalization(**self.__dict__)  \
-            or self._normalize_from_properties(**self.__dict__)     \
-            or self.original_url.url
+        return self.normalize(**self.__dict__) or self.parsed_url.raw_url
 
-    @classmethod  # don't cache me
-    def _normalize_from_properties(cls, **url_properties) -> str | None:  # pylint: disable=unused-argument
-        return None
-
-    @classmethod  # don't cache me
-    @final
-    def _normalize_from_normalization(cls, **url_properties) -> str | None:
-        if not cls.normalization:
-            return None
-        assert not any(v is None for v in url_properties.values()), url_properties
-        url = cls.normalization.format(**url_properties)
-        return url
+    @classmethod
+    def normalize(cls, **kwargs) -> str | None:
+        raise NotImplementedError(f"{cls} hasn't implemented .normalize()")
 
     @staticmethod
     @lru_cache
     @final
     def build(url_type: type["UrlSubclass"], **url_properties) -> "UrlSubclass":
         """Build an Url from its url properties."""
-        normalized_url = url_type._normalize_from_normalization(**url_properties) or url_type._normalize_from_properties(**url_properties)
+        normalized_url = url_type.normalize(**url_properties)
         if not normalized_url:
             raise ValueError(normalized_url, url_properties)
 
@@ -73,10 +59,10 @@ class Url:
         return instance
 
     def __init__(self, url: ParsableUrl):
-        self.original_url = url
+        self.parsed_url = url
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}[{self.original_url.url}]"
+        return f"{self.__class__.__name__}[{self.parsed_url.raw_url}]"
     __repr__ = __str__
 
     def __eq__(self, __o: object) -> bool:
@@ -107,6 +93,10 @@ class Url:
 
 class UnknownUrl(Url):
     """An unknown url."""
+
+    @classmethod
+    def normalize(cls, **kwargs) -> None:
+        return None
 
 
 ########################################################################
@@ -146,7 +136,7 @@ class ArtistAlbumUrl(GalleryUrl, Url):
     """An artist album is an album belonging to an artist url that contains other posts."""
 
     @settable_property
-    def artist(self) -> ArtistUrl:
+    def gallery(self) -> GalleryUrl:
         raise NotImplementedError
 
 
@@ -178,13 +168,23 @@ class PostUrl(Url):
 
 class _AssetUrl(Url):
     """An asset contains a list of files. It's usually a list of a single file, but it can be a zip file with multiple subfiles."""
+    @cached_property
+    def normalized_url(self) -> str:
+        # it doesn't make sense for files to have to implement normalize()
+        return self.full_size
+
+    @classmethod
+    @final
+    def normalize(cls, **kwargs) -> str | None:
+        raise ValueError("Asset urls can't be normalized from a set of properties.")
+
     @property
-    def full_asset_url(self) -> str:
+    def full_size(self) -> str:
         raise NotImplementedError
 
     @settable_property
     def files(self) -> list[File]:
-        downloaded_file = self.session.download_file(self.full_asset_url)
+        downloaded_file = self.session.download_file(self.normalized_url)
         if isinstance(downloaded_file, ArchiveFile):
             return downloaded_file.extracted_files
         else:
@@ -211,7 +211,7 @@ class GalleryAssetUrl(_AssetUrl, Url):
 ########################################################################
 
 
-class RedirectUrl(Url):
+class RedirectUrl(Url):  # pylint: disable=abstract-method
     """An url that redirects somewhere else."""
     @cached_property
     def resolved(self) -> Url:

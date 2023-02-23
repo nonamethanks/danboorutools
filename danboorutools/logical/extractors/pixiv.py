@@ -16,21 +16,30 @@ class PixivProfileImageUrl(PostAssetUrl, PixivUrl):
 
 
 class PixivRequestUrl(ArtistAlbumUrl, PixivUrl):
-    normalization = "https://www.pixiv.net/requests/{request_id}"
-
     request_id: int
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        request_id = kwargs["request_id"]
+        return f"https://www.pixiv.net/requests/{request_id}"
 
 
 class PixivNovelSeriesUrl(ArtistAlbumUrl, PixivUrl):
-    normalization = "https://www.pixiv.net/novel/series/{series_id}"
-
     series_id: int
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        series_id = kwargs["series_id"]
+        return f"https://www.pixiv.net/novel/series/{series_id}"
 
 
 class PixivNovelUrl(PostUrl, PixivUrl):
-    normalization = "https://www.pixiv.net/novel/show.php?id={series_id}"
-
     novel_id: int
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        novel_id = kwargs["series_id"]
+        return f"https://www.pixiv.net/novel/show.php?id={novel_id}"
 
 
 class PixivNovelImageUrl(PostAssetUrl, PixivUrl):
@@ -49,12 +58,12 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
     unlisted: bool = False
     stacc: str | None
 
-    def parse_filename(self, filename: str, *date: str) -> None:
+    def parse_filename(self, filename_stem: str, *date: str) -> None:
         if date:
             self.created_at = datetime(year=int(date[0]), month=int(date[1]), day=int(date[2]),
                                        hour=int(date[3]), minute=int(date[4]), second=int(date[5]))
 
-        match filename.split(".")[0].split("_"):
+        match filename_stem.split("_"):
             case post_id, *rest:
                 try:
                     self.post_id = int(post_id)
@@ -82,13 +91,11 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
         return self.build(PixivPostUrl, post_id=self.post_id, unlisted=self.unlisted)
 
     @property
-    def full_asset_url(self) -> str:
-        if "img-original" in self.original_url.url_parts or "img-zip-ugoira" in self.original_url.url_parts:
-            return self.original_url.url
+    def full_size(self) -> str:
+        if "img-original" in self.parsed_url.url_parts or "img-zip-ugoira" in self.parsed_url.url_parts:
+            return self.parsed_url.raw_url
         else:
-            candidates = [asset for asset in self.post.assets if asset.created_at == self.created_at]
-            candidate, = [asset for asset in candidates if asset.page == self.page]
-            return candidate.normalized_url
+            raise NotImplementedError
 
 
 class PixivPostUrl(PostUrl, PixivUrl):
@@ -96,7 +103,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
     unlisted: bool = False
 
     @classmethod
-    def _normalize_from_properties(cls, **kwargs) -> str:
+    def normalize(cls, **kwargs) -> str:
         unlisted: bool = kwargs.get("unlisted", False)
         post_id: int | str = kwargs["post_id"]
         if unlisted:
@@ -152,8 +159,12 @@ class PixivPostUrl(PostUrl, PixivUrl):
 
 
 class PixivArtistUrl(ArtistUrl, PixivUrl):
-    normalization = "https://www.pixiv.net/en/users/{user_id}"
     user_id: int
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        user_id = kwargs["user_id"]
+        return f"https://www.pixiv.net/en/users/{user_id}"
 
     @settable_property
     def posts(self) -> list[PixivPostUrl]:  # type: ignore[override]
@@ -229,15 +240,22 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
 
 class PixivMeUrl(RedirectUrl, PixivUrl):
     # Useful to have separate from Stacc, to get the pixiv ID indirectly
-    normalization = "https://pixiv.me/{stacc}"
 
     stacc: str
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        stacc = kwargs["stacc"]
+        return f"https://www.pixiv.net/stacc/{stacc}"
 
 
 class PixivStaccUrl(InfoUrl, PixivUrl):
-    normalization = "https://www.pixiv.net/stacc/{stacc}"
-
     stacc: str
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        stacc = kwargs["stacc"]
+        return f"https://www.pixiv.net/stacc/{stacc}"
 
     @property
     def me_from_stacc(self) -> PixivMeUrl:

@@ -27,7 +27,7 @@ class WixmpComParser(UrlParser):
             instance = DeviantArtImageUrl(parsable_url)
             instance.parse_filename(parsable_url.url_parts[-1])
             return instance
-        elif parsable_url.url.startswith("https://api-da.wixmp.com/_api/download/file"):
+        elif parsable_url.raw_url.startswith("https://api-da.wixmp.com/_api/download/file"):
             raise UnparsableUrl(parsable_url)
 
         return None

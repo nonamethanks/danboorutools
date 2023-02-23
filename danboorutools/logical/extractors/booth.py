@@ -6,39 +6,57 @@ class BoothUrl(Url):
 
 
 class BoothItemUrl(PostUrl, BoothUrl):
-    normalization = "https://booth.pm/en/items/{item_id}"
-
     username: str | None
     item_id: int
 
     @classmethod
-    def _normalize_from_properties(cls, **kwargs) -> str:
+    def normalize(cls, **kwargs) -> str:
         username: str | None = kwargs.get("username")
         item_id: int = kwargs["item_id"]
         if username:
-            return f"https://{username}.booth.pm/en/items/{item_id}"
+            return f"https://{username}.booth.pm/items/{item_id}"
         else:
-            return f"https://booth.pm/en/items/{item_id}"
+            return f"https://booth.pm/items/{item_id}"
 
 
 class BoothItemListUrl(ArtistAlbumUrl, BoothUrl):
-    normalization = "https://{username}.booth.pm/en/item_lists/{item_list_id}"
 
     username: str
     item_list_id: str
 
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        username: str | None = kwargs.get("username")
+        item_list_id: int = kwargs["item_list_id"]
+        return f"https://{username}.booth.pm/item_lists/{item_list_id}"
+
 
 class BoothArtistUrl(ArtistUrl, BoothUrl):
-    normalization = "https://{username}.booth.pm"  # TODO: fix this
-
     username: str | None
     user_id: int | None
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        username: str | None = kwargs.get("username")
+        _user_id: int | None = kwargs.get("user_id")
+        if username:
+            return f"https://{username}.booth.pm"
+        else:
+            raise NotImplementedError
 
 
 class BoothImageUrl(PostAssetUrl, BoothUrl):
     item_id: int
 
+    @property
+    def full_size(self) -> str:
+        return self.parsed_url.raw_url.replace("_base_resized", "")
+
 
 class BoothProfileImageUrl(PostAssetUrl, BoothUrl):
     user_id: int | None
     # user_uuid: str | None
+
+    @property
+    def full_size(self) -> str:
+        return self.parsed_url.url_without_params.replace("_base_resized", "")

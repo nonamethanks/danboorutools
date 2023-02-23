@@ -8,10 +8,23 @@ class EntyUrl(Url):
 class EntyPostUrl(PostUrl, EntyUrl):
     post_id: int
 
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        return f"https://enty.jp/posts/{kwargs['post_id']}"
+
 
 class EntyArtistUrl(ArtistUrl, EntyUrl):
     username: str | None
     user_id: int | None
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        if username := kwargs["username"]:
+            return f"https://enty.jp/{username}"
+        elif user_id := kwargs["user_id"]:
+            return f"https://enty.jp/users/{user_id}"
+        else:
+            raise ValueError
 
 
 class EntyImageUrl(PostAssetUrl, EntyUrl):

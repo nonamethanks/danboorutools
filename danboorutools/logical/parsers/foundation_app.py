@@ -42,23 +42,23 @@ class FoundationAppParser(UrlParser):
                     return None
         else:
             match parsable_url.url_parts:
-                case artist_name, subdir, post_id:
+                case username, collection, post_id:
                     instance = FoundationPostUrl(parsable_url)
-                    instance.artist_name = artist_name.removeprefix("@")
-                    instance.subdir = subdir
+                    instance.username = username.removeprefix("@")
+                    instance.collection = collection if collection != "~" else "foundation"
                     instance.post_id = int(post_id)
-                case artist_name, post_slug if "-" in post_slug:
+                case username, post_slug if "-" in post_slug:
                     instance = FoundationPostUrl(parsable_url)
-                    instance.subdir = "~"
+                    instance.collection = "foundation"
                     instance.post_id = int(post_slug.split("-")[-1])
-                    instance.artist_name = artist_name.removeprefix("@")
-                case artist_name, if artist_name.startswith("@"):
+                    instance.username = username.removeprefix("@")
+                case username, if username.startswith("@"):
                     instance = FoundationArtistUrl(parsable_url)
-                    instance.artist_name = artist_name[1:]
-                case artist_hash, if artist_hash.startswith("0x"):
+                    instance.username = username[1:]
+                case user_hash, if user_hash.startswith("0x"):
                     instance = FoundationArtistUrl(parsable_url)
-                    instance.artist_hash = artist_hash
-                    instance.artist_name = None
+                    instance.user_hash = user_hash
+                    instance.username = None
                 case _:
                     return None
 

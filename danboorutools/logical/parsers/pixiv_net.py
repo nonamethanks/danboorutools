@@ -179,12 +179,6 @@ class PixivNetParser(UrlParser):
                 instance = f.FanboxOldArtistUrl(parsable_url)
                 instance.pixiv_id = int(pixiv_id)
 
-            # https://www.pixiv.net/fanbox/entry.php?entry_id=1264
-            case "fanbox", "entry.php":
-                instance = f.FanboxOldPostUrl(parsable_url)
-                instance.pixiv_id = None
-                instance.post_id = int(parsable_url.params["entry_id"])
-
             # http://pixiv.net/fanbox/member.php?user_id=3410642
             case "fanbox", "member.php":
                 instance = f.FanboxOldArtistUrl(parsable_url)
@@ -194,6 +188,10 @@ class PixivNetParser(UrlParser):
             # https://www.pixiv.net/fanbox/resources/entry/50/images/w_1200/2thpjiboyaskg8owg4owcsg48cg4s484.jpeg
             case "fanbox", "resources", "entry", _, "images", *_:
                 raise UnparsableUrl(parsable_url)
+
+            # https://www.pixiv.net/fanbox/entry.php?entry_id=1264
+            case "fanbox", "entry.php":
+                raise UnparsableUrl(parsable_url)  # this is neither the pixiv id nor the post id
 
             case _:
                 return None
@@ -222,7 +220,7 @@ class PixivNetParser(UrlParser):
             # https://comic.pixiv.net/works/8683
             case "works", work_id:
                 instance = c.PixivComicWorkUrl(parsable_url)
-                instance.work_id = int(work_id)
+                instance.post_id = int(work_id)
             # https://comic.pixiv.net/viewer/stories/107927
             case *_, "stories", story_id:
                 instance = c.PixivComicStoryUrl(parsable_url)
@@ -239,37 +237,37 @@ class PixivNetParser(UrlParser):
             # http://i1.pixiv.net/img-inf/img/2011/05/01/23/28/04/18557054_64x64.jpg
             # http://i1.pixiv.net/img-inf/img/2011/05/01/23/28/04/18557054_s.png
             # http://i3.pixiv.net/img-original/img/2016/05/30/11/53/26/57141110_p0.jpg
-            case *_, "img", year, month, day, hour, minute, second, filename:
+            case *_, "img", year, month, day, hour, minute, second, _filename:
                 instance = p.PixivImageUrl(parsable_url)
-                instance.parse_filename(filename, year, month, day, hour, minute, second)
+                instance.parse_filename(parsable_url.stem, year, month, day, hour, minute, second)
                 instance.stacc = None
 
             # http://i1.pixiv.net/img07/img/pasirism/18557054_p1.png
             # http://i2.pixiv.net/img18/img/evazion/14901720.png
             # http://img18.pixiv.net/img/evazion/14901720.png
             # http://img04.pixiv.net/img/aenobas/20513642_big_p48.jpg
-            case *_, "img", stacc, filename:
+            case *_, "img", stacc, _filename:
                 instance = p.PixivImageUrl(parsable_url)
                 instance.stacc = stacc
-                instance.parse_filename(filename)
+                instance.parse_filename(parsable_url.stem)
 
             # http://i2.pixiv.net/img50/img/ha_ru_17/mobile/38262519_480mw.jpg
-            case *_, "img", stacc, "mobile", filename:
+            case *_, "img", stacc, "mobile", _filename:
                 instance = p.PixivImageUrl(parsable_url)
-                instance.parse_filename(filename)
+                instance.parse_filename(parsable_url.stem)
                 instance.stacc = stacc
 
             # https://i.pximg.net/img96/img/masao_913555/novel/4472318.jpg
-            case *_, "img", stacc, "novel", filename:
+            case *_, "img", stacc, "novel", _filename:
                 instance = p.PixivNovelImageUrl(parsable_url)
                 instance.stacc = stacc
-                instance.novel_id = int(filename.split(".")[0])
+                instance.novel_id = int(parsable_url.stem)
 
             # https://img17.pixiv.net/yellow_rabbit/3825834.jpg
-            case stacc, filename if (parsable_url.subdomain and parsable_url.subdomain.startswith("img")):
+            case stacc, _filename if (parsable_url.subdomain and parsable_url.subdomain.startswith("img")):
                 instance = p.PixivImageUrl(parsable_url)
                 instance.stacc = stacc
-                instance.parse_filename(filename)
+                instance.parse_filename(parsable_url.stem)
 
             # http://i2.pixiv.net/img14/profile/muta0083/4810758.jpg
             case *_, "profile", stacc, _:
@@ -308,7 +306,7 @@ class PixivNetParser(UrlParser):
         f.FanboxOldPostUrl: [
             "https://pixiv.net/fanbox/creator/1566167/post/39714",
             "https://www.pixiv.net/fanbox/creator/1566167/post/39714",
-            "https://www.pixiv.net/fanbox/entry.php?entry_id=1264"
+            # "https://www.pixiv.net/fanbox/entry.php?entry_id=1264"
         ],
         p.PixivArtistUrl: [
             "https://www.pixiv.net/u/9202877",

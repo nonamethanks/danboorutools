@@ -109,14 +109,18 @@ class ArtstationComParser(UrlParser):
             # https://cdnb.artstation.com/p/assets/images/images/014/410/217/smaller_square/bart-osz-bartosz1812041.jpg?1543866276
             # https://cdna.artstation.com/p/assets/images/images/007/253/680/4k/ina-wong-demon-girl-done-ttd-comp.jpg?1504793833
             # https://cdna.artstation.com/p/assets/covers/images/007/262/828/small/monica-kyrie-1.jpg?1504865060
-            case "p", "assets", ("images" | "covers"), "images", *_, filename:
+            case "p", "assets", ("images" | "covers") as asset_type, "images", *subdirs, _size, filename:
                 instance = ArtStationImageUrl(parsable_url)
                 instance.filename = filename
+                instance.asset_type = asset_type
+                instance.asset_subdirs = "/".join(subdirs)
 
             # https://cdn-animation.artstation.com/p/video_sources/000/466/622/workout.mp4
-            case "p", "video_sources", *_, filename if parsable_url.hostname == "cdn-animation.artstation.com":
+            case "p", "video_sources", *subdirs, filename if parsable_url.hostname == "cdn-animation.artstation.com":
                 instance = ArtStationImageUrl(parsable_url)
                 instance.filename = filename
+                instance.asset_type = "video_sources"
+                instance.asset_subdirs = "/".join(subdirs)
             case _:
                 return None
         return instance

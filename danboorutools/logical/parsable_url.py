@@ -10,19 +10,19 @@ url_params_pattern = re.compile(r"(?:\?|\&)?([^=]+)=([^&]+)")
 
 @dataclass
 class ParsableUrl:
-    url: str
+    raw_url: str
 
     @cached_property
     def url_data(self) -> dict:
-        if "?" in self.url:
-            _url, url_params = self.url.rsplit("?", maxsplit=1)
+        if "?" in self.raw_url:
+            url_without_params, url_params = self.raw_url.rsplit("?", maxsplit=1)
         else:
-            _url = self.url
+            url_without_params = self.raw_url
             url_params = None
 
-        [scheme, _, *url_parts] = _url.split("/")
+        [scheme, _, *url_parts] = url_without_params.split("/")
         if scheme not in ("http:", "https:"):
-            raise ValueError(self.url)
+            raise ValueError(self.raw_url)
 
         hostname = url_parts[0].split(":")[0]
         try:
@@ -33,7 +33,7 @@ class ParsableUrl:
             try:
                 domain, tld = hostname.rsplit(".")
             except ValueError as e:
-                raise UnparsableUrl(self.url) from e
+                raise UnparsableUrl(self.raw_url) from e
             subdomain = ""
 
         url_parts = list(filter(bool, url_parts[1:]))  # faster than list comprehension
@@ -44,7 +44,12 @@ class ParsableUrl:
             "params": url_params,
             "domain": ".".join([domain, tld]),
             "subdomain": subdomain,
+            "url_without_params": url_without_params,
         }
+
+    @property
+    def url_without_params(self) -> str:
+        return self.url_data["url_without_params"]
 
     @property
     def hostname(self) -> str:
@@ -74,12 +79,20 @@ class ParsableUrl:
 
         return dict(url_params_pattern.findall(params))
 
+    @cached_property
+    def stem(self) -> str:
+        return self.url_parts[-1].rsplit(".", maxsplit=1)[0]
+
+    @cached_property
+    def extension(self) -> str:
+        return self.url_parts[-1].rsplit(".", maxsplit=1)[1]
+
     @property
     def scheme(self) -> str:
         return self.url_data["scheme"]
 
     def __str__(self) -> str:
-        return f"ParsableUrl[{self.url}]"
+        return f"ParsableUrl[{self.raw_url}]"
     __repr__ = __str__
 
     def __hash__(self) -> int:

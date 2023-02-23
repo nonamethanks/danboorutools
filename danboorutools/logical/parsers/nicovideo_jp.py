@@ -223,9 +223,9 @@ class NicovideoJp(UrlParser):
         instance: no.NicovideoOekakiUrl
 
         match parsable_url.url_parts:
-            case "oekaki", filename:
+            case "oekaki", _filename:
                 instance = no.NicovideoOekakiImageUrl(parsable_url)
-                instance.post_id = int(filename.split(".")[0])
+                instance.post_id = int(parsable_url.stem)
 
             case "oekaki_id", post_id:
                 instance = no.NicovideoOekakiPostUrl(parsable_url)

@@ -20,6 +20,9 @@ class HentaiFoundryImageUrl(PostAssetUrl, HentaiFoundryUrl):
 
 
 class HentaiFoundryOldPostUrl(RedirectUrl, HentaiFoundryUrl):
-    work_id: int
+    post_id: int
 
-    normalization = "https://www.hentai-foundry.com/pic-{work_id}"
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        post_id = kwargs["post_id"]
+        return f"https://www.hentai-foundry.com/pic-{post_id}"

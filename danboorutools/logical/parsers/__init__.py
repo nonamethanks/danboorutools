@@ -44,7 +44,7 @@ class UrlParser:
         if not parsed_url:
             raise UnknownUrlError(url, parser)
 
-        for url_property in set(parsed_url.__annotations__) - {"session"}:
+        for url_property in set(parsed_url.__class__.__annotations__) - {"session"}:
             if not hasattr(parsed_url, url_property):
                 raise UrlParsingError(parsed_url, url_property)
         return parsed_url

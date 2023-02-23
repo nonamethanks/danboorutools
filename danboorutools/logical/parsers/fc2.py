@@ -186,7 +186,7 @@ class Fc2Parser(UrlParser):
 
             case blog_entry, if blog_entry.startswith("blog-entry-"):
                 instance = Fc2PostUrl(parsable_url)
-                instance.post_id = int(blog_entry.split(".")[0].split("-")[-1])
+                instance.post_id = int(parsable_url.stem.split("-")[-1])
 
             case html_page, if html_page.endswith(".html"):
                 instance = Fc2BlogUrl(parsable_url)

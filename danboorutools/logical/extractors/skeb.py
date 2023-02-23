@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
@@ -22,3 +24,7 @@ class SkebImageUrl(PostAssetUrl, SkebUrl):
     image_uuid: str | None
     page: int | None
     post_id: int | None
+
+    @cached_property
+    def full_size(self) -> str:
+        return self.parsed_url.raw_url
