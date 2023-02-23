@@ -4,6 +4,7 @@ import time
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
+from urllib.parse import urlencode
 
 from bs4 import BeautifulSoup
 from ratelimit import limits, sleep_and_retry
@@ -60,7 +61,10 @@ class Session(RequestsSession):
         kwargs["proxies"] = self.proxied_domains.get(url_domain)
         kwargs["headers"] = self._default_headers | kwargs.get("headers", {})
 
-        logger.debug(f"{method} request made to {url}")
+        if kwargs.get("params"):
+            logger.debug(f"{method} request made to {url}?{urlencode(kwargs['params'])}")
+        else:
+            logger.debug(f"{method} request made to {url}")
         response = super().request(method, url, *args, **kwargs)
         if response.status_code == 404:
             raise UrlIsDeleted(response)
