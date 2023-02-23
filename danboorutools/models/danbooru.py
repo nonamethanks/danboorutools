@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 from typing import Self
 
@@ -69,7 +70,7 @@ class DanbooruPost(DanbooruModel):
     md5: str
 
     @property
-    def source(self) -> "Url":
+    def source(self) -> Url:
         return Url.parse(self.json_data["source"])
 
     def apply_json_data(self, json_data: dict) -> None:
@@ -81,9 +82,9 @@ class DanbooruPost(DanbooruModel):
         self.meta_tags: list[str] = json_data["tag_string_meta"].split()
 
     def replace(self,
-                replacement_url: "Url | None" = None,
+                replacement_url: Url | None = None,
                 replacement_file: File | None = None,
-                final_source: "Url | None" = None,
+                final_source: Url | None = None,
                 refresh: bool = False
                 ) -> None:
         if not replacement_file:

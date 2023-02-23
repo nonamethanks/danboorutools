@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import lru_cache
 from importlib import import_module
 from pathlib import Path
@@ -19,7 +21,7 @@ class UrlParser:
 
     @classmethod
     @lru_cache
-    def parse(cls, url: str) -> "Url | None":
+    def parse(cls, url: str) -> Url | None:
         try:
             return cls._parse(url)
         except Exception as e:
@@ -27,7 +29,7 @@ class UrlParser:
             raise
 
     @staticmethod
-    def _parse(url: str) -> "Url | None":
+    def _parse(url: str) -> Url | None:
         parsable_url = ParsableUrl(url)
         parser = parsers.get(parsable_url.domain)
         if not parser:
@@ -50,7 +52,7 @@ class UrlParser:
         return parsed_url
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> "Url | None":
+    def match_url(cls, parsable_url: ParsableUrl) -> Url | None:
         raise NotImplementedError
 
     def __init_subclass__(cls) -> None:

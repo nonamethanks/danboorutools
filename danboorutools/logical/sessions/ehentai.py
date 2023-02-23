@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from functools import cached_property
 from typing import TYPE_CHECKING
@@ -8,7 +10,6 @@ from danboorutools.logical.sessions import Session
 from danboorutools.util.misc import memoize
 
 if TYPE_CHECKING:
-
     from requests import Response
 
     from danboorutools.models.url import Url
@@ -23,11 +24,11 @@ class EHentaiSession(Session):
             cookies[browser_cookie["name"]] = browser_cookie["value"]
         return cookies
 
-    def request(self, *args, **kwargs) -> "Response":
+    def request(self, *args, **kwargs) -> Response:
         return super().request(*args, cookies=self.browser_cookies, **kwargs)
 
     @memoize
-    def head(self, *args, **kwargs) -> "Response":
+    def head(self, *args, **kwargs) -> Response:
         return super().head(*args, **kwargs)
 
     @memoize
@@ -62,7 +63,7 @@ class EHentaiSession(Session):
             self.browser.execute_cdp_cmd('Network.setCookie', cookie)
         self.browser.execute_cdp_cmd('Network.disable', {})
 
-    def get_html(self, url: "str | Url", *args, **kwargs) -> BeautifulSoup:
+    def get_html(self, url: str | Url, *args, **kwargs) -> BeautifulSoup:
         self.browser_login()
         if not isinstance(url, str):
             url = url.normalized_url

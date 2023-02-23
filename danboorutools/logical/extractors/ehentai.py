@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from functools import cached_property
 from typing import TYPE_CHECKING, Literal
@@ -18,7 +20,7 @@ class EHentaiUrl(Url):
     subsite: str | None = None
 
     @cached_property
-    def html(self) -> "BeautifulSoup":
+    def html(self) -> BeautifulSoup:
         if not isinstance(self, (EHentaiPageUrl, EHentaiGalleryUrl)):
             raise ValueError
 
@@ -46,7 +48,7 @@ class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
         return self.post.created_at
 
     @settable_property
-    def post(self) -> "EHentaiPageUrl":  # type: ignore[override]
+    def post(self) -> EHentaiPageUrl:  # type: ignore[override]
         if post := getattr(self, "_post"):
             return post
         else:
@@ -74,7 +76,7 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
         return f"https://{subsite}.org/s/{page_token}/{gallery_id}-{page_number}"
 
     @settable_property
-    def gallery(self) -> "EHentaiGalleryUrl":  # type: ignore[override]
+    def gallery(self) -> EHentaiGalleryUrl:  # type: ignore[override]
         gallery_token = self.session.get_gallery_token_from_page_data(gallery_id=self.gallery_id,
                                                                       page_token=self.page_token,
                                                                       page_number=self.page_number)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hashlib
 from functools import cached_property
 from pathlib import Path
@@ -15,7 +17,7 @@ class File:
         self.raw_path = raw_path
 
     @classmethod
-    def get_subclass_for(cls, path: Path) -> "FileSubclass":
+    def get_subclass_for(cls, path: Path) -> FileSubclass:
         match path.suffix.strip("."):
             case "rar" | "zip":
                 return ArchiveFile(raw_path=path)
@@ -23,11 +25,11 @@ class File:
                 return UnknownFile(raw_path=path)
 
     @classmethod
-    def known(cls, path: Path) -> "File":
+    def known(cls, path: Path) -> File:
         return cls.get_subclass_for(path)
 
     @classmethod
-    def identify(cls, path: str | Path, destination_dir: Path | None = None, md5_as_filename: bool = False) -> "FileSubclass":
+    def identify(cls, path: str | Path, destination_dir: Path | None = None, md5_as_filename: bool = False) -> FileSubclass:
         path = Path(path)
         destination_dir = destination_dir or path.parent
         destination_dir.mkdir(parents=True, exist_ok=True)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from functools import cached_property
 from typing import TYPE_CHECKING, Callable, Sequence, TypeVar, final
@@ -28,7 +30,7 @@ class Url:
     session = Session()  # TODO: implement domain-bound rate limitings
 
     @classmethod
-    def parse(cls, url: "str |  Url") -> "Url":
+    def parse(cls, url: str | Url) -> Url:
         if isinstance(url, Url):
             return url
         url_parser = import_parser()
@@ -45,7 +47,7 @@ class Url:
     @staticmethod
     @lru_cache
     @final
-    def build(url_type: type["UrlSubclass"], **url_properties) -> "UrlSubclass":
+    def build(url_type: type["UrlSubclass"], **url_properties) -> UrlSubclass:
         """Build an Url from its url properties."""
         normalized_url = url_type.normalize(**url_properties)
         if not normalized_url:
@@ -84,7 +86,7 @@ class Url:
             return False
 
     @cached_property
-    def html(self) -> "BeautifulSoup":
+    def html(self) -> BeautifulSoup:
         return self.session.get_html(self.normalized_url)
 
 
@@ -233,7 +235,7 @@ if TYPE_CHECKING:
 
 
 @lru_cache
-def import_parser() -> "UrlParser":
+def import_parser() -> UrlParser:
     # pylint: disable=import-outside-toplevel
     from danboorutools.logical.parsers import UrlParser
     return UrlParser()

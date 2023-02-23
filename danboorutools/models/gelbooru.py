@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dateutil import parser as dt_parser
 
 from danboorutools import logger
@@ -6,7 +8,7 @@ from danboorutools.models.url import Url
 
 class GelbooruPost:
     @classmethod
-    def from_md5(cls, md5: str) -> "GelbooruPost | None":
+    def from_md5(cls, md5: str) -> GelbooruPost | None:
         """Search for a post using its md5."""
         from danboorutools.logical.sessions.gelbooru import gelbooru_api  # pylint: disable=import-outside-toplevel
 

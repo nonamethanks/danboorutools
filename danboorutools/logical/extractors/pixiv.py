@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 
 from danboorutools.exceptions import UrlIsDeleted
@@ -87,7 +89,7 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
                 self.page = 0
 
     @settable_property
-    def post(self) -> "PixivPostUrl":  # type: ignore[override]
+    def post(self) -> PixivPostUrl:  # type: ignore[override]
         return self.build(PixivPostUrl, post_id=self.post_id, unlisted=self.unlisted)
 
     @property
@@ -131,7 +133,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
         return int(self._post_data["likeCount"])
 
     @settable_property
-    def gallery(self) -> "PixivArtistUrl":  # type: ignore[override]
+    def gallery(self) -> PixivArtistUrl:  # type: ignore[override]
         return self.build(
             PixivArtistUrl,
             user_id=int(self._post_data["userId"])

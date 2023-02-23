@@ -1,3 +1,4 @@
+from __future__ import annotations
 import atexit
 import datetime
 import os
@@ -72,7 +73,7 @@ class Browser(Chrome):
         self.cookie_dir.mkdir(exist_ok=True)
         pickle.dump(self.get_cookies(), filename.open("wb+"))
 
-    def get(self, url: "str | Url") -> None:
+    def get(self, url: str | Url) -> None:
         if not isinstance(url, str):
             url = url.normalized_url
         logger.debug(f"Browser GET request made to {url}")
@@ -83,7 +84,7 @@ class Browser(Chrome):
 
     def find_elements_by_text(self,
                               text: str,
-                              element: "Browser | WebElement | None" = None,
+                              element: Browser | WebElement | None = None,
                               full_match: bool = True,
                               ) -> list[WebElement]:
         """Find an element based on its text in a page."""

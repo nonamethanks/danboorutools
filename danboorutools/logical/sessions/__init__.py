@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import time
 from functools import cached_property
@@ -66,7 +67,7 @@ class Session(RequestsSession):
 
         return response
 
-    def download_file(self, url: "str | Url", *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
+    def download_file(self, url: str | Url, *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
         tmp_filename = Path("/tmp") / random_string(20)
         if download_dir is not None:
             download_dir = Path(download_dir)
@@ -92,7 +93,7 @@ class Session(RequestsSession):
         _file = File.identify(tmp_filename, destination_dir=download_dir, md5_as_filename=True)
         return _file
 
-    def get_html(self, url: "str | Url", *args, **kwargs) -> BeautifulSoup:
+    def get_html(self, url: str | Url, *args, **kwargs) -> BeautifulSoup:
         if not isinstance(url, str):
             url = url.normalized_url
         response = self.get(url, *args, **kwargs)
