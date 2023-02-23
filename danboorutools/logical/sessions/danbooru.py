@@ -57,9 +57,8 @@ class DanbooruApi(Session):
         return f"{self.base_url}/posts?tags={tag_string}"
 
     def danbooru_request(self, method: str, endpoint: str, *args, **kwargs) -> list[dict] | dict:
-        if method == "GET" and "params" in kwargs:
-            limit = 200 if endpoint == "posts" else 1000
-            kwargs["params"].setdefault("limit", limit)
+        if method == "GET" and "params" in kwargs and endpoint != "posts.json":
+            kwargs["params"].setdefault("limit", 1000)
 
         kwargs["headers"] = {"User-Agent": f"DanbooruTools/{version}"}
 
@@ -81,7 +80,10 @@ class DanbooruApi(Session):
             "tags": " ".join(tags),
             "page": page
         }
-        response = self.danbooru_request("GET", "posts.json", params=params)
+        if not any(t.startswith("limit:") for t in tags):
+            response = self.danbooru_request("GET", "posts.json", params=params, limit=200)
+        else:
+            response = self.danbooru_request("GET", "posts.json", params=params)
         posts = [DanbooruPost(post_data) for post_data in response]
         return posts
 
