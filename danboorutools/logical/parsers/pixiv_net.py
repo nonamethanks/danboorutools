@@ -154,7 +154,7 @@ class PixivNetParser(UrlParser):
             # https://sketch.pixiv.net/@user_ejkv8372/followings
             case stacc, *_ if stacc.startswith("@"):
                 instance = s.PixivSketchArtistUrl(parsable_url)
-                instance.stacc = stacc
+                instance.stacc = stacc[1:]
             case _:
                 return None
 
