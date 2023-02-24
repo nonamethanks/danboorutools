@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime
 
 from danboorutools.exceptions import UrlIsDeleted
-from danboorutools.logical.extractors.pixiv_sketch import PixivSketchArtistUrl
 from danboorutools.logical.sessions.pixiv import PixivSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.misc import memoize, settable_property
@@ -208,12 +207,18 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
 
     @property
     def related(self) -> list[Url]:
+        # pylint: disable=import-outside-toplevel
+        from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
+        from danboorutools.logical.extractors.pixiv_sketch import PixivSketchArtistUrl
+
         urls: list[Url] = [
             self.build(PixivStaccUrl, stacc=self._artist_data["user_account"])
         ]
 
         if self._artist_data["fanbox_details"]:
-            raise NotImplementedError
+            urls.append(
+                self.build(FanboxArtistUrl, username=self._artist_data["fanbox_details"]["creator_id"])
+            )
 
         sketch_url = self.build(PixivSketchArtistUrl, stacc=self._artist_data["user_account"])
         if not sketch_url.is_deleted:
