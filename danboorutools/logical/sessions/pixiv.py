@@ -1,9 +1,8 @@
 import json
 import os
-from functools import cached_property
 
 from danboorutools.exceptions import HTTPError, UrlIsDeleted
-from danboorutools.logical.sessions import Session
+from danboorutools.logical.sessions import Response, Session
 from danboorutools.util.misc import memoize
 
 DELETION_MESSAGES = [
@@ -13,9 +12,9 @@ DELETION_MESSAGES = [
 
 
 class PixivSession(Session):
-    @cached_property
+    @property
     def cookies_from_env(self) -> dict:
-        return {"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]}
+        return {"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]}.copy()
 
     @memoize
     def get_json(self, url: str) -> dict:
@@ -33,6 +32,10 @@ class PixivSession(Session):
             raise NotImplementedError(dict(json_data))
 
         return json_data["body"]
+
+    def request(self, *args, **kwargs) -> Response:
+        kwargs["cookies"] = self.cookies_from_env
+        return super().request(*args, **kwargs)
 
     def download_file(self, *args, **kwargs):  # noqa
         headers = {"Referer": "https://app-api.pixiv.net/"}
