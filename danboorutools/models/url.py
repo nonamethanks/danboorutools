@@ -66,7 +66,7 @@ class Url:
         self.parsed_url = url
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}[{self.parsed_url.raw_url}]"
+        return f"{self.__class__.__name__}[{self.normalized_url}]"
     __repr__ = __str__
 
     def __eq__(self, __o: object) -> bool:

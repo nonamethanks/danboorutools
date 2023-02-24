@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from pytz import UTC
+
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.sessions.pixiv import PixivSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
@@ -63,7 +65,7 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
     def parse_filename(self, filename_stem: str, *date: str) -> None:
         if date:
             self.created_at = datetime(year=int(date[0]), month=int(date[1]), day=int(date[2]),
-                                       hour=int(date[3]), minute=int(date[4]), second=int(date[5]))
+                                       hour=int(date[3]), minute=int(date[4]), second=int(date[5]), tzinfo=UTC)
 
         match filename_stem.split("_"):
             case post_id, *rest:
@@ -264,7 +266,7 @@ class PixivMeUrl(RedirectUrl, PixivUrl):
     @classmethod
     def normalize(cls, **kwargs) -> str:
         stacc = kwargs["stacc"]
-        return f"https://www.pixiv.net/stacc/{stacc}"
+        return f"https://pixiv.me/{stacc}"
 
 
 class PixivStaccUrl(InfoUrl, PixivUrl):
@@ -282,10 +284,6 @@ class PixivStaccUrl(InfoUrl, PixivUrl):
     @property
     def related(self) -> list[Url]:
         return [self.me_from_stacc.resolved]
-
-    @settable_property
-    def is_deleted(self) -> bool:
-        return self.me_from_stacc.is_deleted
 
     @property
     def primary_names(self) -> list[str]:
