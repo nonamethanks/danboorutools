@@ -19,7 +19,7 @@ class FanboxPostUrl(PostUrl, FanboxUrl):
 
 
 class FanboxArtistUrl(ArtistUrl, FanboxUrl):
-    username: str
+    username: str  # it's not guaranteed that this is the stacc. it might change.
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
