@@ -114,9 +114,14 @@ class InfoUrl(Url):
         raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
     @property
-    def names(self) -> list[str]:
-        """A list of artist names, in order of relevance."""
-        raise NotImplementedError(self)
+    def primary_names(self) -> list[str]:
+        """A list of artist names usable as tags, in order of relevance."""
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+
+    @property
+    def secondary_names(self) -> list[str]:
+        """A list of artist names usable as qualifiers, in order of relevance."""
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
 
 ########################################################################

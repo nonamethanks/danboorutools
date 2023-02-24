@@ -198,11 +198,14 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
                 posts.append(post)
 
     @property
-    def names(self) -> list[str]:
+    def primary_names(self) -> list[str]:
+        return [self._artist_data["user_name"]]
+
+    @property
+    def secondary_names(self) -> list[str]:
         return [
-            self._artist_data["user_name"],
             self._artist_data["user_account"],
-            f"pixiv #{self.user_id}"
+            f"pixiv {self.user_id}"
         ]
 
     @property
@@ -285,5 +288,9 @@ class PixivStaccUrl(InfoUrl, PixivUrl):
         return self.me_from_stacc.is_deleted
 
     @property
-    def names(self) -> list[str]:
+    def primary_names(self) -> list[str]:
+        return []
+
+    @property
+    def secondary_names(self) -> list[str]:
         return [self.stacc]

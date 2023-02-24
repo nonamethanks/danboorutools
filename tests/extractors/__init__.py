@@ -93,7 +93,7 @@ def assert_artist_url(**kwargs: Unpack[ArtistTestKwargs[ArtistUrlTypeVar]]) -> A
 
     artist = assert_gallery_url(**gallery_data)
 
-    assert_equal(sorted(artist.names), sorted(kwargs["names"]))
+    assert_equal(sorted(artist.primary_names), sorted(kwargs["names"]))
     assert_urls_are_same(kwargs["related"], artist.related)
 
     return artist
@@ -156,7 +156,7 @@ def assert_info_url(info_url: Url | str, related: list[Url] | list[str], names: 
     info_url = assert_casted(info_url, InfoUrl)
 
     assert_urls_are_same(info_url.related, related)
-    assert_equal(sorted(info_url.names), sorted(names))
+    assert_equal(sorted(info_url.primary_names), sorted(names))
 
     return info_url
 
