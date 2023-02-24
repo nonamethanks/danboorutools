@@ -81,11 +81,11 @@ class ParsableUrl:
 
     @cached_property
     def stem(self) -> str:
-        return self.url_parts[-1].rsplit(".", maxsplit=1)[0]
+        return self.url_parts[-1].split(".")[0]
 
     @cached_property
     def extension(self) -> str:
-        return self.url_parts[-1].rsplit(".", maxsplit=1)[1]
+        return self.url_parts[-1].split(".", maxsplit=1)[1]
 
     @property
     def scheme(self) -> str:

@@ -55,7 +55,7 @@ class BilibiliArtistUrl(ArtistUrl, BilibiliUrl):
 
 
 class BilibiliImageUrl(PostAssetUrl, BilibiliUrl):
-    user_id: int | None
+    user_id: str | None
 
     @property
     def full_size(self) -> str:

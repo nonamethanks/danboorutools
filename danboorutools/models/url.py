@@ -111,7 +111,7 @@ class InfoUrl(Url):
     @property
     def related(self) -> list["Url"]:
         """A list of related urls."""
-        raise NotImplementedError(self)
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
     @property
     def names(self) -> list[str]:
@@ -127,7 +127,7 @@ class GalleryUrl(Url):
 
     @settable_property
     def posts(self) -> Sequence["PostUrl"]:
-        raise NotImplementedError(self)
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
 
 class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
@@ -141,7 +141,7 @@ class ArtistAlbumUrl(GalleryUrl, Url):
 
     @settable_property
     def gallery(self) -> GalleryUrl:
-        raise NotImplementedError(self)
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
 
 ########################################################################
@@ -152,19 +152,19 @@ class PostUrl(Url):
 
     @settable_property
     def gallery(self) -> GalleryUrl:
-        raise NotImplementedError(self)
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
     @settable_property
     def assets(self) -> list["PostAssetUrl"]:
-        raise NotImplementedError(self)
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
     @settable_property
     def created_at(self) -> datetime:
-        raise NotImplementedError(self)
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
     @settable_property
     def score(self) -> int:
-        raise NotImplementedError(self)
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
 
 ########################################################################
@@ -184,7 +184,7 @@ class _AssetUrl(Url):
 
     @property
     def full_size(self) -> str:
-        raise NotImplementedError(self)
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
     @settable_property
     def files(self) -> list[File]:
@@ -198,7 +198,7 @@ class _AssetUrl(Url):
 class PostAssetUrl(_AssetUrl, Url):
     @settable_property
     def post(self) -> PostUrl:
-        raise NotImplementedError(self)
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
     @settable_property
     def created_at(self) -> datetime:
@@ -209,7 +209,7 @@ class GalleryAssetUrl(_AssetUrl, Url):
     """An asset belonging to a gallery instead of a post (such as a background image)."""
     @settable_property
     def gallery(self) -> PostUrl:
-        raise NotImplementedError(self)
+        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
 
 ########################################################################
