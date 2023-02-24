@@ -20,7 +20,11 @@ class ParsableUrl:
             url_without_params = self.raw_url
             url_params = None
 
-        [scheme, _, *url_parts] = url_without_params.split("/")
+        try:
+            [scheme, _, *url_parts] = url_without_params.split("/")
+        except ValueError as e:
+            raise ValueError(self.raw_url) from e
+
         if scheme not in ("http:", "https:"):
             raise ValueError(self.raw_url)
 

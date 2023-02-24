@@ -1,4 +1,7 @@
+from functools import cached_property
+
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, PostAssetUrl, PostUrl, Url
+from danboorutools.util.misc import extract_urls_from_string
 
 
 class AfdianUrl(Url):
@@ -19,6 +22,24 @@ class AfdianArtistUrl(ArtistUrl, AfdianUrl):
     @classmethod
     def normalize(cls, **kwargs) -> str:
         return f"https://afdian.net/a/{kwargs['username']}"
+
+    @property
+    def primary_names(self) -> list[str]:
+        return [self._user_data["name"]]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [self.username]
+
+    @property
+    def related(self) -> list["Url"]:
+        creator_detail = self._user_data["creator"]["detail"]
+        return [self.parse(url) for url in extract_urls_from_string(creator_detail)]
+
+    @cached_property
+    def _user_data(self) -> dict:
+        response = self.session.get(f"https://afdian.net/api/user/get-profile-by-slug?url_slug={self.username}")
+        return response.json()["data"]["user"]
 
 
 class AfdianImageUrl(PostAssetUrl, AfdianUrl):

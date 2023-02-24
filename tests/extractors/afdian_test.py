@@ -1,7 +1,9 @@
 # pylint: disable=cell-var-from-loop
 from ward import test
 
+from danboorutools.logical.extractors.afdian import AfdianArtistUrl
 from danboorutools.models.url import Url
+from tests.extractors import assert_artist_url
 
 urls = {
     "https://afdian.net/p/8d419ad28b3511ed830452540025c377": "https://afdian.net/p/8d419ad28b3511ed830452540025c377",
@@ -20,3 +22,27 @@ for original_string, normalized_string in urls.items():
     @test(f"Normalizing {domain}: {original_string}", tags=["parsing", "normalization", domain])
     def _(_parsed_url=parsed_url, _normalized_string=normalized_string) -> None:
         assert _parsed_url.normalized_url == _normalized_string
+
+
+@test("Scrape afdian artist", tags=["scraping", "afdian", "artist"])
+def test_artist_1() -> None:
+    assert_artist_url(
+        url_type=AfdianArtistUrl,
+        url="https://afdian.net/a/mgong520",
+        url_properties=dict(username="mgong520"),
+        primary_names=["尼德汞"],
+        secondary_names=["mgong520"],
+        related=[],
+    )
+
+
+@test("Scrape afdian artist with related urls", tags=["scraping", "afdian", "artist"])
+def test_artist_2() -> None:
+    assert_artist_url(
+        url_type=AfdianArtistUrl,
+        url="https://afdian.net/a/rubyredsims",
+        url_properties=dict(username="rubyredsims"),
+        primary_names=["RUBY RED SIMS"],
+        secondary_names=["rubyredsims"],
+        related=["http://www.patreon.com/rubyredsims"],
+    )

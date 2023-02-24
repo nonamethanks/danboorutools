@@ -102,3 +102,22 @@ class settable_property(property, Generic[SettableValue]):  # pylint: disable=in
 def class_name_to_string(klass: type, separator: str = "_") -> str:
     class_name = klass.__name__
     return class_name[0].lower() + "".join(f"{separator}{char.lower()}" if char.isupper() else char for char in class_name[1:])
+
+
+all_urls_pattern = re.compile(
+    r'((?:\bhttp|https)(?::\/{2}[\w]+)(?:[\/|\.]?)(?:[^\s<>\uff08\uff09\u3011\u3000"\[\]]*))',
+    re.IGNORECASE | re.ASCII
+)
+images_pattern = re.compile(r".*(jpg|jpeg|gif|png)$", re.IGNORECASE)
+
+
+def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list[str]:
+    found = [
+        u.strip().strip("/?{}()\',.\" ")
+        for u in all_urls_pattern.findall(string)
+        if re.match(r".+\..+", u)
+    ]
+
+    if not blacklist_images:
+        return found
+    return [u for u in found if not images_pattern.search(u.strip())]
