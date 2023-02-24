@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from functools import cached_property
-from typing import TYPE_CHECKING, Callable, Sequence, TypeVar, final
+from typing import TYPE_CHECKING, Callable, Sequence, TypeVar, final, get_type_hints
 
 from bs4 import BeautifulSoup
 
@@ -54,10 +54,12 @@ class Url:
             raise ValueError(normalized_url, url_properties)
 
         instance = url_type(url=ParsableUrl(normalized_url))
-        for v_name, v_value in url_properties.items():
-            value_type = url_type.__annotations__[v_name]
-            assert isinstance(v_value, value_type), f"{v_name} was of type {type(v_value)} instead of {value_type}"
-            setattr(instance, v_name, v_value)
+
+        type_hints = get_type_hints(url_type)
+        for property_name, property_value in url_properties.items():
+            value_type = type_hints[property_name]
+            assert isinstance(property_value, value_type), f"{property_name} was of type {type(property_value)} instead of {value_type}"
+            setattr(instance, property_name, property_value)
         return instance
 
     def __init__(self, url: ParsableUrl):
@@ -109,12 +111,12 @@ class InfoUrl(Url):
     @property
     def related(self) -> list["Url"]:
         """A list of related urls."""
-        raise NotImplementedError
+        raise NotImplementedError(self)
 
     @property
     def names(self) -> list[str]:
         """A list of artist names, in order of relevance."""
-        raise NotImplementedError
+        raise NotImplementedError(self)
 
 
 ########################################################################
@@ -125,7 +127,7 @@ class GalleryUrl(Url):
 
     @settable_property
     def posts(self) -> Sequence["PostUrl"]:
-        raise NotImplementedError
+        raise NotImplementedError(self)
 
 
 class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
@@ -139,7 +141,7 @@ class ArtistAlbumUrl(GalleryUrl, Url):
 
     @settable_property
     def gallery(self) -> GalleryUrl:
-        raise NotImplementedError
+        raise NotImplementedError(self)
 
 
 ########################################################################
@@ -150,19 +152,19 @@ class PostUrl(Url):
 
     @settable_property
     def gallery(self) -> GalleryUrl:
-        raise NotImplementedError
+        raise NotImplementedError(self)
 
     @settable_property
     def assets(self) -> list["PostAssetUrl"]:
-        raise NotImplementedError
+        raise NotImplementedError(self)
 
     @settable_property
     def created_at(self) -> datetime:
-        raise NotImplementedError
+        raise NotImplementedError(self)
 
     @settable_property
     def score(self) -> int:
-        raise NotImplementedError
+        raise NotImplementedError(self)
 
 
 ########################################################################
@@ -182,7 +184,7 @@ class _AssetUrl(Url):
 
     @property
     def full_size(self) -> str:
-        raise NotImplementedError
+        raise NotImplementedError(self)
 
     @settable_property
     def files(self) -> list[File]:
@@ -196,7 +198,7 @@ class _AssetUrl(Url):
 class PostAssetUrl(_AssetUrl, Url):
     @settable_property
     def post(self) -> PostUrl:
-        raise NotImplementedError
+        raise NotImplementedError(self)
 
     @settable_property
     def created_at(self) -> datetime:
@@ -207,7 +209,7 @@ class GalleryAssetUrl(_AssetUrl, Url):
     """An asset belonging to a gallery instead of a post (such as a background image)."""
     @settable_property
     def gallery(self) -> PostUrl:
-        raise NotImplementedError
+        raise NotImplementedError(self)
 
 
 ########################################################################
