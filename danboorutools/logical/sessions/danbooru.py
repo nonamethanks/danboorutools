@@ -4,8 +4,8 @@ from typing import Literal, TypeVar
 from danboorutools import logger
 from danboorutools.exceptions import DanbooruHTTPError
 from danboorutools.logical.sessions import Session
-from danboorutools.models.danbooru import (DanbooruCommentVote, DanbooruModel, DanbooruPost, DanbooruPostVersion, DanbooruPostVote,
-                                           DanbooruTag, DanbooruUser)
+from danboorutools.models.danbooru import (DanbooruArtist, DanbooruCommentVote, DanbooruModel, DanbooruPost, DanbooruPostVersion,
+                                           DanbooruPostVote, DanbooruTag, DanbooruUser)
 from danboorutools.models.file import File
 from danboorutools.models.url import Url
 from danboorutools.version import version
@@ -35,10 +35,11 @@ class DanbooruApi(Session):
     ]
 
     only_string_defaults = {
+        "artist": "id,created_at,name,other_names,is_deleted,is_banned,tag,urls",
         "comment_vote": "id,created_at,score,is_deleted,user,comment",
         "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
         "post_vote": "id,created_at,score,is_deleted,user,post",
-        "tag": "id,name,post_count,category,created_at,updated_at,artist,is_deprecated,wiki_page",
+        "tag": "id,name,post_count,category,created_at,is_deprecated,wiki_page,artist",
     }
 
     def __init__(self, *args,
@@ -112,6 +113,9 @@ class DanbooruApi(Session):
         response = self.danbooru_request("GET", f"{model_type.model_name}s.json", params=params)
         models = [model_type(model_data) for model_data in response]
         return models
+
+    def artists(self, **kwargs) -> list[DanbooruArtist]:
+        return self._generic_endpoint(DanbooruArtist, **kwargs)
 
     def comment_votes(self, **kwargs) -> list[DanbooruCommentVote]:
         return self._generic_endpoint(DanbooruCommentVote, **kwargs)

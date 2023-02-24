@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self
+from typing import Self, get_type_hints
 
 from dateutil import parser as dt_parser
 
@@ -27,7 +27,9 @@ class DanbooruModel:
         self.created_at = dt_parser.parse(json_data["created_at"]) if "created_at" in json_data else self.updated_at
         self.is_deleted: bool = json_data.get("is_deleted", False)
 
-        for property_name, property_class in self.__annotations__.items():
+        for property_name, property_class in get_type_hints(self.__class__).items():
+            if property_name in ["model_name"]:
+                continue
             if (property_data := json_data.get(property_name)) is not None:
                 # if property_class.__origin__ == list:
                 #     property_subclass = property_class.__args__[0]
@@ -68,6 +70,7 @@ class DanbooruPost(DanbooruModel):
 
     score: int
     md5: str
+    file_url: str
 
     @property
     def source(self) -> Url:
@@ -153,13 +156,26 @@ class DanbooruPostVersion(DanbooruModel):
 
 
 class DanbooruArtist(DanbooruModel):
+    model_name = "artist"
+
     name: str
-    group_name: str
     is_banned: bool
     other_names: list[str]
+    tag: DanbooruTag
+
+    @property
+    def urls(self) -> list[Url]:
+        urls = []
+        for url_data in self.json_data["urls"]:
+            url = Url.parse(url_data["url"])
+            url.is_deleted = url_data["is_deleted"]
+            urls.append(url)
+        return urls
 
 
 class DanbooruWikiPage(DanbooruModel):
+    model_name = "wiki_page"
+
     title: str
     body: str
     is_locked: bool
@@ -167,6 +183,8 @@ class DanbooruWikiPage(DanbooruModel):
 
 
 class DanbooruTag(DanbooruModel):
+    model_name = "tag"
+
     name: str
     post_count: int
     category: int
