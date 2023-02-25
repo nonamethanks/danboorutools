@@ -7,6 +7,14 @@ from dateutil import parser as dt_parser
 from danboorutools.models.file import File
 from danboorutools.models.url import Url
 
+CATEGORY_MAP = {
+    0: "general",
+    4: "character",
+    3: "copyright",
+    1: "artist",
+    5: "meta",
+}
+
 
 class DanbooruModel:
     model_name: str
@@ -191,3 +199,7 @@ class DanbooruTag(DanbooruModel):
     artist: DanbooruArtist
     is_deprecated: bool
     wiki_page: DanbooruWikiPage
+
+    @property
+    def category_name(self) -> str:
+        return CATEGORY_MAP[self.category]
