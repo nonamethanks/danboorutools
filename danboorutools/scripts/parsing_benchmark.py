@@ -8,7 +8,7 @@ from line_profiler import LineProfiler
 from danboorutools import logger
 from danboorutools.logical.parsers import ParsableUrl, UrlParser, parsers
 from danboorutools.models.url import Url  # , known_url_types
-from danboorutools.util.system import PersistentValue
+from danboorutools.scripts import ProgressTracker
 
 log_file = logger.log_to_file()
 
@@ -29,7 +29,7 @@ def main(times: int = 0, resume: bool = False, unparsed: bool = False) -> None:
         do_benchmark(test_set, resume)
 
 
-def print_unparsed(test_set):
+def print_unparsed(test_set: list[str]) -> None:
     unparsed_domains = []
     for index, url_string in enumerate(test_set):
         if index % 200_000 == 0:
@@ -69,9 +69,9 @@ def do_benchmark(test_set: list[str], resume: bool) -> None:
     parse_wrapper = prepare_profiler(profiler)
     start = time.time()
 
-    last_fail = PersistentValue("PARSING_BENCHMARK_LAST_FAIL", 0)
+    last_fail = ProgressTracker("PARSING_BENCHMARK_LAST_FAIL", 0)
     if not resume:
-        last_fail.delete()
+        del last_fail.value
     elif last_fail.value > 0:
         logger.info(f"Resuming from {last_fail.value - 20:_}.")
 
@@ -93,7 +93,7 @@ def do_benchmark(test_set: list[str], resume: bool) -> None:
     with log_file.open("a+", encoding="utf-8") as log_file_obj:
         profiler.print_stats(stream=log_file_obj)
 
-    last_fail.delete()
+    del last_fail.value
 
 
 def prepare_profiler(profiler: LineProfiler) -> Callable:
