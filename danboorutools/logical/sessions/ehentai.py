@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from functools import cached_property
 from typing import TYPE_CHECKING
 
@@ -26,10 +25,6 @@ class EHentaiSession(Session):
 
     def request(self, *args, **kwargs) -> Response:
         return super().request(*args, cookies=self.browser_cookies, **kwargs)
-
-    @memoize
-    def head(self, *args, **kwargs) -> Response:
-        return super().head(*args, **kwargs)
 
     @memoize
     def browser_login(self) -> None:
@@ -68,7 +63,7 @@ class EHentaiSession(Session):
         if not isinstance(url, str):
             url = url.normalized_url
 
-        self.head(url)  # trigger UrlIsDeleted
+        self.head(url)
         if self.browser.current_url != url:
             self.browser.get(url)
 
@@ -83,11 +78,7 @@ class EHentaiSession(Session):
         }
 
         response = self.post("https://api.e-hentai.org/api.php", json=data)
-
-        try:
-            json_response = response.json()
-        except json.JSONDecodeError as e:
-            raise NotImplementedError(response.text) from e
+        json_response = self._try_json_response(response)
 
         try:
             return json_response["tokenlist"][0]["token"]

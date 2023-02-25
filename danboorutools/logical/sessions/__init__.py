@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import json
 import os
 import time
 from functools import cached_property
@@ -16,7 +18,7 @@ from danboorutools.exceptions import DownloadError, HTTPError, UrlIsDeleted
 from danboorutools.logical.browser import Browser
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.file import File, FileSubclass
-from danboorutools.util.misc import random_string
+from danboorutools.util.misc import memoize, random_string
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -54,21 +56,23 @@ class Session(RequestsSession):
     @sleep_and_retry
     @limits(calls=5, period=1)
     def request(self, *args, **kwargs) -> Response:
-        method, url, args = args[0], args[1], args[2:]
+        http_method, url, args = args[0], args[1], args[2:]
+
         if not isinstance(url, str):
             url = url.normalized_url
+
         url_domain = ParsableUrl(url).domain
         kwargs["proxies"] = self.proxied_domains.get(url_domain)
         kwargs["headers"] = self._default_headers | kwargs.get("headers", {})
 
         if kwargs.get("params"):
-            logger.debug(f"{method} request made to {url}?{urlencode(kwargs['params'])}")
+            logger.debug(f"{http_method} request made to {url}?{urlencode(kwargs['params'])}")
         else:
-            logger.debug(f"{method} request made to {url}")
-        response = super().request(method, url, *args, **kwargs)
+            logger.debug(f"{http_method} request made to {url}")
+        response = super().request(http_method, url, *args, **kwargs)
+
         if response.status_code == 404:
             raise UrlIsDeleted(response)
-
         return response
 
     def download_file(self, url: str | Url, *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
@@ -106,8 +110,36 @@ class Session(RequestsSession):
         soup = BeautifulSoup(response.text, "html5lib")
         return soup
 
+    def get_json(self, *args, **kwargs) -> dict:
+        response = self.request("GET", *args, **kwargs)
+        return self._try_json_response(response)
+
+    @memoize
+    def get_json_cached(self, *args, **kwargs) -> dict:
+        response = self.get_cached(*args, **kwargs)
+        return self._try_json_response(response)
+
+    @memoize
+    def get_cached(self, *args, **kwargs) -> Response:
+        return self.get(*args, **kwargs)
+
+    @memoize
+    def head_cached(self, *args, **kwargs) -> Response:
+        return self.head(*args, **kwargs)
+
+    @staticmethod
+    def _try_json_response(response: Response) -> dict:
+        try:
+            return response.json()
+        except json.JSONDecodeError as e:
+            print(response.text)
+            if not response.ok:
+                raise HTTPError(response) from e
+            else:
+                raise
+
     def unscramble(self, url: str) -> str:
-        resp = self.head(url, allow_redirects=True)
+        resp = self.head_cached(url, allow_redirects=True)
         if resp.status_code != 200:
             return url
         return resp.url

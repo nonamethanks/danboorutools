@@ -1,9 +1,7 @@
-import json
 import os
 
-from danboorutools.exceptions import HTTPError, UrlIsDeleted
+from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.sessions import Response, Session
-from danboorutools.util.misc import memoize
 
 DELETION_MESSAGES = [
     "User has left pixiv or the user ID does not exist.",
@@ -16,15 +14,10 @@ class PixivSession(Session):
     def cookies_from_env(self) -> dict:
         return {"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]}.copy()
 
-    @memoize
-    def get_json(self, url: str) -> dict:
+    def get_json(self, *args, **kwargs) -> dict:
         self.cookies.clear()  # pixiv does not like it if I send it the cookies from a previous request
-        resp = self.get(url, cookies=self.cookies_from_env)
-        try:
-            json_data: dict = resp.json()
-        except json.JSONDecodeError as e:
-            print(resp.text)
-            raise HTTPError(resp) from e
+        resp = self.get_cached(*args, **kwargs)
+        json_data = self._try_json_response(resp)
 
         if json_data.get("error", False) is not False:
             if json_data["message"] in DELETION_MESSAGES:

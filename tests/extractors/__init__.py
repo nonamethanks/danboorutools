@@ -1,9 +1,10 @@
 import re
 from datetime import datetime
-from typing import Any, TypeVar
+from typing import TypeVar
 
 from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.time import datetime_from_string
+from tests import assert_equal, assert_gte, assert_in, assert_isinstance, assert_match_in
 
 
 def assert_urls_are_same(lhs_value: list[Url] | list[str], rhs_value: list[Url] | list[str]) -> None:
@@ -25,8 +26,8 @@ RedirectUrlTypeVar = TypeVar("RedirectUrlTypeVar", bound=RedirectUrl)
 
 def assert_casted(url: str | Url, to_type: type[UrlTypeVar]) -> UrlTypeVar:
     casted_url = to_type.parse(url)
-    assert isinstance(casted_url, to_type)
-    return casted_url
+    assert_isinstance(casted_url, to_type)
+    return casted_url  # type: ignore[return-value]
 
 
 ###########################################################
@@ -56,12 +57,12 @@ def assert_gallery_url(url: str,
                        ) -> GalleryUrlTypeVar:
     gallery = assert_url(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
     if post_count is not None:
-        assert len(gallery.posts) >= post_count
+        assert_gte(len(gallery.posts), post_count)
 
     if posts is not None:
         found_posts = gallery.posts
         for post in posts:
-            assert Url.parse(post) in found_posts
+            assert_in(Url.parse(post), found_posts)
 
     return gallery
 
@@ -114,15 +115,15 @@ def assert_post_url(url: str,
 
     assert_equal(post.created_at, datetime_from_string(created_at))
     assert_equal(len(post.assets), asset_count)
-    assert post.score >= score
+    assert_gte(post.score, score)
 
     if assets is not None:
         found_assets = post.assets
         for asset in assets:
             if isinstance(asset, str):
-                assert Url.parse(asset) in found_assets
+                assert_in(Url.parse(asset), found_assets)
             else:
-                assert any(re.search(asset, found_asset.normalized_url) for found_asset in found_assets)
+                assert_match_in(asset, [a.normalized_url for a in found_assets])
 
     if md5s is not None:
         found_md5s = [_file.md5 for asset in post.assets for _file in asset.files]
@@ -149,7 +150,8 @@ def assert_asset_url(url: str,
 
     if md5s:
         found_md5s = [_file.md5 for _file in asset.files]
-        assert all(md5 in found_md5s for md5 in md5s), (md5s, found_md5s)
+        for md5 in md5s:
+            assert_in(md5, found_md5s)
 
     return asset
 
@@ -185,9 +187,3 @@ def assert_redirect_url(url: str,
     assert_equal(redirect_url.resolved.normalized_url, redirect_to.normalized_url)
 
     return redirect_url
-
-
-def assert_equal(lhv: Any, rhv: Any) -> None:  # noqa: ANN401 # SHUT THE FUCK UP
-    # ward is a piece of shit that won't pretty-print asserts inside an import, so this has to be used
-    # the alternative is killing myself while trying to make py-fucking-test work
-    assert lhv == rhv

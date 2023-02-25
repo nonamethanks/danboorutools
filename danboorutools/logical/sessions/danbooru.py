@@ -70,7 +70,7 @@ class DanbooruApi(Session):
             raise DanbooruHTTPError(response)
 
         if endpoint.endswith(".json"):
-            return response.json()
+            return self._try_json_response(response)
         else:
             return {
                 "success": True

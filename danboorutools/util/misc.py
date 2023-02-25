@@ -29,7 +29,24 @@ def natsort_array(array: Iterable[Variable]) -> list[Variable]:
     return sorted(array, key=lambda key: [tryint(c) for c in re.split('([0-9]+)', str(key))])
 
 
+#################################
+
+
 MemoizedFunction = TypeVar("MemoizedFunction", bound=Callable[..., Any])
+
+
+def hash_dict(func: MemoizedFunction) -> MemoizedFunction:
+    """Make a dictionary immutable"""
+    class HDict(dict):
+        def __hash__(self):
+            return hash(frozenset(self.items()))
+
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs) -> MemoizedFunction:
+        args = tuple(HDict(arg) if isinstance(arg, dict) else arg for arg in args)
+        kwargs = {k: HDict(v) if isinstance(v, dict) else v for k, v in kwargs.items()}
+        return func(*args, **kwargs)
+    return wrapped  # type: ignore[return-value] # shut the fuck up retard
 
 
 def memoize(func: MemoizedFunction) -> MemoizedFunction:
@@ -37,6 +54,7 @@ def memoize(func: MemoizedFunction) -> MemoizedFunction:
     def wrapped_func(self, *args, **kwargs):  # noqa
         self_weak = weakref.ref(self)
 
+        @hash_dict
         @functools.wraps(func)
         @functools.lru_cache()
         def cached_method(*args, **kwargs):  # noqa
@@ -45,6 +63,8 @@ def memoize(func: MemoizedFunction) -> MemoizedFunction:
         return cached_method(*args, **kwargs)
 
     return wrapped_func  # type: ignore[return-value]
+
+#################################
 
 
 if TYPE_CHECKING:

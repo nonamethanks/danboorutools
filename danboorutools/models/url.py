@@ -81,7 +81,7 @@ class Url:
     @settable_property
     def is_deleted(self) -> bool:
         try:
-            self.session.head(self.normalized_url)
+            self.session.head_cached(self.normalized_url)
         except UrlIsDeleted:
             return True
         else:
