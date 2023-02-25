@@ -28,8 +28,6 @@ class PixivSession(Session):
 
     def request(self, *args, **kwargs) -> Response:
         kwargs["cookies"] = self.cookies_from_env
+        if "i.pximg.net" in args[1]:
+            kwargs["headers"] = kwargs.get("headers", {}) | {"Referer": "https://app-api.pixiv.net/"}
         return super().request(*args, **kwargs)
-
-    def download_file(self, *args, **kwargs):  # noqa
-        headers = {"Referer": "https://app-api.pixiv.net/"}
-        return super().download_file(*args, headers=headers, **kwargs)

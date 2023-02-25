@@ -83,3 +83,13 @@ def test_dead_2() -> None:
         url_properties=dict(post_id=1),
         is_deleted=True
     )
+
+
+@test("Scrape dead pixiv image", tags=["scraping", "pixiv", "asset", "dead"])
+def test_dead_3() -> None:
+    assert_url(
+        url_type=PixivImageUrl,
+        url="https://i.pximg.net/img-original/img/2022/10/06/13/42/55/101721495_p0.png",
+        url_properties=dict(post_id=101721495, page=0),
+        is_deleted=True
+    )
