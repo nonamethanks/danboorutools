@@ -32,3 +32,7 @@ class ArcaLiveArtistUrl(ArtistUrl, ArcaLiveUrl):
 class ArcaLiveImageUrl(PostAssetUrl, ArcaLiveUrl):
     date_string: str
     filename: str
+
+    @property
+    def full_size(self) -> str:
+        return self.parsed_url.url_without_params.replace(".mp4", ".gif") + "?type=orig"
