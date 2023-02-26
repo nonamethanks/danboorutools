@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from functools import cached_property
-from typing import TYPE_CHECKING, Callable, Sequence, TypeVar, final, get_type_hints
+from typing import TYPE_CHECKING, Callable, TypeVar, final, get_type_hints
 
 from bs4 import BeautifulSoup
 
@@ -11,6 +11,7 @@ from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.util.misc import settable_property
+from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
     # https://github.com/python/mypy/issues/5107#issuecomment-529372406
@@ -129,9 +130,46 @@ class InfoUrl(Url):
 
 class GalleryUrl(Url):
     """A gallery contains multiple posts."""
+    _posts: list[PostUrl]
 
-    @settable_property
-    def posts(self) -> Sequence[PostUrl]:
+    def _register_post(self, post: PostUrl, assets: list[PostAssetUrl], created_at: datetime | str, score: int) -> None:
+        if not hasattr(self, "_posts"):
+            self._posts = []
+
+        if post in self._posts:
+            raise NotImplementedError
+
+        post.created_at = datetime_from_string(created_at)
+        post.score = score
+        post.gallery = self
+
+        for asset in assets:
+            post._register_asset(asset)
+
+        self._posts.append(post)
+
+    @property
+    @final
+    def posts(self) -> list[PostUrl]:
+        if not hasattr(self, "_posts"):
+            try:
+                # self.extract_posts()
+                self._extract_posts()
+            except Exception:
+                if hasattr(self, "_posts"):
+                    del self._posts
+                raise
+        return self._posts
+
+    # TODO
+    # def extract_posts(self) -> None:
+    #     try:
+    #         self._extract_posts()
+    #     except PostAlreadySeen:
+    # #     in order to update with revisions, new posts for feeds, etc
+    #         return
+
+    def _extract_posts(self) -> None:
         raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
 
@@ -154,13 +192,41 @@ class ArtistAlbumUrl(GalleryUrl, Url):
 
 class PostUrl(Url):
     """A post contains multiple assets."""
+    _assets: list[PostAssetUrl]
 
-    @settable_property
-    def gallery(self) -> GalleryUrl:
+    def _register_asset(self, asset: PostAssetUrl | str) -> None:
+        if not hasattr(self, "_assets"):
+            self._assets = []
+
+        if isinstance(asset, str):
+            parsed_asset = Url.parse(asset)
+            assert isinstance(parsed_asset, PostAssetUrl), parsed_asset
+            asset = parsed_asset
+
+        if asset in self._assets:
+            raise NotImplementedError
+
+        asset.post = self
+
+        self._assets.append(asset)
+
+    @property
+    @final
+    def assets(self) -> list[PostAssetUrl]:
+        if not hasattr(self, "_assets"):
+            try:
+                self._extract_assets()
+            except Exception:
+                if hasattr(self, "_assets"):
+                    del self._assets
+                raise
+        return self._assets
+
+    def _extract_assets(self) -> None:
         raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
     @settable_property
-    def assets(self) -> list[PostAssetUrl]:
+    def gallery(self) -> GalleryUrl:
         raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
     @settable_property
@@ -177,6 +243,22 @@ class PostUrl(Url):
 
 class _AssetUrl(Url):
     """An asset contains a list of files. It's usually a list of a single file, but it can be a zip file with multiple subfiles."""
+    _files: list[File]
+
+    @property
+    def files(self) -> list[File]:
+        if not hasattr(self, "_files"):
+            self.extract_files()
+
+        return self._files
+
+    def extract_files(self) -> None:
+        downloaded_file = self.session.download_file(self.normalized_url)
+        if isinstance(downloaded_file, ArchiveFile):
+            self._files = downloaded_file.extracted_files
+        else:
+            self._files = [downloaded_file]
+
     @cached_property
     def normalized_url(self) -> str:
         # it doesn't make sense for files to have to implement normalize()
@@ -190,14 +272,6 @@ class _AssetUrl(Url):
     @property
     def full_size(self) -> str:
         raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
-
-    @settable_property
-    def files(self) -> list[File]:
-        downloaded_file = self.session.download_file(self.normalized_url)
-        if isinstance(downloaded_file, ArchiveFile):
-            return downloaded_file.extracted_files
-        else:
-            return [downloaded_file]
 
 
 class PostAssetUrl(_AssetUrl, Url):

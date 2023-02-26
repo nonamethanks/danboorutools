@@ -12,14 +12,6 @@ class UnknownUrlError(Exception):
         super().__init__(message)
 
 
-class UrlParsingError(Exception):
-    """The url parsing went wrong."""
-
-    def __init__(self, url: object, missing_property: str) -> None:
-        message = f"The url '{url}' was expected to have the missing property '{missing_property}'."
-        super().__init__(message)
-
-
 class UnparsableUrl(Exception):
     """The url is expectedly unknown."""
 

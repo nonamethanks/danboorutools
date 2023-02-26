@@ -85,15 +85,13 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
                           gallery_id=self.gallery_id,
                           subsite=self.subsite)
 
-    @settable_property
-    def assets(self) -> list[EHentaiImageUrl]:  # type: ignore[override]
+    def _extract_assets(self) -> None:
         asset = self._get_direct_url()
 
-        asset.post = self
         asset.created_at = self.created_at
-        asset.files = asset.files
+        asset.extract_files()
 
-        return [asset]
+        self._register_asset(asset)
 
     def _get_direct_url(self) -> EHentaiImageUrl:
         # Can't be cached because download urls expire fast
@@ -131,17 +129,18 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
         gallery_token = kwargs["gallery_token"]
         return f"https://{subsite}.org/g/{gallery_id}/{gallery_token}"
 
-    @settable_property
-    def posts(self) -> list[EHentaiPageUrl]:  # type: ignore[override]
+    def _extract_posts(self) -> None:
         raw_thumb_urls = self._get_thumb_urls()
 
         download_url = self._get_download_url()
         files = self._download_and_extract_archive(download_url)
 
-        pages: list[EHentaiPageUrl] = []
         for raw_thumb_url, file in zip(raw_thumb_urls, files):
             image: EHentaiImageUrl = self.parse(raw_thumb_url)  # type: ignore[assignment]
             assert image.page_token
+            image.created_at = self.created_at
+            image._files = [file]
+
             page = self.build(
                 url_type=EHentaiPageUrl,
                 subsite=self.subsite,
@@ -150,17 +149,12 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
                 page_number=raw_thumb_urls.index(raw_thumb_url) + 1,
             )
 
-            image.post = page
-            image.created_at = self.created_at
-            image.files = [file]
-
-            page.gallery = self
-            page.assets = [image]
-            page.created_at = self.created_at
-            page.score = self.score
-
-            pages.append(page)
-        return pages
+            self._register_post(
+                post=page,
+                assets=[image],
+                created_at=self.created_at,
+                score=self.score,
+            )
 
     @settable_property
     def created_at(self) -> datetime:

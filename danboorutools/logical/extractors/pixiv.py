@@ -115,16 +115,13 @@ class PixivPostUrl(PostUrl, PixivUrl):
         else:
             return f"https://www.pixiv.net/en/artworks/{post_id}"
 
-    @settable_property
-    def assets(self) -> list[PixivImageUrl]:  # type: ignore[override]
+    def _extract_assets(self) -> None:
         asset_urls = [img["urls"]["original"] for img in self._pages_data]
         if "_ugoira0" in asset_urls[0]:
             asset_urls = [self._ugoira_data["originalSrc"]]
 
-        assets: list[PixivImageUrl] = [self.parse(url) for url in asset_urls]  # type: ignore[misc]
-        assert all(isinstance(asset, PixivImageUrl) for asset in assets), assets
-
-        return assets
+        for asset_url in asset_urls:
+            self._register_asset(asset_url)
 
     @settable_property
     def created_at(self) -> datetime:
@@ -170,23 +167,15 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
         user_id = kwargs["user_id"]
         return f"https://www.pixiv.net/en/users/{user_id}"
 
-    @settable_property
-    def posts(self) -> list[PixivPostUrl]:  # type: ignore[override]
+    def _extract_posts(self) -> None:
         page = 0
-        posts: list[PixivPostUrl] = []
         while True:
             page += 1
             illusts = self._illust_data(page=page)
             if not illusts:
-                return posts
+                return
             for illust_data in illusts:
-                post = self.build(
-                    PixivPostUrl,
-                    post_id=int(illust_data["id"])
-                )
-                post.created_at = datetime_from_string(illust_data["upload_timestamp"])
-                post.gallery = self
-                post.score = int(illust_data.get("rating_count", 0))
+                post = self.build(PixivPostUrl, post_id=int(illust_data["id"]))
 
                 if int(illust_data["type"]) == 2:
                     post_ugoira_data = post._ugoira_data
@@ -195,9 +184,13 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
                     # Can't avoid fetching this for single-page posts because all samples are jpg, even for png files
                     post_pages_data = self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post.post_id}/pages")
                     asset_urls = [img["urls"]["original"] for img in post_pages_data]
-                post.assets = [self.parse(url) for url in asset_urls]  # type: ignore[misc]  # jesus christ shut the fuck up retard
 
-                posts.append(post)
+                self._register_post(
+                    post=post,
+                    created_at=illust_data["upload_timestamp"],
+                    score=int(illust_data.get("rating_count", 0)),
+                    assets=[self.parse(url) for url in asset_urls]  # type: ignore[misc]
+                )
 
     @property
     def primary_names(self) -> list[str]:
@@ -247,7 +240,7 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
             return True
 
     @memoize
-    def _illust_data(self, page: int = 1) -> dict:
+    def _illust_data(self, page: int = 1) -> list[dict[str, str]]:
         artist_data_url = f"https://www.pixiv.net/touch/ajax/user/illusts?id={self.user_id}&p={page}&lang=en"
         return self.session.get_json(artist_data_url)["illusts"]
 

@@ -20,7 +20,7 @@ class SinaimgCnParser(UrlParser):
         ],
     }
 
-    @ classmethod
+    @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> WeiboImageUrl | None:
         match parsable_url.url_parts:
 
