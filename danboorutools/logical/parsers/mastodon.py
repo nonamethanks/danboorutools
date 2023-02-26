@@ -1,5 +1,6 @@
 from danboorutools.exceptions import UnparsableUrl
-from danboorutools.logical.extractors.mastodon import MastodonArtistUrl, MastodonImageUrl, MastodonOauthUrl, MastodonPostUrl, MastodonUrl
+from danboorutools.logical.extractors.mastodon import (MastodonArtistUrl, MastodonImageUrl, MastodonOauthUrl, MastodonOldImageUrl,
+                                                       MastodonPostUrl, MastodonUrl)
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
@@ -29,8 +30,13 @@ class XxxXxxParser(UrlParser):
             "https://img.pawoo.net/media_attachments/files/001/297/997/original/c4272a09570757c2.png",
             "https://baraag.net/system/media_attachments/files/107/866/084/749/942/932/original/a9e0f553e332f303.mp4",
             "https://media.baraag.net/media_attachments/files/107/866/084/749/942/932/original/a9e0f553e332f303.mp4",
+        ],
+        MastodonOldImageUrl: [
             "https://pawoo.net/media/lU2uV7C1MMQSb1czwvg",
         ],
+        MastodonOauthUrl: [
+            "https://pawoo.net/oauth_authentications/25289748",
+        ]
     }
 
     @classmethod
@@ -41,16 +47,20 @@ class XxxXxxParser(UrlParser):
             return cls._match_everything_else(parsable_url)
 
     @staticmethod
-    def _match_asset(parsable_url: ParsableUrl) -> MastodonImageUrl | None:
+    def _match_asset(parsable_url: ParsableUrl) -> MastodonUrl | None:
+        instance: MastodonUrl
         match parsable_url.url_parts:
-            case "media_attachments", "files", *_, _, _:
+            case "media_attachments", "files", *subdirs, _, _filename:
                 instance = MastodonImageUrl(parsable_url)
+                instance.subdirs = subdirs
 
-            case "system", "media_attachments", "files", *_, _, _:
+            case "system", "media_attachments", "files", *subdirs, _, _filename:
                 instance = MastodonImageUrl(parsable_url)
+                instance.subdirs = subdirs
 
-            case "media", _:
-                instance = MastodonImageUrl(parsable_url)
+            case "media", filename:
+                instance = MastodonOldImageUrl(parsable_url)
+                instance.filename = filename
 
             case _:
                 return None
