@@ -83,7 +83,7 @@ class GelbooruApi(Session):
             "lupdated": int(time.time()),
             "pconf": 1,
             "rating": rating[0] if rating else post.rating,
-            "source": post.source.parsed_url.raw_url,
+            "source": post.source if isinstance(post.source, str) else post.source.parsed_url.raw_url,
             "submit": "Save changes",
             "tags": " ".join(final_tags),
             "title": "",

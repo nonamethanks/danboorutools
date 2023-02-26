@@ -145,8 +145,8 @@ class DanbooruApi(Session):
     def replace(self,
                 post: DanbooruPost,
                 replacement_file: File | None = None,
-                replacement_url: Url | None = None,
-                final_source: Url | None = None
+                replacement_url: Url | str | None = None,
+                final_source: Url | str | None = None
                 ) -> None:
         if not replacement_file and not replacement_url:
             raise ValueError("Either a file or an url must be present.")
@@ -162,13 +162,15 @@ class DanbooruApi(Session):
             return
 
         final_source = final_source if final_source else post.source
+        if isinstance(final_source, Url):
+            final_source = final_source.normalized_url
 
         tags_to_send = [f"-{t}" for t in self.bad_source_tags]
         tags_to_send += [f"-{t}" for t in post.meta_tags if t.endswith("_sample")]
 
         data = {
             "post_replacement[replacement_url]": (None, ""),
-            "post_replacement[final_source]": (None, final_source.normalized_url),
+            "post_replacement[final_source]": (None, final_source),
             "post_replacement[tags]": (None, " ".join(tags_to_send)),
             "post_replacement[replacement_file]": (str(replacement_file.path), replacement_file.path.open("rb")),
         }

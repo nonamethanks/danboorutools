@@ -3,6 +3,7 @@ from __future__ import annotations
 from dateutil import parser as dt_parser
 
 from danboorutools import logger
+from danboorutools.exceptions import NotAnUrl
 from danboorutools.models.url import Url
 
 
@@ -27,7 +28,10 @@ class GelbooruPost:
 
         self.tags: list[str] = json_data["tags"].split()
         self.rating: str = json_data["rating"][0]
-        self.source = Url.parse(json_data["source"])
+        try:
+            self.source = Url.parse(json_data["source"])
+        except NotAnUrl:
+            self.source: str = json_data["source"]  # type: ignore[no-redef]
         self.title: str = json_data["title"]  # AFAIK unused
 
         self.url = f"https://gelbooru.com/index.php?page=post&s=view&id={self.id}"

@@ -4,6 +4,7 @@ from typing import Self, get_type_hints
 
 from dateutil import parser as dt_parser
 
+from danboorutools.exceptions import NotAnUrl
 from danboorutools.models.file import File
 from danboorutools.models.url import Url
 
@@ -81,8 +82,11 @@ class DanbooruPost(DanbooruModel):
     file_url: str
 
     @property
-    def source(self) -> Url:
-        return Url.parse(self.json_data["source"])
+    def source(self) -> Url | str:
+        try:
+            return Url.parse(self.json_data["source"])
+        except NotAnUrl:
+            return self.json_data["source"]
 
     def apply_json_data(self, json_data: dict) -> None:
         super().apply_json_data(json_data)
@@ -93,7 +97,7 @@ class DanbooruPost(DanbooruModel):
         self.meta_tags: list[str] = json_data["tag_string_meta"].split()
 
     def replace(self,
-                replacement_url: Url | None = None,
+                replacement_url: Url | str | None = None,
                 replacement_file: File | None = None,
                 final_source: Url | None = None,
                 refresh: bool = False

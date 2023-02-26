@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from urllib.parse import unquote
 
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import NotAnUrl, UnparsableUrl
 
 url_params_pattern = re.compile(r"(?:\?|\&)?([^=]+)=([^&]+)")
 
@@ -23,10 +23,10 @@ class ParsableUrl:
         try:
             [scheme, _, *url_parts] = url_without_params.split("/")
         except ValueError as e:
-            raise ValueError(self.raw_url) from e
+            raise NotAnUrl(self.raw_url) from e
 
         if scheme not in ("http:", "https:"):
-            raise ValueError(self.raw_url)
+            raise NotAnUrl(self.raw_url)
 
         hostname = url_parts[0].split(":")[0]
         try:

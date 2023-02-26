@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from itertools import repeat
 from multiprocessing import Value
 from multiprocessing.pool import ThreadPool
@@ -28,14 +29,14 @@ class Counter:
     def __add__(self, other: int | float) -> Counter:
         with self.counter.get_lock():
             self.counter.value += other  # type: ignore[attr-defined] # XXX False positive https://github.com/python/typeshed/issues/8799
-            if self.print_progress:
+            if self.print_progress and other:
                 print(f"At {self.counter.value}...")  # type: ignore[attr-defined]
         return self
 
     def __sub__(self, other: int | float) -> Counter:
         with self.counter.get_lock():
             self.counter.value -= other  # type: ignore[attr-defined]
-            if self.print_progress:
+            if self.print_progress and other:
                 print(f"At {self.counter.value}...")  # type: ignore[attr-defined]
         return self
 

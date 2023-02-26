@@ -28,6 +28,14 @@ class UnparsableUrl(Exception):
         super().__init__(message)
 
 
+class NotAnUrl(Exception):
+    """The url is expectedly unknown."""
+
+    def __init__(self, string: str) -> None:
+        message = f"The string '{string}' is not an url."
+        super().__init__(message)
+
+
 class NoCookiesForDomain(FileNotFoundError):
     """We tried to restore cookies we don't have."""
 
@@ -96,3 +104,7 @@ class DanbooruHTTPError(HTTPError):
             for row in self.backtrace:
                 msg += f"\n     {row}"
         return msg
+
+
+class NoSaucenaoResult(Exception):
+    """For when saucenao returns no viable result."""
