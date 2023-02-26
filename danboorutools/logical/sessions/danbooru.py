@@ -77,14 +77,15 @@ class DanbooruApi(Session):
             }
 
     def posts(self, tags: list[str], page: int | str = 1) -> list[DanbooruPost]:
+        if not any(t.startswith("limit:") for t in tags):
+            tags += ["limit:200"]
+
         params = {
             "tags": " ".join(tags),
             "page": page
         }
-        if not any(t.startswith("limit:") for t in tags):
-            response = self.danbooru_request("GET", "posts.json", params=params, limit=200)
-        else:
-            response = self.danbooru_request("GET", "posts.json", params=params)
+
+        response = self.danbooru_request("GET", "posts.json", params=params)
         posts = [DanbooruPost(post_data) for post_data in response]
         return posts
 
