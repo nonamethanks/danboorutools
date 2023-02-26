@@ -1,10 +1,10 @@
-from danboorutools.logical.extractors.newgrounds import NewgroundsImageUrl
+from danboorutools.logical.extractors.newgrounds import NewgroundsAssetUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
 class NgfilesComParser(UrlParser):
     test_cases = {
-        NewgroundsImageUrl: [
+        NewgroundsAssetUrl: [
             "https://art.ngfiles.com/images/1254000/1254722_natthelich_pandora.jpg",
             "https://art.ngfiles.com/images/1033000/1033622_natthelich_fire-emblem-marth-plus-progress-pic.png?f1569487181",
 
@@ -15,10 +15,10 @@ class NgfilesComParser(UrlParser):
     }
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> NewgroundsImageUrl | None:
+    def match_url(cls, parsable_url: ParsableUrl) -> NewgroundsAssetUrl | None:
         match parsable_url.url_parts:
             case ("images" | "thumbnails"), _, filename:
-                instance = NewgroundsImageUrl(parsable_url)
+                instance = NewgroundsAssetUrl(parsable_url)
 
                 if "_" in filename:
                     _, username, title = filename.split("_")
@@ -29,7 +29,7 @@ class NgfilesComParser(UrlParser):
                     instance.username = None
 
             case "comments", _, _:
-                instance = NewgroundsImageUrl(parsable_url)
+                instance = NewgroundsAssetUrl(parsable_url)
                 instance.title = None
                 instance.username = None
 

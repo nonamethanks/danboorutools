@@ -66,9 +66,11 @@ class Url:
     def __init__(self, url: ParsableUrl):
         self.parsed_url = url
 
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}[{self.normalized_url}]"
-    __repr__ = __str__
+    def __repr__(self) -> str:
+        try:
+            return f"{self.__class__.__name__}[{self.normalized_url}]"
+        except NotImplementedError:
+            return f"{self.__class__.__name__}[{self.parsed_url.raw_url}]"
 
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, type(self)):
@@ -77,7 +79,7 @@ class Url:
         return __o.normalized_url == self.normalized_url
 
     def __hash__(self) -> int:  # needed for Ward tests
-        return hash(self.__str__())
+        return hash(self.normalized_url)
 
     @settable_property
     def is_deleted(self) -> bool:
