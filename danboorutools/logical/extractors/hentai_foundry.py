@@ -7,16 +7,28 @@ class HentaiFoundryUrl(Url):
 
 class HentaiFoundryPostUrl(PostUrl, HentaiFoundryUrl):
     username: str
-    work_id: int
+    post_id: int
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str | None:
+        return f"https://www.hentai-foundry.com/pictures/user/{kwargs['username']}/{kwargs['post_id']}"
 
 
 class HentaiFoundryArtistUrl(ArtistUrl, HentaiFoundryUrl):
     username: str
 
+    @classmethod
+    def normalize(cls, **kwargs) -> str | None:
+        return f"https://www.hentai-foundry.com/user/{kwargs['username']}"
+
 
 class HentaiFoundryImageUrl(PostAssetUrl, HentaiFoundryUrl):
     username: str
     work_id: int
+
+    @property
+    def full_size(self) -> str:
+        return self.parsed_url.raw_url
 
 
 class HentaiFoundryOldPostUrl(RedirectUrl, HentaiFoundryUrl):

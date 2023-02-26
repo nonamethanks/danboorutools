@@ -44,20 +44,20 @@ class HentaiFoundryComParser(UrlParser):
         instance: HentaiFoundryUrl
 
         match parsable_url.url_parts:
-            case _, username, work_id, _ if work_id.isnumeric():
+            case _, username, post_id, _ if post_id.isnumeric():
                 instance = HentaiFoundryImageUrl(parsable_url)
                 instance.username = username
-                instance.work_id = int(work_id)
+                instance.work_id = int(post_id)
 
             case *_, subdir, username, _filename if len(subdir) == 1:
                 instance = HentaiFoundryImageUrl(parsable_url)
                 instance.username = username
                 instance.work_id = int(parsable_url.stem)
 
-            case "pictures", "user", username, work_id, *_ if work_id.isnumeric():
+            case "pictures", "user", username, post_id, *_ if post_id.isnumeric():
                 instance = HentaiFoundryPostUrl(parsable_url)
                 instance.username = username
-                instance.work_id = int(work_id)
+                instance.post_id = int(post_id)
 
             case "pictures", "user", username, *_:
                 instance = HentaiFoundryArtistUrl(parsable_url)
@@ -67,9 +67,9 @@ class HentaiFoundryComParser(UrlParser):
                 instance = HentaiFoundryArtistUrl(parsable_url)
                 instance.username = username
 
-            case "pictures", work_id:
+            case "pictures", post_id:
                 instance = HentaiFoundryOldPostUrl(parsable_url)
-                instance.post_id = int(work_id)
+                instance.post_id = int(post_id)
 
             case artist_slug, if artist_slug.startswith("user-") or artist_slug.startswith("profile-"):
                 instance = HentaiFoundryArtistUrl(parsable_url)

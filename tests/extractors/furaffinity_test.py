@@ -1,5 +1,3 @@
-
-
 from ward import test
 
 from danboorutools.models.url import Url
