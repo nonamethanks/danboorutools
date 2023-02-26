@@ -107,6 +107,7 @@ def prepare_profiler(profiler: LineProfiler) -> Callable:
                 profiler.add_function(getattr(parser_type, method))
 
     profiler.add_function(UrlParser.parse.__wrapped__)
+    profiler.add_function(UrlParser._parse)
     profiler.add_function(ParsableUrl.url_data.func)  # type: ignore[attr-defined]
     parse_wrapper = profiler(Url.parse)
     return parse_wrapper

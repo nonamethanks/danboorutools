@@ -3,9 +3,9 @@ from __future__ import annotations
 from functools import lru_cache
 from importlib import import_module
 from pathlib import Path
-from typing import TYPE_CHECKING, get_type_hints
+from typing import TYPE_CHECKING
 
-from danboorutools.exceptions import UnknownUrlError, UnparsableUrl, UrlParsingError
+from danboorutools.exceptions import UnknownUrlError, UnparsableUrl
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.util.misc import class_name_to_string
 
@@ -46,9 +46,6 @@ class UrlParser:
         if not parsed_url:
             raise UnknownUrlError(url, parser)
 
-        for url_property in set(get_type_hints(parsed_url.__class__)) - {"session"}:
-            if not hasattr(parsed_url, url_property):
-                raise UrlParsingError(parsed_url, url_property)
         return parsed_url
 
     @classmethod
