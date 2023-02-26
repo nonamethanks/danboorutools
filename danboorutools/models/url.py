@@ -47,7 +47,7 @@ class Url:
     @staticmethod
     @lru_cache
     @final
-    def build(url_type: type["UrlSubclass"], **url_properties) -> UrlSubclass:
+    def build(url_type: type[UrlSubclass], **url_properties) -> UrlSubclass:
         """Build an Url from its url properties."""
         normalized_url = url_type.normalize(**url_properties)
         if not normalized_url:
@@ -109,7 +109,7 @@ class UnknownUrl(Url):
 class InfoUrl(Url):
     """An info url is an url that contains non-asset data, such as related artist urls and names."""
     @property
-    def related(self) -> list["Url"]:
+    def related(self) -> list[Url]:
         """A list of related urls."""
         raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
@@ -131,7 +131,7 @@ class GalleryUrl(Url):
     """A gallery contains multiple posts."""
 
     @settable_property
-    def posts(self) -> Sequence["PostUrl"]:
+    def posts(self) -> Sequence[PostUrl]:
         raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
 
@@ -160,7 +160,7 @@ class PostUrl(Url):
         raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
     @settable_property
-    def assets(self) -> list["PostAssetUrl"]:
+    def assets(self) -> list[PostAssetUrl]:
         raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
 
     @settable_property

@@ -32,7 +32,7 @@ class AfdianArtistUrl(ArtistUrl, AfdianUrl):
         return [self.username]
 
     @property
-    def related(self) -> list["Url"]:
+    def related(self) -> list[Url]:
         creator_detail = self._user_data["creator"]["detail"]
         return [self.parse(url) for url in extract_urls_from_string(creator_detail)]
 
