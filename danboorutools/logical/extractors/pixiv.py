@@ -227,7 +227,7 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
 
         if social_data := self._artist_data["social"]:
             for url_dict in social_data.values():
-                urls.append(self.parse(url_dict[Url]))
+                urls.append(self.parse(url_dict["url"]))
 
         return urls
 
