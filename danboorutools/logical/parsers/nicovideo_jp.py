@@ -259,9 +259,9 @@ class NicovideoJp(UrlParser):
         instance: n3.Nicovideo3dUrl
 
         match parsable_url.url_parts:
-            case "works", work_id:
+            case "works", post_id:
                 instance = n3.Nicovideo3dPostUrl(parsable_url)
-                instance.work_id = int(work_id.removeprefix("td"))
+                instance.post_id = int(post_id.removeprefix("td"))
 
             case "users", user_id, *_:
                 instance = n3.Nicovideo3dArtistUrl(parsable_url)
