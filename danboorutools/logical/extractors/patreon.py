@@ -35,3 +35,7 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
 
 class PatreonImageUrl(PostAssetUrl, PatreonUrl):
     post_id: int | None = None
+
+    @property
+    def full_size(self) -> str:
+        return self.parsed_url.raw_url  # could be a thumbnail
