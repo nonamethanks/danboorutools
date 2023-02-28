@@ -1,5 +1,5 @@
 import os
-from typing import Literal, TypeVar
+from typing import Literal, Sequence, TypeVar
 
 from danboorutools import logger
 from danboorutools.exceptions import DanbooruHTTPError
@@ -129,6 +129,20 @@ class DanbooruApi(Session):
 
     def tags(self, **kwargs) -> list[DanbooruTag]:
         return self._generic_endpoint(DanbooruTag, **kwargs)
+
+    def create_artist(self, name: str, other_names: list[str], urls: Sequence[Url | str]) -> None:
+        final_urls = [Url.parse(url) for url in urls]
+        url_string = [f"-{u.normalized_url}" if u.is_deleted else u.normalized_url for u in final_urls]
+
+        data = {
+            "artist": {
+                "name": name,
+                "url_string": " ".join(url_string),
+                "other_names_string": " ".join(other_names)
+            }
+        }
+        request = self.danbooru_request("POST", "artists", json=data)
+        assert isinstance(request, dict) and request["success"]
 
     def update_post_tags(self, post: DanbooruPost, tags: list[str]) -> None:
         """Update a post's tags."""
