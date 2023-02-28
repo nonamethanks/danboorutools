@@ -10,16 +10,12 @@ class Fc2Url(Url):
 class Fc2PostUrl(PostUrl, Fc2Url):
     post_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"http://{kwargs['username']}.{kwargs['subsite']}.{kwargs['domain']}/blog-entry-{kwargs['post_id']}.html"
+    normalize_string = "http://{username}.{subsite}.{domain}/blog-entry-{post_id}.html"
 
 
 class Fc2BlogUrl(ArtistUrl, Fc2Url):
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"http://{kwargs['username']}.{kwargs['subsite']}.{kwargs['domain']}"
+    normalize_string = "http://{username}.{subsite}.{domain}"
 
 
 class Fc2ImageUrl(PostAssetUrl, Fc2Url):
@@ -30,28 +26,20 @@ class Fc2ImageUrl(PostAssetUrl, Fc2Url):
 
 class Fc2PiyoBlogUrl(ArtistUrl, Fc2Url):
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://piyo.fc2.com/{kwargs['username']}"
+    normalize_string = "https://piyo.fc2.com/{username}"
 
 
 class Fc2PiyoPostUrl(PostUrl, Fc2Url):
     post_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://piyo.fc2.com/{kwargs['username']}/{kwargs['post_id']}"
+    normalize_string = "https://piyo.fc2.com/{username}/{post_id}"
 
 
 class Fc2DiaryPostUrl(PostUrl, Fc2Url):
     post_date_string: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"http://diary.fc2.com/cgi-sys/ed.cgi/{kwargs['username']}/?{kwargs['post_date_string']}"
+    normalize_string = "http://diary.fc2.com/cgi-sys/ed.cgi/{username}/?{post_date_string}"
 
 
 class Fc2DiaryArtistUrl(PostUrl, Fc2Url):
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"http://diary.fc2.com/cgi-sys/ed.cgi/{kwargs['username']}"
+    normalize_string = "http://diary.fc2.com/cgi-sys/ed.cgi/{username}"

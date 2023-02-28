@@ -11,17 +11,13 @@ class AfdianUrl(Url):
 class AfdianPostUrl(PostUrl, AfdianUrl):
     post_id: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        return f"https://afdian.net/p/{kwargs['post_id']}"
+    normalize_string = "https://afdian.net/p/{post_id}"
 
 
 class AfdianArtistUrl(ArtistUrl, AfdianUrl):
     username: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        return f"https://afdian.net/a/{kwargs['username']}"
+    normalize_string = "https://afdian.net/a/{username}"
 
     @property
     def primary_names(self) -> list[str]:

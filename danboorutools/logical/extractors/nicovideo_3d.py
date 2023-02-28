@@ -8,9 +8,7 @@ class Nicovideo3dUrl(Url):
 class Nicovideo3dPostUrl(PostUrl, Nicovideo3dUrl):
     post_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://3d.nicovideo.jp/works/td{kwargs['post_id']}"
+    normalize_string = "https://3d.nicovideo.jp/works/td{post_id}"
 
 
 class Nicovideo3dArtistUrl(ArtistUrl, Nicovideo3dUrl):

@@ -22,10 +22,8 @@ class DeviantArtPostUrl(PostUrl, DeviantArtUrl):
     @classmethod
     def normalize(cls, **kwargs) -> str:
         deviation_id: int = kwargs["deviation_id"]
-        username: str | None = kwargs.get("username")
-        title: str | None = kwargs.get("title")
 
-        if username and title:
+        if (username := kwargs.get("username")) and (title := kwargs.get("title")):
             return f"https://www.deviantart.com/{username}/art/{title}-{deviation_id}"
         elif username:
             return f"https://www.deviantart.com/{username}/art/{deviation_id}"
@@ -36,10 +34,7 @@ class DeviantArtPostUrl(PostUrl, DeviantArtUrl):
 class DeviantArtArtistUrl(ArtistUrl, DeviantArtUrl):
     username: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        username = kwargs["username"]
-        return f"https://www.deviantart.com/{username}"
+    normalize_string = "https://www.deviantart.com/{username}"
 
 
 class DeviantArtImageUrl(PostAssetUrl, DeviantArtUrl):

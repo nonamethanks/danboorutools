@@ -12,9 +12,8 @@ class PatreonPostUrl(PostUrl, PatreonUrl):
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
-        title = kwargs.get("title")
         post_id = kwargs["post_id"]
-        if title:
+        if title := kwargs.get("title"):
             return f"https://www.patreon.com/posts/{title}-{post_id}"
         else:
             return f"https://www.patreon.com/posts/{post_id}"
@@ -26,11 +25,9 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
-        user_id = kwargs.get("user_id")
-        username = kwargs.get("username")
-        if username:
+        if username := kwargs.get("username"):
             return f"http://www.patreon.com/{username}"
-        elif user_id:
+        elif user_id := kwargs.get("user_id"):
             return f"https://www.patreon.com/user?u={user_id}"
         else:
             raise NotImplementedError

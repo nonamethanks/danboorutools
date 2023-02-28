@@ -11,11 +11,7 @@ class FantiaPostUrl(PostUrl, FantiaUrl):
     post_id: int
     post_type: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        post_id = kwargs["post_id"]
-        post_type = kwargs["post_type"]
-        return f"https://fantia.jp/{post_type}/{post_id}"
+    normalize_string = "https://fantia.jp/{post_type}/{post_id}"
 
 
 class FantiaFanclubUrl(ArtistUrl, FantiaUrl):
@@ -24,12 +20,9 @@ class FantiaFanclubUrl(ArtistUrl, FantiaUrl):
 
     @classmethod
     def normalize(cls, **url_properties) -> str:
-        fanclub_id: int | None = url_properties["fanclub_id"]
-        fanclub_name: str | None = url_properties["fanclub_name"]
-
-        if fanclub_id:
+        if fanclub_id := url_properties["fanclub_id"]:
             return f"https://fantia.jp/fanclubs/{fanclub_id}"
-        elif fanclub_name:
+        elif fanclub_name := url_properties["fanclub_name"]:
             return f"https://fantia.jp/{fanclub_name}"
         else:
             raise NotImplementedError

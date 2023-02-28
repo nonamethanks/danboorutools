@@ -8,9 +8,7 @@ class EntyUrl(Url):
 class EntyPostUrl(PostUrl, EntyUrl):
     post_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        return f"https://enty.jp/posts/{kwargs['post_id']}"
+    normalize_string = "https://enty.jp/posts/{post_id}"
 
 
 class EntyArtistUrl(ArtistUrl, EntyUrl):

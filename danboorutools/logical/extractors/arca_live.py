@@ -9,11 +9,7 @@ class ArcaLivePostUrl(PostUrl, ArcaLiveUrl):
     post_id: int
     channel: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        channel = kwargs["channel"]
-        post_id = kwargs["post_id"]
-        return f"https://arca.live/b/{channel}/{post_id}"
+    normalize_string = "https://arca.live/b/{channel}/{post_id}"
 
 
 class ArcaLiveArtistUrl(ArtistUrl, ArcaLiveUrl):

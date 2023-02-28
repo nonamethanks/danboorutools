@@ -8,17 +8,13 @@ class FuraffinityUrl(Url):
 class FuraffinityPostUrl(PostUrl, FuraffinityUrl):
     post_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://www.furaffinity.net/view/{kwargs['post_id']}"
+    normalize_string = "https://www.furaffinity.net/view/{post_id}"
 
 
 class FuraffinityArtistUrl(ArtistUrl, FuraffinityUrl):
     username: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://www.furaffinity.net/user/{kwargs['username']}"
+    normalize_string = "https://www.furaffinity.net/user/{username}"
 
 
 class FuraffinityImageUrl(PostAssetUrl, FuraffinityUrl):

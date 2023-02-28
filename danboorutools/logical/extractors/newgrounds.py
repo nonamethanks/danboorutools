@@ -11,34 +11,25 @@ class NewgroundsPostUrl(PostUrl, NewgroundsUrl):
     username: str
     title: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://www.newgrounds.com/art/view/{kwargs['username']}/{kwargs['title']}"
+    normalize_string = "https://www.newgrounds.com/art/view/{username}/{title}"
 
 
 class NewgroundsDumpUrl(PostUrl, NewgroundsUrl):
     dump_id: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        # TODO: need to separate this and dump download url, which is the asset
-        return f"https://www.newgrounds.com/dump/item/{kwargs['dump_id']}"
+    normalize_string = "https://www.newgrounds.com/dump/item/{dump_id}"
 
 
 class NewgroundsVideoPostUrl(PostUrl, NewgroundsUrl):
     video_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://www.newgrounds.com/portal/view/{kwargs['video_id']}"
+    normalize_string = "https://www.newgrounds.com/portal/view/{video_id}"
 
 
 class NewgroundsArtistUrl(ArtistUrl, NewgroundsUrl):
     username: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://{kwargs['username']}.newgrounds.com"
+    normalize_string = "https://{username}.newgrounds.com"
 
 
 class NewgroundsAssetUrl(PostAssetUrl, NewgroundsUrl):

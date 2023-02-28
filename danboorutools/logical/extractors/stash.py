@@ -6,7 +6,4 @@ class StaShUrl(PostUrl):
 
     stash_id: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        stash_id = kwargs["stash_id"]
-        return f"https://sta.sh/{stash_id}"
+    normalize_string = "https://sta.sh/{stash_id}"

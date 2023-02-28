@@ -9,10 +9,7 @@ class ArtStationOldPostUrl(RedirectUrl, ArtStationUrl):
     # https://www.artstation.com/artwork/cody-from-sf  # (old; redirects to https://www.artstation.com/artwork/3JJA)
     post_title: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        post_title = kwargs["post_title"]
-        return f"https://www.artstation.com/artwork/{post_title}"
+    normalize_string = "https://www.artstation.com/artwork/{post_title}"
 
 
 class ArtStationPostUrl(PostUrl, ArtStationUrl):
@@ -21,9 +18,8 @@ class ArtStationPostUrl(PostUrl, ArtStationUrl):
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
-        username = kwargs.get("username")
         post_id = kwargs["post_id"]
-        if username:
+        if username := kwargs.get("username"):
             return f"https://{username}.artstation.com/projects/{post_id}"
         else:
             return f"https://www.artstation.com/artwork/{post_id}"
@@ -32,10 +28,7 @@ class ArtStationPostUrl(PostUrl, ArtStationUrl):
 class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):
     username: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        username = kwargs["username"]
-        return f"https://www.artstation.com/{username}"
+    normalize_string = "https://www.artstation.com/{username}"
 
 
 class ArtStationImageUrl(PostAssetUrl, ArtStationUrl):
@@ -56,7 +49,4 @@ class ArtStationImageUrl(PostAssetUrl, ArtStationUrl):
 class ArtStationMarketplacePostUrl(PostUrl, ArtStationUrl):
     post_id: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        post_id = kwargs["post_id"]
-        return f"https://www.artstation.com/marketplace/p/{post_id}"
+    normalize_string = "https://www.artstation.com/marketplace/p/{post_id}"

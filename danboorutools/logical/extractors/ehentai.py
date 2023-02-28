@@ -67,13 +67,7 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
     page_token: str
     subsite: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        subsite = kwargs["subsite"]
-        page_token = kwargs["page_token"]
-        gallery_id = kwargs["gallery_id"]
-        page_number = kwargs["page_number"]
-        return f"https://{subsite}.org/s/{page_token}/{gallery_id}-{page_number}"
+    normalize_string = "https://{subsite}.org/s/{page_token}/{gallery_id}-{page_number}"
 
     @settable_property
     def gallery(self) -> EHentaiGalleryUrl:  # type: ignore[override]
@@ -122,12 +116,7 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
     gallery_token: str
     subsite: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        subsite = kwargs["subsite"]
-        gallery_id = kwargs["gallery_id"]
-        gallery_token = kwargs["gallery_token"]
-        return f"https://{subsite}.org/g/{gallery_id}/{gallery_token}"
+    normalize_string = "https://{subsite}.org/g/{gallery_id}/{gallery_token}"
 
     def _extract_posts(self) -> None:
         raw_thumb_urls = self._get_thumb_urls()

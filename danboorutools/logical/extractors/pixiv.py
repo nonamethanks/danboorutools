@@ -22,28 +22,19 @@ class PixivProfileImageUrl(PostAssetUrl, PixivUrl):
 class PixivRequestUrl(ArtistAlbumUrl, PixivUrl):
     request_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        request_id = kwargs["request_id"]
-        return f"https://www.pixiv.net/requests/{request_id}"
+    normalize_string = "https://www.pixiv.net/requests/{request_id}"
 
 
 class PixivNovelSeriesUrl(ArtistAlbumUrl, PixivUrl):
     series_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        series_id = kwargs["series_id"]
-        return f"https://www.pixiv.net/novel/series/{series_id}"
+    normalize_string = "https://www.pixiv.net/novel/series/{series_id}"
 
 
 class PixivNovelUrl(PostUrl, PixivUrl):
     novel_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        novel_id = kwargs["series_id"]
-        return f"https://www.pixiv.net/novel/show.php?id={novel_id}"
+    normalize_string = "https://www.pixiv.net/novel/show.php?id={novel_id}"
 
 
 class PixivNovelImageUrl(PostAssetUrl, PixivUrl):
@@ -108,9 +99,8 @@ class PixivPostUrl(PostUrl, PixivUrl):
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
-        unlisted: bool = kwargs.get("unlisted", False)
         post_id: int | str = kwargs["post_id"]
-        if unlisted:
+        if kwargs.get("unlisted", False):
             return f"https://www.pixiv.net/en/artworks/unlisted/{post_id}"
         else:
             return f"https://www.pixiv.net/en/artworks/{post_id}"
@@ -162,10 +152,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
 class PixivArtistUrl(ArtistUrl, PixivUrl):
     user_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        user_id = kwargs["user_id"]
-        return f"https://www.pixiv.net/en/users/{user_id}"
+    normalize_string = "https://www.pixiv.net/en/users/{user_id}"
 
     def _extract_posts(self) -> None:
         page = 0
@@ -256,19 +243,13 @@ class PixivMeUrl(RedirectUrl, PixivUrl):
 
     stacc: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        stacc = kwargs["stacc"]
-        return f"https://pixiv.me/{stacc}"
+    normalize_string = "https://pixiv.me/{stacc}"
 
 
 class PixivStaccUrl(InfoUrl, PixivUrl):
     stacc: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        stacc = kwargs["stacc"]
-        return f"https://www.pixiv.net/stacc/{stacc}"
+    normalize_string = "https://www.pixiv.net/stacc/{stacc}"
 
     @property
     def me_from_stacc(self) -> PixivMeUrl:

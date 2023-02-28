@@ -10,12 +10,7 @@ class FoundationPostUrl(PostUrl, FoundationUrl):
     collection: str
     post_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        username = kwargs["username"]
-        collection = kwargs["collection"]
-        post_id = kwargs["post_id"]
-        return f"https://foundation.app/@{username}/{collection}/{post_id}"
+    normalize_string = "https://foundation.app/@{username}/{collection}/{post_id}"
 
 
 class FoundationArtistUrl(ArtistUrl, FoundationUrl):

@@ -29,6 +29,7 @@ UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 class Url:
     """A generic URL model."""
     session = Session()  # TODO: implement domain-bound rate limitings
+    normalize_string: str | None = None
 
     @classmethod
     def parse(cls, url: str | Url) -> Url:
@@ -38,12 +39,16 @@ class Url:
         return url_parser.parse(url) or UnknownUrl(ParsableUrl(url))
 
     @cached_property
+    @final
     def normalized_url(self) -> str:
         return self.normalize(**self.__dict__) or self.parsed_url.raw_url
 
     @classmethod
     def normalize(cls, **kwargs) -> str | None:
-        raise NotImplementedError(f"{cls} hasn't implemented .normalize()")
+        if cls.normalize_string:
+            return cls.normalize_string.format(**kwargs)
+        else:
+            raise NotImplementedError(f"{cls} hasn't implemented .normalize()")
 
     @staticmethod
     @lru_cache
@@ -261,8 +266,9 @@ class _AssetUrl(Url):
         else:
             self._files = [downloaded_file]
 
-    @cached_property
-    def normalized_url(self) -> str:
+    @cached_property  # type: ignore[misc]
+    @final
+    def normalized_url(self) -> str:  # pylint: disable=overridden-final-method
         # it doesn't make sense for files to have to implement normalize()
         return self.full_size
 

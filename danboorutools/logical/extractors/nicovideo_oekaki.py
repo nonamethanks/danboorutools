@@ -8,17 +8,13 @@ class NicovideoOekakiUrl(Url):
 class NicovideoOekakiPostUrl(PostUrl, NicovideoOekakiUrl):
     post_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://dic.nicovideo.jp/oekaki_id/{kwargs['post_id']}"
+    normalize_string = "https://dic.nicovideo.jp/oekaki_id/{post_id}"
 
 
 class NicovideoOekakiArtistUrl(ArtistUrl, NicovideoOekakiUrl):
     user_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://dic.nicovideo.jp/u/{kwargs['user_id']}"
+    normalize_string = "https://dic.nicovideo.jp/u/{user_id}"
 
 
 class NicovideoOekakiImageUrl(PostAssetUrl, NicovideoOekakiUrl):

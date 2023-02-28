@@ -8,19 +8,13 @@ class PixivSketchUrl(Url):
 class PixivSketchPostUrl(PostUrl, PixivSketchUrl):
     post_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        post_id = kwargs["post_id"]
-        return f"https://sketch.pixiv.net/items/{post_id}"
+    normalize_string = "https://sketch.pixiv.net/items/{post_id}"
 
 
 class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
     stacc: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        stacc = kwargs["stacc"]
-        return f"https://sketch.pixiv.net/@{stacc}"
+    normalize_string = "https://sketch.pixiv.net/@{stacc}"
 
     @property
     def related(self) -> list[Url]:

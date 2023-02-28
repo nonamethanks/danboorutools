@@ -9,17 +9,13 @@ class HentaiFoundryPostUrl(PostUrl, HentaiFoundryUrl):
     username: str
     post_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://www.hentai-foundry.com/pictures/user/{kwargs['username']}/{kwargs['post_id']}"
+    normalize_string = "https://www.hentai-foundry.com/pictures/user/{username}/{post_id}"
 
 
 class HentaiFoundryArtistUrl(ArtistUrl, HentaiFoundryUrl):
     username: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://www.hentai-foundry.com/user/{kwargs['username']}"
+    normalize_string = "https://www.hentai-foundry.com/user/{username}"
 
 
 class HentaiFoundryImageUrl(PostAssetUrl, HentaiFoundryUrl):
@@ -34,7 +30,4 @@ class HentaiFoundryImageUrl(PostAssetUrl, HentaiFoundryUrl):
 class HentaiFoundryOldPostUrl(RedirectUrl, HentaiFoundryUrl):
     post_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        post_id = kwargs["post_id"]
-        return f"https://www.hentai-foundry.com/pic-{post_id}"
+    normalize_string = "https://www.hentai-foundry.com/pic-{post_id}"

@@ -11,9 +11,8 @@ class BoothItemUrl(PostUrl, BoothUrl):
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
-        username: str | None = kwargs.get("username")
         item_id: int = kwargs["item_id"]
-        if username:
+        if username := kwargs.get("username"):
             return f"https://{username}.booth.pm/items/{item_id}"
         else:
             return f"https://booth.pm/items/{item_id}"
@@ -24,11 +23,7 @@ class BoothItemListUrl(ArtistAlbumUrl, BoothUrl):
     username: str
     item_list_id: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        username: str | None = kwargs.get("username")
-        item_list_id: int = kwargs["item_list_id"]
-        return f"https://{username}.booth.pm/item_lists/{item_list_id}"
+    normalize_string = "https://{username}.booth.pm/item_lists/{item_list_id}"
 
 
 class BoothArtistUrl(ArtistUrl, BoothUrl):
@@ -37,9 +32,7 @@ class BoothArtistUrl(ArtistUrl, BoothUrl):
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
-        username: str | None = kwargs.get("username")
-        _user_id: int | None = kwargs.get("user_id")
-        if username:
+        if username := kwargs.get("username"):
             return f"https://{username}.booth.pm"
         else:
             raise NotImplementedError

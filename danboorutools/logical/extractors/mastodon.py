@@ -34,9 +34,7 @@ class MastodonArtistUrl(ArtistUrl, MastodonUrl):
 class MastodonOldImageUrl(RedirectUrl, MastodonUrl):
     filename: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://{kwargs['site']}/media/{kwargs['filename']}"
+    normalize_string = "https://{site}/media/{filename}"
 
 
 class MastodonImageUrl(PostAssetUrl, MastodonUrl):
@@ -56,6 +54,4 @@ class MastodonImageUrl(PostAssetUrl, MastodonUrl):
 class MastodonOauthUrl(RedirectUrl, MastodonUrl):
     oauth_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://{kwargs['site']}/oauth_authentications/{kwargs['oauth_id']}"
+    normalize_string = "https://{site}/oauth_authentications/{oauth_id}"

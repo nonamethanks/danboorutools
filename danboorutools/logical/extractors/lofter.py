@@ -9,17 +9,13 @@ class LofterPostUrl(PostUrl, LofterUrl):
     username: str
     post_id: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://{kwargs['username']}.lofter.com/post/{kwargs['post_id']}"
+    normalize_string = "https://{username}.lofter.com/post/{post_id}"
 
 
 class LofterArtistUrl(ArtistUrl, LofterUrl):
     username: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://{kwargs['username']}.lofter.com"
+    normalize_string = "https://{username}.lofter.com"
 
 
 class LofterImageUrl(PostAssetUrl, LofterUrl):

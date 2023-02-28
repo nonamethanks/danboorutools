@@ -10,33 +10,25 @@ class NicoSeigaUrl(Url):
 class NicoSeigaIllustUrl(PostUrl, NicoSeigaUrl):
     illust_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://seiga.nicovideo.jp/seiga/im{kwargs['illust_id']}"
+    normalize_string = "https://seiga.nicovideo.jp/seiga/im{illust_id}"
 
 
 class NicoSeigaMangaUrl(PostUrl, NicoSeigaUrl):
     manga_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://seiga.nicovideo.jp/watch/mg{kwargs['manga_id']}"
+    normalize_string = "https://seiga.nicovideo.jp/watch/mg{manga_id}"
 
 
 class NicoSeigaComicUrl(ArtistAlbumUrl, NicoSeigaUrl):
     comic_id: int | str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://seiga.nicovideo.jp/comic/{kwargs['comic_id']}"
+    normalize_string = "https://seiga.nicovideo.jp/comic/{comic_id}"
 
 
 class NicoSeigaArtistUrl(ArtistUrl, NicoSeigaUrl):
     user_id: int
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://seiga.nicovideo.jp/user/illust/{kwargs['user_id']}"
+    normalize_string = "https://seiga.nicovideo.jp/user/illust/{user_id}"
 
 
 class NicoSeigaImageUrl(PostAssetUrl, NicoSeigaUrl):
