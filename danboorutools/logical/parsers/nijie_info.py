@@ -19,11 +19,11 @@ class NijieInfoParser(UrlParser):
             "http://pic01.nijie.info/nijie_picture/20120615025744927.jpg",
             "https://nijie.info/view_popup.php?id=218856#diff_1",  # starts from 0
             "https://sp.nijie.info/view_popup.php?id=476470#popup_illust_3",  # starts from 1
+            "https://nijie.info/view_popup.php?id=218856",
         ],
         NijiePostUrl: [
             "https://nijie.info/view.php?id=167755",  # (deleted post)
             "https://nijie.info/view.php?id=218856",
-            "https://nijie.info/view_popup.php?id=218856",
             "https://www.nijie.info/view.php?id=218856",
             "https://sp.nijie.info/view.php?id=218856",
 
@@ -37,21 +37,24 @@ class NijieInfoParser(UrlParser):
             case ("members.php" | "members_illust.php"), :
                 instance = NijieArtistUrl(parsable_url)
                 instance.user_id = int(parsable_url.params["id"])
-            case ("view.php" | "view_popup.php"), :
+            case "view.php", :
                 instance = NijiePostUrl(parsable_url)
-                try:
-                    instance.post_id = int(parsable_url.params["id"])
-                except ValueError as e:
-                    instance = NijieImageUrl(parsable_url)
+                instance.post_id = int(parsable_url.params["id"])
+            case "view_popup.php", :
+                instance = NijieImageUrl(parsable_url)
+                if "#" in parsable_url.params["id"]:
                     post_id, page = parsable_url.params["id"].split("#")
-                    instance.post_id = int(post_id)
                     if page.startswith("diff_"):
                         instance.page = int(page.removeprefix("diff_"))
                     elif page.startswith("popup_illust_"):
                         instance.page = int(page.removeprefix("popup_illust_")) - 1
                     else:
-                        raise NotImplementedError(parsable_url.params["id"]) from e
-                    instance.user_id = None
+                        raise NotImplementedError(parsable_url.params["id"])
+                else:
+                    post_id = parsable_url.params["id"]
+                    instance.page = 0
+                instance.post_id = int(post_id)
+                instance.user_id = None
             case "nijie_picture", *_, filename:
                 instance = NijieImageUrl(parsable_url)
                 instance.parse_filename(filename)

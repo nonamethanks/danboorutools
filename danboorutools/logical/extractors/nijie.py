@@ -1,3 +1,5 @@
+import re
+
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
@@ -8,9 +10,17 @@ class NijieUrl(Url):
 class NijiePostUrl(PostUrl, NijieUrl):
     post_id: int
 
+    @classmethod
+    def normalize(cls, **kwargs) -> str | None:
+        return f"https://nijie.info/view.php?id={kwargs['post_id']}"
+
 
 class NijieArtistUrl(ArtistUrl, NijieUrl):
     user_id: int
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str | None:
+        return f"https://nijie.info/members.php?id={kwargs['user_id']}"
 
 
 class NijieImageUrl(PostAssetUrl, NijieUrl):
@@ -49,3 +59,15 @@ class NijieImageUrl(PostAssetUrl, NijieUrl):
             self.post_id = int(filename_parts[0]) if filename_parts[0] != "0" else None
             self.page = int(filename_parts[1])
             self.user_id = None
+
+    @property
+    def full_size(self) -> str:
+        if self.parsed_url.url_parts[-1] == "view_popup.php":
+            if self.post_id is None or self.page is None:
+                raise NotImplementedError(self.parsed_url.raw_url)
+            if self.page:
+                return f"https://nijie.info/view_popup.php?id={self.post_id}#diff_{self.page}"
+            else:
+                return f"https://nijie.info/view_popup.php?id={self.post_id}"
+        else:
+            return re.sub(r"__rs_\w+/", "", self.parsed_url.raw_url).replace("http:", "https:")
