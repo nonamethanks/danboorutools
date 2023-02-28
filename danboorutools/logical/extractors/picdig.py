@@ -9,9 +9,12 @@ class PicdigPostUrl(PostUrl, PicdigUrl):
     project_id: str
     username: str
 
+    normalize_string = "https://picdig.net/{username}/projects/{project_id}"
+
 
 class PicdigArtistUrl(ArtistUrl, PicdigUrl):
     username: str
+    normalize_string = "https://picdig.net/{username}"
 
 
 class PicdigImageUrl(PostAssetUrl, PicdigUrl):
@@ -19,7 +22,15 @@ class PicdigImageUrl(PostAssetUrl, PicdigUrl):
     image_id: str
     user_id: str
 
+    @property
+    def full_size(self) -> str:
+        return self.parsed_url.raw_url  # this can be a thumbnail
+
 
 class PicdigArtistImageUrl(GalleryAssetUrl, PicdigUrl):
     account_id: str
     image_id: str
+
+    @property
+    def full_size(self) -> str:
+        return self.parsed_url.raw_url  # this can be a thumbnail
