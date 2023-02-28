@@ -1,4 +1,4 @@
-from danboorutools.models.url import GalleryUrl, PostAssetUrl, PostUrl, Url
+from danboorutools.models.url import GalleryUrl, PostUrl, Url
 
 
 class PixivComicUrl(Url):
@@ -15,7 +15,3 @@ class PixivComicWorkUrl(GalleryUrl, PixivComicUrl):
     post_id: int
 
     normalize_string = "https://comic.pixiv.net/works/{post_id}"
-
-
-class PixivComicImageUrl(PostAssetUrl, PixivComicUrl):
-    ...

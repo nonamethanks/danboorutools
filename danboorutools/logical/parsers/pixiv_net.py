@@ -143,7 +143,7 @@ class PixivNetParser(UrlParser):
         match parsable_url.url_parts:
             # https://sketch.pixiv.net/items/5835314698645024323
 
-            case *_, "uploads", "medium", "file", _, _ if parsable_url.subdomain == "img-sketch":  # TODO: figure out these numbers
+            case *_, "uploads", "medium", "file", _, _ if parsable_url.subdomain == "img-sketch":
                 instance = s.PixivSketchImageUrl(parsable_url)
             # https://img-sketch.pixiv.net/uploads/medium/file/4463372/8906921629213362989.jpg
             # https://img-sketch.pixiv.net/c/f_540/uploads/medium/file/9986983/8431631593768139653.jpg

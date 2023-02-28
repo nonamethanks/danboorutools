@@ -25,4 +25,7 @@ class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
 
 
 class PixivSketchImageUrl(PostAssetUrl, PixivSketchUrl):
-    ...
+    @property
+    def full_size(self) -> str:
+        url_parts = self.parsed_url.url_parts
+        return f"https://img-sketch.pixiv.net/uploads/medium/file/{url_parts[-2]}/{url_parts[-1]}"

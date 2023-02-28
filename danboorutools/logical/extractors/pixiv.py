@@ -18,6 +18,10 @@ class PixivUrl(Url):
 class PixivProfileImageUrl(PostAssetUrl, PixivUrl):
     stacc: str | None = None
 
+    @property
+    def full_size(self) -> str:
+        return self.parsed_url.raw_url
+
 
 class PixivRequestUrl(ArtistAlbumUrl, PixivUrl):
     request_id: int
@@ -41,9 +45,21 @@ class PixivNovelImageUrl(PostAssetUrl, PixivUrl):
     novel_id: int | None
     stacc: str | None = None
 
+    @property
+    # https://i.pximg.net/novel-cover-original/img/2018/08/18/19/45/23/10008846_215387d3665210eed0a7cc564e4c93f3.png
+    # https://i.pximg.net/c/600x600/novel-cover-master/img/2018/08/18/19/45/23/10008846_215387d3665210eed0a7cc564e4c93f3_master1200.jpg
+    def full_size(self) -> str:
+        if "novel-cover-original" in self.parsed_url.url_parts or "novel" in self.parsed_url.url_parts:
+            return self.parsed_url.raw_url
+        raise NotImplementedError
+
 
 class PixivGalleryAssetUrl(GalleryAssetUrl, PixivUrl):
     user_id: int
+
+    @property
+    def full_size(self) -> str:
+        return self.parsed_url.raw_url
 
 
 class PixivImageUrl(PostAssetUrl, PixivUrl):
