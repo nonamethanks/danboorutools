@@ -36,8 +36,9 @@ logger = Logger(
     extra={},
 )
 
-logger_level = os.environ.get("LOGURU_LEVEL") or os.environ.get("LOG_LEVEL") or "INFO"
-debug = os.environ.get("DEBUG") in ["TRUE", "1"]
-logger_level = "DEBUG" if debug else logger_level
+default_level = os.environ.get("LOGURU_LEVEL") or os.environ.get("LOG_LEVEL") or "INFO"
+debug = "DEBUG" if os.environ.get("DEBUG") in ["TRUE", "1"] else False
+trace = "TRACE" if os.environ.get("TRACE") in ["TRUE", "1"] else False
+logger_level = trace or debug or default_level
 
 logger.add(sys.stderr, level=logger_level)

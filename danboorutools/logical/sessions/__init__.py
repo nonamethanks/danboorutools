@@ -66,9 +66,9 @@ class Session(RequestsSession):
         kwargs["headers"] = self._default_headers | kwargs.get("headers", {})
 
         if kwargs.get("params"):
-            logger.debug(f"{http_method} request made to {url}?{urlencode(kwargs['params'])}")
+            logger.trace(f"{http_method} request made to {url}?{urlencode(kwargs['params'])}")
         else:
-            logger.debug(f"{http_method} request made to {url}")
+            logger.trace(f"{http_method} request made to {url}")
         response = super().request(http_method, url, *args, **kwargs)
 
         if response.status_code == 404:

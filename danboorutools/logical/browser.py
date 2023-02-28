@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import atexit
 import datetime
 import os
@@ -76,7 +77,7 @@ class Browser(Chrome):
     def get(self, url: str | Url) -> None:
         if not isinstance(url, str):
             url = url.normalized_url
-        logger.debug(f"Browser GET request made to {url}")
+        logger.trace(f"Browser GET request made to {url}")
         return super().get(url)
 
     def get_next_sibling(self, element: WebElement) -> WebElement:

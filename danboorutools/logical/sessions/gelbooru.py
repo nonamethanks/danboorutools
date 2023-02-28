@@ -4,7 +4,6 @@ import time
 
 from requests import Response
 
-from danboorutools import logger
 from danboorutools.logical.sessions import Session
 from danboorutools.models.gelbooru import GelbooruPost
 from danboorutools.util.misc import memoize
@@ -41,7 +40,6 @@ class GelbooruApi(Session):
 
         endpoint_url = self.base_url.strip("/") + "/" + endpoint.strip("/")
         response = self.request(method, endpoint_url, *args, **kwargs)
-        logger.debug(f"{method} request made to {response.url}")
         assert response.ok
 
         return response
