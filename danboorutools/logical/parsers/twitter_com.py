@@ -1,5 +1,6 @@
 from danboorutools.exceptions import UnparsableUrl
-from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl, TwitterPostUrl, TwitterShortenerUrl, TwitterUrl
+from danboorutools.logical.extractors.twitter import (TwitterArtistUrl, TwitterIntentUrl, TwitterOnlyStatusUrl, TwitterPostUrl,
+                                                      TwitterShortenerUrl, TwitterUrl)
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
@@ -17,6 +18,8 @@ class TwitterComParser(UrlParser):
             "https://twitter.com/sato_1_11/status/1496489742791475201/photo/2",
             "https://twitter.com/i/web/status/943446161586733056",
             "https://twitter.com/i/status/943446161586733056",
+        ],
+        TwitterOnlyStatusUrl: [
             "https://twitter.com/intent/favorite?tweet_id=1300476511254753280",
         ],
         TwitterIntentUrl: [
@@ -34,13 +37,21 @@ class TwitterComParser(UrlParser):
         instance: TwitterUrl
         match parsable_url.url_parts:
             case username, *_, "status", post_id:
-                instance = TwitterPostUrl(parsable_url)
-                instance.username = username if username != "i" else None
-                instance.post_id = int(post_id.removesuffix("#m"))
+                if username == "i":
+                    instance = TwitterOnlyStatusUrl(parsable_url)
+                    instance.post_id = int(post_id.removesuffix("#m"))
+                else:
+                    instance = TwitterPostUrl(parsable_url)
+                    instance.username = username
+                    instance.post_id = int(post_id.removesuffix("#m"))
             case username, "status", post_id, *_:
-                instance = TwitterPostUrl(parsable_url)
-                instance.username = username if username != "i" else None
-                instance.post_id = int(post_id)
+                if username == "i":
+                    instance = TwitterOnlyStatusUrl(parsable_url)
+                    instance.post_id = int(parsable_url.params["tweet_id"])
+                else:
+                    instance = TwitterPostUrl(parsable_url)
+                    instance.username = username
+                    instance.post_id = int(post_id)
             case shortener_id, if parsable_url.subdomain == "pic":
                 instance = TwitterShortenerUrl(parsable_url)
                 instance.shortener_id = shortener_id
@@ -57,8 +68,7 @@ class TwitterComParser(UrlParser):
                 instance = TwitterArtistUrl(parsable_url)
                 instance.username = parsable_url.params["screen_name"]
             case "intent", "favorite":
-                instance = TwitterPostUrl(parsable_url)
-                instance.username = None
+                instance = TwitterOnlyStatusUrl(parsable_url)
                 instance.post_id = int(parsable_url.params["tweet_id"])
 
             case ("home" | "search"), *_:

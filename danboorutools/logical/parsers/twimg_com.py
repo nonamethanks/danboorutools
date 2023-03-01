@@ -31,18 +31,27 @@ class TwimgComParser(UrlParser):
     def match_url(cls, parsable_url: ParsableUrl) -> TwitterUrl | None:
         instance: TwitterUrl
         match parsable_url.url_parts:
-            case "media", _:
+            case "media", filename:
                 instance = TwitterAssetUrl(parsable_url)
-            case ("tweet_video" | "ext_tw_video" | "ext_tw_video_thumb" | "tweet_video_thumb" | "amplify_video_thumb"), *_:
+                instance.file_path = "/".join(parsable_url.url_parts).rsplit(":", maxsplit=1)[0]
+                if "." not in filename:
+                    instance.file_path = instance.file_path + "." + parsable_url.params["format"]
+            case ("tweet_video" | "ext_tw_video" | "ext_tw_video_thumb" | "tweet_video_thumb" | "amplify_video_thumb"), *_subdirs, _filename:
                 instance = TwitterAssetUrl(parsable_url)
-            case "profile_banners", _, user_id, *_, :
+                instance.file_path = "/".join(parsable_url.url_parts)
+            case "profile_banners", user_id, file_id, *_:
                 instance = TwitterArtistImageUrl(parsable_url)
                 instance.user_id = int(user_id)
+                instance.file_path = f"profile_banners/{user_id}/{file_id}/1500x500"
             case "profile_background_images", user_id, _:
                 instance = TwitterArtistImageUrl(parsable_url)
                 instance.user_id = int(user_id)
-            case _ if parsable_url.subdomain == "p":
+                instance.file_path = "/".join(parsable_url.url_parts)
+            case filename, if parsable_url.subdomain == "p":
                 instance = TwitterAssetUrl(parsable_url)
+                instance.file_path = "/".join(parsable_url.url_parts).rsplit(":", maxsplit=1)[0]
+                if "." not in filename:
+                    instance.file_path = instance.file_path + "." + parsable_url.params["format"]
 
             # "https://pbs.twimg.com/card_img/831677993668005888/m1NfMR3R?format=jpg\u0026name=orig",
             case "card_img", _, _:

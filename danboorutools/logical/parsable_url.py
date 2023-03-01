@@ -89,7 +89,10 @@ class ParsableUrl:
 
     @cached_property
     def extension(self) -> str:
-        return self.url_parts[-1].split(".", maxsplit=1)[1]
+        try:
+            return self.url_parts[-1].split(".", maxsplit=1)[1]
+        except IndexError:
+            return ""
 
     @cached_property
     def filename(self) -> str:
