@@ -1,5 +1,7 @@
+from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.sessions.twitter import TwitterSession  # pylint: disable=E0401,E0611 # False positive
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+from danboorutools.util.misc import settable_property
 
 
 class TwitterUrl(Url):
@@ -56,6 +58,15 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     @property
     def _artist_data(self) -> dict:
         return self.session.user_data(self.username)
+
+    @settable_property
+    def is_deleted(self) -> bool:
+        try:
+            self._artist_data
+        except UrlIsDeleted:
+            return True
+        else:
+            return False
 
 
 class TwitterAssetUrl(PostAssetUrl, TwitterUrl):
