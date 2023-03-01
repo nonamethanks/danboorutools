@@ -331,7 +331,11 @@ class RedirectUrl(Url):  # pylint: disable=abstract-method
     """An url that redirects somewhere else."""
     @cached_property
     def resolved(self) -> Url:
-        return self.parse(self.session.unscramble(self.normalized_url))
+        try:
+            return self.parse(self.session.unscramble(self.normalized_url))
+        except UrlIsDeleted:
+            self.is_deleted = True
+            raise
 
     @property
     def related(self) -> list[Url]:

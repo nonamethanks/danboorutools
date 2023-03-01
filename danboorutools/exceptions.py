@@ -106,7 +106,3 @@ class DanbooruHTTPError(HTTPError):
             for row in self.backtrace:
                 msg += f"\n     {row}"
         return msg
-
-
-class NoSaucenaoResult(Exception):
-    """For when saucenao returns no viable result."""

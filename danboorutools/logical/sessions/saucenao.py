@@ -4,7 +4,6 @@ from dataclasses import dataclass
 
 from ratelimit import limits, sleep_and_retry
 
-from danboorutools.exceptions import NoSaucenaoResult
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl, PixivStaccUrl, PixivUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.danbooru import DanbooruPost
@@ -53,7 +52,7 @@ class SaucenaoSession(Session):
             raise NotImplementedError(response)
         return results
 
-    def find_gallery(self, image_url: str, original_url: Url | str, original_post: DanbooruPost | None = None) -> SaucenaoArtistResult:
+    def find_gallery(self, image_url: str, original_url: Url | str, original_post: DanbooruPost | None = None) -> SaucenaoArtistResult | None:
         subresults: list[_SubResult] = []
         if not isinstance(original_url, Url):
             original_url = Url.parse(original_url)
@@ -81,7 +80,7 @@ class SaucenaoSession(Session):
                 return saucenao_result
 
             else:
-                raise NoSaucenaoResult(results)
+                return None
 
         if isinstance(match_url, PixivUrl):
             saucenao_result = self.__parse_pixiv_result(result_data)
