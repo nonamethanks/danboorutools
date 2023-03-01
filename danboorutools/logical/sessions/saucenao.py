@@ -113,7 +113,7 @@ class SaucenaoSession(Session):
         return result
 
     def __parse_danbooru_result(self, saucenao_result: dict[str, dict], source_from_danbooru: Url) -> _SubResult | None:
-        source_from_saucenao = Url.parse(saucenao_result["data"]["source"])
+        source_from_saucenao = Url.parse(saucenao_result["data"]["source"].removesuffix(" (deleted)"))  # bruh
         if isinstance(source_from_danbooru, PostAssetUrl):
             source_from_danbooru = source_from_danbooru.post
 
