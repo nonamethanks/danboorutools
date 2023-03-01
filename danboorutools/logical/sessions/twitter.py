@@ -27,10 +27,12 @@ class TwitterSession(Session):
         )
 
     @memoize
-    def user_data(self, username: str) -> dict:
+    def user_data(self, username: str | None = None, user_id: int | None = None) -> dict:
+        assert username or user_id
         try:
-            return self.api.GetUser(screen_name=username, return_json=True, include_entities=True)
+            return self.api.GetUser(screen_name=username, user_id=user_id, return_json=True, include_entities=True)
         except twitter.error.TwitterError as e:
             if "User not found." in str(e) or "User has been suspended." in str(e):
-                raise UrlIsDeleted(status_code=404, original_url=f"https://twitter.com/{username}") from e
+                original_url = f"https://twitter.com/{username}" if username else f"https://twitter.com/intent/user?user_id={user_id}"
+                raise UrlIsDeleted(status_code=404, original_url=original_url) from e
             raise

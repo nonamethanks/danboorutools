@@ -57,7 +57,30 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
 
     @property
     def _artist_data(self) -> dict:
-        return self.session.user_data(self.username)
+        return self.session.user_data(username=self.username)
+
+    @settable_property
+    def is_deleted(self) -> bool:
+        try:
+            self._artist_data
+        except UrlIsDeleted:
+            return True
+        else:
+            return False
+
+
+class TwitterIntentUrl(InfoUrl, TwitterUrl):
+    intent_id: int
+
+    normalize_string = "https://twitter.com/intent/user?user_id={intent_id}"
+
+    @property
+    def related(self) -> list[Url]:
+        return [self.build(TwitterArtistUrl, username=self._artist_data["screen_name"])]
+
+    @property
+    def _artist_data(self) -> dict:
+        return self.session.user_data(user_id=self.intent_id)
 
     @settable_property
     def is_deleted(self) -> bool:
@@ -84,12 +107,6 @@ class TwitterOnlyStatusUrl(RedirectUrl, TwitterUrl):
     post_id: int
 
     normalize_string = "https://twitter.com/i/status/{post_id}"
-
-
-class TwitterIntentUrl(InfoUrl, TwitterUrl):
-    intent_id: int
-
-    normalize_string = "https://twitter.com/intent/user?user_id={intent_id}"
 
 
 class TwitterArtistImageUrl(GalleryAssetUrl, TwitterUrl):
