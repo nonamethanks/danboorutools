@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Self, get_type_hints
 
 from dateutil import parser as dt_parser
@@ -48,11 +49,11 @@ class DanbooruModel:
             else:
                 setattr(self, property_name, None)
 
-        self.model_path = f"/{self.model_name}s/{self.id}"
+        self.model_path = f"{self.model_name}s/{self.id}"
 
     @property
     def url(self) -> str:
-        return "https://danbooru.donmai.us" + self.model_path
+        return f"https://danbooru.donmai.us/{self.model_path}"
 
     def delete(self) -> None:
         self.api.danbooru_request("DELETE", endpoint=self.model_path)
@@ -108,6 +109,17 @@ class DanbooruPost(DanbooruModel):
                          final_source=final_source or replacement_url)
         if refresh:
             self.refresh()
+
+    @staticmethod
+    def id_from_url(url: str) -> int:
+        match = re.search(r"donmai\.us\/post(s|\/show)\/(?P<id>\d+)", url)
+        try:
+            assert match
+            return int(match.groupdict()["id"])
+        except Exception as e:
+            e.add_note(f"Url: {url}")
+            e.add_note(f"Match: {match}")
+            raise
 
 
 class DanbooruUser(DanbooruModel):
@@ -180,7 +192,7 @@ class DanbooruArtist(DanbooruModel):
         urls = []
         for url_data in self.json_data["urls"]:
             url = Url.parse(url_data["url"])
-            url.is_deleted = url_data["is_deleted"]
+            # url.is_deleted = url_data["is_deleted"]
             urls.append(url)
         return urls
 

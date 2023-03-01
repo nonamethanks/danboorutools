@@ -28,3 +28,9 @@ poetry run replace_ehentai_samples
 ```
 poetry run tag_paid_rewards_on_gelbooru {latest|all}
 ```
+
+
+#### Automatically create artist tags for posts that lack them
+```
+poetry run create_artist_tags {tags to search}
+```

@@ -136,6 +136,7 @@ class DanbooruApi(Session):
     def create_artist(self, name: str, other_names: list[str], urls: Sequence[Url | str]) -> None:
         final_urls = [Url.parse(url) for url in urls]
         url_string = [f"-{u.normalized_url}" if u.is_deleted else u.normalized_url for u in final_urls]
+        logger.info(f"Creating artist {name} with urls '{url_string}'")
 
         data = {
             "artist": {
@@ -145,20 +146,33 @@ class DanbooruApi(Session):
             }
         }
         request = self.danbooru_request("POST", "artists", json=data)
-        assert isinstance(request, dict) and request["success"]
+        assert isinstance(request, dict) and request["success"] is True
 
     def update_post_tags(self, post: DanbooruPost, tags: list[str]) -> None:
         """Update a post's tags."""
         tag_string = " ".join(tags)
+        logger.info(f"Sending tags {tag_string} to post {post.url}")
         data = {
             "post": {
                 "tag_string": tag_string,
                 "old_tag_string": ""
             }
         }
-        logger.info(f"Sending tags {tag_string} to post {post.url}")
         response = self.danbooru_request("PUT", f"posts/{post.id}", json=data)
         assert isinstance(response, dict) and response["success"] is True
+
+    def update_artist_urls(self, artist: DanbooruArtist, urls: Sequence[Url | str]) -> None:
+        parsed_urls = [Url.parse(url) for url in urls]
+        url_string = [f"-{u.normalized_url}" if u.is_deleted else u.normalized_url for u in parsed_urls + artist.urls]
+        logger.info(f"Sending urls '{url_string}' to artist {artist}")
+
+        data = {
+            "artist": {
+                "url_string": " ".join(url_string),
+            }
+        }
+        request = self.danbooru_request("PUT", artist.model_path, json=data)
+        assert isinstance(request, dict) and request["success"] is True
 
     def replace(self,
                 post: DanbooruPost,

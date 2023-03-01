@@ -5,6 +5,7 @@ description = "A set of danbooru admin tools."
 authors = ["nonamethanks <nonamethanks@nonamethanks.xyz>"]
 
 [tool.poetry.scripts]
+create_artist_tags = "danboorutools.scripts.create_artist_tags:main"
 nuke_tag_edits = "danboorutools.scripts.nuke_tag_edits:main"
 nuke_votes = "danboorutools.scripts.nuke_votes:main"
 parsing_benchmark = "danboorutools.scripts.parsing_benchmark:main"
@@ -29,6 +30,8 @@ setuptools = "^67.4.0"
 peewee = "^3.15.4"
 python-twitter = "^3.5"
 backoff = "^2.2.1"
+pykakasi = "^2.2.1"
+unidecode = "^1.3.6"
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.28.11.14"

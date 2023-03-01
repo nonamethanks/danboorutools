@@ -99,6 +99,22 @@ class Url:
     def html(self) -> BeautifulSoup:
         return self.session.get_html(self.normalized_url)
 
+    @cached_property
+    @final
+    def artist(self) -> ArtistUrl:
+        if isinstance(self, ArtistUrl):
+            return self
+        elif isinstance(self, PostUrl):
+            return self.gallery.artist
+        elif isinstance(self, PostAssetUrl):
+            return self.post.artist
+        elif isinstance(self, GalleryAssetUrl):
+            return self.gallery.artist
+        elif isinstance(self, RedirectUrl):
+            return self.resolved.artist
+        else:
+            raise NotImplementedError(self, type(self))
+
 
 ########################################################################
 
