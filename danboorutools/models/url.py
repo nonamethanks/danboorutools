@@ -89,7 +89,7 @@ class Url:
     @settable_property
     def is_deleted(self) -> bool:
         try:
-            self.session.head_cached(self.normalized_url)
+            self.session.get_cached(self.normalized_url)
         except UrlIsDeleted:
             return True
         else:
@@ -296,6 +296,15 @@ class _AssetUrl(Url):
     @property
     def full_size(self) -> str:
         raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+
+    @settable_property
+    def is_deleted(self) -> bool:
+        try:
+            self.session.head_cached(self.normalized_url, allow_redirects=True)
+        except UrlIsDeleted:
+            return True
+        else:
+            return False
 
 
 class PostAssetUrl(_AssetUrl, Url):
