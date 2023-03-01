@@ -51,7 +51,7 @@ class PoipikuComParser(UrlParser):
                 instance.image_id = image_id
                 instance.image_hash = image_hash
 
-            case user_id, filename if user_id.isnumeric():
+            case user_id, _filename if user_id.isnumeric():
                 instance = PoipikuPostUrl(parsable_url)
                 instance.user_id = int(user_id)
                 instance.post_id = int(parsable_url.stem)
