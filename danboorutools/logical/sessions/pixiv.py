@@ -28,6 +28,7 @@ class PixivSession(Session):
 
     def request(self, *args, **kwargs) -> Response:
         kwargs["cookies"] = self.cookies_from_env
-        if "i.pximg.net" in args[1]:
+        if "/img/" in args[1]:
             kwargs["headers"] = kwargs.get("headers", {}) | {"Referer": "https://app-api.pixiv.net/"}
-        return super().request(*args, **kwargs)
+        request = super().request(*args, **kwargs)
+        return request
