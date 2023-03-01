@@ -71,9 +71,9 @@ class WeiboComParser(UrlParser):
             case artist_short_id, *_ if artist_short_id.isnumeric():
                 instance = WeiboArtistUrl(parsable_url)
                 instance.artist_short_id = int(artist_short_id)
-            case "n", username, *_rest:
+            case "n", display_name, *_rest:
                 instance = WeiboArtistUrl(parsable_url)
-                instance.username = username
+                instance.display_name = display_name
             case _, illust_long_id if parsable_url.subdomain == "tw" and illust_long_id.isnumeric():
                 instance = WeiboPostUrl(parsable_url)
                 instance.illust_long_id = int(illust_long_id)

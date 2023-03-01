@@ -91,6 +91,10 @@ class ParsableUrl:
     def extension(self) -> str:
         return self.url_parts[-1].split(".", maxsplit=1)[1]
 
+    @cached_property
+    def filename(self) -> str:
+        return self.url_parts[-1]
+
     @property
     def scheme(self) -> str:
         return self.url_data["scheme"]
