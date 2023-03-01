@@ -129,9 +129,11 @@ class SaucenaoSession(Session):
         result = _SubResult(extra_urls=[], primary_names=[], secondary_names=[])
 
         if isinstance(source_from_saucenao, PixivUrl):
-            if not saucenao_result["data"]["creator"]:
+            if not (creator := saucenao_result["data"]["creator"]):
                 return None  # Saucenao doesn't have it
-            stacc = saucenao_result["data"]["creator"].replace(" ", "_")
+            if "," in creator:
+                raise NotImplementedError(saucenao_result)  # saucenao database is fucked
+            stacc = creator.replace(" ", "_")
             result.extra_urls += [Url.build(PixivStaccUrl, stacc=stacc)]
             result.secondary_names += [stacc]
         else:
