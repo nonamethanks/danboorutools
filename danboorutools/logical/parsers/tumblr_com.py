@@ -139,10 +139,11 @@ class TumblrComParser(UrlParser):
                 instance.blog_name = blog_name
                 instance.post_id = int(post_id)
 
-            case blog_name, _title, redirect_id if blog_name not in cls.RESERVED_NAMES:
+            case blog_name, title, redirect_id if blog_name not in cls.RESERVED_NAMES:
                 instance = TumblrPostRedirectUrl(parsable_url)
                 instance.redirect_id = redirect_id
                 instance.blog_name = blog_name
+                instance.title = title
 
             case blog_name, redirect_id if blog_name not in cls.RESERVED_NAMES:
                 instance = TumblrPostRedirectUrl(parsable_url)
