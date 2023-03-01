@@ -39,16 +39,26 @@ class NoCookiesForDomain(FileNotFoundError):
 
 class HTTPError(Exception):
     """A request failed somewhere."""
+    response: requests.Response | None
+    status_code: int | None
+    original_url: str | None
 
-    def __init__(self, response: requests.Response) -> None:
-        self.response = response
-        self.request = response.request
-        self.status_code = self.response.status_code
+    def __init__(self, response: requests.Response | None = None, status_code: int | None = None, original_url: str | None = None) -> None:
+        if response is not None:
+            self.response = response
+            self.original_url = response.request.url
+            self.status_code = self.response.status_code
+        elif status_code is not None and original_url is not None:
+            self.response = None
+            self.status_code = status_code
+            self.original_url = original_url
+        else:
+            raise ValueError(response, status_code, original_url)
         super().__init__(self.message)
 
     @property
     def message(self) -> str:
-        return f"The request to {self.request.url} failed with status code {self.status_code}."
+        return f"The request to {self.original_url} failed with status code {self.status_code}."
 
 
 class DownloadError(HTTPError):
@@ -64,7 +74,7 @@ class EHEntaiRateLimitError(HTTPError):
 
     @property
     def message(self) -> str:
-        return f"The request to {self.request.url} failed because of too many downloads."
+        return f"The request to {self.original_url} failed because of too many downloads."
 
 
 class DanbooruHTTPError(HTTPError):

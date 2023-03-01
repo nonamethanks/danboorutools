@@ -1,8 +1,9 @@
-from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+from danboorutools.logical.sessions.twitter import TwitterSession  # pylint: disable=E0401,E0611 # False positive
+from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
 class TwitterUrl(Url):
-    pass
+    session = TwitterSession()
 
 
 class TwitterPostUrl(PostUrl, TwitterUrl):
@@ -18,6 +19,43 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     username: str
 
     normalize_string = "https://twitter.com/{username}"
+
+    @property
+    def primary_names(self) -> list[str]:
+        return [self._artist_data["name"]]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [self.username, f"twitter {self.user_id}"]
+
+    @property
+    def related(self) -> list[Url]:
+        # pylint: disable=import-outside-toplevel
+        from danboorutools.logical.extractors.skeb import SkebArtistUrl
+
+        related: list[Url] = []
+        related += [Url.build(TwitterIntentUrl, intent_id=self.user_id)]
+
+        for field in ["url", "description"]:
+            try:
+                related += [Url.parse(url["expanded_url"])
+                            for url in self._artist_data["entities"][field]["urls"]
+                            if not url["expanded_url"].endswith("...")]
+            except KeyError:
+                pass
+        skeb = Url.build(SkebArtistUrl, username=self.username)
+        if not skeb.is_deleted:
+            related += [skeb]
+
+        return related
+
+    @property
+    def user_id(self) -> int:
+        return self._artist_data["id"]
+
+    @property
+    def _artist_data(self) -> dict:
+        return self.session.user_data(self.username)
 
 
 class TwitterAssetUrl(PostAssetUrl, TwitterUrl):
@@ -37,7 +75,7 @@ class TwitterOnlyStatusUrl(RedirectUrl, TwitterUrl):
     normalize_string = "https://twitter.com/i/status/{post_id}"
 
 
-class TwitterIntentUrl(RedirectUrl, TwitterUrl):
+class TwitterIntentUrl(InfoUrl, TwitterUrl):
     intent_id: int
 
     normalize_string = "https://twitter.com/intent/user?user_id={intent_id}"
