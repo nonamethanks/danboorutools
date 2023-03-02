@@ -1,6 +1,3 @@
-
-
-# pylint: disable=cell-var-from-loop
 from danboorutools.logical.extractors.artstation import (ArtStationArtistUrl, ArtStationImageUrl, ArtStationMarketplacePostUrl,
                                                          ArtStationOldPostUrl, ArtStationPostUrl)
 from tests.extractors import generate_parsing_suite

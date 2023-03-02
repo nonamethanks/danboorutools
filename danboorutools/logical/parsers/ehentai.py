@@ -4,26 +4,6 @@ from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
 class EhentaiOrgParser(UrlParser):
-    test_cases = {
-        EHentaiGalleryUrl: [
-            "https://exhentai.org/g/1858690/b62c996bb6/",
-            "http://g.e-hentai.org/g/1858690/b62c996bb6/",
-            "http://e-hentai.org/g/1858690/b62c996bb6/",
-            "http://g.e-hentai.org/g/340478/057192d561/?p=15",
-        ],
-        EHentaiImageUrl: [
-            "https://exhentai.org/t/ac/c6/acc6ee51f27416c3052380dabeea175afb272755-71280-640-880-png_l.jpg",
-            "https://e-hentai.org/t/ac/c6/acc6ee51f27416c3052380dabeea175afb272755-71280-640-880-png_l.jpg",
-            "https://g.e-hentai.org/?f_shash=85f4d25b291210a2a6936331a1e7202741392715\u0026fs_from=_039.jpg",
-            "https://exhentai.org/fullimg.php?gid=2464842&page=2&key=uinj32c9zag",
-        ],
-        EHentaiPageUrl: [
-            "https://e-hentai.org/s/ad41a3fac6/847994-352",
-            "https://exhentai.org/s/ad41a3fac6/847994-352",
-            "https://g.e-hentai.org/s/ad41a3fac6/847994-352",
-            "https://e-hentai.org/s/0251bc4e84/136116-25.jpg",
-        ],
-    }
 
     domains = ["e-hentai.org", "exhentai.org"]
 
@@ -94,5 +74,39 @@ class EhentaiOrgParser(UrlParser):
                     raise UnparsableUrl(parsable_url)
                 else:
                     return None
+
+        return instance
+
+
+class EhgtOrgParser(UrlParser):
+
+    @classmethod
+    def match_url(cls, parsable_url: ParsableUrl) -> EHentaiImageUrl | None:
+        match parsable_url.url_parts:
+            # http://gt2.ehgt.org/a8/9a/a89a1ecc242a1f64edc56bf253442f46e937cdf3-578970-1000-1000-jpg_m.jpg,
+            case _, _, filename:
+                instance = EHentaiImageUrl(parsable_url)
+                instance.original_filename = None
+                instance.file_hash = filename.split("-")[0]
+                instance.page_token = filename[:10]
+                instance.image_type = "direct"
+            case _:
+                return None
+        return instance
+
+
+class HathNetworkParser(UrlParser):
+    @classmethod
+    def match_url(cls, parsable_url: ParsableUrl) -> EHentaiImageUrl | None:
+        match parsable_url.url_parts:
+            # https://ijmwujr.grduyvrrtxiu.hath.network:40162/h/5bf1c8b26c4d0d35951b7116d151209f6784420e-137816-810-1228-jpg/keystamp=1676307900-1fa0db7a58;fileindex=120969163;xres=2400/4134835_103198602_p0.jpg
+            case "h", file_dir, _, filename:
+                instance = EHentaiImageUrl(parsable_url)
+                instance.original_filename = filename
+                instance.file_hash = file_dir.split("-")[0]
+                instance.image_type = "direct"
+
+            case _:
+                return None
 
         return instance

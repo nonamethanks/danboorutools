@@ -15,20 +15,6 @@ class DeviantartComParser(UrlParser):
     def _match_username_in_path(parsable_url: ParsableUrl) -> DeviantArtUrl | None:
         instance: DeviantArtUrl
         match parsable_url.url_parts:
-            # https://www.deviantart.com/deviation/685436408
-            case "deviation", deviation_id:
-                instance = DeviantArtPostUrl(parsable_url)
-                instance.deviation_id = int(deviation_id)
-                instance.username = None
-                instance.title = None
-
-            # http://www.deviantart.com/download/135944599/Touhou___Suwako_Moriya_Colored_by_Turtle_Chibi.png
-            # https://www.deviantart.com/download/549677536/countdown_to_midnight_by_kawacy-d939hwg.jpg?token=92090cd3910d52089b566661e8c2f749755ed5f8&ts=1438535525
-            case "download", deviation_id, filename:
-                instance = DeviantArtImageUrl(parsable_url)
-                instance.deviation_id = int(deviation_id)
-                instance.parse_filename(filename)
-
             # https://www.deviantart.com/noizave/art/test-post-please-ignore-685436408
             # https://www.deviantart.com/bellhenge/art/788000274
             # https://www.deviantart.com/wickellia/art/Anneliese-839666684#comments
@@ -44,6 +30,20 @@ class DeviantartComParser(UrlParser):
                 except ValueError:
                     instance.deviation_id = int(deviation_id.split("#")[0])
                 instance.username = username
+
+            # https://www.deviantart.com/deviation/685436408
+            case "deviation", deviation_id:
+                instance = DeviantArtPostUrl(parsable_url)
+                instance.deviation_id = int(deviation_id)
+                instance.username = None
+                instance.title = None
+
+            # http://www.deviantart.com/download/135944599/Touhou___Suwako_Moriya_Colored_by_Turtle_Chibi.png
+            # https://www.deviantart.com/download/549677536/countdown_to_midnight_by_kawacy-d939hwg.jpg?token=92090cd3910d52089b566661e8c2f749755ed5f8&ts=1438535525
+            case "download", deviation_id, filename:
+                instance = DeviantArtImageUrl(parsable_url)
+                instance.deviation_id = int(deviation_id)
+                instance.parse_filename(filename)
 
             # https://www.deviantart.com/noizave
             # https://deviantart.com/noizave

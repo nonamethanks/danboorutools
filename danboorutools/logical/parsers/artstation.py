@@ -8,13 +8,6 @@ RESERVED_USERNAMES = ["about", "blogs", "challenges", "guides", "jobs", "learnin
 class ArtstationComParser(UrlParser):
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> a.ArtStationUrl | None:
-        if parsable_url.url_parts and parsable_url.url_parts[0] in RESERVED_USERNAMES:
-            # https://www.artstation.com/marketplace/p/X9P5
-            if parsable_url.url_parts[0] == "marketplace":
-                instance = a.ArtStationMarketplacePostUrl(parsable_url)
-                instance.post_id = parsable_url.url_parts[2]
-                return instance
-
         if parsable_url.subdomain in ["", "www"]:
             return cls._match_username_in_path(parsable_url)
         elif parsable_url.subdomain.startswith("cdn"):
@@ -47,6 +40,11 @@ class ArtstationComParser(UrlParser):
             case "artist", username, *_:
                 instance = a.ArtStationArtistUrl(parsable_url)
                 instance.username = username
+
+            # https://www.artstation.com/marketplace/p/X9P5
+            case "marketplace", "p", post_id:
+                instance = a.ArtStationMarketplacePostUrl(parsable_url)
+                instance.post_id = post_id
 
             # http://www.artstation.com/envie_dai/prints
             # https://www.artstation.com/chicle/albums/all

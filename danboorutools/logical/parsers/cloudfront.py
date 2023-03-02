@@ -1,4 +1,3 @@
-
 from danboorutools.exceptions import UnparsableUrl
 from danboorutools.logical.extractors.foundation import FoundationImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser

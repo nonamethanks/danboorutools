@@ -1,4 +1,3 @@
-
 from danboorutools.logical.extractors.deviantart import DeviantArtArtistUrl, DeviantArtImageUrl, DeviantArtPostUrl
 from tests.extractors import generate_parsing_suite
 

@@ -68,7 +68,7 @@ class ParsableUrl:
         if not (query := self.url_data["query"]):
             return {}
 
-        if "%5Cu" in query:
+        if "%" in query:
             query = unquote(query)
         if "\\u" in query:
             query = query.encode("utf-8").decode("unicode-escape")

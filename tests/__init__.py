@@ -1,11 +1,15 @@
+import inspect
 import re
-from typing import Any, Iterable
+from pathlib import Path
+from typing import Any, Callable, Iterable
 
+from ward import _testing
 from ward.expect import Comparison, TestAssertionFailure, _prev_frame
+from ward.models import CollectionMetadata, XfailMarker
 
 
-def assert_equal(lhs_val: Any, rhs_val: Any) -> None:  # noqa: ANN401 # SHUT THE FUCK UP
-    # ward is a piece of shit that won't pretty-print asserts inside an import, so these have to be used
+def assert_equal(lhs_val: Any, rhs_val: Any) -> None:  # noqa: ANN401
+    # ward won't pretty-print asserts inside an import, so this is a mandatory trick to have legible output
     # the alternative is killing myself while trying to make py-fucking-test work
     try:
         assert lhs_val == rhs_val
@@ -77,3 +81,17 @@ def assert_gte(lhs_val: Any, rhs_val: Any) -> None:  # noqa: ANN401
             operator=Comparison.GreaterThanEqualTo,
             assert_msg=str(e)
         ) from e
+
+
+def generate_ward_test(method: Callable, /, description: str, tags: list[str], expected_failure: bool = False) -> None:
+    caller = inspect.stack()[2]
+    abs_path = Path(caller.filename).resolve()
+    method.ward_meta = CollectionMetadata(  # type: ignore[attr-defined]
+        description=description,
+        tags=tags,
+        path=abs_path,
+    )
+    if expected_failure:
+        method.ward_meta.marker = XfailMarker()  # type: ignore[attr-defined]
+
+    _testing.COLLECTED_TESTS[abs_path].append(method)

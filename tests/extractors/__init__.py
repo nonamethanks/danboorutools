@@ -4,12 +4,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import TypeVar
 
-from ward import _testing
-from ward.models import CollectionMetadata
-
 from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.time import datetime_from_string
-from tests import assert_equal, assert_gte, assert_in, assert_isinstance, assert_match_in
+from tests import assert_equal, assert_gte, assert_in, assert_isinstance, assert_match_in, generate_ward_test
 
 
 def assert_urls_are_same(lhs_value: list[Url] | list[str], rhs_value: list[Url] | list[str]) -> None:
@@ -108,33 +105,60 @@ def assert_artist_url(url: str,
 def assert_post_url(url: str,
                     url_type: type[PostUrlTypeVar],
                     url_properties: dict,
-                    created_at: datetime | str,
-                    asset_count: int,
-                    score: int,
+                    created_at: datetime | str | None = None,
+                    asset_count: int | None = None,
+                    score: int | None = None,
                     assets: list[str | re.Pattern[str]] | None = None,
                     md5s: list[str] | None = None,
                     is_deleted: bool = False,
-                    ) -> PostUrlTypeVar:
+                    gallery: Url | str | None = None,
+                    ) -> None:
 
-    post = assert_url(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
+    def _assert_post_url(url=url,
+                         url_type=url_type,
+                         url_properties=url_properties,
+                         created_at=created_at,
+                         asset_count=asset_count,
+                         score=score,
+                         assets=assets,
+                         md5s=md5s,
+                         is_deleted=is_deleted,
+                         gallery=gallery) -> None:
 
-    assert_equal(post.created_at, datetime_from_string(created_at))
-    assert_equal(len(post.assets), asset_count)
-    assert_gte(post.score, score)
+        post = assert_url(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
 
-    if assets is not None:
-        found_assets = post.assets
-        for asset in assets:
-            if isinstance(asset, str):
-                assert_in(Url.parse(asset), found_assets)
-            else:
-                assert_match_in(asset, [a.normalized_url for a in found_assets])
+        if created_at:
+            assert_equal(post.created_at, datetime_from_string(created_at))
+        if asset_count:
+            assert_equal(len(post.assets), asset_count)
+        if score:
+            assert_gte(post.score, score)
 
-    if md5s is not None:
-        found_md5s = [_file.md5 for asset in post.assets for _file in asset.files]
-        assert all(md5 in found_md5s for md5 in md5s), (md5s, found_md5s)
+        if assets is not None:
+            found_assets = post.assets
+            for asset in assets:
+                if isinstance(asset, str):
+                    assert_in(Url.parse(asset), found_assets)
+                else:
+                    assert_match_in(asset, [a.normalized_url for a in found_assets])
 
-    return post
+        if md5s is not None:
+            found_md5s = [_file.md5 for asset in post.assets for _file in asset.files]
+            assert all(md5 in found_md5s for md5 in md5s), (md5s, found_md5s)
+
+        if gallery:
+            gallery = Url.parse(gallery)
+            assert_equal(post.gallery.normalized_url, gallery.normalized_url)
+
+    caller = inspect.stack()[1]
+    abs_path = Path(caller.filename).resolve()
+    domain = abs_path.stem.removesuffix("_test")
+
+    generate_ward_test(
+        _assert_post_url,
+        description=f"Scrape {url_type.__name__}: {url}",
+        tags=["scraping", domain]
+    )
 
 
 def assert_asset_url(url: str,
@@ -203,25 +227,24 @@ def generate_parsing_suite(urls: dict[type[UrlTypeVar], dict]) -> None:
         url_type_str = url_type.__name__.split(".")[-1]
 
         for url_string, expected_normalization in string_and_normalization.items():
+
             def parse(url_type=url_type, url_string=url_string) -> None:
                 parsed_url = Url.parse(url_string)
                 assert_isinstance(parsed_url, url_type)
 
-            parse.ward_meta = CollectionMetadata(  # type: ignore[attr-defined]
+            generate_ward_test(
+                parse,
                 description=f"Parse {url_type_str}: {url_string}",
-                tags=["parsing", domain],
-                path=abs_path,
+                tags=["parsing", domain]
             )
-            _testing.COLLECTED_TESTS[abs_path].append(parse)
 
-            if expected_normalization:
-                def normalize(url_string=url_string, expected_normalization=expected_normalization) -> None:
-                    parsed_url = Url.parse(url_string)
-                    assert_equal(parsed_url.normalized_url, expected_normalization)
+            def normalize(url_string=url_string, expected_normalization=expected_normalization) -> None:
+                parsed_url = Url.parse(url_string)
+                assert_equal(parsed_url.normalized_url, expected_normalization)
 
-                normalize.ward_meta = CollectionMetadata(  # type: ignore[attr-defined]
-                    description=f"Normalize {url_type_str}: {url_string}",
-                    tags=["parsing", "normalization", domain],
-                    path=abs_path,
-                )
-                _testing.COLLECTED_TESTS[abs_path].append(normalize)
+            generate_ward_test(
+                normalize,
+                description=f"Normalize {url_type_str}: {url_string}",
+                tags=["parsing", "normalization", domain],
+                expected_failure=not expected_normalization,
+            )

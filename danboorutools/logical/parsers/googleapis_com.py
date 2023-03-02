@@ -1,4 +1,3 @@
-
 from danboorutools.exceptions import UnparsableUrl
 from danboorutools.logical.extractors.anifty import AniftyArtistImageUrl, AniftyImageUrl, AniftyUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser

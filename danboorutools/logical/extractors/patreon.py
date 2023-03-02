@@ -26,7 +26,7 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
     @classmethod
     def normalize(cls, **kwargs) -> str:
         if username := kwargs.get("username"):
-            return f"http://www.patreon.com/{username}"
+            return f"https://www.patreon.com/{username}"
         elif user_id := kwargs.get("user_id"):
             return f"https://www.patreon.com/user?u={user_id}"
         else:

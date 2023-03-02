@@ -1,5 +1,3 @@
-
-
 import click
 
 from danboorutools import logger

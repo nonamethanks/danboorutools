@@ -1,4 +1,3 @@
-
 from danboorutools.logical.extractors.pixiv import PixivStaccUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
