@@ -26,6 +26,8 @@ class ProgressTracker(Generic[ProgressValue]):
         else:
             self.cast_value = type(self.default_value)
 
+        self._value_cache: ProgressValue | None = None
+
     @_progress_database.connection_context()
     def _init_database(self) -> None:
         with _progress_database:
@@ -33,19 +35,24 @@ class ProgressTracker(Generic[ProgressValue]):
 
     @property
     def value(self) -> ProgressValue:
-        self._init_database()
-        try:
-            row = _ProgressModel.get(_ProgressModel.name == self.name)
-        except DoesNotExist:
-            return self.default_value
-        else:
-            return self.cast_value(row.value)
+        if self._value_cache is None:
+            self._init_database()
+            try:
+                row = _ProgressModel.get(_ProgressModel.name == self.name)
+            except DoesNotExist:
+                self._value_cache = self.default_value
+            else:
+                self._value_cache = self.cast_value(row.value)
+
+        return self._value_cache
 
     @value.setter
     def value(self, value: ProgressValue) -> None:
         self._init_database()
         _ProgressModel.replace(name=self.name, value=value).execute()
+        self._value_cache = None
 
     @value.deleter
     def value(self) -> None:
         _ProgressModel.delete().where(_ProgressModel.name == self.name).execute()
+        self._value_cache = None
