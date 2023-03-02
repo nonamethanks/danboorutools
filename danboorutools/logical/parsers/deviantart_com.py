@@ -59,7 +59,7 @@ class DeviantartComParser(UrlParser):
             case username, "art", title:
                 instance = DeviantArtPostUrl(parsable_url)
                 if "-" in title:
-                    [instance.title, deviation_id] = title.rsplit("-", maxsplit=1)
+                    [instance.title, _, deviation_id] = title.rpartition("-")
                 else:
                     instance.title = None
                     deviation_id = title
@@ -89,7 +89,7 @@ class DeviantartComParser(UrlParser):
             # https://framboosi.deviantart.com/art/Wendy-commision-for-x4blade-133926691?q=gallery%3Aframboosi%2F12287691\u0026qo=81
             case "art", title:
                 instance = DeviantArtPostUrl(parsable_url)
-                [instance.title, deviation_id] = title.rsplit("-", maxsplit=1)
+                [instance.title, _, deviation_id] = title.rpartition("-")
                 instance.deviation_id = int(deviation_id)
                 instance.username = parsable_url.subdomain
 

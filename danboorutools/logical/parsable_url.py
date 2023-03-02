@@ -15,7 +15,7 @@ class ParsableUrl:
     @cached_property
     def url_data(self) -> dict:
         if "?" in self.raw_url:
-            url_without_params, url_params = self.raw_url.rsplit("?", maxsplit=1)
+            url_without_params, _, url_params = self.raw_url.rpartition("?")
         else:
             url_without_params = self.raw_url
             url_params = None
@@ -30,7 +30,8 @@ class ParsableUrl:
 
         hostname = url_parts[0].split(":")[0]
         try:
-            subdomain, domain, tld = hostname.rsplit(".", maxsplit=2)
+            *subdomains, domain, tld = hostname.split(".")
+            subdomain = ".".join(subdomains)
             # Technically wrong for stuff like .co.uk, but then again all tld parsers do other stupid shit
             # like thinking username.carrd.co has "carrd.co" as tld
         except ValueError:

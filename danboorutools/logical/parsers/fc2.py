@@ -103,7 +103,7 @@ class Fc2Parser(UrlParser):
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> Fc2Url | None:
         if "." in parsable_url.subdomain:
-            username, subsite = parsable_url.subdomain.rsplit(".", maxsplit=1)
+            username, _, subsite = parsable_url.subdomain.rpartition(".")
         else:
             subsite = parsable_url.subdomain
             username = None

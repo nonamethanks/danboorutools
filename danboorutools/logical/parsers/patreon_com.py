@@ -36,7 +36,7 @@ class PatreonComParser(UrlParser):
             case "posts", title_and_id:
                 instance = PatreonPostUrl(parsable_url)
                 if "-" in title_and_id:
-                    instance.title, post_id = title_and_id.rsplit("-", maxsplit=1)
+                    instance.title, _, post_id = title_and_id.rpartition("-")
                 else:
                     instance.title = None
                     post_id = title_and_id
@@ -56,7 +56,7 @@ class PatreonComParser(UrlParser):
                 instance.username = username
             case "join", username, "checkout" if "redirect_uri" in parsable_url.params:
                 instance = PatreonPostUrl(parsable_url)
-                instance.title, post_id = parsable_url.params["redirect_uri"].rsplit("%2F", maxsplit=1)[-1].rsplit("-", maxsplit=1)
+                instance.title, _, post_id = parsable_url.params["redirect_uri"].partition("%2F")[-1].partition("-")
                 instance.post_id = int(post_id)
                 instance.username = username
             case "join", username:
@@ -66,7 +66,7 @@ class PatreonComParser(UrlParser):
                 instance = PatreonImageUrl(parsable_url)
             case "bePatron", if "redirect_uri" in parsable_url.params:
                 instance = PatreonPostUrl(parsable_url)
-                instance.title, post_id = parsable_url.params["redirect_uri"].rsplit("/", maxsplit=1)[-1].rsplit("-", maxsplit=1)
+                instance.title, _, post_id = parsable_url.params["redirect_uri"].partition("/")[-1].partition("-")
                 instance.post_id = int(post_id)
             case _:
                 return None
