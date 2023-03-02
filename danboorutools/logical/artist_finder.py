@@ -84,8 +84,6 @@ class ArtistFinder:
         if unknown := list(filter(lambda x: isinstance(x, UnknownUrl), found_artist_urls)):
             raise NotImplementedError(unknown)
         logger.debug(f"Found urls: {', '.join(map(str, found_artist_urls))}")
-        if any(isinstance(url, UnknownUrl) for url in found_artist_urls):
-            raise NotImplementedError(found_artist_urls)
 
         return found_artist_urls  # type: ignore[return-value] # false positive
 
