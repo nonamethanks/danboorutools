@@ -135,17 +135,17 @@ class InfoUrl(Url):
     @property
     def related(self) -> list[Url]:
         """A list of related urls."""
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented related URL extraction.")
 
     @property
     def primary_names(self) -> list[str]:
         """A list of artist names usable as tags, in order of relevance."""
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented name extraction.")
 
     @property
     def secondary_names(self) -> list[str]:
         """A list of artist names usable as qualifiers, in order of relevance."""
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented name extraction.")
 
 
 ########################################################################
@@ -193,7 +193,7 @@ class GalleryUrl(Url):
     #         return
 
     def _extract_posts(self) -> None:
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented post extraction.")
 
 
 class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
@@ -207,7 +207,7 @@ class ArtistAlbumUrl(GalleryUrl, Url):
 
     @settable_property
     def gallery(self) -> GalleryUrl:
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented gallery extraction.")
 
 
 ########################################################################
@@ -246,19 +246,19 @@ class PostUrl(Url):
         return self._assets
 
     def _extract_assets(self) -> None:
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented asset extraction.")
 
     @settable_property
     def gallery(self) -> GalleryUrl:
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented gallery extraction.")
 
     @settable_property
     def created_at(self) -> datetime:
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented created_at extraction.")
 
     @settable_property
     def score(self) -> int:
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented score extraction.")
 
 
 ########################################################################
@@ -295,7 +295,7 @@ class _AssetUrl(Url):
 
     @property
     def full_size(self) -> str:
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented full_size extraction.")
 
     @settable_property
     def is_deleted(self) -> bool:
@@ -310,7 +310,7 @@ class _AssetUrl(Url):
 class PostAssetUrl(_AssetUrl, Url):
     @settable_property
     def post(self) -> PostUrl:
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented post extraction.")
 
     @settable_property
     def created_at(self) -> datetime:
@@ -321,7 +321,7 @@ class GalleryAssetUrl(_AssetUrl, Url):
     """An asset belonging to a gallery instead of a post (such as a background image)."""
     @settable_property
     def gallery(self) -> PostUrl:
-        raise NotImplementedError(self.__class__, self.parsed_url.raw_url)
+        raise NotImplementedError(self.__class__, "hasn't implemented gallery extraction.")
 
 
 ########################################################################
