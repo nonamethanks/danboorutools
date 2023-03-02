@@ -75,8 +75,20 @@ class TwitterIntentUrl(InfoUrl, TwitterUrl):
     normalize_string = "https://twitter.com/intent/user?user_id={intent_id}"
 
     @property
+    def user_url(self) -> TwitterArtistUrl:
+        return self.build(TwitterArtistUrl, username=self._artist_data["screen_name"])
+
+    @property
     def related(self) -> list[Url]:
-        return [self.build(TwitterArtistUrl, username=self._artist_data["screen_name"])]
+        return [self.user_url]
+
+    @property
+    def primary_names(self) -> list[str]:
+        return self.user_url.primary_names
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return self.user_url.secondary_names
 
     @property
     def _artist_data(self) -> dict:
