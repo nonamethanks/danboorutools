@@ -1,6 +1,11 @@
+import inspect
 import re
 from datetime import datetime
+from pathlib import Path
 from typing import TypeVar
+
+from ward import _testing
+from ward.models import CollectionMetadata
 
 from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.time import datetime_from_string
@@ -187,3 +192,36 @@ def assert_redirect_url(url: str,
     assert_equal(redirect_url.resolved.normalized_url, redirect_to.normalized_url)
 
     return redirect_url
+
+
+def generate_parsing_suite(urls: dict[type[UrlTypeVar], dict]) -> None:
+    caller = inspect.stack()[1]
+    abs_path = Path(caller.filename).resolve()
+    domain = abs_path.stem.removesuffix("_test")
+
+    for url_type, string_and_normalization in urls.items():
+        url_type_str = url_type.__name__.split(".")[-1]
+
+        for url_string, expected_normalization in string_and_normalization.items():
+            def parse(url_type=url_type, url_string=url_string) -> None:
+                parsed_url = Url.parse(url_string)
+                assert_isinstance(parsed_url, url_type)
+
+            parse.ward_meta = CollectionMetadata(  # type: ignore[attr-defined]
+                description=f"Parse {url_type_str}: {url_string}",
+                tags=["parsing", domain],
+                path=abs_path,
+            )
+            _testing.COLLECTED_TESTS[abs_path].append(parse)
+
+            if expected_normalization:
+                def normalize(url_string=url_string, expected_normalization=expected_normalization) -> None:
+                    parsed_url = Url.parse(url_string)
+                    assert_equal(parsed_url.normalized_url, expected_normalization)
+
+                normalize.ward_meta = CollectionMetadata(  # type: ignore[attr-defined]
+                    description=f"Normalize {url_type_str}: {url_string}",
+                    tags=["parsing", "normalization", domain],
+                    path=abs_path,
+                )
+                _testing.COLLECTED_TESTS[abs_path].append(normalize)

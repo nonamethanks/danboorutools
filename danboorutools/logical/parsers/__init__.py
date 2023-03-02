@@ -17,7 +17,6 @@ parsers: dict[str, type["UrlParser"]] = {}
 
 class UrlParser:
     domains: list[str] = []
-    test_cases: dict[type["Url"], list[str]]
 
     @classmethod
     @lru_cache
@@ -72,15 +71,6 @@ for f in Path(__file__).parent.glob("*.py"):
 
 
 # class XxxXxxParser(UrlParser):
-#     test_cases = {
-#         XxxArtistUrl: [
-#         ],
-#         XxxImageUrl: [
-#         ],
-#         XxxPostUrl: [
-#         ],
-#     }
-
 #     @classmethod
 #     def match_url(cls, parsable_url: ParsableUrl) -> XxxUrl | None:
 #         match parsable_url.url_parts:

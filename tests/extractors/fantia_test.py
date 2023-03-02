@@ -36,6 +36,3 @@ for original_string, normalized_string in urls.items():
     @test(f"Normalizing {domain}: {original_string}", tags=["parsing", "normalization", domain])
     def _(_parsed_url=parsed_url, _normalized_string=normalized_string) -> None:
         assert _parsed_url.normalized_url == _normalized_string
-
-# TODO: create script that compares .test_cases with these urls, and merges them all in one place (the tests)?
-# what about images that cant be normalized like deviantart?

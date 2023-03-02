@@ -1,20 +1,21 @@
-# pylint: disable=cell-var-from-loop
-from ward import test
-
-from danboorutools.models.url import Url
+from danboorutools.logical.extractors.anifty import AniftyArtistUrl, AniftyPostUrl, AniftyTokenUrl
+from tests.extractors import generate_parsing_suite
 
 urls = {
-    "https://anifty.jp/creations/373": "https://anifty.jp/creations/373",
-    "https://anifty.jp/ja/creations/373": "https://anifty.jp/creations/373",
-    "https://anifty.jp/zh/creations/373": "https://anifty.jp/creations/373",
-    "https://anifty.jp/zh-Hant/creations/373": "https://anifty.jp/creations/373",
+    AniftyPostUrl: {
+        "https://anifty.jp/creations/373": "https://anifty.jp/creations/373",
+        "https://anifty.jp/ja/creations/373": "https://anifty.jp/creations/373",
+        "https://anifty.jp/zh/creations/373": "https://anifty.jp/creations/373",
+        "https://anifty.jp/zh-Hant/creations/373": "https://anifty.jp/creations/373",
+    },
+    AniftyArtistUrl: {
+        "https://anifty.jp/@hightree": "https://anifty.jp/@hightree",
+        "https://anifty.jp/ja/@hightree": "https://anifty.jp/@hightree",
+    },
+    AniftyTokenUrl: {
+        "https://anifty.jp/tokens/17": "https://anifty.jp/tokens/17",
+    }
 }
 
 
-for original_string, normalized_string in urls.items():
-    parsed_url = Url.parse(original_string)
-    domain = parsed_url.parsed_url.domain
-
-    @test(f"Normalizing {domain}: {original_string}", tags=["parsing", "normalization", domain])
-    def _(_parsed_url=parsed_url, _normalized_string=normalized_string) -> None:
-        assert _parsed_url.normalized_url == _normalized_string
+generate_parsing_suite(urls)
