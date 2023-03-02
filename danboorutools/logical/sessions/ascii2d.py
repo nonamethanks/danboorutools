@@ -20,10 +20,11 @@ if TYPE_CHECKING:
 @dataclass(repr=False)
 class Ascii2dArtistResult:
     html_data: Tag
+    search_url: str
 
     def __repr__(self) -> str:
         stringified = ", ".join(f"{k}={v}" for k, v in self._data.items())
-        return f"Ascii2dArtistResult({stringified})"
+        return f"Ascii2dArtistResult({stringified} / {self.search_url})"
 
     @property
     def primary_url(self) -> InfoUrl:
@@ -47,7 +48,10 @@ class Ascii2dArtistResult:
 
     @property
     def _url_groups(self) -> list[Tag]:
-        return self.html_data.select(".detail-box h6")
+        url_groups = self.html_data.select(".detail-box h6")
+        if not url_groups:
+            raise NotImplementedError(self.html_data, self.search_url)
+        return url_groups
 
     @cached_property
     def _data(self) -> dict[str, list]:
@@ -120,9 +124,9 @@ class Ascii2dSession(Session):
         assert html_results, url
 
         results = [
-            Ascii2dArtistResult(result_html.select_one(".info-box"))
+            Ascii2dArtistResult(result_html.select_one(".info-box"), ascii2d_url)
             for result_html in html_results
-            if result_html.select(".detail-box a")
+            if result_html.select_one(".detail-box").text.strip()  # some results have bare text that must be parsed
         ]
 
         assert results, url  # to make sure page layout hasn't changed
