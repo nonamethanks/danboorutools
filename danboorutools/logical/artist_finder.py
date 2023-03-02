@@ -92,11 +92,12 @@ class ArtistFinder:
                                          first_url: InfoUrl,
                                          scanned_urls: list | None = None
                                          ) -> list[InfoUrl | GalleryUrl | UnknownUrl]:
+
         scanned_urls = scanned_urls or []
         if first_url in scanned_urls:
             return scanned_urls
 
-        logger.debug(f"Found {first_url}, crawling...")
+        logger.debug(f"Crawling {first_url}...")
         scanned_urls += [first_url]
 
         if first_url.is_deleted:
@@ -113,13 +114,14 @@ class ArtistFinder:
                 continue
 
             logger.debug(f"Found {related_url} while crawling {first_url}...")
-            if isinstance(related_url, (GalleryUrl, InfoUrl, UnknownUrl)):
-                scanned_urls.append(related_url)
 
             if isinstance(related_url, InfoUrl):
                 scanned_urls += cls.extract_related_urls_recursively(related_url, scanned_urls)
             else:
                 raise NotImplementedError(related_url)
+
+            if isinstance(related_url, (GalleryUrl, UnknownUrl)):  # wip
+                scanned_urls.append(related_url)
 
         return list(dict.fromkeys(scanned_urls))
 
