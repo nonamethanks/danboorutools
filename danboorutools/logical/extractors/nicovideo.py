@@ -1,4 +1,6 @@
+from danboorutools.exceptions import HTTPError
 from danboorutools.models.url import ArtistUrl, InfoUrl, PostUrl, RedirectUrl, Url
+from danboorutools.util.misc import settable_property
 
 
 class NicovideoUrl(Url):
@@ -21,6 +23,45 @@ class NicovideoCommunityUrl(InfoUrl, NicovideoUrl):
     community_id: int
 
     normalize_string = "https://com.nicovideo.jp/community/co{community_id}"
+
+    @property
+    def private(self) -> bool:
+        try:
+            self.html
+        except HTTPError as e:
+            if e.response is not None:
+                return "このコミュニティのフォロワーではありません" in e.response.text
+            raise
+        else:
+            return False
+
+    @property
+    def related(self) -> list[Url]:
+        if self.private:
+            return []  # don't bother
+        raise NotImplementedError(self)  # extract nicovideo.jp, seiga here
+
+    @property
+    def primary_names(self) -> list[str]:
+        if self.private:
+            return []  # don't bother
+        raise NotImplementedError(self)
+
+    @property
+    def secondary_names(self) -> list[str]:
+        if self.private:
+            return []  # don't bother
+        raise NotImplementedError(self)
+
+    @settable_property
+    def is_deleted(self) -> bool:
+        if self.private:
+            return False
+        if self.html.select_one(".communityInfo .communityData .title"):
+            return False
+        if "お探しのコミュニティは存在しないか、削除された可能性があります" in self.html:
+            return True
+        raise NotImplementedError(self)
 
 
 class NicovideoListUrl(RedirectUrl, NicovideoUrl):
