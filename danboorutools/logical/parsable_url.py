@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from functools import cached_property
 from urllib.parse import unquote
 
-from danboorutools.exceptions import NotAnUrl, UnparsableUrl
+from danboorutools.exceptions import NotAnUrl
 
-url_params_pattern = re.compile(r"(?:\?|\&)?([^=]+)=([^&]+)")
+url_query_pattern = re.compile(r"(?:\?|\&)?([^=]+)=([^&]+)")
 
 
 @dataclass
@@ -15,46 +15,37 @@ class ParsableUrl:
     @cached_property
     def url_data(self) -> dict:
         if "?" in self.raw_url:
-            url_without_params, _, url_params = self.raw_url.rpartition("?")
+            url_without_query, _, url_query = self.raw_url.rpartition("?")
         else:
-            url_without_params = self.raw_url
-            url_params = None
+            url_without_query = self.raw_url
+            url_query = None
 
         try:
-            [scheme, _, *url_parts] = url_without_params.split("/")
+            [scheme, _, hostname, *url_parts] = url_without_query.split("/")
         except ValueError as e:
             raise NotAnUrl(self.raw_url) from e
 
         if scheme not in ("http:", "https:"):
             raise NotAnUrl(self.raw_url)
 
-        hostname = url_parts[0].split(":")[0]
-        try:
-            *subdomains, domain, tld = hostname.split(".")
-            subdomain = ".".join(subdomains)
-            # Technically wrong for stuff like .co.uk, but then again all tld parsers do other stupid shit
-            # like thinking username.carrd.co has "carrd.co" as tld
-        except ValueError:
-            try:
-                domain, tld = hostname.rsplit(".")
-            except ValueError as e:
-                raise UnparsableUrl(self.raw_url) from e
-            subdomain = ""
+        hostname = hostname.split(":")[0]
+        *subdomains, domain, tld = hostname.split(".")
+        subdomain = ".".join(subdomains)
 
-        url_parts = list(filter(bool, url_parts[1:]))  # faster than list comprehension
+        url_parts = list(filter(bool, url_parts))  # faster than list comprehension
         return {
             "scheme": scheme,
             "url_parts": url_parts,
             "hostname": hostname,
-            "params": url_params,
+            "query": url_query,
             "domain": ".".join([domain, tld]),
             "subdomain": subdomain,
-            "url_without_params": url_without_params,
+            "url_without_query": url_without_query,
         }
 
     @property
-    def url_without_params(self) -> str:
-        return self.url_data["url_without_params"]
+    def url_without_query(self) -> str:
+        return self.url_data["url_without_query"]
 
     @property
     def hostname(self) -> str:
@@ -73,31 +64,31 @@ class ParsableUrl:
         return self.url_data["url_parts"]
 
     @cached_property
-    def params(self) -> dict[str, str]:
-        if not (params := self.url_data["params"]):
+    def query(self) -> dict[str, str]:
+        if not (query := self.url_data["query"]):
             return {}
 
-        if "%5Cu" in params:
-            params = unquote(params)
-        if "\\u" in params:
-            params = params.encode("utf-8").decode("unicode-escape")
+        if "%5Cu" in query:
+            query = unquote(query)
+        if "\\u" in query:
+            query = query.encode("utf-8").decode("unicode-escape")
 
-        return dict(url_params_pattern.findall(params))
-
-    @cached_property
-    def stem(self) -> str:
-        return self.url_parts[-1].split(".")[0]
-
-    @cached_property
-    def extension(self) -> str:
-        try:
-            return self.url_parts[-1].split(".", maxsplit=1)[1]
-        except IndexError:
-            return ""
+        return dict(url_query_pattern.findall(query))
 
     @cached_property
     def filename(self) -> str:
         return self.url_parts[-1]
+
+    @cached_property
+    def stem(self) -> str:
+        return self.filename.split(".")[0]
+
+    @cached_property
+    def extension(self) -> str:
+        try:
+            return self.filename.partition(".")[-1]
+        except IndexError:
+            return ""
 
     @property
     def scheme(self) -> str:

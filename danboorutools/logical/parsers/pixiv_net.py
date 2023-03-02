@@ -98,13 +98,13 @@ class PixivNetParser(UrlParser):
             # https://www.pixiv.net/index.php?mode=medium\u0026illust_id=612896
             case ("member_illust.php" | "index.php"), :
                 instance = p.PixivPostUrl(parsable_url)
-                instance.post_id = int(parsable_url.params["illust_id"])
+                instance.post_id = int(parsable_url.query["illust_id"])
 
             # https://www.pixiv.net/member.php?id=339253
             # http://www.pixiv.net/novel/member.php?id=76567
             case *_, "member.php":
                 instance = p.PixivArtistUrl(parsable_url)
-                instance.user_id = int(parsable_url.params["id"])
+                instance.user_id = int(parsable_url.query["id"])
 
             # https://www.pixiv.net/requests/7829
             case "requests", request_id:
@@ -116,9 +116,9 @@ class PixivNetParser(UrlParser):
             case "novel", "show.php":
                 instance = p.PixivNovelUrl(parsable_url)
                 try:
-                    instance.novel_id = int(parsable_url.params["id"])
+                    instance.novel_id = int(parsable_url.query["id"])
                 except ValueError:
-                    instance.novel_id = int(parsable_url.params["id"].split("#")[0])
+                    instance.novel_id = int(parsable_url.query["id"].split("#")[0])
 
             # https://www.pixiv.net/novel/series/436782
             case *_, "novel", "series", series_id:
@@ -182,7 +182,7 @@ class PixivNetParser(UrlParser):
             # http://pixiv.net/fanbox/member.php?user_id=3410642
             case "fanbox", "member.php":
                 instance = f.FanboxOldArtistUrl(parsable_url)
-                instance.pixiv_id = int(parsable_url.params["user_id"])
+                instance.pixiv_id = int(parsable_url.query["user_id"])
 
             # http://www.pixiv.net/fanbox/resources/entry/325/images/5rd4eo6gs2884gs80csgwc0ws8s44c0o.png
             # https://www.pixiv.net/fanbox/resources/entry/50/images/w_1200/2thpjiboyaskg8owg4owcsg48cg4s484.jpeg

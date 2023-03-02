@@ -52,4 +52,4 @@ class BoothProfileImageUrl(PostAssetUrl, BoothUrl):
 
     @property
     def full_size(self) -> str:
-        return self.parsed_url.url_without_params.replace("_base_resized", "")
+        return self.parsed_url.url_without_query.replace("_base_resized", "")

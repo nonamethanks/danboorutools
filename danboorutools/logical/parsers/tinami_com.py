@@ -44,7 +44,7 @@ class TinamiComParser(UrlParser):
                 instance.profile_id = None
             case "search", "list":
                 instance = TinamiArtistUrl(parsable_url)
-                instance.user_id = int(parsable_url.params["prof_id"])
+                instance.user_id = int(parsable_url.query["prof_id"])
                 instance.profile_id = None
             case ("profile" | "p"), profile_id:
                 instance = TinamiArtistUrl(parsable_url)

@@ -33,9 +33,9 @@ class TwimgComParser(UrlParser):
         match parsable_url.url_parts:
             case "media", filename:
                 instance = TwitterAssetUrl(parsable_url)
-                instance.file_path = "/".join(parsable_url.url_parts).rpartition(":")[0]
+                instance.file_path = "/".join(parsable_url.url_parts).split(":")[0]
                 if "." not in filename:
-                    instance.file_path = instance.file_path + "." + parsable_url.params["format"]
+                    instance.file_path = instance.file_path + "." + parsable_url.query["format"]
             case ("tweet_video" | "ext_tw_video" | "ext_tw_video_thumb" | "tweet_video_thumb" | "amplify_video_thumb"), *_subdirs, _filename:
                 instance = TwitterAssetUrl(parsable_url)
                 instance.file_path = "/".join(parsable_url.url_parts)
@@ -51,7 +51,7 @@ class TwimgComParser(UrlParser):
                 instance = TwitterAssetUrl(parsable_url)
                 instance.file_path = "/".join(parsable_url.url_parts).rpartition(":")[0]
                 if "." not in filename:
-                    instance.file_path = instance.file_path + "." + parsable_url.params["format"]
+                    instance.file_path = instance.file_path + "." + parsable_url.query["format"]
 
             # "https://pbs.twimg.com/card_img/831677993668005888/m1NfMR3R?format=jpg\u0026name=orig",
             case "card_img", _, _:

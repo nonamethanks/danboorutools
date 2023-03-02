@@ -39,4 +39,4 @@ class FoundationImageUrl(PostAssetUrl, FoundationUrl):
         elif self.parsed_url.hostname == "f8n-production-collection-assets.imgix.net" and self.token_id and self.work_id:
             return f"https://f8n-production-collection-assets.imgix.net/{self.token_id}/{self.work_id}/nft.{self.parsed_url.extension}"
         else:
-            return self.parsed_url.url_without_params
+            return self.parsed_url.url_without_query

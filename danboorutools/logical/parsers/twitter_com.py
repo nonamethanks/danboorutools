@@ -47,7 +47,7 @@ class TwitterComParser(UrlParser):
             case username, "status", post_id, *_:
                 if username == "i":
                     instance = TwitterOnlyStatusUrl(parsable_url)
-                    instance.post_id = int(parsable_url.params["tweet_id"])
+                    instance.post_id = int(parsable_url.query["tweet_id"])
                 else:
                     instance = TwitterPostUrl(parsable_url)
                     instance.username = username
@@ -61,15 +61,15 @@ class TwitterComParser(UrlParser):
             case "i", "user", user_id:
                 instance = TwitterIntentUrl(parsable_url)
                 instance.intent_id = int(user_id)
-            case "intent", "user" if "user_id" in parsable_url.params:
+            case "intent", "user" if "user_id" in parsable_url.query:
                 instance = TwitterIntentUrl(parsable_url)
-                instance.intent_id = int(parsable_url.params["user_id"])
-            case "intent", "user" if "screen_name" in parsable_url.params:
+                instance.intent_id = int(parsable_url.query["user_id"])
+            case "intent", "user" if "screen_name" in parsable_url.query:
                 instance = TwitterArtistUrl(parsable_url)
-                instance.username = parsable_url.params["screen_name"]
+                instance.username = parsable_url.query["screen_name"]
             case "intent", "favorite":
                 instance = TwitterOnlyStatusUrl(parsable_url)
-                instance.post_id = int(parsable_url.params["tweet_id"])
+                instance.post_id = int(parsable_url.query["tweet_id"])
 
             case ("home" | "search"), *_:
                 raise UnparsableUrl(parsable_url)

@@ -58,7 +58,7 @@ class PoipikuComParser(UrlParser):
 
             case ("IllustListPcV.jsp" | "IllustListGridPcV.jsp" | "ActivityListPcV.jsp"), :
                 instance = PoipikuArtistUrl(parsable_url)
-                instance.user_id = int(parsable_url.params["ID"])
+                instance.user_id = int(parsable_url.query["ID"])
 
             case user_id, if user_id.isnumeric():
                 instance = PoipikuArtistUrl(parsable_url)

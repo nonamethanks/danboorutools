@@ -39,8 +39,8 @@ class NewgroundsAssetUrl(PostAssetUrl, NewgroundsUrl):
     @property
     def full_size(self) -> str:
         if self.parsed_url.hostname == "uploads.ungrounded.net":
-            return re.sub(r"\.\d+p\.", ".", self.parsed_url.url_without_params)
+            return re.sub(r"\.\d+p\.", ".", self.parsed_url.url_without_query)
         elif self.parsed_url.url_parts[0] in ("images", "comments"):
-            return self.parsed_url.url_without_params
+            return self.parsed_url.url_without_query
         else:
             raise NotImplementedError

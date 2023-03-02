@@ -31,4 +31,4 @@ class ArcaLiveImageUrl(PostAssetUrl, ArcaLiveUrl):
 
     @property
     def full_size(self) -> str:
-        return self.parsed_url.url_without_params.replace(".mp4", ".gif") + "?type=orig"
+        return self.parsed_url.url_without_query.replace(".mp4", ".gif") + "?type=orig"

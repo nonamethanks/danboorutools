@@ -57,12 +57,12 @@ class BilibiliComParser(UrlParser):
             # http://www.bilibili.tv/member/index.php?mid=66804
             case "member", "index.php":
                 instance = b.BilibiliArtistUrl(parsable_url)
-                instance.user_id = int(parsable_url.params["mid"])
+                instance.user_id = int(parsable_url.query["mid"])
 
             # https://h.bilibili.com/member?mod=space%5Cu0026uid=4617101%5Cu0026act=p_index
             case "member", :
                 instance = b.BilibiliArtistUrl(parsable_url)
-                instance.user_id = int(parsable_url.params["uid"])
+                instance.user_id = int(parsable_url.query["uid"])
 
             # https://link.bilibili.com/p/world/index#/32122361/world/
             case "p", "world", "index#", user_id, "world", *_:

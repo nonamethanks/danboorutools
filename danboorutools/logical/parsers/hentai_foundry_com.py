@@ -81,7 +81,7 @@ class HentaiFoundryComParser(UrlParser):
 
             case "thumb.php", :
                 instance = HentaiFoundryOldPostUrl(parsable_url)
-                instance.post_id = int(parsable_url.params["pid"])
+                instance.post_id = int(parsable_url.query["pid"])
 
             case _:
                 return None

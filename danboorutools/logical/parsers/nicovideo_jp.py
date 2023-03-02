@@ -144,12 +144,12 @@ class NicovideoJp(UrlParser):
 
             case "image", ("redirect" | "source"):
                 instance = ns.NicoSeigaImageUrl(parsable_url)
-                instance.image_id = int(parsable_url.params["id"])
+                instance.image_id = int(parsable_url.query["id"])
                 instance.image_type = None
 
             case "manga", "list":
                 instance = ns.NicoSeigaArtistUrl(parsable_url)
-                instance.user_id = int(parsable_url.params["user_id"])
+                instance.user_id = int(parsable_url.query["user_id"])
 
             case "manga", comic_id:
                 instance = ns.NicoSeigaComicUrl(parsable_url)

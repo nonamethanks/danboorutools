@@ -175,16 +175,16 @@ class Fc2Parser(UrlParser):
                 instance = Fc2ImageUrl(parsable_url)
 
             case "user", username:
-                if "Y" in parsable_url.params and "M" in parsable_url.params:
+                if "Y" in parsable_url.query and "M" in parsable_url.query:
                     instance = Fc2DiaryPostUrl(parsable_url)
-                    instance.post_date_string = urlencode(parsable_url.params)
+                    instance.post_date_string = urlencode(parsable_url.query)
                 else:
                     instance = Fc2DiaryArtistUrl(parsable_url)
 
             case "cgi-sys", "ed.cgi", username:
-                if "Y" in parsable_url.params and "M" in parsable_url.params:
+                if "Y" in parsable_url.query and "M" in parsable_url.query:
                     instance = Fc2DiaryPostUrl(parsable_url)
-                    instance.post_date_string = urlencode(parsable_url.params)
+                    instance.post_date_string = urlencode(parsable_url.query)
                 else:
                     instance = Fc2DiaryArtistUrl(parsable_url)
 
@@ -198,7 +198,7 @@ class Fc2Parser(UrlParser):
     def _match_blog_username_in_subdomain(parsable_url: ParsableUrl) -> Fc2Url | None:
         instance: Fc2Url
         match parsable_url.url_parts:
-            case [] if parsable_url.params:
+            case [] if parsable_url.query:
                 instance = Fc2ImageUrl(parsable_url)
 
             case []:

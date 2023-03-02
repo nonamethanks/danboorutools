@@ -36,22 +36,22 @@ class NijieInfoParser(UrlParser):
         match parsable_url.url_parts:
             case ("members.php" | "members_illust.php"), :
                 instance = NijieArtistUrl(parsable_url)
-                instance.user_id = int(parsable_url.params["id"])
+                instance.user_id = int(parsable_url.query["id"])
             case "view.php", :
                 instance = NijiePostUrl(parsable_url)
-                instance.post_id = int(parsable_url.params["id"])
+                instance.post_id = int(parsable_url.query["id"])
             case "view_popup.php", :
                 instance = NijieImageUrl(parsable_url)
-                if "#" in parsable_url.params["id"]:
-                    post_id, page = parsable_url.params["id"].split("#")
+                if "#" in parsable_url.query["id"]:
+                    post_id, page = parsable_url.query["id"].split("#")
                     if page.startswith("diff_"):
                         instance.page = int(page.removeprefix("diff_"))
                     elif page.startswith("popup_illust_"):
                         instance.page = int(page.removeprefix("popup_illust_")) - 1
                     else:
-                        raise NotImplementedError(parsable_url.params["id"])
+                        raise NotImplementedError(parsable_url.query["id"])
                 else:
-                    post_id = parsable_url.params["id"]
+                    post_id = parsable_url.query["id"]
                     instance.page = 0
                 instance.post_id = int(post_id)
                 instance.user_id = None

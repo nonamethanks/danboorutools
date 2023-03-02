@@ -84,7 +84,7 @@ class Url:
         return __o.normalized_url == self.normalized_url
 
     def __hash__(self) -> int:  # needed for Ward tests
-        return hash(self.normalized_url)
+        return hash(self.__str__())
 
     @settable_property
     def is_deleted(self) -> bool:

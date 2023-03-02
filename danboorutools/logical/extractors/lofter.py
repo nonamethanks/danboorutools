@@ -21,4 +21,4 @@ class LofterArtistUrl(ArtistUrl, LofterUrl):
 class LofterImageUrl(PostAssetUrl, LofterUrl):
     @property
     def full_size(self) -> str:
-        return self.parsed_url.url_without_params
+        return self.parsed_url.url_without_query
