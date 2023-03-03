@@ -7,8 +7,10 @@ from typing import TYPE_CHECKING
 from ratelimit import limits, sleep_and_retry
 
 from danboorutools.logical.extractors.dlsite import DlsiteWorkUrl
+from danboorutools.logical.extractors.nicoseiga import NicoSeigaArtistUrl
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl
 from danboorutools.logical.extractors.sakura import SakuraBlogUrl
+from danboorutools.logical.extractors.tinami import TinamiArtistUrl
 from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.danbooru import DanbooruPost
@@ -65,20 +67,27 @@ class Ascii2dArtistResult:
                 assert isinstance(post_url, PostUrl), post_url
 
                 artist_element = link_object.select("a")[1]
+                creator_url = Url.parse(artist_element["href"])
+                assert isinstance(creator_url, InfoUrl), creator_url
+                artist_name = artist_element.text
 
                 if site == "pixiv":
-                    self.__parse_pixiv_result(artist_element, data)
+                    self.__parse_pixiv_result(creator_url, artist_name, data)
                 elif site == "twitter":
-                    self.__parse_twitter_result(artist_element, data)
+                    self.__parse_twitter_result(creator_url, artist_name, data)
+                elif site == "ニコニコ静画":
+                    self.__parse_seiga_result(creator_url, artist_name, data)
+                elif site == "tinami":
+                    self.__parse_tinami_result(creator_url, artist_name, data)
                 else:
-                    raise NotImplementedError(site, artist_element)
+                    raise NotImplementedError(site, artist_element, self.search_url)
         elif url_groups := self.html_data.select(".detail-box a"):
             for link_object in url_groups:
                 site = link_object.text.strip()
                 if site == "dlsite":
                     self.__parse_dlsite_result(link_object, data)
                 else:
-                    raise NotImplementedError(site, link_object)
+                    raise NotImplementedError(site, link_object, self.search_url)
         elif url_groups := self.html_data.select(".external"):
             if len(url_groups) > 1:
                 raise NotImplementedError(self.html_data, self.search_url)
@@ -92,42 +101,44 @@ class Ascii2dArtistResult:
         return {key: list(dict.fromkeys(value)) for key, value in data.items()}
 
     @staticmethod
-    def __parse_sakura_result(element: Tag, data: dict[str, list]) -> None:
-        print(str(element), str(element).split("<br>"))
-        name, url = str(element).split("<br>")
-        sakura_url = Url.parse(url)
-        assert isinstance(sakura_url, SakuraBlogUrl)
-        data["primary_names"].append(name)
-        data["primary_urls"].append(sakura_url)
-
-    @staticmethod
-    def __parse_pixiv_result(artist_element: Tag, data: dict[str, list]) -> None:
-        creator_url = Url.parse(artist_element["href"])
-        assert isinstance(creator_url, InfoUrl), creator_url
-        artist_name = artist_element.text
-
+    def __parse_pixiv_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
         assert isinstance(creator_url, PixivArtistUrl)
         data["primary_urls"].append(creator_url)
         data["primary_names"].append(artist_name)
 
     @staticmethod
-    def __parse_twitter_result(artist_element: Tag, data: dict[str, list]) -> None:
-        creator_url = Url.parse(artist_element["href"])
-        assert isinstance(creator_url, InfoUrl), creator_url
-        artist_name = artist_element.text
-
+    def __parse_twitter_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
         assert isinstance(creator_url, TwitterIntentUrl)
         data["primary_urls"].append(Url.build(TwitterArtistUrl, username=artist_name))
         data["extra_urls"].append(creator_url)
         data["secondary_names"].append(artist_name)
 
     @staticmethod
+    def __parse_seiga_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
+        assert isinstance(creator_url, NicoSeigaArtistUrl)
+        data["primary_urls"].append(creator_url)
+        data["primary_names"].append(artist_name)
+
+    @staticmethod
+    def __parse_tinami_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
+        assert isinstance(creator_url, TinamiArtistUrl)
+        data["primary_urls"].append(creator_url)
+        data["primary_names"].append(artist_name)
+
+    @staticmethod
     def __parse_dlsite_result(url_element: Tag, data: dict[str, list]) -> None:
-        print(url_element)
         url = url_element["href"]
         book = Url.parse(url)
         assert isinstance(book, DlsiteWorkUrl)
         data["primary_urls"].append(book.gallery)
+
+    @staticmethod
+    def __parse_sakura_result(element: Tag, data: dict[str, list]) -> None:
+        name, url = element.text.split("'")
+        sakura_url = Url.parse(url)
+        assert isinstance(sakura_url, SakuraBlogUrl)
+        data["primary_names"].append(name)
+        data["primary_urls"].append(sakura_url)
 
 
 class Ascii2dSession(Session):
