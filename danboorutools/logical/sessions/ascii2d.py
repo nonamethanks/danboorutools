@@ -8,6 +8,7 @@ from ratelimit import limits, sleep_and_retry
 
 from danboorutools.logical.extractors.dlsite import DlsiteWorkUrl
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl
+from danboorutools.logical.extractors.sakura import SakuraBlogUrl
 from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.danbooru import DanbooruPost
@@ -48,15 +49,15 @@ class Ascii2dArtistResult:
         return self.html_data.select_one(".hash").text
 
     @cached_property
-    def _data(self) -> dict[str, list]:
+    def _data(self) -> dict[str, list]:  # pylint: disable=too-many-branches # can't be helped
         data: dict[str, list] = {
             "primary_urls": [],
             "extra_urls": [],
             "primary_names": [],
             "secondary_names": [],
         }
-        url_groups = self.html_data.select(".detail-box h6")
-        if url_groups:
+
+        if url_groups := self.html_data.select(".detail-box h6"):
             for link_object in url_groups:
                 site = link_object.select_one("small").text.strip()
 
@@ -71,16 +72,33 @@ class Ascii2dArtistResult:
                     self.__parse_twitter_result(artist_element, data)
                 else:
                     raise NotImplementedError(site, artist_element)
-        else:
-            url_groups = self.html_data.select(".detail-box a")
+        elif url_groups := self.html_data.select(".detail-box a"):
             for link_object in url_groups:
                 site = link_object.text.strip()
                 if site == "dlsite":
                     self.__parse_dlsite_result(link_object, data)
                 else:
                     raise NotImplementedError(site, link_object)
+        elif url_groups := self.html_data.select(".external"):
+            if len(url_groups) > 1:
+                raise NotImplementedError(self.html_data, self.search_url)
+            if "sakura.ne.jp" in url_groups[0].text:
+                self.__parse_sakura_result(url_groups[0], data)
+            else:
+                raise NotImplementedError(self.html_data, self.search_url)
+        else:
+            raise NotImplementedError(self.html_data, self.search_url)
 
         return {key: list(dict.fromkeys(value)) for key, value in data.items()}
+
+    @staticmethod
+    def __parse_sakura_result(element: Tag, data: dict[str, list]) -> None:
+        print(str(element), str(element).split("<br>"))
+        name, url = str(element).split("<br>")
+        sakura_url = Url.parse(url)
+        assert isinstance(sakura_url, SakuraBlogUrl)
+        data["primary_names"].append(name)
+        data["primary_urls"].append(sakura_url)
 
     @staticmethod
     def __parse_pixiv_result(artist_element: Tag, data: dict[str, list]) -> None:
