@@ -59,7 +59,7 @@ class DanbooruApi(Session):
         tag_string = " ".join(tags)
         return f"{self.base_url}/posts?tags={tag_string}"
 
-    @on_exception(expo, DanbooruHTTPError, max_tries=3)
+    @on_exception(expo, DanbooruHTTPError, max_tries=5)
     def danbooru_request(self, method: str, endpoint: str, *args, **kwargs) -> list[dict] | dict:
         if method == "GET" and "params" in kwargs and endpoint != "posts.json":
             kwargs["params"].setdefault("limit", 1000)
