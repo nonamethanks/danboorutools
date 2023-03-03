@@ -12,6 +12,10 @@ class SakuraBlogUrl(ArtistUrl, SakuraUrl):
     # normalize_string = "http://{blog_name}.sakura.ne.jp"  # what about all those random folders?
     # http://www17t.sakura.ne.jp/~room121/ etc
 
+    @classmethod
+    def normalize(cls, **kwargs) -> str | None:
+        return None
+
     @cached_property
     def is_deleted(self) -> bool:
         try:
