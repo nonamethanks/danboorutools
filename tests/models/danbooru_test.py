@@ -6,24 +6,24 @@ from danboorutools.models.danbooru import DanbooruPost, DanbooruUser
 
 @test("Test fetching an user using danbooru", tags=["danbooru_api", "danbooru_users"])
 def user_test() -> None:
-    user, = danbooru_api.users(id=4)
+    user, = danbooru_api.users(id=508240)
     test_admin_user(user)
 
 
 @test("Test fetching an user using DanbooruUser", tags=["danbooru", "danbooru_users"])
 def user_from_id_test() -> None:
-    user = DanbooruUser.from_id(4)
+    user = DanbooruUser.from_id(508240)
     test_admin_user(user)
 
 
 def test_admin_user(user: DanbooruUser) -> None:
-    assert user.id == 4
+    assert user.id == 508240
     assert user.name == "nonamethanks"
     assert user.is_banned is False
-    assert user.url == "https://danbooru.donmai.us/users/4"
-    assert 20 < user.post_update_count < 100
-    assert 20 < user.post_upload_count < 100
-    assert user.note_update_count == 1
+    assert user.url == "https://danbooru.donmai.us/users/508240"
+    assert user.post_update_count > 1_300_000
+    assert user.post_upload_count > 80_000
+    assert user.note_update_count > 10_000
 
     assert user.level == 50
     assert user.level_string == "Admin"
