@@ -11,6 +11,10 @@ url_query_pattern = re.compile(r"(?:\?|\&)?([^=]+)=([^&]+)")
 @dataclass
 class ParsableUrl:
     raw_url: str
+    ctld = {
+        "co.uk",
+        "co.jp", "ne.jp", "or.jp",
+    }
 
     @cached_property
     def url_data(self) -> dict:
@@ -30,6 +34,9 @@ class ParsableUrl:
 
         hostname = hostname.split(":")[0]
         *subdomains, domain, tld = hostname.split(".")
+        if f"{domain}.{tld}" in self.ctld:
+            subdomains, domain, tld = subdomains[:-1], subdomains[-1], f"{domain}.{tld}"
+
         subdomain = ".".join(subdomains)
 
         url_parts = list(filter(bool, url_parts))  # faster than list comprehension
