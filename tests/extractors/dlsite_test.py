@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors.dlsite import DlsiteAuthorUrl, DlsiteImageUrl, DlsiteWorkUrl
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_post_url, generate_parsing_suite
 
 urls = {
     DlsiteAuthorUrl: {
@@ -52,3 +52,11 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+
+assert_post_url(
+    url="https://www.dlsite.com/books/work/=/product_id/BJ115183.html/?unique_op=af&utm_medium=affiliate&utm_source=none",
+    url_type=DlsiteWorkUrl,
+    url_properties=dict(work_id="BJ115183", subsite="books"),
+    gallery="https://www.dlsite.com/books/author/=/author_id/AJ002787",
+)

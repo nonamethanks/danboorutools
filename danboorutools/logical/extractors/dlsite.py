@@ -15,13 +15,6 @@ class DlsiteUrl(Url):
     ]
 
 
-class DlsiteWorkUrl(PostUrl, DlsiteUrl):
-    work_id: str
-    status: Literal["work", "announce"]
-
-    normalize_string = "https://www.dlsite.com/{subsite}/{status}/=/product_id/{work_id}"
-
-
 class DlsiteAuthorUrl(ArtistUrl, DlsiteUrl):
     author_id: str
 
@@ -33,6 +26,20 @@ class DlsiteAuthorUrl(ArtistUrl, DlsiteUrl):
             return f"https://www.dlsite.com/books/author/=/author_id/{kwargs['author_id']}"
         else:
             raise NotImplementedError(subsite)
+
+
+class DlsiteWorkUrl(PostUrl, DlsiteUrl):
+    work_id: str
+    status: Literal["work", "announce"]
+
+    normalize_string = "https://www.dlsite.com/{subsite}/{status}/=/product_id/{work_id}"
+
+    @cached_property
+    def gallery(self) -> DlsiteAuthorUrl:
+        maker_details = self.html.select_one("#work_maker")
+        artist_url = Url.parse(maker_details.select_one("a")["href"])
+        assert isinstance(artist_url, DlsiteAuthorUrl)
+        return artist_url
 
 
 class DlsiteImageUrl(PostAssetUrl, DlsiteUrl):
