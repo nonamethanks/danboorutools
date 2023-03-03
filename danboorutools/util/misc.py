@@ -4,7 +4,7 @@ import functools
 import random
 import re
 import weakref
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, TypeVar, overload
+from typing import Any, Callable, Iterable, TypeVar
 
 
 def random_string(length: int) -> str:
@@ -65,58 +65,6 @@ def memoize(func: MemoizedFunction) -> MemoizedFunction:
     return wrapped_func  # type: ignore[return-value]
 
 #################################
-
-
-if TYPE_CHECKING:
-    import collections.abc as cx
-
-
-SettableValue = TypeVar("SettableValue")
-
-
-class settable_property(property, Generic[SettableValue]):  # pylint: disable=invalid-name
-
-    fget: cx.Callable[[Any], SettableValue]
-
-    def __init__(self, fget: cx.Callable[[Any], SettableValue], /) -> None:
-        super().__init__(fget)
-        self.private_name = "_" + fget.__name__
-        self.public_name = fget.__name__
-
-    if TYPE_CHECKING:
-        @overload  # type: ignore[override, no-overload-impl]
-        def __get__(self, instance: None, Class: type, /) -> settable_property[SettableValue]:
-            """ Retrieving a property from on a class retrieves the property object (`settable_property[SettableValue]`) """
-
-        @overload
-        def __get__(self, instance: object, Class: type, /) -> SettableValue:
-            """ Retrieving a property from the instance retrieves the value """
-
-    def __get__(self, instance, Class):
-        if instance is None:
-            return self
-        if not hasattr(instance, self.private_name) or getattr(instance, self.private_name) is None:
-            init_value = self.fget(instance)
-            self.__set__(instance, init_value)
-        return getattr(instance, self.private_name)
-
-    def __set__(self, instance: object, value: SettableValue) -> None:  # noqa: ANN401
-        """
-        Type-safe setter method. Grabs the name of the function first decorated with
-        `@settable_property`, then calls `setattr` on the given value with an attribute name of
-        '_<function name>'.
-        """
-
-        setattr(instance, self.private_name, value)
-
-    def __delete__(self, instance: object) -> None:
-        if instance is None:
-            return
-
-        try:
-            delattr(instance, self.private_name)
-        except AttributeError:
-            pass
 
 
 def class_name_to_string(klass: type, separator: str = "_") -> str:

@@ -2,7 +2,6 @@ from functools import cached_property
 
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
-from danboorutools.util.misc import settable_property
 
 
 class SkebUrl(Url):
@@ -27,7 +26,7 @@ class SkebArtistUrl(ArtistUrl, SkebUrl):
 
     normalize_string = "https://skeb.jp/@{username}"
 
-    @settable_property
+    @cached_property
     def is_deleted(self) -> bool:
         try:
             self.html  # TODO: redo with the api call maybe? idk

@@ -10,7 +10,6 @@ from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.file import ArchiveFile, File
-from danboorutools.util.misc import settable_property
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -39,7 +38,6 @@ class Url:
         return url_parser.parse(url) or UnknownUrl(ParsableUrl(url))
 
     @cached_property
-    @final
     def normalized_url(self) -> str:
         return self.normalize(**self.__dict__) or self.parsed_url.raw_url
 
@@ -86,7 +84,7 @@ class Url:
     def __hash__(self) -> int:  # needed for Ward tests
         return hash(self.__str__())
 
-    @settable_property
+    @cached_property
     def is_deleted(self) -> bool:
         try:
             self.session.get_cached(self.normalized_url)
@@ -205,7 +203,7 @@ class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
 class ArtistAlbumUrl(GalleryUrl, Url):
     """An artist album is an album belonging to an artist url that contains other posts."""
 
-    @settable_property
+    @cached_property
     def gallery(self) -> GalleryUrl:
         raise NotImplementedError(self.__class__, "hasn't implemented gallery extraction.")
 
@@ -248,15 +246,15 @@ class PostUrl(Url):
     def _extract_assets(self) -> None:
         raise NotImplementedError(self.__class__, "hasn't implemented asset extraction.")
 
-    @settable_property
+    @cached_property
     def gallery(self) -> GalleryUrl:
         raise NotImplementedError(self.__class__, "hasn't implemented gallery extraction.")
 
-    @settable_property
+    @cached_property
     def created_at(self) -> datetime:
         raise NotImplementedError(self.__class__, "hasn't implemented created_at extraction.")
 
-    @settable_property
+    @cached_property
     def score(self) -> int:
         raise NotImplementedError(self.__class__, "hasn't implemented score extraction.")
 
@@ -297,7 +295,7 @@ class _AssetUrl(Url):
     def full_size(self) -> str:
         raise NotImplementedError(self.__class__, "hasn't implemented full_size extraction.")
 
-    @settable_property
+    @cached_property
     def is_deleted(self) -> bool:
         try:
             self.session.head_cached(self.normalized_url, allow_redirects=True)
@@ -308,18 +306,18 @@ class _AssetUrl(Url):
 
 
 class PostAssetUrl(_AssetUrl, Url):
-    @settable_property
+    @cached_property
     def post(self) -> PostUrl:
         raise NotImplementedError(self.__class__, "hasn't implemented post extraction.")
 
-    @settable_property
+    @cached_property
     def created_at(self) -> datetime:
         return self.post.created_at
 
 
 class GalleryAssetUrl(_AssetUrl, Url):
     """An asset belonging to a gallery instead of a post (such as a background image)."""
-    @settable_property
+    @cached_property
     def gallery(self) -> PostUrl:
         raise NotImplementedError(self.__class__, "hasn't implemented gallery extraction.")
 
@@ -343,7 +341,7 @@ class RedirectUrl(Url):  # pylint: disable=abstract-method
             return self.resolved.related
         return []
 
-    @settable_property
+    @cached_property
     def is_deleted(self) -> bool:
         return self.resolved.is_deleted
 

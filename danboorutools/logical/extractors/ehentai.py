@@ -8,7 +8,7 @@ from danboorutools.exceptions import DownloadError, EHEntaiRateLimitError, Unkno
 from danboorutools.logical.sessions.ehentai import EHentaiSession
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.models.url import GalleryUrl, PostAssetUrl, PostUrl, Url
-from danboorutools.util.misc import memoize, settable_property
+from danboorutools.util.misc import memoize
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -43,12 +43,12 @@ class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
     file_hash: str | None  # TODO: use this to find the original gallery, maybe combined with original filename?
     image_type: Literal["direct", "thumbnail", "download", "hash_link"]  # TODO: fix the rest of possible url types in other extractors
 
-    @settable_property
+    @cached_property
     def created_at(self) -> datetime:
         return self.post.created_at
 
-    @settable_property
-    def post(self) -> EHentaiPageUrl:  # type: ignore[override]
+    @cached_property
+    def post(self) -> EHentaiPageUrl:
         if post := getattr(self, "_post"):
             return post
         else:
@@ -69,8 +69,8 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
 
     normalize_string = "https://{subsite}.org/s/{page_token}/{gallery_id}-{page_number}"
 
-    @settable_property
-    def gallery(self) -> EHentaiGalleryUrl:  # type: ignore[override]
+    @cached_property
+    def gallery(self) -> EHentaiGalleryUrl:
         gallery_token = self.session.get_gallery_token_from_page_data(gallery_id=self.gallery_id,
                                                                       page_token=self.page_token,
                                                                       page_number=self.page_number)
@@ -102,11 +102,11 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
             raise UnknownUrlError(asset_url_parsed)
         return asset_url_parsed
 
-    @settable_property
+    @cached_property
     def created_at(self) -> datetime:
         return self.gallery.created_at
 
-    @settable_property
+    @cached_property
     def score(self) -> int:
         return self.gallery.score
 
@@ -145,13 +145,13 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
                 score=self.score,
             )
 
-    @settable_property
+    @cached_property
     def created_at(self) -> datetime:
         element, = self.html.select('#gmid .gdt1:-soup-contains-own("Posted:")')
         datetime_element, = element.parent.select(".gdt2")
         return datetime_from_string(datetime_element.text)
 
-    @settable_property
+    @cached_property
     def score(self) -> int:
         element, = self.html.select('#gmid .gdt1:-soup-contains-own("Favorited:")')
         score_element, = element.parent.select(".gdt2")

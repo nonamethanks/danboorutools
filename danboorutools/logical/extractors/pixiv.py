@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime
+from functools import cached_property
 
 from pytz import UTC
 
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.sessions.pixiv import PixivSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
-from danboorutools.util.misc import memoize, settable_property
+from danboorutools.util.misc import memoize
 from danboorutools.util.time import datetime_from_string
 
 
@@ -97,8 +98,8 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
                 self.post_id = int(post_id)
                 self.page = 0
 
-    @settable_property
-    def post(self) -> PixivPostUrl:  # type: ignore[override]
+    @cached_property
+    def post(self) -> PixivPostUrl:
         return self.build(PixivPostUrl, post_id=self.post_id, unlisted=self.unlisted)
 
     @property
@@ -129,22 +130,22 @@ class PixivPostUrl(PostUrl, PixivUrl):
         for asset_url in asset_urls:
             self._register_asset(asset_url)
 
-    @settable_property
+    @cached_property
     def created_at(self) -> datetime:
         return datetime_from_string(self._post_data["createDate"])
 
-    @settable_property
+    @cached_property
     def score(self) -> int:
         return int(self._post_data["likeCount"])
 
-    @settable_property
-    def gallery(self) -> PixivArtistUrl:  # type: ignore[override]
+    @cached_property
+    def gallery(self) -> PixivArtistUrl:
         return self.build(
             PixivArtistUrl,
             user_id=int(self._post_data["userId"])
         )
 
-    @settable_property
+    @cached_property
     def is_deleted(self) -> bool:
         try:
             _ = self._post_data
@@ -234,7 +235,7 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
 
         return urls
 
-    @settable_property
+    @cached_property
     def is_deleted(self) -> bool:
         try:
             _ = self._artist_data

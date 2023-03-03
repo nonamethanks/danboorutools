@@ -1,6 +1,7 @@
+from functools import cached_property
+
 from danboorutools.exceptions import HTTPError
 from danboorutools.models.url import ArtistUrl, InfoUrl, PostUrl, RedirectUrl, Url
-from danboorutools.util.misc import settable_property
 
 
 class NicovideoUrl(Url):
@@ -53,7 +54,7 @@ class NicovideoCommunityUrl(InfoUrl, NicovideoUrl):
             return []  # don't bother
         raise NotImplementedError(self)
 
-    @settable_property
+    @cached_property
     def is_deleted(self) -> bool:
         if self.private:
             return False
