@@ -24,6 +24,7 @@ def add_artists_to_posts(search: list[str]) -> None:
         posts = danbooru_api.posts(search, page=page)  # todo: create paginate generator that loops through 1M IDs to avoid timeouts
         if not posts:
             logger.info("Done!")
+            return
         page = f"b{posts[-1].id}"
 
         for post in posts:

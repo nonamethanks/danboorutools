@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from ratelimit import limits, sleep_and_retry
 
+from danboorutools.logical.extractors.dlsite import DlsiteWorkUrl
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl
 from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl
 from danboorutools.logical.sessions import Session
@@ -46,13 +47,6 @@ class Ascii2dArtistResult:
     def md5(self) -> str:
         return self.html_data.select_one(".hash").text
 
-    @property
-    def _url_groups(self) -> list[Tag]:
-        url_groups = self.html_data.select(".detail-box h6")
-        if not url_groups:
-            raise NotImplementedError(self.html_data, self.search_url)
-        return url_groups
-
     @cached_property
     def _data(self) -> dict[str, list]:
         data: dict[str, list] = {
@@ -61,31 +55,35 @@ class Ascii2dArtistResult:
             "primary_names": [],
             "secondary_names": [],
         }
+        url_groups = self.html_data.select(".detail-box h6")
+        if url_groups:
+            for link_object in url_groups:
+                site = link_object.select_one("small").text.strip()
 
-        for url_group in self._url_groups:
-            site = url_group.select_one("small").text.strip()
+                post_url = Url.parse(link_object.select("a")[0]["href"])
+                assert isinstance(post_url, PostUrl), post_url
 
-            if site == "pixiv":
-                self.__parse_pixiv_result(url_group, data)
-            elif site == "twitter":
-                self.__parse_twitter_result(url_group, data)
-            elif site == "dlsite":  # dlsite and dmm
-                raise NotImplementedError(site, url_group)
-                # for link in url_group.select("small a"):
-                #     post_url = Url.parse(link["href"])
+                artist_element = link_object.select("a")[1]
 
-            else:
-                raise NotImplementedError(site, url_group)
+                if site == "pixiv":
+                    self.__parse_pixiv_result(artist_element, data)
+                elif site == "twitter":
+                    self.__parse_twitter_result(artist_element, data)
+                else:
+                    raise NotImplementedError(site, artist_element)
+        else:
+            url_groups = self.html_data.select(".detail-box a")
+            for link_object in url_groups:
+                site = link_object.text.strip()
+                if site == "dlsite":
+                    self.__parse_dlsite_result(link_object, data)
+                else:
+                    raise NotImplementedError(site, link_object)
 
         return {key: list(dict.fromkeys(value)) for key, value in data.items()}
 
     @staticmethod
-    def __parse_pixiv_result(url_group: Tag, data: dict[str, list]) -> None:
-        post_url = Url.parse(url_group.select("a")[0]["href"])
-        assert isinstance(post_url, PostUrl), post_url
-
-        artist_element = url_group.select("a")[1]
-
+    def __parse_pixiv_result(artist_element: Tag, data: dict[str, list]) -> None:
         creator_url = Url.parse(artist_element["href"])
         assert isinstance(creator_url, InfoUrl), creator_url
         artist_name = artist_element.text
@@ -95,12 +93,7 @@ class Ascii2dArtistResult:
         data["primary_names"].append(artist_name)
 
     @staticmethod
-    def __parse_twitter_result(url_group: Tag, data: dict[str, list]) -> None:
-        post_url = Url.parse(url_group.select("a")[0]["href"])
-        assert isinstance(post_url, PostUrl), post_url
-
-        artist_element = url_group.select("a")[1]
-
+    def __parse_twitter_result(artist_element: Tag, data: dict[str, list]) -> None:
         creator_url = Url.parse(artist_element["href"])
         assert isinstance(creator_url, InfoUrl), creator_url
         artist_name = artist_element.text
@@ -109,6 +102,14 @@ class Ascii2dArtistResult:
         data["primary_urls"].append(Url.build(TwitterArtistUrl, username=artist_name))
         data["extra_urls"].append(creator_url)
         data["secondary_names"].append(artist_name)
+
+    @staticmethod
+    def __parse_dlsite_result(url_element: Tag, data: dict[str, list]) -> None:
+        print(url_element)
+        url = url_element["href"]
+        book = Url.parse(url)
+        assert isinstance(book, DlsiteWorkUrl)
+        data["primary_urls"].append(book.gallery)
 
 
 class Ascii2dSession(Session):
@@ -123,13 +124,15 @@ class Ascii2dSession(Session):
         html_results = response.select(".item-box")
         assert html_results, url
 
-        results = [
-            Ascii2dArtistResult(result_html.select_one(".info-box"), ascii2d_url)
-            for result_html in html_results
-            if result_html.select_one(".detail-box").text.strip()  # some results have bare text that must be parsed
-        ]
+        results: list[Ascii2dArtistResult] = []
+        for result_html in html_results:
+            if result_html.select_one(".detail-box").text.strip():  # some results have bare text that must be parsed
+                result = Ascii2dArtistResult(result_html.select_one(".info-box"), ascii2d_url)
+                if not any(v for v in result._data.values()):  # ensure every result has some data in it
+                    raise NotImplementedError(result_html, f"This result could not be parsed, found in {ascii2d_url}")
+                results.append(result)
 
-        assert results, url  # to make sure page layout hasn't changed
+        assert results, f"No parsable results for {url}"  # to make sure page layout hasn't changed
         return results
 
     def find_gallery(self, url: str, original_url: Url | str, original_post: DanbooruPost) -> Ascii2dArtistResult | None:
