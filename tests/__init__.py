@@ -71,7 +71,7 @@ def assert_match_in(lhs_val: str | re.Pattern[str], rhs_val: Any) -> None:  # no
 
 def assert_gte(lhs_val: Any, rhs_val: Any) -> None:  # noqa: ANN401
     try:
-        assert lhs_val in rhs_val
+        assert lhs_val >= rhs_val
     except AssertionError as e:
         raise TestAssertionFailure(
             f"{lhs_val} < {rhs_val}",
