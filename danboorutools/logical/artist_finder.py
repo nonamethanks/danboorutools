@@ -133,7 +133,8 @@ class ArtistFinder:
             if results:
                 assert len(results) == 1, results  # TODO: post in the forums in case there's more than one artist
                 result, = results
-                assert result.tag.category_name == "artist"
+                if result.tag.category_name != "artist":
+                    raise NotImplementedError(f"{result} is not an artist tag!")
                 danbooru_api.update_artist_urls(artist=result, urls=artist_urls)
                 return result.tag.name
 
