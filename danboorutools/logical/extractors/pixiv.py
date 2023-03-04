@@ -81,7 +81,7 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
                     # https://i.pximg.net/img-original/img/2018/03/30/10/50/16/67982747-04d810bf32ebd071927362baec4057b6_p0.png
                     if "-" in post_id:
                         post_id, _private_string = post_id.split("-")
-                        self.post_id = int(post_id)
+                        self.post_id = int(post_id)  # this is wrong: the post cannot be accessed this way
                         self.unlisted = True
                 for value in rest:
                     if value.startswith("p"):
@@ -116,6 +116,8 @@ class PixivPostUrl(PostUrl, PixivUrl):
     def normalize(cls, **kwargs) -> str:
         post_id: int | str = kwargs["post_id"]
         if kwargs.get("unlisted", False):
+            if isinstance(post_id, int):
+                raise NotImplementedError("Wrong normalization, I need to figure this out")
             return f"https://www.pixiv.net/en/artworks/unlisted/{post_id}"
         else:
             return f"https://www.pixiv.net/en/artworks/{post_id}"
@@ -150,15 +152,18 @@ class PixivPostUrl(PostUrl, PixivUrl):
 
     @property
     def _post_data(self) -> PixivPostData:
-        return self.session.post_data(self.post_id)  # but does this work for unlisted?
+        post_id = f"unlisted/{self.post_id}" if self.unlisted else self.post_id
+        return self.session.post_data(post_id)  # but does this work for unlisted?
 
     @property
     def _pages_data(self) -> dict:
-        return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{self.post_id}/pages?lang=en")
+        post_id = f"unlisted/{self.post_id}" if self.unlisted else self.post_id
+        return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}/pages?lang=en")
 
     @property
     def _ugoira_data(self) -> dict:
-        return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{self.post_id}/ugoira_meta?lang=en")
+        post_id = f"unlisted/{self.post_id}" if self.unlisted else self.post_id
+        return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}/ugoira_meta?lang=en")
 
 
 class PixivArtistUrl(ArtistUrl, PixivUrl):

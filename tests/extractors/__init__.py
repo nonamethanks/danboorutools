@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import TypeVar
 
 from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+from danboorutools.util.misc import class_name_to_string
 from danboorutools.util.time import datetime_from_string
 from tests import assert_equal, assert_gte, assert_in, assert_isinstance, assert_match_in, generate_ward_test
 
@@ -153,11 +154,12 @@ def assert_post_url(url: str,
     caller = inspect.stack()[1]
     abs_path = Path(caller.filename).resolve()
     domain = abs_path.stem.removesuffix("_test")
+    url_type_str = class_name_to_string(url_type).split("_")[-2]  # as if...
 
     generate_ward_test(
         _assert_post_url,
         description=f"Scrape {url_type.__name__}: {url}",
-        tags=["scraping", domain]
+        tags=["scraping", domain, url_type_str]
     )
 
 

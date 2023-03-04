@@ -20,17 +20,26 @@ def test_artist() -> None:
     )
 
 
-@test("Scrape pixiv post", tags=["scraping", "pixiv", "post"])
-def test_post() -> None:
-    assert_post_url(
-        url_type=PixivPostUrl,
-        url="https://www.pixiv.net/en/artworks/95096202",
-        asset_count=7,
-        score=2473,
-        created_at="2021-12-28 14:53:00",
-        url_properties=dict(post_id=95096202),
-        assets=["https://i.pximg.net/img-original/img/2021/12/28/23/53/02/95096202_p6.png"],
-    )
+assert_post_url(
+    url_type=PixivPostUrl,
+    url="https://www.pixiv.net/en/artworks/95096202",
+    asset_count=7,
+    score=2473,
+    created_at="2021-12-28 14:53:00",
+    url_properties=dict(post_id=95096202),
+    assets=["https://i.pximg.net/img-original/img/2021/12/28/23/53/02/95096202_p6.png"],
+)
+
+
+assert_post_url(
+    url_type=PixivPostUrl,
+    url="https://www.pixiv.net/en/artworks/unlisted/ntQchboUi1CsqMhDpo5j",
+    asset_count=1,
+    score=0,
+    created_at="2021-05-31 15:45:00",
+    url_properties=dict(post_id="ntQchboUi1CsqMhDpo5j"),
+    assets=["https://i.pximg.net/img-original/img/2021/06/01/00/45/05/90237981-673ede4b6e1780f98dcba5241972ce7b_p0.jpg"],
+)
 
 
 @test("Scrape pixiv asset", tags=["scraping", "pixiv", "asset"])
