@@ -6,10 +6,8 @@ from functools import cached_property
 from pytz import UTC
 
 from danboorutools.exceptions import UrlIsDeleted
-from danboorutools.logical.sessions.pixiv import PixivSession
+from danboorutools.logical.sessions.pixiv import PixivArtistData, PixivPostData, PixivSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
-from danboorutools.util.misc import memoize
-from danboorutools.util.time import datetime_from_string
 
 
 class PixivUrl(Url):
@@ -132,18 +130,15 @@ class PixivPostUrl(PostUrl, PixivUrl):
 
     @cached_property
     def created_at(self) -> datetime:
-        return datetime_from_string(self._post_data["createDate"])
+        return self._post_data.createDate
 
     @cached_property
     def score(self) -> int:
-        return int(self._post_data["likeCount"])
+        return self._post_data.likeCount
 
     @cached_property
     def gallery(self) -> PixivArtistUrl:
-        return self.build(
-            PixivArtistUrl,
-            user_id=int(self._post_data["userId"])
-        )
+        return self.build(PixivArtistUrl, user_id=self._post_data.userId)
 
     @cached_property
     def is_deleted(self) -> bool:
@@ -154,8 +149,8 @@ class PixivPostUrl(PostUrl, PixivUrl):
             return True
 
     @property
-    def _post_data(self) -> dict:
-        return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{self.post_id}?lang=en")
+    def _post_data(self) -> PixivPostData:
+        return self.session.post_data(self.post_id)  # but does this work for unlisted?
 
     @property
     def _pages_data(self) -> dict:
@@ -175,13 +170,13 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
         page = 0
         while True:
             page += 1
-            illusts = self._illust_data(page=page)
+            illusts = self.session.artist_illust_data(user_id=self.user_id, page=page)
             if not illusts:
                 return
             for illust_data in illusts:
-                post = self.build(PixivPostUrl, post_id=int(illust_data["id"]))
+                post = self.build(PixivPostUrl, post_id=illust_data.id)
 
-                if int(illust_data["type"]) == 2:
+                if illust_data.type == 2:
                     post_ugoira_data = post._ugoira_data
                     asset_urls = [post_ugoira_data["originalSrc"]]
                 else:
@@ -191,49 +186,29 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
 
                 self._register_post(
                     post=post,
-                    created_at=illust_data["upload_timestamp"],
-                    score=int(illust_data.get("rating_count", 0)),
+                    created_at=illust_data.upload_timestamp,
+                    score=illust_data.rating_count,
                     assets=[self.parse(url) for url in asset_urls]  # type: ignore[misc]
                 )
 
     @property
     def primary_names(self) -> list[str]:
-        return [self._artist_data["user_name"]]
+        return [self._artist_data.user_name]
 
     @property
     def secondary_names(self) -> list[str]:
         return [
-            self._artist_data["user_account"],
+            self._artist_data.user_account,
             f"pixiv {self.user_id}"
         ]
 
     @property
     def related(self) -> list[Url]:
-        # pylint: disable=import-outside-toplevel
-        from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
-        from danboorutools.logical.extractors.pixiv_sketch import PixivSketchArtistUrl
+        return self._artist_data.related_urls + [self.stacc_url]
 
-        urls: list[Url] = [
-            self.build(PixivStaccUrl, stacc=self._artist_data["user_account"])
-        ]
-
-        if self._artist_data["fanbox_details"]:
-            urls.append(
-                self.build(FanboxArtistUrl, username=self._artist_data["fanbox_details"]["creator_id"])
-            )
-
-        sketch_url = self.build(PixivSketchArtistUrl, stacc=self._artist_data["user_account"])
-        if not sketch_url.is_deleted:
-            urls.append(sketch_url)
-
-        if user_webpage := self._artist_data.get("user_webpage"):
-            urls.append(self.parse(user_webpage))
-
-        if social_data := self._artist_data["social"]:
-            for url_dict in social_data.values():
-                urls.append(self.parse(url_dict["url"]))
-
-        return urls
+    @property
+    def stacc_url(self) -> PixivStaccUrl:
+        return self.build(PixivStaccUrl, stacc=self._artist_data.user_account)
 
     @cached_property
     def is_deleted(self) -> bool:
@@ -243,16 +218,9 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
         except UrlIsDeleted:
             return True
 
-    @memoize
-    def _illust_data(self, page: int = 1) -> list[dict[str, str]]:
-        artist_data_url = f"https://www.pixiv.net/touch/ajax/user/illusts?id={self.user_id}&p={page}&lang=en"
-        return self.session.get_json(artist_data_url)["illusts"]
-
     @property
-    def _artist_data(self) -> dict:
-        url = f"https://www.pixiv.net/touch/ajax/user/details?id={self.user_id}&lang=en"
-        json = self.session.get_json(url)
-        return json["user_details"]
+    def _artist_data(self) -> PixivArtistData:
+        return self.session.artist_data(self.user_id)
 
 
 class PixivMeUrl(RedirectUrl, PixivUrl):
