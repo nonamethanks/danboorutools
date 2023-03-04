@@ -35,7 +35,6 @@ class Session(RequestsSession):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.logged_in = False
         if self.__class__ == Session:
             self.site_name = ""
         else:
