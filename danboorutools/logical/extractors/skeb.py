@@ -33,10 +33,10 @@ class SkebArtistUrl(ArtistUrl, SkebUrl):
         except UrlIsDeleted:
             return True
 
-        if self.html.select(f".hero img[alt='{self.username}']"):
+        if self.html.select(".hero"):
             return False
         else:
-            raise NotImplementedError(self.html)
+            raise NotImplementedError(self.html, self)
 
 
 class SkebImageUrl(PostAssetUrl, SkebUrl):
