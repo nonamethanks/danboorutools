@@ -3,13 +3,14 @@ from __future__ import annotations
 import os
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
 from danboorutools.logical.extractors.pixiv_sketch import PixivSketchArtistUrl
 from danboorutools.logical.sessions import Response, Session
 from danboorutools.models.url import Url
+from danboorutools.util.misc import BaseModel
 
 DELETION_MESSAGES = [
     "User has left pixiv or the user ID does not exist.",

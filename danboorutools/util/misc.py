@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import functools
+import json
 import random
 import re
 import weakref
 from typing import Any, Callable, Iterable, TypeVar
+
+from pydantic import BaseModel as BadBaseModel
+from pydantic import ValidationError
 
 
 def random_string(length: int) -> str:
@@ -89,3 +93,12 @@ def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list
     if not blacklist_images:
         return found
     return [u for u in found if not images_pattern.search(u.strip())]
+
+
+class BaseModel(BadBaseModel):
+    def __init__(self, **data):
+        try:
+            super().__init__(**data)
+        except ValidationError as e:
+            e.add_note(f"Failed to validate:\n {json.dumps(data, indent=4)}\n")
+            raise

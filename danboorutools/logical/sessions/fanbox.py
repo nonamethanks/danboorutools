@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
-
 from danboorutools.logical.sessions import Session
+from danboorutools.util.misc import BaseModel
 
 
 class FanboxSession(Session):
