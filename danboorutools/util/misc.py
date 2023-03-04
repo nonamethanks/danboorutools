@@ -8,7 +8,7 @@ import weakref
 from typing import Any, Callable, Iterable, TypeVar
 
 from pydantic import BaseModel as BadBaseModel
-from pydantic import ValidationError
+from pydantic import PrivateAttr, ValidationError
 
 
 def random_string(length: int) -> str:
@@ -96,9 +96,13 @@ def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list
 
 
 class BaseModel(BadBaseModel):
+    _raw_data: dict = PrivateAttr()
+
     def __init__(self, **data):
         try:
             super().__init__(**data)
         except ValidationError as e:
             e.add_note(f"Failed to validate:\n {json.dumps(data, indent=4)}\n")
             raise
+        else:
+            self._raw_data = data

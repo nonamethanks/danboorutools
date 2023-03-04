@@ -1,11 +1,12 @@
 from functools import cached_property
 
 from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.logical.sessions.skeb import SkebArtistData, SkebSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
 class SkebUrl(Url):
-    pass
+    session = SkebSession()
 
 
 class SkebAbsolutePostUrl(RedirectUrl, SkebUrl):
@@ -29,14 +30,27 @@ class SkebArtistUrl(ArtistUrl, SkebUrl):
     @cached_property
     def is_deleted(self) -> bool:
         try:
-            self.html  # TODO: redo with the api call maybe? idk
+            self.artist_data
         except UrlIsDeleted:
             return True
-
-        if self.html.select(".hero"):
-            return False
         else:
-            raise NotImplementedError(self.html, self)
+            return False
+
+    @property
+    def primary_names(self) -> list[str]:
+        return [self.artist_data.name]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [self.artist_data.screen_name]
+
+    @property
+    def related(self) -> list[Url]:
+        return self.artist_data.related_urls
+
+    @property
+    def artist_data(self) -> SkebArtistData:
+        return self.session.artist_data(self.username)
 
 
 class SkebImageUrl(PostAssetUrl, SkebUrl):
