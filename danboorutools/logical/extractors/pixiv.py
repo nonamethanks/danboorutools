@@ -105,7 +105,7 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
         if "img-original" in self.parsed_url.url_parts or "img-zip-ugoira" in self.parsed_url.url_parts:
             return self.parsed_url.raw_url
         else:
-            raise NotImplementedError
+            raise NotImplementedError(self)
 
 
 class PixivPostUrl(PostUrl, PixivUrl):

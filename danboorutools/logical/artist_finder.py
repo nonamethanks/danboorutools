@@ -29,11 +29,11 @@ class ArtistFinder:
             return False
 
         logger.info(f"Extracting artist for post {post}, source {source}")
-        if not source.is_deleted:
+        try:
             artist_url = source.artist
             logger.debug(f"Found artist url {artist_url} for source {source} for post {post}")
             result_from_archives = None
-        else:
+        except UrlIsDeleted:
             artist_url = None
             logger.debug(f"{source} for post {post} is deleted.")
             result_from_archives = self.search_for_artist_in_archives(post)
