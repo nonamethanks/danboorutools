@@ -70,8 +70,21 @@ class SaucenaoSession(Session):
                 continue
 
             result_data = result["data"]
-            if any((match_url := Url.parse(ext_url)).normalized_url == original_url.normalized_url for ext_url in result_data["ext_urls"]):
-                break
+            for external_url in result_data["ext_urls"]:
+                match_url = Url.parse(external_url)
+
+                # the following is required to avoid getting the updated url for old pixiv urls, which would be expensive and useless
+                # and also not possible for dead urls, while for posts we can get the normalized url even if it's deleted anyway
+                if isinstance(match_url, PostAssetUrl):
+                    match_url = match_url.post
+                if isinstance(original_url, PostAssetUrl):
+                    original_url = original_url.post
+
+                if match_url.normalized_url == original_url.normalized_url:
+                    break
+            else:
+                continue
+            break
         else:
             if subresults:
                 first_url = subresults[0].extra_urls.pop(0)
@@ -114,17 +127,19 @@ class SaucenaoSession(Session):
 
     def __parse_danbooru_result(self, saucenao_result: dict[str, dict], source_from_danbooru: Url) -> _SubResult | None:
         source_from_saucenao = Url.parse(saucenao_result["data"]["source"].removesuffix(" (deleted)"))  # bruh
+
         if isinstance(source_from_danbooru, PostAssetUrl):
             source_from_danbooru = source_from_danbooru.post
+        elif not isinstance(source_from_danbooru, PostUrl):
+            raise NotImplementedError(saucenao_result, source_from_danbooru)
+
+        if isinstance(source_from_saucenao, PostAssetUrl):
+            source_from_saucenao = source_from_saucenao.post
+        elif not isinstance(source_from_saucenao, PostUrl):
+            raise NotImplementedError(saucenao_result, source_from_saucenao)
 
         if source_from_saucenao.normalized_url != source_from_danbooru.normalized_url:
-            if isinstance(source_from_saucenao, PostAssetUrl) and isinstance(source_from_danbooru, PostUrl):
-                source_from_saucenao = source_from_saucenao.post
-
-                if source_from_saucenao.normalized_url != source_from_danbooru.normalized_url:
-                    raise NotImplementedError(saucenao_result, source_from_saucenao, source_from_danbooru)
-            else:
-                raise NotImplementedError(saucenao_result)
+            raise NotImplementedError(saucenao_result, source_from_saucenao, source_from_danbooru)
 
         result = _SubResult(extra_urls=[], primary_names=[], secondary_names=[])
 

@@ -14,7 +14,7 @@ from danboorutools.logical.extractors.tinami import TinamiArtistUrl
 from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.danbooru import DanbooruPost
-from danboorutools.models.url import InfoUrl, PostUrl, Url
+from danboorutools.models.url import InfoUrl, PostAssetUrl, PostUrl, Url
 from danboorutools.util.misc import memoize
 
 if TYPE_CHECKING:
@@ -39,6 +39,10 @@ class Ascii2dArtistResult:
         return self._data["primary_urls"][1:] + self._data["extra_urls"]
 
     @property
+    def posts(self) -> list[PostUrl]:
+        return self._data["posts"]
+
+    @property
     def primary_names(self) -> list[str]:
         return self._data["primary_names"]
 
@@ -57,6 +61,7 @@ class Ascii2dArtistResult:
             "extra_urls": [],
             "primary_names": [],
             "secondary_names": [],
+            "posts": [],
         }
 
         if url_groups := self.html_data.select(".detail-box h6"):
@@ -65,6 +70,7 @@ class Ascii2dArtistResult:
 
                 post_url = Url.parse(link_object.select("a")[0]["href"])
                 assert isinstance(post_url, PostUrl), post_url
+                data["posts"].append(post_url)
 
                 artist_element = link_object.select("a")[1]
                 creator_url = Url.parse(artist_element["href"])
@@ -81,6 +87,7 @@ class Ascii2dArtistResult:
                     self.__parse_tinami_result(creator_url, artist_name, data)
                 else:
                     raise NotImplementedError(site, artist_element, self.search_url)
+
         elif url_groups := self.html_data.select(".detail-box a"):
             for link_object in url_groups:
                 site = link_object.text.strip()
@@ -88,6 +95,7 @@ class Ascii2dArtistResult:
                     self.__parse_dlsite_result(link_object, data)
                 else:
                     raise NotImplementedError(site, link_object, self.search_url)
+
         elif url_groups := self.html_data.select(".external"):
             if len(url_groups) > 1:
                 raise NotImplementedError(self.html_data, self.search_url)
@@ -130,6 +138,7 @@ class Ascii2dArtistResult:
         url = url_element["href"]
         book = Url.parse(url)
         assert isinstance(book, DlsiteWorkUrl)
+        data["posts"].append(book)
         data["primary_urls"].append(book.gallery)
 
     @staticmethod
@@ -168,7 +177,13 @@ class Ascii2dSession(Session):
         for result in self._reverse_search_url(url):
             if result.md5 == original_post.md5:
                 return result
-            if Url.parse(original_url).normalized_url in [url.normalized_url for url in [result.primary_url] + result.extra_urls]:
+
+            original_url = Url.parse(original_url)
+            if isinstance(original_url, PostAssetUrl):
+                original_url = original_url.post
+
+            normalized_from_result = [url.normalized_url for url in [result.primary_url] + result.extra_urls + result.posts]
+            if original_url.normalized_url in normalized_from_result:
                 return result
 
             continue
