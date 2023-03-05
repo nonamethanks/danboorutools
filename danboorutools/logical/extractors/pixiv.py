@@ -198,14 +198,17 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
 
     @property
     def primary_names(self) -> list[str]:
-        return [self._artist_data.user_name]
+        if not self.is_deleted:
+            return [self._artist_data.user_name]
+        else:
+            return []
 
     @property
     def secondary_names(self) -> list[str]:
-        return [
-            self._artist_data.user_account,
-            f"pixiv {self.user_id}"
-        ]
+        if not self.is_deleted:
+            return [self._artist_data.user_account, f"pixiv {self.user_id}"]
+        else:
+            return [f"pixiv {self.user_id}"]
 
     @property
     def related(self) -> list[Url]:
