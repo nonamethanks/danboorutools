@@ -1,0 +1,93 @@
+from typing import Literal
+
+from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+
+
+class FanzaUrl(Url):
+    pass
+
+
+class FanzaDoujinWorkUrl(PostUrl, FanzaUrl):
+    work_id: str
+    subsubsite: str
+
+    normalize_string = "https://www.dmm.co.jp/{subsubsite}/doujin/-/detail/=/cid={work_id}/"
+
+
+class FanzaDoujinAuthorUrl(ArtistUrl, FanzaUrl):
+    user_id: int
+    subsubsite: str
+
+    # article=maker -> circle. gotta be careful to extract the correct author
+    normalize_string = "https://www.dmm.co.jp/{subsubsite}/doujin/-/list/=/article=maker/id={user_id}/"
+
+
+class FanzaDlsoftWorkUrl(ArtistUrl, FanzaUrl):
+    work_id: str
+
+    normalize_string = "https://dlsoft.dmm.co.jp/detail/{work_id}/"
+
+
+class FanzaDlsoftAuthorUrl(ArtistUrl, FanzaUrl):
+    user_id: int
+    user_type: Literal["article=maker", "article=author"] = "article=maker"
+
+    normalize_string = "https://dlsoft.dmm.co.jp/list/{user_type}/id={user_id}/"  # circle or author
+
+
+class FanzaGamesGameUrl(PostUrl, FanzaUrl):
+    game_name: str
+
+    normalize_string = "https://games.dmm.co.jp/detail/{game_name}"
+
+
+class FanzaGamesOldGameUrl(RedirectUrl, FanzaUrl):
+    game_id: int
+
+    normalize_string = "http://sp.dmm.co.jp/netgame/application/detail/app_id/{game_id}"
+
+
+class FanzaBookWorkUrl(PostUrl, FanzaUrl):
+    series_id: int | None
+    work_id: str
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str | None:
+        if series_id := kwargs.get("series_id"):
+            return f"https://book.dmm.co.jp/product/{series_id}/{kwargs['work_id']}/"
+        else:
+            return f"https://www.dmm.co.jp/mono/book/-/detail/=/cid={kwargs['work_id']}/"
+        # different from FanzaBookNoSeriesUrl, in that "mono" books do not redirect because they're region-restricted
+        # what a clusterfuck!
+
+
+class FanzaBookNoSeriesUrl(RedirectUrl, FanzaUrl):
+    work_id: str
+
+    normalize_string = "https://book.dmm.co.jp/detail/{work_id}/"
+
+
+class FanzaBookAuthorUrl(ArtistUrl, FanzaUrl):
+    user_id: int
+
+    normalize_string = "https://book.dmm.co.jp/list/?author={user_id}"
+
+
+class FanzaImageUrl(PostAssetUrl, FanzaUrl):
+    work_type: Literal["doujin", "dlsoft", "book", "freegame", "netgame", "good", "video"]
+    work_id: str
+    page: int
+
+    @property
+    def full_size(self) -> str:
+        if self.work_type == "netgame":
+            return self.parsed_url.raw_url
+
+        base_path = f"https://{self.parsed_url.hostname}/{self.parsed_url.url_parts[0]}/{self.parsed_url.url_parts[1]}"
+
+        if self.page == 0:
+            return f"{base_path}/{self.work_id}/{self.work_id}pl.jpg"
+        elif self.work_type == "freegame":
+            return f"{base_path}/{self.work_id}/{self.work_id}jp-{self.page:02d}.jpg"
+        else:
+            return f"{base_path}/{self.work_id}/{self.work_id}jp-{self.page:03d}.jpg"
