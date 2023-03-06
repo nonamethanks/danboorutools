@@ -10,6 +10,18 @@ class RedditUserUrl(ArtistUrl, RedditUrl):
 
     normalize_string = "https://www.reddit.com/user/{username}"
 
+    @property
+    def primary_names(self) -> list[str]:
+        return [self.username]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return []
+
+    @property
+    def related(self) -> list[Url]:
+        return [self.parse(link["href"]) for link in self.html.select("[aria-label='Social Links'] a")]
+
 
 class RedditPostUrl(ArtistUrl, RedditUrl):
     subreddit: str | None = None
