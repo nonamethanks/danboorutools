@@ -1,8 +1,14 @@
-from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+from __future__ import annotations
+
+from functools import cached_property
+
+from danboorutools.logical.sessions.mastodon import MastodonArtistData, MastodonSession
+from danboorutools.models.url import ArtistUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
 class MastodonUrl(Url):
     site: str
+    session = MastodonSession()
 
 
 class MastodonPostUrl(PostUrl, MastodonUrl):
@@ -18,17 +24,55 @@ class MastodonPostUrl(PostUrl, MastodonUrl):
 
 
 class MastodonArtistUrl(ArtistUrl, MastodonUrl):
-    username: str | None
-    user_id: int | None = None
+    username: str
 
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        if username := kwargs["username"]:
-            return f"https://{kwargs['site']}/@{username}"
-        elif user_id := kwargs["user_id"]:
-            return f"https://{kwargs['site']}/web/accounts/{user_id}"  # TODO: maybe split
-        else:
-            raise NotImplementedError
+    normalize_string = "https://{site}/@{username}"
+
+    @cached_property
+    def artist_data(self) -> MastodonArtistData:
+        return self.session.user_data(self.site, username=self.username)
+
+    @property
+    def user_id_url(self) -> MastodonWebIdUrl:
+        return Url.build(MastodonWebIdUrl, user_id=self.artist_data.id, site=self.site)
+
+    @property
+    def related(self) -> list[Url]:
+        return [self.user_id_url] + self.artist_data.related_urls
+
+    @property
+    def primary_names(self) -> list[str]:
+        return [self.artist_data.display_name]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [self.artist_data.username]
+
+
+class MastodonWebIdUrl(InfoUrl, MastodonUrl):
+    user_id: int
+
+    normalize_string = "https://{site}/web/accounts/{user_id}"
+
+    @cached_property
+    def artist_data(self) -> MastodonArtistData:
+        return self.session.user_data(self.site, user_id=self.user_id)
+
+    @property
+    def username_url(self) -> MastodonArtistUrl:
+        return Url.build(MastodonArtistUrl, username=self.artist_data.username, site=self.site)
+
+    @property
+    def related(self) -> list[Url]:
+        return [self.username_url] + self.artist_data.related_urls
+
+    @property
+    def primary_names(self) -> list[str]:
+        return self.username_url.primary_names
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return self.username_url.secondary_names
 
 
 class MastodonOldImageUrl(RedirectUrl, MastodonUrl):
