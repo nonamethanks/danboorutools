@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from ratelimit import limits, sleep_and_retry
 
 from danboorutools.logical.extractors.dlsite import DlsiteWorkUrl
+from danboorutools.logical.extractors.fanza import FanzaUrl
 from danboorutools.logical.extractors.nicoseiga import NicoSeigaArtistUrl
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl
 from danboorutools.logical.extractors.sakura import SakuraBlogUrl
@@ -71,8 +72,15 @@ class Ascii2dArtistResult:
                 post_url = Url.parse(link_object.select("a")[0]["href"])
                 assert isinstance(post_url, PostUrl), post_url
                 data["posts"].append(post_url)
-
-                artist_element = link_object.select("a")[1]
+                try:
+                    artist_element = link_object.select("a")[1]
+                except IndexError as e:
+                    if isinstance(post_url, FanzaUrl):
+                        data["primary_urls"].append(post_url.artist)
+                        continue
+                    else:
+                        e.add_note(str(link_object))
+                        raise
                 creator_url = Url.parse(artist_element["href"])
                 assert isinstance(creator_url, InfoUrl), creator_url
                 artist_name = artist_element.text
@@ -166,8 +174,13 @@ class Ascii2dSession(Session):
         for result_html in html_results:
             if result_html.select_one(".detail-box").text.strip():  # some results have bare text that must be parsed
                 result = Ascii2dArtistResult(result_html.select_one(".info-box"), ascii2d_url)
-                if not any(v for v in result._data.values()):  # ensure every result has some data in it
-                    raise NotImplementedError(result_html, f"This result could not be parsed, found in {ascii2d_url}")
+                try:
+                    if not any(v for v in result._data.values()):  # ensure every result has some data in it
+                        raise NotImplementedError(result_html, "This result could not be parsed.")
+                except Exception as e:
+                    e.add_note(f"On {ascii2d_url}")
+                    raise
+
                 results.append(result)
 
         assert results, f"No parsable results for {url}"  # to make sure page layout hasn't changed
