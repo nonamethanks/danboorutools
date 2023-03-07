@@ -89,6 +89,7 @@ ignore= [
     "ANN101",
     "ANN102",
     "ANN204",
+    "ANN401", # flake8 is a retarded mongoloid ape
     "E501", # already handled by pylint
     "F841", # flake8 is too fucking retarded to understand that fucking goddamned underscore variables are not superfluous. Retard.
     "W503",

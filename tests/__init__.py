@@ -8,7 +8,7 @@ from ward.expect import Comparison, TestAssertionFailure, _prev_frame
 from ward.models import CollectionMetadata, XfailMarker
 
 
-def assert_equal(lhs_val: Any, rhs_val: Any) -> None:  # noqa: ANN401
+def assert_equal(lhs_val: Any, rhs_val: Any) -> None:
     # ward won't pretty-print asserts inside an import, so this is a mandatory trick to have legible output
     # the alternative is killing myself while trying to make py-fucking-test work
     try:
@@ -24,7 +24,7 @@ def assert_equal(lhs_val: Any, rhs_val: Any) -> None:  # noqa: ANN401
         ) from e
 
 
-def assert_isinstance(lhs_val: Any, rhs_val: type) -> None:  # noqa: ANN401
+def assert_isinstance(lhs_val: Any, rhs_val: type) -> None:
     try:
         assert isinstance(lhs_val, rhs_val)
     except AssertionError as e:
@@ -38,7 +38,7 @@ def assert_isinstance(lhs_val: Any, rhs_val: type) -> None:  # noqa: ANN401
         ) from e
 
 
-def assert_in(lhs_val: Any, rhs_val: Iterable) -> None:  # noqa: ANN401
+def assert_in(lhs_val: Any, rhs_val: Iterable) -> None:
     try:
         assert lhs_val in rhs_val
     except AssertionError as e:
@@ -52,7 +52,7 @@ def assert_in(lhs_val: Any, rhs_val: Iterable) -> None:  # noqa: ANN401
         ) from e
 
 
-def assert_match_in(lhs_val: str | re.Pattern[str], rhs_val: Any) -> None:  # noqa: ANN401
+def assert_match_in(lhs_val: str | re.Pattern[str], rhs_val: Any) -> None:
     if isinstance(lhs_val, str):
         lhs_val = re.compile(lhs_val)
 
@@ -69,7 +69,7 @@ def assert_match_in(lhs_val: str | re.Pattern[str], rhs_val: Any) -> None:  # no
         ) from e
 
 
-def assert_gte(lhs_val: Any, rhs_val: Any) -> None:  # noqa: ANN401
+def assert_gte(lhs_val: Any, rhs_val: Any) -> None:
     try:
         assert lhs_val >= rhs_val
     except AssertionError as e:

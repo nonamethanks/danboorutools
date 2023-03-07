@@ -38,7 +38,7 @@ def natsort_array(array: Iterable[Variable]) -> list[Variable]:
 #################################
 
 
-def deep_freeze(obj: Any) -> Any:  # noqa: ANN401 # https://stackoverflow.com/a/66729248/7376511
+def deep_freeze(obj: Any) -> Any:  # https://stackoverflow.com/a/66729248/7376511
     if obj is None or isinstance(obj, str):
         return obj
     elif isinstance(obj, Mapping):
