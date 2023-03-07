@@ -1,8 +1,9 @@
+from danboorutools.logical.sessions.reddit import RedditSession
 from danboorutools.models.url import ArtistUrl, Url
 
 
 class RedditUrl(Url):
-    pass
+    session = RedditSession()
 
 
 class RedditUserUrl(ArtistUrl, RedditUrl):
@@ -20,7 +21,7 @@ class RedditUserUrl(ArtistUrl, RedditUrl):
 
     @property
     def related(self) -> list[Url]:
-        return [self.parse(link["href"]) for link in self.html.select("[aria-label='Social Links'] a")]
+        return self.session.get_social_links(self.username)
 
 
 class RedditPostUrl(ArtistUrl, RedditUrl):

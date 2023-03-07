@@ -128,11 +128,11 @@ def assert_post_url(url: str,
 
         post = assert_url(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
 
-        if created_at:
+        if created_at is not None:
             assert_equal(post.created_at, datetime_from_string(created_at))
-        if asset_count:
+        if asset_count is not None:
             assert_equal(len(post.assets), asset_count)
-        if score:
+        if score is not None:
             assert_gte(post.score, score)
 
         if assets is not None:
@@ -147,7 +147,7 @@ def assert_post_url(url: str,
             found_md5s = [_file.md5 for asset in post.assets for _file in asset.files]
             assert all(md5 in found_md5s for md5 in md5s), (md5s, found_md5s)
 
-        if gallery:
+        if gallery is not None:
             gallery = Url.parse(gallery)
             assert_equal(post.gallery.normalized_url, gallery.normalized_url)
 
@@ -194,15 +194,36 @@ def assert_info_url(url: str,
                     primary_names: list[str],
                     secondary_names: list[str],
                     is_deleted: bool = False,
-                    ) -> InfoUrlTypeVar:
+                    ) -> None:
 
-    info_url = assert_url(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
+    def _assert_info_url(url=url,
+                         url_type=url_type,
+                         url_properties=url_properties,
+                         related=related,
+                         primary_names=primary_names,
+                         secondary_names=secondary_names,
+                         is_deleted=is_deleted,
+                         ) -> None:
 
-    assert_urls_are_same(info_url.related, related)
-    assert_equal(sorted(info_url.primary_names), sorted(primary_names))
-    assert_equal(sorted(info_url.secondary_names), sorted(secondary_names))
+        info_url = assert_url(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
 
-    return info_url
+        if related is not None:
+            assert_urls_are_same(info_url.related, related)
+        if primary_names is not None:
+            assert_equal(sorted(info_url.primary_names), sorted(primary_names))
+        if secondary_names is not None:
+            assert_equal(sorted(info_url.secondary_names), sorted(secondary_names))
+
+    caller = inspect.stack()[1]
+    abs_path = Path(caller.filename).resolve()
+    domain = abs_path.stem.removesuffix("_test")
+    url_type_str = class_name_to_string(url_type).split("_")[-2]  # as if...
+
+    generate_ward_test(
+        _assert_info_url,
+        description=f"Scrape {url_type.__name__}: {url}",
+        tags=["scraping", domain, url_type_str]
+    )
 
 
 def assert_redirect_url(url: str,

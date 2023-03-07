@@ -5,8 +5,10 @@ import json
 import random
 import re
 import weakref
+from collections.abc import Collection, Hashable, Mapping
 from typing import Any, Callable, Iterable, TypeVar
 
+from frozendict import frozendict
 from pydantic import BaseModel as BadBaseModel
 from pydantic import PrivateAttr, ValidationError
 
@@ -36,21 +38,20 @@ def natsort_array(array: Iterable[Variable]) -> list[Variable]:
 #################################
 
 
+def deep_freeze(obj: Any) -> Any:  # noqa: ANN401 # https://stackoverflow.com/a/66729248/7376511
+    if obj is None or isinstance(obj, str):
+        return obj
+    elif isinstance(obj, Mapping):
+        return frozendict({k: deep_freeze(v) for k, v in obj.items()})  # type: ignore[operator]
+    elif isinstance(obj, Collection):
+        return tuple(deep_freeze(i) for i in obj)
+    elif not isinstance(obj, Hashable):
+        raise TypeError(f"unfreezable type: '{type(obj)}'")
+    else:
+        return obj
+
+
 MemoizedFunction = TypeVar("MemoizedFunction", bound=Callable[..., Any])
-
-
-def hash_dict(func: MemoizedFunction) -> MemoizedFunction:
-    """Make a dictionary immutable"""
-    class HDict(dict):
-        def __hash__(self):
-            return hash(frozenset(self.items()))
-
-    @functools.wraps(func)
-    def wrapped(*args, **kwargs) -> MemoizedFunction:
-        args = tuple(HDict(arg) if isinstance(arg, dict) else arg for arg in args)
-        kwargs = {k: HDict(v) if isinstance(v, dict) else v for k, v in kwargs.items()}
-        return func(*args, **kwargs)
-    return wrapped  # type: ignore[return-value] # shut the fuck up retard
 
 
 def memoize(func: MemoizedFunction) -> MemoizedFunction:
@@ -58,13 +59,13 @@ def memoize(func: MemoizedFunction) -> MemoizedFunction:
     def wrapped_func(self, *args, **kwargs):  # noqa
         self_weak = weakref.ref(self)
 
-        @hash_dict
         @functools.wraps(func)
         @functools.lru_cache()
         def cached_method(*args, **kwargs):  # noqa
             return func(self_weak(), *args, **kwargs)
         setattr(self, func.__name__, cached_method)
-        return cached_method(*args, **kwargs)
+
+        return cached_method(*deep_freeze(args), **deep_freeze(kwargs))
 
     return wrapped_func  # type: ignore[return-value]
 

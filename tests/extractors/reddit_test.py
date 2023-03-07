@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors.reddit import RedditPostUrl, RedditUserUrl
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_info_url, generate_parsing_suite
 
 urls = {
     RedditUserUrl: {
@@ -21,3 +21,12 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+assert_info_url(
+    "https://www.reddit.com/user/imsleepyzen",
+    url_properties=dict(username="imsleepyzen"),
+    url_type=RedditUserUrl,
+    related=["https://twitter.com/imsleepyzen", "https://www.instagram.com/imsleepyzen"],
+    primary_names=["imsleepyzen"],
+    secondary_names=[],
+)
