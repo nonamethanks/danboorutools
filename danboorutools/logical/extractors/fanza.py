@@ -1,17 +1,33 @@
+from __future__ import annotations
+from urllib.parse import urljoin
+
+from functools import cached_property
 from typing import Literal
 
+from danboorutools.logical.sessions.fanza import FanzaSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
 class FanzaUrl(Url):
-    pass
+    session = FanzaSession()
 
 
 class FanzaDoujinWorkUrl(PostUrl, FanzaUrl):
     work_id: str
-    subsubsite: str
+    subsubsite: Literal["dc", "digital", "mono"]
 
     normalize_string = "https://www.dmm.co.jp/{subsubsite}/doujin/-/detail/=/cid={work_id}/"
+
+    @cached_property
+    def gallery(self) -> FanzaDoujinAuthorUrl:
+        if self.subsubsite == "dc":
+            url = self.html.select_one(".circleName__txt")["href"]
+        else:
+            raise NotImplementedError(self)
+
+        parsed = Url.parse(urljoin("https://www.dmm.co.jp/", url))
+        assert isinstance(parsed, FanzaDoujinAuthorUrl), (self, parsed)
+        return parsed
 
 
 class FanzaDoujinAuthorUrl(ArtistUrl, FanzaUrl):

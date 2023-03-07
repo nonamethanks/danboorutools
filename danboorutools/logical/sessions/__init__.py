@@ -103,7 +103,7 @@ class Session(RequestsSession):
     def get_html(self, url: str | Url, *args, **kwargs) -> BeautifulSoup:
         if not isinstance(url, str):
             url = url.normalized_url
-        response = self.get(url, *args, **kwargs)
+        response = self.get_cached(url, *args, **kwargs)
         if not response.ok:
             raise HTTPError(response)
         soup = BeautifulSoup(response.text, "html5lib")

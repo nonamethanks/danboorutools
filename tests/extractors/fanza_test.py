@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors import fanza as fz
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_post_url, generate_parsing_suite
 
 urls = {
     fz.FanzaDoujinAuthorUrl: {
@@ -70,3 +70,10 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+assert_post_url(
+    "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_218503/",
+    url_type=fz.FanzaDoujinWorkUrl,
+    url_properties=dict(work_id="d_218503", subsite="dc"),
+    gallery="https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/id=70980/",
+)
