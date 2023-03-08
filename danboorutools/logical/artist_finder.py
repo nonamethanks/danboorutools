@@ -123,11 +123,12 @@ class ArtistFinder:
                 except UrlIsDeleted:
                     logger.debug(f"Couldn't resolve url {related_url} because it was dead, skipping...")
                     continue
+            elif not isinstance(related_url, InfoUrl):
+                related_url = related_url.artist
+                logger.debug(f"It was resolved into {related_url}...")
 
             if isinstance(related_url, InfoUrl):
                 scanned_urls += cls.extract_related_urls_recursively(related_url, scanned_urls)
-            else:
-                raise NotImplementedError(related_url)
 
             if isinstance(related_url, (GalleryUrl, UnknownUrl)):  # wip
                 scanned_urls.append(related_url)

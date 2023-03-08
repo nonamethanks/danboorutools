@@ -93,7 +93,8 @@ def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list
 
     if not blacklist_images:
         return found
-    return [u for u in found if not images_pattern.search(u.strip())]
+    urls = [u for u in found if not images_pattern.search(u.strip())]
+    return list(dict.fromkeys(urls))
 
 
 class BaseModel(BadBaseModel):

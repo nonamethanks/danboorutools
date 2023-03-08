@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from danboorutools.logical.sessions import Session
+from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
 
 
@@ -25,11 +26,11 @@ class FanboxArtistData(BaseModel):
         allow_population_by_field_name = True
 
     @property
-    def related_urls(self) -> list:
+    def related_urls(self) -> list[Url]:
         # pylint: disable=import-outside-toplevel
         from danboorutools.logical.extractors.pixiv import PixivArtistUrl
 
-        results = [PixivArtistUrl.parse(link) for link in self.profileLinks]
+        results = [Url.parse(link) for link in self.profileLinks]
         pixiv_url = PixivArtistUrl.build(PixivArtistUrl, user_id=self.user.userId)
         if pixiv_url not in results:
             # you never know with these sites

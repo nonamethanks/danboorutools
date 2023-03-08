@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors import nicoseiga as ns
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
     ns.NicoSeigaIllustUrl: {
@@ -54,3 +54,13 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+
+assert_artist_url(
+    "https://seiga.nicovideo.jp/user/illust/59309002",
+    url_type=ns.NicoSeigaArtistUrl,
+    url_properties=dict(user_id=59309002),
+    primary_names=["肉斬り包丁"],
+    secondary_names=["nicovideo 59309002"],
+    related=["https://twitter.com/niku_kai29"],
+)

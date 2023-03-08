@@ -102,12 +102,10 @@ class Url:
     def artist(self) -> ArtistUrl:
         if isinstance(self, ArtistUrl):
             return self
-        elif isinstance(self, PostUrl):
+        elif isinstance(self, (PostUrl, ArtistAlbumUrl, GalleryAssetUrl)):
             return self.gallery.artist
         elif isinstance(self, PostAssetUrl):
             return self.post.artist
-        elif isinstance(self, GalleryAssetUrl):
-            return self.gallery.artist
         elif isinstance(self, RedirectUrl):
             return self.resolved.artist
         else:
