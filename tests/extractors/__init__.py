@@ -1,6 +1,7 @@
 import inspect
 import re
 from datetime import datetime
+from functools import wraps
 from pathlib import Path
 from typing import Callable, TypeVar
 
@@ -32,38 +33,12 @@ def assert_casted(url: str | Url, to_type: type[UrlTypeVar]) -> UrlTypeVar:
     return casted_url  # type: ignore[return-value]
 
 
-###########################################################
+def _assert_parsed(url: str,
+                   url_type: type[UrlTypeVar],
+                   url_properties: dict,
+                   is_deleted: bool = False,
+                   ) -> UrlTypeVar:
 
-
-def generate_url_suite(description: str, tags: list[str]) -> Callable:
-    def wrapper(func: Callable) -> Callable:
-        def generate_test(*args, **kwargs) -> None:
-            caller = inspect.stack()[1]
-            abs_path = Path(caller.filename).resolve()
-            domain = abs_path.stem.removesuffix("_test")
-
-            if func.__name__ == "assert_info_url":
-                def test_method(*args, **kwargs) -> None:
-                    return assert_info_url(*args, **kwargs)
-            elif func.__name__ == "assert_artist_url":
-                def test_method(*args, **kwargs) -> None:
-                    return assert_artist_url(*args, **kwargs)
-
-            generate_ward_test(
-                test_method,
-                description=description,
-                tags=tags + [domain]
-            )
-
-        return generate_test
-    return wrapper
-
-
-def assert_url(url: str,
-               url_type: type[UrlTypeVar],
-               url_properties: dict,
-               is_deleted: bool = False,
-               ) -> UrlTypeVar:
     parsed_url = assert_casted(url, url_type)
 
     for property_name, expected_value in url_properties.items():
@@ -74,6 +49,69 @@ def assert_url(url: str,
     return parsed_url
 
 
+def _assert_info_data(info_url: InfoUrl,
+                      primary_names: list[str],
+                      secondary_names: list[str],
+                      related: list[str]) -> None:
+    if related is not None:
+        assert_urls_are_same(info_url.related, related)
+    if primary_names is not None:
+        assert_equal(sorted(info_url.primary_names), sorted(primary_names))
+    if secondary_names is not None:
+        assert_equal(sorted(info_url.secondary_names), sorted(secondary_names))
+
+
+def _assert_gallery_data(gallery_url: GalleryUrl,
+                         post_count: int | None = None,
+                         posts: list[str] | None = None) -> None:
+
+    if post_count is not None:
+        assert_gte(len(gallery_url.posts), post_count)
+
+    if posts is not None:
+        found_posts = gallery_url.posts
+        for post in posts:
+            assert_in(Url.parse(post), found_posts)
+
+
+###########################################################
+
+
+def generate_url_suite(description: str, tags: list[str]) -> Callable:
+
+    def wrapper(func: Callable) -> Callable:
+
+        # I hate that I have to do this shit just to have a functioning testing framework
+
+        @wraps(func)
+        def generate_test(*args, **kwargs) -> None:
+            def test_method(args=args, kwargs=kwargs, func=func) -> None:
+                func(*args, **kwargs)
+
+            caller = inspect.stack()[1]
+            abs_path = Path(caller.filename).resolve()
+            domain = abs_path.stem.removesuffix("_test")
+
+            generate_ward_test(
+                test_method,
+                description=description + f": {kwargs.get('url') or args[0]}",
+                tags=tags + [domain],
+                path=abs_path,
+            )
+        return generate_test
+
+    return wrapper
+
+
+@generate_url_suite("Scraping an url", tags=["url"])
+def assert_url(url: str,
+               url_type: type[UrlTypeVar],
+               url_properties: dict,
+               is_deleted: bool = False,
+               ) -> None:
+    _assert_parsed(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
+
+
 @generate_url_suite("Scraping a gallery url", tags=["gallery"])
 def assert_gallery_url(url: str,
                        url_type: type[GalleryUrlTypeVar],
@@ -81,17 +119,10 @@ def assert_gallery_url(url: str,
                        post_count: int | None = None,
                        posts: list[str] | None = None,
                        is_deleted: bool = False,
-                       ) -> GalleryUrlTypeVar:
-    gallery = assert_url(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
-    if post_count is not None:
-        assert_gte(len(gallery.posts), post_count)
+                       ) -> None:
 
-    if posts is not None:
-        found_posts = gallery.posts
-        for post in posts:
-            assert_in(Url.parse(post), found_posts)
-
-    return gallery
+    gallery: GalleryUrlTypeVar = _assert_parsed(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
+    _assert_gallery_data(gallery, post_count=post_count, posts=posts)
 
 
 @generate_url_suite("Scraping an artist url", tags=["artist"])
@@ -104,28 +135,17 @@ def assert_artist_url(url: str,
                       post_count: int | None = None,
                       posts: list[str] | None = None,
                       is_deleted: bool = False,
-                      ) -> ArtistUrlTypeVar:
+                      ) -> None:
 
-    artist = assert_gallery_url(
-        url=url,
-        url_type=url_type,
-        url_properties=url_properties,
-        post_count=post_count,
-        is_deleted=is_deleted,
-        posts=posts,
-    )
+    artist_url: ArtistUrlTypeVar = _assert_parsed(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
+    _assert_gallery_data(artist_url, post_count=post_count, posts=posts)
 
-    assert_info_url(
-        url=url,
-        url_type=url_type,
-        url_properties=url_properties,
+    _assert_info_data(
+        artist_url,
         primary_names=primary_names,
         secondary_names=secondary_names,
         related=related,
-
     )
-
-    return artist
 
 
 @generate_url_suite("Scraping a post url", tags=["post"])
@@ -141,7 +161,7 @@ def assert_post_url(url: str,
                     gallery: Url | str | None = None,
                     ) -> None:
 
-    post = assert_url(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
+    post: PostUrlTypeVar = _assert_parsed(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
 
     if created_at is not None:
         assert_equal(post.created_at, datetime_from_string(created_at))
@@ -175,9 +195,9 @@ def assert_asset_url(url: str,
                      created_at: datetime | str | None = None,
                      md5s: list[str] | None = None,
                      is_deleted: bool = False,
-                     ) -> PostAssetUrlTypeVar:
+                     ) -> None:
 
-    asset = assert_url(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
+    asset: PostAssetUrlTypeVar = _assert_parsed(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
 
     assert_equal(len(asset.files), file_count)
 
@@ -188,8 +208,6 @@ def assert_asset_url(url: str,
         found_md5s = [_file.md5 for _file in asset.files]
         for md5 in md5s:
             assert_in(md5, found_md5s)
-
-    return asset
 
 
 @generate_url_suite("Scraping an info url", tags=["info"])
@@ -202,14 +220,8 @@ def assert_info_url(url: str,
                     is_deleted: bool = False,
                     ) -> None:
 
-    info_url = assert_url(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
-
-    if related is not None:
-        assert_urls_are_same(info_url.related, related)
-    if primary_names is not None:
-        assert_equal(sorted(info_url.primary_names), sorted(primary_names))
-    if secondary_names is not None:
-        assert_equal(sorted(info_url.secondary_names), sorted(secondary_names))
+    info_url: InfoUrlTypeVar = _assert_parsed(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
+    _assert_info_data(info_url, related=related, primary_names=primary_names, secondary_names=secondary_names)
 
 
 @generate_url_suite("Scraping a redirect url", tags=["redirect"])
@@ -218,14 +230,12 @@ def assert_redirect_url(url: str,
                         url_properties: dict,
                         redirects_to: str,
                         is_deleted: bool = False,
-                        ) -> RedirectUrlTypeVar:
+                        ) -> None:
 
-    redirect_url = assert_url(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
+    redirect_url: RedirectUrlTypeVar = _assert_parsed(url=url, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
     redirect_to = Url.parse(redirects_to)
 
     assert_equal(redirect_url.resolved.normalized_url, redirect_to.normalized_url)
-
-    return redirect_url
 
 
 def generate_parsing_suite(urls: dict[type[UrlTypeVar], dict]) -> None:

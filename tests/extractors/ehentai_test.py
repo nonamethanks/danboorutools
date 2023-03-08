@@ -1,18 +1,13 @@
-from ward import test
-
 from danboorutools.logical.extractors.ehentai import EHentaiGalleryUrl, EHentaiImageUrl, EHentaiPageUrl
 from tests.extractors import assert_gallery_url, assert_post_url, assert_url, generate_parsing_suite
 
-
-@test("Scrape ehentai artist", tags=["scraping", "ehentai", "gallery"])
-def test_artist() -> None:
-    assert_gallery_url(
-        url_type=EHentaiGalleryUrl,
-        url="https://e-hentai.org/g/182146/4f5c26749f",
-        post_count=83,
-        url_properties=dict(gallery_id=182146, gallery_token="4f5c26749f"),
-        posts=["https://e-hentai.org/s/b6518716a0/182146-4"],
-    )
+assert_gallery_url(
+    url_type=EHentaiGalleryUrl,
+    url="https://e-hentai.org/g/182146/4f5c26749f",
+    post_count=83,
+    url_properties=dict(gallery_id=182146, gallery_token="4f5c26749f"),
+    posts=["https://e-hentai.org/s/b6518716a0/182146-4"],
+)
 
 
 assert_post_url(
@@ -27,14 +22,12 @@ assert_post_url(
 )
 
 
-@test("Scrape dead ehentai page", tags=["scraping", "ehentai", "post", "dead"])
-def test_dead() -> None:
-    assert_url(
-        url_type=EHentaiPageUrl,
-        url="https://e-hentai.org/s/8053bb2877/204042-15",
-        url_properties=dict(gallery_id=204042, page_number=15, page_token="8053bb2877"),
-        is_deleted=True
-    )
+assert_url(
+    url_type=EHentaiPageUrl,
+    url="https://e-hentai.org/s/8053bb2877/204042-15",
+    url_properties=dict(gallery_id=204042, page_number=15, page_token="8053bb2877"),
+    is_deleted=True
+)
 
 
 urls = {

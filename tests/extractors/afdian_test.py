@@ -1,5 +1,3 @@
-from ward import test
-
 from danboorutools.logical.extractors.afdian import AfdianArtistImageUrl, AfdianArtistUrl, AfdianImageUrl, AfdianPostUrl
 from tests.extractors import assert_artist_url, generate_parsing_suite
 
@@ -25,25 +23,21 @@ urls = {
 generate_parsing_suite(urls)
 
 
-@test("Scrape afdian artist", tags=["scraping", "afdian", "artist"])
-def test_artist_1() -> None:
-    assert_artist_url(
-        url_type=AfdianArtistUrl,
-        url="https://afdian.net/a/mgong520",
-        url_properties=dict(username="mgong520"),
-        primary_names=["尼德汞"],
-        secondary_names=["mgong520"],
-        related=[],
-    )
+assert_artist_url(
+    url_type=AfdianArtistUrl,
+    url="https://afdian.net/a/mgong520",
+    url_properties=dict(username="mgong520"),
+    primary_names=["尼德汞"],
+    secondary_names=["mgong520"],
+    related=[],
+)
 
 
-@test("Scrape afdian artist with related urls", tags=["scraping", "afdian", "artist"])
-def test_artist_2() -> None:
-    assert_artist_url(
-        url_type=AfdianArtistUrl,
-        url="https://afdian.net/a/rubyredsims",
-        url_properties=dict(username="rubyredsims"),
-        primary_names=["RUBY RED SIMS"],
-        secondary_names=["rubyredsims"],
-        related=["http://www.patreon.com/rubyredsims"],
-    )
+assert_artist_url(
+    url_type=AfdianArtistUrl,
+    url="https://afdian.net/a/rubyredsims",
+    url_properties=dict(username="rubyredsims"),
+    primary_names=["RUBY RED SIMS"],
+    secondary_names=["rubyredsims"],
+    related=["http://www.patreon.com/rubyredsims"],
+)

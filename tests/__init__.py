@@ -83,15 +83,19 @@ def assert_gte(lhs_val: Any, rhs_val: Any) -> None:
         ) from e
 
 
-def generate_ward_test(method: Callable, /, description: str, tags: list[str], expected_failure: bool = False) -> None:
+def generate_ward_test(method: Callable, /,
+                       description: str,
+                       tags: list[str],
+                       expected_failure: bool = False,
+                       path: Path | None = None) -> None:
     caller = inspect.stack()[2]
-    abs_path = Path(caller.filename).resolve()
+    path = Path(caller.filename).resolve()
     method.ward_meta = CollectionMetadata(  # type: ignore[attr-defined]
         description=description,
         tags=tags,
-        path=abs_path,
+        path=path,
     )
     if expected_failure:
         method.ward_meta.marker = XfailMarker()  # type: ignore[attr-defined]
 
-    _testing.COLLECTED_TESTS[abs_path].append(method)
+    _testing.COLLECTED_TESTS[path].append(method)
