@@ -11,7 +11,7 @@ from danboorutools.models.url import InfoUrl, PostAssetUrl, PostUrl, Url
 from danboorutools.util.misc import memoize
 
 pixiv_id_lookup_artist_pattern = re.compile(
-    r"User ID: (?P<id>\d+)Login Username: (?P<stacc>\w+)Display Username\(s\):(?P<name>.*) \(\d+\)\n"
+    r"User ID: (?P<id>\d+)Login Username: (?P<stacc>\w+)Display Username\(s\):(?P<name>.*) \(\d+\)\n",
 )
 
 
@@ -116,14 +116,12 @@ class SaucenaoSession(Session):
         pixiv_artist_url = Url.build(PixivArtistUrl, user_id=pixiv_id)
         stacc_url = Url.build(PixivStaccUrl, stacc=stacc)
 
-        result = SaucenaoArtistResult(
+        return SaucenaoArtistResult(
             primary_url=pixiv_artist_url,
             extra_urls=[stacc_url],
             primary_names=[saucenao_result["member_name"]],
             secondary_names=[stacc, f"pixiv {pixiv_id}"],
         )
-
-        return result
 
     def __parse_danbooru_result(self, saucenao_result: dict[str, dict], source_from_danbooru: Url) -> _SubResult | None:
         source_from_saucenao = Url.parse(saucenao_result["data"]["source"].removesuffix(" (deleted)"))  # bruh

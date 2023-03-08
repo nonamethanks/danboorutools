@@ -43,12 +43,10 @@ types-python-dateutil = "^2.8.19.10"
 mypy = "^1.0.1"
 autopep8 = "^2.0.2"
 types-pkg-resources = "^0.1.3"
-flake8 = "^6.0.0"
-flake8-annotations = "^3.0.0"
-flake8-pyproject = "^1.2.2"
 types-pytz = "^2022.7.1.2"
 pyinstrument = "^4.4.0"
 line-profiler = "^4.0.3"
+ruff = "^0.0.254"
 
 [tool.poetry.group.test.dependencies]
 ward = "^0.67.2b0"
@@ -81,20 +79,25 @@ strict_equality = true
 warn_unused_ignore = true
 enable_incomplete_feature = "Unpack"
 
-[tool.flake8]
-max-line-length=140
-ignore= [
-    "ANN001",
-    "ANN002",
-    "ANN003",
-    "ANN101",
-    "ANN102",
-    "ANN204",
-    "ANN401", # flake8 is a retarded mongoloid ape
-    "E501", # already handled by pylint
-    "F841", # flake8 is too fucking retarded to understand that fucking goddamned underscore variables are not superfluous. Retard.
-    "W503",
-    "W504",
+[tool.ruff]
+line-length=140
+select = ["ALL"]
+ignore = [
+    "ANN002",   # Missing type annotation for *args
+    "ANN003",   # Missing type annotation for **kwargs
+    "ANN101",   # missing type annotation for self
+    "ANN102",   # missing type annotation for cls
+    "ANN204",   # missing return type for special methods
+    "D",        # docstrings
+    "PLR2004",  # allow-magic-value-types
+    "RET505",   # unnecessary else after reutrn
+    "RUF001",   # allowed-confusables
+]
+
+[tool.ruff.per-file-ignores]
+"tests/*" = [
+    "E501",     # max-line-length
+    "S101",     # use of assert
 ]
 
 [tool.pycodestyle]

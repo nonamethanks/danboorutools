@@ -34,7 +34,7 @@ urls = {
         "https://nijie.info/view.php?id=218856": "https://nijie.info/view.php?id=218856",
         "https://www.nijie.info/view.php?id=218856": "https://nijie.info/view.php?id=218856",
         "https://sp.nijie.info/view.php?id=218856": "https://nijie.info/view.php?id=218856",
-    }
+    },
 }
 
 
