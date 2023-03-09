@@ -25,18 +25,32 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
 
     @property
     def primary_names(self) -> list[str]:
-        return [self._artist_data["name"]]
+        try:
+            return [self._artist_data["name"]]
+        except UrlIsDeleted:
+            return []
 
     @property
     def secondary_names(self) -> list[str]:
-        return [self.username, f"twitter {self.user_id}"]
+        names = [self.username]
+        try:
+            return [*names, f"twitter {self.user_id}"]
+        except UrlIsDeleted:
+            return names
 
     @property
     def related(self) -> list[Url]:
+        related: list[Url] = []
+
         # pylint: disable=import-outside-toplevel
         from danboorutools.logical.extractors.skeb import SkebArtistUrl
+        skeb = Url.build(SkebArtistUrl, username=self.username)
+        if not skeb.is_deleted:
+            related += [skeb]
 
-        related: list[Url] = []
+        if self.is_deleted:
+            return related
+
         related += [Url.build(TwitterIntentUrl, intent_id=self.user_id)]
 
         for field in ["url", "description"]:
@@ -46,9 +60,6 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
                             if not url["expanded_url"].endswith("...")]
             except KeyError:
                 pass
-        skeb = Url.build(SkebArtistUrl, username=self.username)
-        if not skeb.is_deleted:
-            related += [skeb]
 
         return related
 
