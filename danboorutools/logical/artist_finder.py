@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import re
+from typing import TYPE_CHECKING
 
 import pykakasi
 import unidecode
@@ -8,9 +11,11 @@ from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.sessions.ascii2d import Ascii2dArtistResult, Ascii2dSession
 from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.logical.sessions.saucenao import SaucenaoArtistResult, SaucenaoSession
-from danboorutools.models.danbooru import DanbooruPost
 from danboorutools.models.url import GalleryUrl, InfoUrl, RedirectUrl, UnknownUrl, Url
 from danboorutools.scripts import ProgressTracker
+
+if TYPE_CHECKING:
+    from danboorutools.models.danbooru import DanbooruPost
 
 
 class ArtistFinder:
@@ -38,7 +43,7 @@ class ArtistFinder:
             logger.debug(f"{source} for post {post} is deleted.")
             result_from_archives = self.search_for_artist_in_archives(post)
             if not result_from_archives:
-                self.skipped_posts.value = self.skipped_posts.value + [post.id]
+                self.skipped_posts.value = [*self.skipped_posts.value, post.id]
                 return False
 
         if artist_url:
@@ -91,7 +96,7 @@ class ArtistFinder:
     @classmethod
     def extract_related_urls_recursively(cls,
                                          first_url: InfoUrl,
-                                         scanned_urls: list | None = None
+                                         scanned_urls: list | None = None,
                                          ) -> list[InfoUrl | GalleryUrl | UnknownUrl]:
 
         scanned_urls = scanned_urls or []
@@ -118,13 +123,13 @@ class ArtistFinder:
 
             if isinstance(related_url, RedirectUrl):
                 try:
-                    related_url = related_url.resolved
+                    related_url = related_url.resolved  # noqa: PLW2901
                     logger.debug(f"It was resolved into {related_url}...")
                 except UrlIsDeleted:
                     logger.debug(f"Couldn't resolve url {related_url} because it was dead, skipping...")
                     continue
             elif not isinstance(related_url, InfoUrl):
-                related_url = related_url.artist
+                related_url = related_url.artist  # noqa: PLW2901
                 logger.debug(f"It was resolved into {related_url}...")
 
             if isinstance(related_url, InfoUrl):
@@ -144,7 +149,7 @@ class ArtistFinder:
                 assert len(results) == 1, results  # TODO: post in the forums in case there's more than one artist
                 result, = results
                 if result.tag.category_name != "artist":
-                    raise NotImplementedError(f"{result} is not an artist tag!")
+                    raise NotImplementedError(f"{result} is not an artist tag!")  # noqa: TRY003
                 danbooru_api.update_artist_urls(artist=result, urls=artist_urls)
                 return result.tag.name
 
@@ -178,8 +183,8 @@ class ArtistFinder:
             if name != qualifier
         ]
         for name, qualifier in combinations:
-            name = cls.sanitize_tag_name(name)
-            qualifier = cls.sanitize_tag_name(qualifier)
+            name = cls.sanitize_tag_name(name)  # noqa: PLW2901
+            qualifier = cls.sanitize_tag_name(qualifier)  # noqa: PLW2901
 
             candidate = cls.sanitize_tag_name(f"{name}_({qualifier})")
             if cls.valid_new_tag_name(candidate):
@@ -198,9 +203,9 @@ class ArtistFinder:
         candidate = candidate.replace("(", "_(").replace(")", ")_")  # add underscore before parenthesis
         candidate = re.sub(r"_+", "_", candidate)                    # merge multiple underscores
         candidate = candidate.replace("(_", "(").replace("_)", ")")  # remove underscores inside parentheses
-        candidate = candidate.strip("_(").strip()  # strip underscores and parentheses from end of string
+        candidate = candidate.strip("_(").strip()                    # strip underscores and parentheses from end of string
 
-        return candidate
+        return candidate  # noqa: RET504
 
     @classmethod
     def romanize_tag_name(cls, potential_tag: str) -> str:

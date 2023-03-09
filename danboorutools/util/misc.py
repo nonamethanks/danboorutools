@@ -5,8 +5,8 @@ import json
 import random
 import re
 import weakref
-from collections.abc import Collection, Hashable, Mapping
-from typing import Any, Callable, Iterable, TypeVar
+from collections.abc import Callable, Collection, Hashable, Iterable, Mapping
+from typing import Any, TypeVar
 
 from frozendict import frozendict
 from pydantic import BaseModel as BadBaseModel
@@ -15,7 +15,7 @@ from pydantic import PrivateAttr, ValidationError
 
 def random_string(length: int) -> str:
     """Generate a random string of N length."""
-    return "".join(random.choice('0123456789ABCDEF') for i in range(length))
+    return "".join(random.choice("0123456789ABCDEF") for i in range(length))
 
 
 def tryint(string: str) -> str | int:
@@ -32,7 +32,7 @@ Variable = TypeVar("Variable")
 def natsort_array(array: Iterable[Variable]) -> list[Variable]:
     """Sort an array of strings naturally."""
     # https://stackoverflow.com/a/4623518/11558993
-    return sorted(array, key=lambda key: [tryint(c) for c in re.split('([0-9]+)', str(key))])
+    return sorted(array, key=lambda key: [tryint(c) for c in re.split("([0-9]+)", str(key))])
 
 
 #################################
@@ -56,12 +56,12 @@ MemoizedFunction = TypeVar("MemoizedFunction", bound=Callable[..., Any])
 
 def memoize(func: MemoizedFunction) -> MemoizedFunction:
     @functools.wraps(func)
-    def wrapped_func(self, *args, **kwargs):  # noqa
+    def wrapped_func(self, *args, **kwargs):  # noqa: ANN001,ANN202
         self_weak = weakref.ref(self)
 
         @functools.wraps(func)
-        @functools.lru_cache()
-        def cached_method(*args, **kwargs):  # noqa
+        @functools.lru_cache
+        def cached_method(*args, **kwargs):  # noqa: ANN202
             return func(self_weak(), *args, **kwargs)
         setattr(self, func.__name__, cached_method)
 
@@ -78,13 +78,13 @@ def class_name_to_string(klass: type, separator: str = "_") -> str:
 
 
 all_urls_pattern = re.compile(
-    r'((?:\bhttp|https)(?::\/{2}[\w]+)(?:[\/|\.]?)(?:[^\s<>\uff08\uff09\u3011\u3000"\[\]]*))',
-    re.IGNORECASE | re.ASCII
+    r'((?:\bhttp|https)(?::\/{2}[\w]+)(?:[\/|\.]?)(?:[^\s<>\uff08\uff09\u3011\u3000"\[\]\(\)]*))',
+    re.IGNORECASE | re.ASCII,
 )
 images_pattern = re.compile(r".*(jpg|jpeg|gif|png)$", re.IGNORECASE)
 
 
-def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list[str]:
+def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list[str]:  # noqa: FBT
     found = [
         u.strip().strip("/?{}()\',.\" ")
         for u in all_urls_pattern.findall(string)

@@ -23,7 +23,7 @@ class TwitterSession(Session):
             access_token,
             access_token_secret,
             sleep_on_rate_limit=True,
-            tweet_mode="extended"
+            tweet_mode="extended",
         )
 
     @memoize

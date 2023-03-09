@@ -12,7 +12,7 @@ from danboorutools.util.misc import class_name_to_string
 if TYPE_CHECKING:
     from danboorutools.models.url import Url
 
-parsers: dict[str, type["UrlParser"]] = {}
+parsers: dict[str, type[UrlParser]] = {}
 
 
 class UrlParser:

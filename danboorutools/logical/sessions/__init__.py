@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import tempfile
 import time
 from functools import cached_property
 from pathlib import Path
@@ -12,6 +13,7 @@ from bs4 import BeautifulSoup
 from ratelimit import limits, sleep_and_retry
 from requests import Response
 from requests import Session as RequestsSession
+from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from danboorutools import logger
 from danboorutools.exceptions import DownloadError, HTTPError, UrlIsDeleted
@@ -28,7 +30,7 @@ if TYPE_CHECKING:
 class Session(RequestsSession):
     _default_headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
-        "Cache-Control": "no-cache, no-store, no-transform"
+        "Cache-Control": "no-cache, no-store, no-transform",
     }
     _default_timeout = 2
 
@@ -68,14 +70,20 @@ class Session(RequestsSession):
             logger.trace(f"{http_method} request made to {url}?{urlencode(kwargs['params'])}")
         else:
             logger.trace(f"{http_method} request made to {url}")
-        response = super().request(http_method, url, *args, **kwargs)
+
+        try:
+            response = super().request(http_method, url, *args, **kwargs)
+        except RequestsConnectionError as e:
+            e.add_note(f"Method: {http_method}; url: {url}")
+            raise
 
         if response.status_code == 404:
             raise UrlIsDeleted(response)
         return response
 
     def download_file(self, url: str | Url, *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
-        tmp_filename = Path("/tmp") / random_string(20)
+
+        tmp_filename = Path(tempfile.gettempdir()) / random_string(20)
         if download_dir is not None:
             download_dir = Path(download_dir)
 
@@ -97,8 +105,7 @@ class Session(RequestsSession):
             unix_time = time.mktime(datetime_from_string(source_time).timetuple())
             os.utime(tmp_filename, (unix_time, unix_time))
 
-        _file = File.identify(tmp_filename, destination_dir=download_dir, md5_as_filename=True)
-        return _file
+        return File.identify(tmp_filename, destination_dir=download_dir, md5_as_filename=True)
 
     def get_html(self, url: str | Url, *args, **kwargs) -> BeautifulSoup:
         if not isinstance(url, str):
@@ -106,14 +113,12 @@ class Session(RequestsSession):
         response = self.get_cached(url, *args, **kwargs)
         if not response.ok:
             raise HTTPError(response)
-        soup = BeautifulSoup(response.text, "html5lib")
-        return soup
+        return BeautifulSoup(response.text, "html5lib")
 
     def get_json(self, *args, **kwargs) -> dict:
         response = self.request("GET", *args, **kwargs)
         return self._try_json_response(response)
 
-    @memoize
     def get_json_cached(self, *args, **kwargs) -> dict:
         response = self.get_cached(*args, **kwargs)
         return self._try_json_response(response)
@@ -131,7 +136,7 @@ class Session(RequestsSession):
         try:
             return response.json()
         except json.JSONDecodeError as e:
-            print(response.text)
+            print(response.text)  # noqa: T201
             if not response.ok:
                 raise HTTPError(response) from e
             else:

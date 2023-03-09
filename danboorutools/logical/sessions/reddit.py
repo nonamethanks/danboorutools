@@ -24,6 +24,6 @@ class RedditSession(Session):
         response = self.post(
             "https://gql.reddit.com/",
             json={"id": "11a239b07f86", "variables": {"username": username}},
-            headers={"Authorization": f"Bearer {self.bearer_token}"}
+            headers={"Authorization": f"Bearer {self.bearer_token}"},
         )
         return [Url.parse(url["outboundUrl"]) for url in response.json()["data"]["redditorInfoByName"]["profile"]["socialLinks"]]

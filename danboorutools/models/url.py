@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime
 from functools import cached_property
-from typing import TYPE_CHECKING, Callable, TypeVar, final, get_type_hints
-
-from bs4 import BeautifulSoup
+from typing import TYPE_CHECKING, TypeVar, final, get_type_hints
 
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.parsable_url import ParsableUrl
@@ -13,11 +10,17 @@ from danboorutools.models.file import ArchiveFile, File
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
-    # https://github.com/python/mypy/issues/5107#issuecomment-529372406
-    CachedFunc = TypeVar('CachedFunc', bound=Callable)
+    from collections.abc import Callable
 
-    def lru_cache(method: CachedFunc) -> CachedFunc:  # pylint: disable=unused-argument
+    # https://github.com/python/mypy/issues/5107#issuecomment-529372406
+    CachedFunc = TypeVar("CachedFunc", bound=Callable)
+
+    def lru_cache(method: CachedFunc) -> CachedFunc:  # pylint: disable=unused-argument  # noqa: ARG001
         ...
+
+    from datetime import datetime
+
+    from bs4 import BeautifulSoup
 else:
     from functools import lru_cache
 
@@ -280,7 +283,7 @@ class _AssetUrl(Url):
 
     @cached_property  # type: ignore[misc]
     @final
-    def normalized_url(self) -> str:  # pylint: disable=overridden-final-method
+    def normalized_url(self) -> str:
         # it doesn't make sense for files to have to implement normalize()
         return self.full_size
 
@@ -323,7 +326,7 @@ class GalleryAssetUrl(_AssetUrl, Url):
 ########################################################################
 
 
-class RedirectUrl(Url):  # pylint: disable=abstract-method
+class RedirectUrl(Url):
     """An url that redirects somewhere else."""
     @cached_property
     def resolved(self) -> Url:
