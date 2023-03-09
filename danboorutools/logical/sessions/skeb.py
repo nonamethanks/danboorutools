@@ -19,7 +19,7 @@ class SkebSession(Session):
     @property
     def cookies_from_env(self) -> dict:
         return {
-            "_interslice_session": os.environ["SKEB_COOKIE_INTERSLICE_SESSION"]
+            "_interslice_session": os.environ["SKEB_COOKIE_INTERSLICE_SESSION"],
         }.copy()
 
     def request(self, *args, **kwargs) -> Response:
@@ -58,7 +58,7 @@ class SkebArtistData(BaseModel):
     pixiv_id: int | None
     skima_id: int | None
     twitter_uid: int
-    twitter_screen_name: str
+    twitter_screen_name: str | None  # for some reason it can be None even if twitter_uid is not
     youtube_id: int | None
 
     @property
