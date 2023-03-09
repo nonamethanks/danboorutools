@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors.patreon import PatreonArtistUrl, PatreonImageUrl, PatreonPostUrl
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
     PatreonArtistUrl: {
@@ -29,3 +29,12 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+assert_artist_url(
+    "https://www.patreon.com/himetyanart",
+    url_type=PatreonArtistUrl,
+    url_properties=dict(username="himetyanart"),
+    primary_names=["Hime-Tyan Art"],
+    secondary_names=["himetyanart"],
+    related=["https://www.instagram.com/tyanka6", "https://twitter.com/Antyan87884404"],
+)

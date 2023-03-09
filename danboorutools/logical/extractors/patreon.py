@@ -1,8 +1,9 @@
+from danboorutools.logical.sessions.patreon import PatreonArtistData, PatreonSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
 class PatreonUrl(Url):
-    pass
+    session = PatreonSession()
 
 
 class PatreonPostUrl(PostUrl, PatreonUrl):
@@ -31,6 +32,22 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
             return f"https://www.patreon.com/user?u={user_id}"
         else:
             raise NotImplementedError
+
+    @property
+    def artist_data(self) -> PatreonArtistData:
+        return self.session.artist_data(self.normalized_url)
+
+    @property
+    def related(self) -> list[Url]:
+        return self.artist_data.related_urls
+
+    @property
+    def primary_names(self) -> list[str]:
+        return [self.artist_data.name]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [self.artist_data.username]
 
 
 class PatreonImageUrl(PostAssetUrl, PatreonUrl):
