@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors.lofter import LofterArtistUrl, LofterImageUrl, LofterPostUrl
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
     LofterArtistUrl: {
@@ -17,8 +17,17 @@ urls = {
         "https://imglf3.lf127.net/img/S1d2QlVsWkJhSW1qcnpIS0ZSa3ZJSzFCWFlnUWgzb01DcUdpT1lreG5yQjJVMkhGS09HNGR3PT0.png": "https://imglf3.lf127.net/img/S1d2QlVsWkJhSW1qcnpIS0ZSa3ZJSzFCWFlnUWgzb01DcUdpT1lreG5yQjJVMkhGS09HNGR3PT0.png",
         "http://imglf0.nosdn.127.net/img/cHl3bXNZdDRaaHBnNWJuN1Y4OXBqR01CeVBZSVNmU2FWZWtHc1h4ZTZiUGxlRzMwZnFDM1JnPT0.jpg": "http://imglf0.nosdn.127.net/img/cHl3bXNZdDRaaHBnNWJuN1Y4OXBqR01CeVBZSVNmU2FWZWtHc1h4ZTZiUGxlRzMwZnFDM1JnPT0.jpg",
 
-        # "http://gacha.nosdn.127.net/0a47df61008b46668a56d2f9e4b3c0b3.png?axis=0\u0026enlarge=1\u0026imageView\u0026quality=100\u0026type=png",
+        # http://gacha.nosdn.127.net/0a47df61008b46668a56d2f9e4b3c0b3.png?axis=0\u0026enlarge=1\u0026imageView\u0026quality=100\u0026type=png
     },
 }
 
 generate_parsing_suite(urls)
+
+assert_artist_url(
+    "https://lbgu1.lofter.com/",
+    url_type=LofterArtistUrl,
+    url_properties=dict(username="lbgu1"),
+    primary_names=["LB"],
+    secondary_names=["lbgu1"],
+    related=[],
+)
