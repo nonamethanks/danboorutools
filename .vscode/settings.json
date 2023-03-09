@@ -2,9 +2,6 @@
     "python.linting.flake8Enabled": false,
     "python.linting.mypyEnabled": true,
     "python.linting.pylintEnabled": true,
-    "isort.args": [
-        "--settings-path=${workspaceFolder}/pyproject.toml"
-    ],
     "terminal.integrated.profiles.linux": {
         "tools shell": {
             "overrideName": true,
