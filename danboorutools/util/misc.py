@@ -5,10 +5,10 @@ import json
 import random
 import re
 import weakref
-from collections.abc import Callable, Collection, Hashable, Iterable, Mapping
+from collections.abc import Callable, Iterable
 from typing import Any, TypeVar
 
-from frozendict import frozendict
+from gelidum import freeze
 from pydantic import BaseModel as BadBaseModel
 from pydantic import PrivateAttr, ValidationError
 
@@ -38,19 +38,6 @@ def natsort_array(array: Iterable[Variable]) -> list[Variable]:
 #################################
 
 
-def deep_freeze(obj: Any) -> Any:  # https://stackoverflow.com/a/66729248/7376511
-    if obj is None or isinstance(obj, str):
-        return obj
-    elif isinstance(obj, Mapping):
-        return frozendict({k: deep_freeze(v) for k, v in obj.items()})  # type: ignore[operator]
-    elif isinstance(obj, Collection):
-        return tuple(deep_freeze(i) for i in obj)
-    elif not isinstance(obj, Hashable):
-        raise TypeError(f"unfreezable type: '{type(obj)}'")
-    else:
-        return obj
-
-
 MemoizedFunction = TypeVar("MemoizedFunction", bound=Callable[..., Any])
 
 
@@ -61,11 +48,10 @@ def memoize(func: MemoizedFunction) -> MemoizedFunction:
 
         @functools.wraps(func)
         @functools.lru_cache
-        def cached_method(*args, **kwargs):  # noqa: ANN202
+        def cached_method(args: tuple, kwargs: dict) -> Callable:
             return func(self_weak(), *args, **kwargs)
-        setattr(self, func.__name__, cached_method)
 
-        return cached_method(*deep_freeze(args), **deep_freeze(kwargs))
+        return cached_method(args=freeze(args), kwargs=freeze(kwargs))
 
     return wrapped_func  # type: ignore[return-value]
 
