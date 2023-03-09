@@ -53,13 +53,13 @@ class YoutubeComParser(UrlParser):
 
             # https://img.youtube.com/vi/vTPq-9k0m3A/maxresdefault.jpg
             case "vi", video_id, "maxresdefault.jpg":
-                instance = yt.YoutubeVideoUrl(parsable_url) # TODO: maybe YoutubeThumbnailUrl?
+                instance = yt.YoutubeVideoUrl(parsable_url)  # TODO: maybe YoutubeThumbnailUrl?
                 instance.video_id = video_id
 
-            case reserved, *_ if reserved in cls.RESERVED_NAMES:
+            case reserved, *_ if reserved in cls.RESERVED_NAMES and parsable_url.subdomain in ["www", ""]:
                 raise UnparsableUrl(parsable_url)
 
-            case username, :
+            case username, if parsable_url.subdomain in ["www", ""]:
                 instance = yt.YoutubeUserUrl(parsable_url)
                 instance.username = username
 

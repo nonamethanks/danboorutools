@@ -100,6 +100,9 @@ ignore = [
     "E501",     # max-line-length
     "S101",     # use of assert
 ]
+"danboorutools/logical/sessions/*" = [
+    "N815",     # camelCase properties from api responses
+]
 
 [tool.pycodestyle]
 max-line-length = 140

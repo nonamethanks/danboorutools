@@ -1,16 +1,34 @@
+from functools import cached_property
 from typing import Literal
 
+from danboorutools.logical.sessions.youtube import YoutubeChannelData, YoutubeSession
 from danboorutools.models.url import ArtistUrl, PostUrl, RedirectUrl, Url
 
 
 class YoutubeUrl(Url):
-    pass
+    session = YoutubeSession()
 
 
 class YoutubeUserUrl(ArtistUrl, YoutubeUrl):
     username: str
 
     normalize_string = "https://www.youtube.com/@{username}"
+
+    @property
+    def channel_data(self) -> YoutubeChannelData:
+        return self.session.channel_data(self.normalized_url)
+
+    @property
+    def primary_names(self) -> list[str]:
+        return [self.channel_data.channel_title]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [self.username]
+
+    @property
+    def related(self) -> list[Url]:
+        return self.channel_data.related_urls
 
 
 class YoutubeOldUserUrl(RedirectUrl, YoutubeUrl):
@@ -29,6 +47,14 @@ class YoutubeChannelUrl(RedirectUrl, YoutubeUrl):
     channel_id: str
 
     normalize_string = "https://www.youtube.com/channel/{channel_id}"
+
+    @cached_property
+    def resolved(self) -> Url:
+        return self.parse(self.channel_data.user_data.vanityChannelUrl)
+
+    @property
+    def channel_data(self) -> YoutubeChannelData:
+        return self.session.channel_data(self.normalized_url)
 
 
 class YoutubeVideoUrl(PostUrl, YoutubeUrl):

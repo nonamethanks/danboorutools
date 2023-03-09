@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors import youtube as yt
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_artist_url, assert_redirect_url, generate_parsing_suite
 
 urls = {
     yt.YoutubeUserUrl: {
@@ -28,3 +28,22 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+
+assert_redirect_url(
+    "https://www.youtube.com/channel/UC6iCJQVd1TBBMvL2G9ML-Zg",
+    url_type=yt.YoutubeChannelUrl,
+    url_properties=dict(channel_id="UC6iCJQVd1TBBMvL2G9ML-Zg"),
+    redirects_to="https://www.youtube.com/@niku_kai29",
+)
+
+
+assert_artist_url(
+    "https://www.youtube.com/@niku_kai29",
+    url_type=yt.YoutubeUserUrl,
+    url_properties=dict(username="niku_kai29"),
+    primary_names=["エヴァンゲリオン斬り(肉斬り包丁)"],
+    secondary_names=["niku_kai29"],
+    related=["https://twitter.com/niku_kai29", "https://seiga.nicovideo.jp/user/illust/59309002",
+             "https://www.pixiv.net/en/users/61603554"],
+)
