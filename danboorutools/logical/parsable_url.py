@@ -101,6 +101,10 @@ class ParsableUrl:
     def scheme(self) -> str:
         return self.url_data["scheme"]
 
+    @property
+    def is_base_url(self) -> bool:
+        return not self.url_parts and self.subdomain in ("", "www")
+
     def __str__(self) -> str:
         return f"ParsableUrl[{self.raw_url}]"
     __repr__ = __str__

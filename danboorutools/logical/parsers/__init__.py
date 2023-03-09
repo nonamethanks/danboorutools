@@ -34,7 +34,7 @@ class UrlParser:
         if not parser:
             return None
 
-        if parsable_url.subdomain in ["", "www"] and not parsable_url.url_parts:
+        if parsable_url.is_base_url:
             return None
 
         try:

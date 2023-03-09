@@ -120,6 +120,9 @@ class ArtistFinder:
                 continue
 
             logger.debug(f"Found {related_url} while crawling {first_url}...")
+            if isinstance(related_url, UnknownUrl) and related_url.parsed_url.is_base_url:
+                logger.debug("Skipping because it's a basic url...")
+                continue
 
             if isinstance(related_url, RedirectUrl):
                 try:
