@@ -46,7 +46,7 @@ class DeviantartUserData(BaseModel):
             website = self.website if self.website.startswith("http") else f"https://{self.website}"
             urls += [Url.parse(website)]
 
-        if self.textContent:
+        if self.textContent["html"]["markup"]:
             data = json.loads(self.textContent["html"]["markup"])
             for entity in data["entityMap"].values():
                 if entity["type"] != "LINK":
