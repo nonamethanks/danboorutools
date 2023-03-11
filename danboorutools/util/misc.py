@@ -48,10 +48,16 @@ def memoize(func: MemoizedFunction) -> MemoizedFunction:
 
         @functools.wraps(func)
         @functools.lru_cache
-        def cached_method(args: tuple, kwargs: dict) -> Callable:
+        def cached_method(*args, **kwargs):  # noqa: ANN202
             return func(self_weak(), *args, **kwargs)
 
-        return cached_method(args=freeze(args), kwargs=freeze(kwargs))
+        @functools.wraps(cached_method)
+        def frozen_method(*args, **kwargs):  # noqa: ANN202
+            return cached_method(*freeze(args), **freeze(kwargs))
+
+        setattr(self, func.__name__, frozen_method)
+
+        return frozen_method(*args, **kwargs)
 
     return wrapped_func  # type: ignore[return-value]
 
