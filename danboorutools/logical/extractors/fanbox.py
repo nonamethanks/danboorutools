@@ -1,5 +1,6 @@
 import re
 
+from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.sessions.fanbox import FanboxArtistData, FanboxSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
@@ -35,6 +36,15 @@ class FanboxArtistUrl(ArtistUrl, FanboxUrl):
     @property
     def secondary_names(self) -> list[str]:
         return [self._artist_data.creatorId]
+
+    @property
+    def is_deleted(self) -> bool:
+        try:
+            _ = self._artist_data
+        except UrlIsDeleted:
+            return True
+        else:
+            return False
 
 
 class FanboxOldPostUrl(RedirectUrl, FanboxUrl):

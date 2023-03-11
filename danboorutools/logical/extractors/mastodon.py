@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from functools import cached_property
 
+from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.sessions.mastodon import MastodonArtistData, MastodonSession
 from danboorutools.models.url import ArtistUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
@@ -38,7 +39,7 @@ class MastodonArtistUrl(ArtistUrl, MastodonUrl):
 
     @property
     def related(self) -> list[Url]:
-        return [self.user_id_url] + self.artist_data.related_urls
+        return [self.user_id_url, *self.artist_data.related_urls]
 
     @property
     def primary_names(self) -> list[str]:
@@ -47,6 +48,15 @@ class MastodonArtistUrl(ArtistUrl, MastodonUrl):
     @property
     def secondary_names(self) -> list[str]:
         return [self.artist_data.username]
+
+    @property
+    def is_deleted(self) -> bool:
+        try:
+            _ = self.artist_data
+        except UrlIsDeleted:
+            return True
+        else:
+            return False
 
 
 class MastodonWebIdUrl(InfoUrl, MastodonUrl):
@@ -64,7 +74,7 @@ class MastodonWebIdUrl(InfoUrl, MastodonUrl):
 
     @property
     def related(self) -> list[Url]:
-        return [self.username_url] + self.artist_data.related_urls
+        return [self.username_url, *self.artist_data.related_urls]
 
     @property
     def primary_names(self) -> list[str]:
@@ -73,6 +83,15 @@ class MastodonWebIdUrl(InfoUrl, MastodonUrl):
     @property
     def secondary_names(self) -> list[str]:
         return self.username_url.secondary_names
+
+    @property
+    def is_deleted(self) -> bool:
+        try:
+            _ = self.artist_data
+        except UrlIsDeleted:
+            return True
+        else:
+            return False
 
 
 class MastodonOldImageUrl(RedirectUrl, MastodonUrl):
@@ -87,7 +106,7 @@ class MastodonImageUrl(PostAssetUrl, MastodonUrl):
     @property
     def full_size(self) -> str:
         filename = self.parsed_url.url_parts[-1]
-        subdirs = ('/').join(self.subdirs)
+        subdirs = ("/").join(self.subdirs)
 
         if self.parsed_url.url_parts[0] == "system":
             return f"https://{self.parsed_url.hostname}/system/media_attachments/files/{subdirs}/original/{filename}"
