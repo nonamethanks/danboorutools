@@ -24,7 +24,7 @@ class MastodonSession(Session):
             client_secret=os.environ[f"{site}_CLIENT_SECRET"],
             access_token=os.environ[f"{site}_ACCESS_TOKEN"],
             api_base_url=f"https://{domain}",
-            version_check_mode="none"
+            version_check_mode="none",
         )
 
     @memoize
@@ -34,8 +34,7 @@ class MastodonSession(Session):
             for user in api.account_search(f"{username}@{domain}"):
                 if user["username"] == username:
                     return MastodonArtistData(**user)
-            else:
-                raise NotImplementedError(username)
+            raise NotImplementedError(username)
         elif user_id:
             user_data = api.account(user_id)
         else:

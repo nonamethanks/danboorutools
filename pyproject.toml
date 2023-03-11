@@ -108,8 +108,10 @@ ignore = [
     "S101",     # use of assert
 ]
 "danboorutools/logical/sessions/*" = [
+    "A003",     # shadowing builtin variables like id can't be helped for api responsese
     "N815",     # camelCase properties from api responses
     "TCH003",   # TYPE_CHECKING suggestions, interferes with pydantic
+
 ]
 
 [tool.pycodestyle]
