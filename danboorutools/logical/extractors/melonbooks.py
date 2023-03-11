@@ -1,8 +1,9 @@
+from danboorutools.logical.sessions.melonbooks import MelonbooksSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
 class MelonbooksUrl(Url):
-    pass
+    session = MelonbooksSession()
 
 
 class MelonbooksProductUrl(PostUrl, MelonbooksUrl):
