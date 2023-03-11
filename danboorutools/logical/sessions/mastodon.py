@@ -25,6 +25,7 @@ class MastodonSession(Session):
             access_token=os.environ[f"{site}_ACCESS_TOKEN"],
             api_base_url=f"https://{domain}",
             version_check_mode="none",
+            session=self,
         )
 
     @memoize

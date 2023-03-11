@@ -1,16 +1,29 @@
+from __future__ import annotations
+
 import os
-from typing import Literal, Sequence, TypeVar
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Literal, TypeVar
 
 from backoff import expo, on_exception
 
 from danboorutools import logger
 from danboorutools.exceptions import DanbooruHTTPError
 from danboorutools.logical.sessions import Session
-from danboorutools.models.danbooru import (DanbooruArtist, DanbooruCommentVote, DanbooruModel, DanbooruPost, DanbooruPostVersion,
-                                           DanbooruPostVote, DanbooruTag, DanbooruUser)
-from danboorutools.models.file import File
+from danboorutools.models.danbooru import (
+    DanbooruArtist,
+    DanbooruCommentVote,
+    DanbooruModel,
+    DanbooruPost,
+    DanbooruPostVersion,
+    DanbooruPostVote,
+    DanbooruTag,
+    DanbooruUser,
+)
 from danboorutools.models.url import Url
 from danboorutools.version import version
+
+if TYPE_CHECKING:
+    from danboorutools.models.file import File
 
 GenericModel = TypeVar("GenericModel", bound=DanbooruModel)
 
@@ -77,9 +90,7 @@ class DanbooruApi(Session):
         if endpoint.endswith(".json"):
             return self._try_json_response(response)
         else:
-            return {
-                "success": True
-            }
+            return {"success": True}
 
     def posts(self, tags: list[str], page: int | str = 1) -> list[DanbooruPost]:
         if not any(t.startswith("limit:") for t in tags):
@@ -87,12 +98,11 @@ class DanbooruApi(Session):
 
         params = {
             "tags": " ".join(tags),
-            "page": page
+            "page": page,
         }
 
         response = self.danbooru_request("GET", "posts.json", params=params)
-        posts = [DanbooruPost(post_data) for post_data in response]
-        return posts
+        return [DanbooruPost(post_data) for post_data in response]
 
     def all_posts(self, tags: list[str]) -> list[DanbooruPost]:
         posts: list[DanbooruPost] = []
@@ -110,15 +120,13 @@ class DanbooruApi(Session):
     def users(self, **kwargs) -> list[DanbooruUser]:
         params = kwargs_to_include(**kwargs)
         response = self.danbooru_request("GET", "users.json", params=params)
-        users = [DanbooruUser(user_data) for user_data in response]
-        return users
+        return [DanbooruUser(user_data) for user_data in response]
 
     def _generic_endpoint(self, model_type: type[GenericModel], **kwargs) -> list[GenericModel]:
         only_string = self.only_string_defaults.get(model_type.model_name)
         params = kwargs_to_include(**kwargs, only=only_string)
         response = self.danbooru_request("GET", f"{model_type.model_name}s.json", params=params)
-        models = [model_type(model_data) for model_data in response]
-        return models
+        return [model_type(model_data) for model_data in response]
 
     def artists(self, **kwargs) -> list[DanbooruArtist]:
         return self._generic_endpoint(DanbooruArtist, **kwargs)
@@ -144,8 +152,8 @@ class DanbooruApi(Session):
             "artist": {
                 "name": name,
                 "url_string": " ".join(url_string),
-                "other_names_string": " ".join(other_names)
-            }
+                "other_names_string": " ".join(other_names),
+            },
         }
         request = self.danbooru_request("POST", "artists", json=data)
         assert isinstance(request, dict) and request["success"] is True
@@ -157,7 +165,7 @@ class DanbooruApi(Session):
         data = {
             "post": {
                 "tag_string": tag_string,
-                "old_tag_string": ""
+                "old_tag_string": "",
             }
         }
         response = self.danbooru_request("PUT", f"posts/{post.id}", json=data)
@@ -171,7 +179,7 @@ class DanbooruApi(Session):
         data = {
             "artist": {
                 "url_string": " ".join(url_string),
-            }
+            },
         }
         request = self.danbooru_request("PUT", artist.model_path, json=data)
         assert isinstance(request, dict) and request["success"] is True
@@ -180,7 +188,7 @@ class DanbooruApi(Session):
                 post: DanbooruPost,
                 replacement_file: File | None = None,
                 replacement_url: Url | str | None = None,
-                final_source: Url | str | None = None
+                final_source: Url | str | None = None,
                 ) -> None:
         if not replacement_file and not replacement_url:
             raise ValueError("Either a file or an url must be present.")
