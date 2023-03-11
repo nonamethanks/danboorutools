@@ -2,15 +2,20 @@ from __future__ import annotations
 
 import os
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
 from danboorutools.logical.extractors.pixiv_sketch import PixivSketchArtistUrl
-from danboorutools.logical.sessions import Response, Session
+from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, memoize
+
+if TYPE_CHECKING:
+    from requests import Response
+
 
 DELETION_MESSAGES = [
     "User has left pixiv or the user ID does not exist.",
@@ -85,7 +90,7 @@ class PixivArtistData(BaseModel):
 
 class PixivArtistIllustData(BaseModel):
     id: int
-    type: int = Field(..., gt=0, le=3)
+    type: int = Field(..., ge=0, lt=3)
     upload_timestamp: datetime
     rating_count: int
 
