@@ -5,13 +5,14 @@ from typing import TYPE_CHECKING
 
 import pykakasi
 import unidecode
+from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.sessions.ascii2d import Ascii2dArtistResult, Ascii2dSession
 from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.logical.sessions.saucenao import SaucenaoArtistResult, SaucenaoSession
-from danboorutools.models.url import GalleryUrl, InfoUrl, RedirectUrl, UnknownUrl, Url
+from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, RedirectUrl, UnknownUrl, Url
 from danboorutools.scripts import ProgressTracker
 
 if TYPE_CHECKING:
@@ -28,7 +29,8 @@ class ArtistFinder:
         self.ascii2d = Ascii2dSession()
 
     def create_or_tag_artist_for_post(self, post: DanbooruPost) -> bool:
-        assert isinstance((source := post.source), Url)
+        if not isinstance((source := post.source), Url):
+            raise TypeError(source)
 
         if post.id in self.skipped_posts.value:
             return False
@@ -46,24 +48,39 @@ class ArtistFinder:
                 self.skipped_posts.value = [*self.skipped_posts.value, post.id]
                 return False
 
+        artist_tag = self._find_or_create_artist_tag(artist_url, result_from_archives)
+
+        danbooru_api.update_post_tags(post, ["-artist_request", artist_tag])
+        return True
+
+    def _find_or_create_artist_tag(self,
+                                   artist_url: ArtistUrl | None,
+                                   result_from_archives: Ascii2dArtistResult | SaucenaoArtistResult | None,
+                                   ) -> str:
         if artist_url:
             found_artist_urls = self.find_all_related_urls(artist_url)
         elif result_from_archives:
             found_artist_urls = self.find_all_related_urls(result_from_archives.primary_url, *result_from_archives.extra_urls)
-        artist_tag = self.find_artist_tag(found_artist_urls)
 
-        if not artist_tag:
-            urls_with_names = [u for u in found_artist_urls if isinstance(u, InfoUrl)]
-            primary_names = [name for found_url in urls_with_names for name in found_url.primary_names]
-            secondary_names = [name for found_url in urls_with_names for name in found_url.secondary_names if name not in primary_names]
-            if result_from_archives:
-                primary_names = result_from_archives.primary_names + primary_names
-                secondary_names = result_from_archives.secondary_names + secondary_names
+        if (artist_tag := self.find_artist_tag(found_artist_urls)):
+            return artist_tag
 
-            artist_tag = self.create_artist_tag(primary_names, secondary_names, found_artist_urls)
+        primary_names, secondary_names = [], []
+        for url_with_names in [url for url in found_artist_urls if isinstance(url, InfoUrl)]:
+            try:
+                primary_names += url_with_names.primary_names
+            except ReadTimeout:
+                continue
+            try:
+                secondary_names += [name for name in url_with_names.secondary_names if name not in primary_names]
+            except ReadTimeout:
+                continue
 
-        danbooru_api.update_post_tags(post, ["-artist_request", artist_tag])
-        return True
+        if result_from_archives:
+            primary_names = result_from_archives.primary_names + primary_names
+            secondary_names = result_from_archives.secondary_names + secondary_names
+
+        return self.create_artist_tag(primary_names, secondary_names, found_artist_urls)
 
     def search_for_artist_in_archives(self, post: DanbooruPost) -> SaucenaoArtistResult | Ascii2dArtistResult | None:
         logger.debug("Checking Saucenao...")
@@ -106,7 +123,10 @@ class ArtistFinder:
         logger.debug(f"Crawling {first_url}...")
         scanned_urls += [first_url]
 
-        if first_url.is_deleted:
+        try:
+            if first_url.is_deleted:
+                return list(dict.fromkeys(scanned_urls))
+        except ReadTimeout:
             return list(dict.fromkeys(scanned_urls))
 
         try:
@@ -128,18 +148,16 @@ class ArtistFinder:
                 try:
                     related_url = related_url.resolved  # noqa: PLW2901
                     logger.debug(f"It was resolved into {related_url}...")
-                except UrlIsDeleted:
-                    logger.debug(f"Couldn't resolve url {related_url} because it was dead, skipping...")
+                except (UrlIsDeleted, ReadTimeout) as e:
+                    logger.debug(f"Couldn't resolve url {related_url} because of an exception ({e}), skipping...")
                     continue
-            elif not isinstance(related_url, InfoUrl):
+
+            if not isinstance(related_url, InfoUrl):
                 related_url = related_url.artist  # noqa: PLW2901
                 logger.debug(f"It was resolved into {related_url}...")
 
-            if isinstance(related_url, InfoUrl):
-                scanned_urls += cls.extract_related_urls_recursively(related_url, scanned_urls)
-
-            if isinstance(related_url, (GalleryUrl, UnknownUrl)):  # wip
-                scanned_urls.append(related_url)
+            scanned_urls += cls.extract_related_urls_recursively(related_url, scanned_urls)
+            scanned_urls.append(related_url)
 
         return list(dict.fromkeys(scanned_urls))
 
@@ -152,7 +170,7 @@ class ArtistFinder:
                 assert len(results) == 1, results  # TODO: post in the forums in case there's more than one artist
                 result, = results
                 if result.tag.category_name != "artist":
-                    raise NotImplementedError(f"{result} is not an artist tag!")  # noqa: TRY003
+                    raise NotImplementedError(f"{result} is not an artist tag!")
                 danbooru_api.update_artist_urls(artist=result, urls=artist_urls)
                 return result.tag.name
 

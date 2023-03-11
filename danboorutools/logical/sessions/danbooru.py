@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal, TypeVar
 
 from backoff import expo, on_exception
+from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
 from danboorutools.exceptions import DanbooruHTTPError
@@ -23,6 +24,8 @@ from danboorutools.models.url import Url
 from danboorutools.version import version
 
 if TYPE_CHECKING:
+    from requests import Response
+
     from danboorutools.models.file import File
 
 GenericModel = TypeVar("GenericModel", bound=DanbooruModel)
@@ -82,7 +85,7 @@ class DanbooruApi(Session):
         kwargs["headers"] = {"User-Agent": f"DanbooruTools/{version}"}
 
         endpoint_url = self.base_url.strip("/") + "/" + endpoint.strip("/")
-        response = self.request(method, endpoint_url, *args, **kwargs)
+        response: Response = self.request(method, endpoint_url, *args, **kwargs)
 
         if not response.ok:
             raise DanbooruHTTPError(response)
@@ -144,14 +147,23 @@ class DanbooruApi(Session):
         return self._generic_endpoint(DanbooruTag, **kwargs)
 
     def create_artist(self, name: str, other_names: list[str], urls: Sequence[Url | str]) -> None:
-        final_urls = [Url.parse(url) for url in urls]
-        url_string = [f"-{u.normalized_url}" if u.is_deleted else u.normalized_url for u in final_urls]
-        logger.info(f"Creating artist {name} with urls '{url_string}'")
+        parsed_urls = [Url.parse(url) for url in urls]
+        normalized_urls: list[str] = []
+        for url in parsed_urls:
+            try:
+                if url.is_deleted:
+                    normalized_urls.append(f"-{url.normalized_url}")
+                else:
+                    normalized_urls.append(url.normalized_url)
+            except ReadTimeout:
+                continue
+
+        logger.info(f"Creating artist {name} with urls '{normalized_urls}'")
 
         data = {
             "artist": {
                 "name": name,
-                "url_string": " ".join(url_string),
+                "url_string": " ".join(normalized_urls),
                 "other_names_string": " ".join(other_names),
             },
         }

@@ -64,25 +64,25 @@ class MastodonWebIdUrl(InfoUrl, MastodonUrl):
 
     normalize_string = "https://{site}/web/accounts/{user_id}"
 
-    @cached_property
+    @property
     def artist_data(self) -> MastodonArtistData:
         return self.session.user_data(self.site, user_id=self.user_id)
 
     @property
-    def username_url(self) -> MastodonArtistUrl:
+    def artist_url(self) -> MastodonArtistUrl:
         return Url.build(MastodonArtistUrl, username=self.artist_data.username, site=self.site)
 
     @property
     def related(self) -> list[Url]:
-        return [self.username_url, *self.artist_data.related_urls]
+        return [self.artist_url]
 
     @property
     def primary_names(self) -> list[str]:
-        return self.username_url.primary_names
+        return self.artist_url.primary_names
 
     @property
     def secondary_names(self) -> list[str]:
-        return self.username_url.secondary_names
+        return self.artist_url.secondary_names
 
     @property
     def is_deleted(self) -> bool:

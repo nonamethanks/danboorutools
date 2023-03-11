@@ -3,6 +3,9 @@ from __future__ import annotations
 from functools import cached_property
 from typing import TYPE_CHECKING, TypeVar, final, get_type_hints
 
+from backoff import expo, on_exception
+from requests.exceptions import ReadTimeout
+
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
@@ -329,6 +332,7 @@ class GalleryAssetUrl(_AssetUrl, Url):
 class RedirectUrl(Url):
     """An url that redirects somewhere else."""
     @cached_property
+    @on_exception(expo, ReadTimeout, max_tries=3)
     def resolved(self) -> Url:
         try:
             return self.parse(self.session.unscramble(self.normalized_url))

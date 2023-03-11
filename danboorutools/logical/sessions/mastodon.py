@@ -3,6 +3,8 @@ from __future__ import annotations
 import os
 
 from mastodon import Mastodon
+from mastodon.errors import MastodonNetworkError
+from requests.exceptions import ReadTimeout
 
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl
 from danboorutools.logical.sessions import Session
@@ -26,21 +28,32 @@ class MastodonSession(Session):
             api_base_url=f"https://{domain}",
             version_check_mode="none",
             session=self,
+            request_timeout=self._default_timeout,
         )
 
     @memoize
     def user_data(self, domain: str, /, user_id: int | None = None, username: str | None = None) -> MastodonArtistData:
-        api = self.api(domain)
-        if username:
-            for user in api.account_search(f"{username}@{domain}"):
-                if user["username"] == username:
-                    return MastodonArtistData(**user)
-            raise NotImplementedError(username)
-        elif user_id:
-            user_data = api.account(user_id)
+        if not username and not user_id:
+            raise ValueError(username, user_id)
+
+        try:
+            if username:
+                user_data = self._user_data_from_username(domain=domain, username=username)
+            elif user_id:
+                user_data = self.api(domain).account(user_id)
+        except MastodonNetworkError as e:
+            if "Read timed out." in str(e):
+                raise ReadTimeout from e
+            raise
         else:
-            raise NotImplementedError
-        return MastodonArtistData(**user_data)
+            return MastodonArtistData(**user_data)
+
+    @memoize
+    def _user_data_from_username(self, /, domain: str, username: str) -> dict:
+        for user in self.api(domain).account_search(f"{username}@{domain}"):
+            if user["username"] == username:
+                return user
+        raise NotImplementedError(domain, username)
 
 
 class MastodonArtistData(BaseModel):
