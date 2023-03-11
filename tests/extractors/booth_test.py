@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors import booth as b
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
     b.BoothArtistUrl: {
@@ -24,7 +24,16 @@ urls = {
     b.BoothProfileImageUrl: {
         "https://s2.booth.pm/611c108e-1738-4ac6-965a-4d84243d8a3e/386122a4-29b1-4fbc-8887-ac262c12379a.png": "https://s2.booth.pm/611c108e-1738-4ac6-965a-4d84243d8a3e/386122a4-29b1-4fbc-8887-ac262c12379a.png",
         "https://s.booth.pm/548e2f12-31e4-4553-85b0-be309aaa7310/079b78c1-210c-4b8f-b5ba-5d94c5739bab.jpg?1411739802": "https://s.booth.pm/548e2f12-31e4-4553-85b0-be309aaa7310/079b78c1-210c-4b8f-b5ba-5d94c5739bab.jpg",
-    }
+    },
 }
 
 generate_parsing_suite(urls)
+
+assert_artist_url(
+    "https://synindx-73train.booth.pm",
+    b.BoothArtistUrl,
+    url_properties=dict(username="synindx-73train"),
+    primary_names=["とりでぽっぽ"],
+    secondary_names=["synindx-73train"],
+    related=["https://skeb.jp/@synindx_73train", "https://twitter.com/synindx_73train", "https://www.pixiv.net/en/users/13678408"],
+)

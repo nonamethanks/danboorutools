@@ -37,6 +37,23 @@ class BoothArtistUrl(ArtistUrl, BoothUrl):
         else:
             raise NotImplementedError
 
+    @property
+    def primary_names(self) -> list[str]:
+        return [self.html.select_one(".home-link-container__nickname a").text]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        if self.username:
+            return [self.username]
+        else:
+            raise NotImplementedError(self)
+
+    @property
+    def related(self) -> list[Url]:
+        if not (url_els := self.html.select(".shop-contacts__link a")):
+            raise NotImplementedError(self)
+        return [Url.parse(el["href"]) for el in url_els if el["href"].startswith("http")]
+
 
 class BoothImageUrl(PostAssetUrl, BoothUrl):
     item_id: int
