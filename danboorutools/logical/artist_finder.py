@@ -232,7 +232,7 @@ class ArtistFinder:
         candidate = candidate.replace("(_", "(").replace("_)", ")")  # remove underscores inside parentheses
         candidate = candidate.strip("_(").strip()                    # strip underscores and parentheses from end of string
 
-        return candidate  # noqa: RET504
+        return candidate.lower()
 
     @classmethod
     def romanize_tag_name(cls, potential_tag: str) -> str:
