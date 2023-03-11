@@ -4,7 +4,7 @@ from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
 class YoutubeComParser(UrlParser):
-    RESERVED_NAMES = {"feed", "shorts", "gaming", "premium", "kids", "music", "help", "playlist", "live", }
+    RESERVED_NAMES = {"feed", "shorts", "gaming", "premium", "kids", "music", "help", "playlist", "live"}
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> yt.YoutubeUrl | None:
@@ -55,6 +55,9 @@ class YoutubeComParser(UrlParser):
             case "vi", video_id, "maxresdefault.jpg":
                 instance = yt.YoutubeVideoUrl(parsable_url)  # TODO: maybe YoutubeThumbnailUrl?
                 instance.video_id = video_id
+
+            case "playlist", :
+                raise UnparsableUrl(parsable_url)
 
             case reserved, *_ if reserved in cls.RESERVED_NAMES and parsable_url.subdomain in ["www", ""]:
                 raise UnparsableUrl(parsable_url)
