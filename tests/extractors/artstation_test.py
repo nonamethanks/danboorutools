@@ -1,6 +1,11 @@
-from danboorutools.logical.extractors.artstation import (ArtStationArtistUrl, ArtStationImageUrl, ArtStationMarketplacePostUrl,
-                                                         ArtStationOldPostUrl, ArtStationPostUrl)
-from tests.extractors import generate_parsing_suite
+from danboorutools.logical.extractors.artstation import (
+    ArtStationArtistUrl,
+    ArtStationImageUrl,
+    ArtStationMarketplacePostUrl,
+    ArtStationOldPostUrl,
+    ArtStationPostUrl,
+)
+from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
     ArtStationOldPostUrl: {
@@ -12,7 +17,6 @@ urls = {
         "https://dudeunderscore.artstation.com/projects/NoNmD?album_id=23041": "https://dudeunderscore.artstation.com/projects/NoNmD",
     },
     ArtStationArtistUrl: {
-
         "https://artstation.com/artist/sa-dui": "https://www.artstation.com/sa-dui",
         "https://www.artstation.com/artist/chicle/albums/all/": "https://www.artstation.com/chicle",
         "https://www.artstation.com/artist/sa-dui": "https://www.artstation.com/sa-dui",
@@ -45,3 +49,13 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+
+assert_artist_url(
+    "https://himetyan.artstation.com/",
+    url_type=ArtStationArtistUrl,
+    url_properties=dict(username="himetyan"),
+    primary_names=["Hime tyan art"],
+    secondary_names=["himetyan"],
+    related=["https://www.instagram.com/hime_tyan_art"],
+)

@@ -90,7 +90,7 @@ def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list
 
 
 class BaseModel(BadBaseModel):
-    _raw_data: dict = PrivateAttr()
+    _raw_data: dict[str, Any] = PrivateAttr()
 
     def __init__(self, **data):
         try:

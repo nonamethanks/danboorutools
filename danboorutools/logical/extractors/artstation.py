@@ -1,8 +1,10 @@
+from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.logical.sessions.artstation import ArtstationArtistData, ArtstationSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
 class ArtStationUrl(Url):
-    pass
+    session = ArtstationSession()
 
 
 class ArtStationOldPostUrl(RedirectUrl, ArtStationUrl):
@@ -29,6 +31,31 @@ class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):
     username: str
 
     normalize_string = "https://www.artstation.com/{username}"
+
+    @property
+    def artist_data(self) -> ArtstationArtistData:
+        return self.session.artist_data(self.username)
+
+    @property
+    def primary_names(self) -> list[str]:
+        return [self.artist_data.full_name]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [self.username]
+
+    @property
+    def related(self) -> list[Url]:
+        return self.artist_data.related_urls
+
+    @property
+    def is_deleted(self) -> bool:
+        try:
+            self.artist_data
+        except UrlIsDeleted:
+            return True
+        else:
+            return False
 
 
 class ArtStationImageUrl(PostAssetUrl, ArtStationUrl):
