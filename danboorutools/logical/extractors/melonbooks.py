@@ -17,6 +17,26 @@ class MelonbooksCircleUrl(ArtistUrl, MelonbooksUrl):
 
     normalize_string = "https://www.melonbooks.co.jp/circle/index.php?circle_id={circle_id}"
 
+    @property
+    def primary_names(self) -> list[str]:
+        pen_names = self.html.find("th", string="ペンネーム").parent.select_one("td").text.split()
+        return [p.strip("()") for p in pen_names]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return []
+
+    @property
+    def related(self) -> list[Url]:
+        pixiv_url = self.html.find("th", string="PixivID").parent.select_one("td").text.split()
+        twitter_url = self.html.find("th", string="Twitter URL").parent.select_one("td").text.split()
+
+        return [
+            Url.parse(u.strip())
+            for u in pixiv_url + twitter_url
+            if u.strip()
+        ]
+
 
 class MelonbooksAuthorUrl(ArtistUrl, MelonbooksUrl):
     artist_name: str

@@ -19,9 +19,10 @@ class MelonbooksCoJpParser(UrlParser):
                 instance.product_id = int(parsable_url.query["product_id"])
 
             # https://www.melonbooks.co.jp/circle/index.php?circle_id=107578
+            # https://www.melonbooks.co.jp/circle/index.php?circle_id=107578#
             case *_, "circle", "index.php":
                 instance = mb.MelonbooksCircleUrl(parsable_url)
-                instance.circle_id = int(parsable_url.query["circle_id"])
+                instance.circle_id = int(parsable_url.query["circle_id"].split("#")[0])
 
             # https://www.melonbooks.co.jp/circle/?circle_id=30826
             # https://www.melonbooks.co.jp/fromagee/circle/?circle_id=32501

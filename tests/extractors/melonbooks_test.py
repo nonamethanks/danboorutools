@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors import melonbooks as mb
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
     mb.MelonbooksProductUrl: {
@@ -11,6 +11,7 @@ urls = {
         "https://www.melonbooks.co.jp/fromagee/circle/index.php?circle_id=107578": "https://www.melonbooks.co.jp/circle/index.php?circle_id=107578",
         "https://www.melonbooks.co.jp/circle/?circle_id=30826": "https://www.melonbooks.co.jp/circle/index.php?circle_id=30826",
         "https://www.melonbooks.co.jp/fromagee/circle/?circle_id=32501": "https://www.melonbooks.co.jp/circle/index.php?circle_id=32501",
+        "https://www.melonbooks.co.jp/circle/index.php?circle_id=107578#": "https://www.melonbooks.co.jp/circle/index.php?circle_id=107578",
     },
     mb.MelonbooksAuthorUrl: {
         "https://www.melonbooks.co.jp/search/search.php?name=%E6%8A%B9%E8%8C%B6%E3%81%AD%E3%81%98&text_type=author": "https://www.melonbooks.co.jp/search/search.php?name=抹茶ねじ&text_type=author",
@@ -33,3 +34,12 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+assert_artist_url(
+    "https://www.melonbooks.co.jp/circle/index.php?circle_id=107578#",
+    mb.MelonbooksCircleUrl,
+    url_properties=dict(circle_id=107578),
+    primary_names=["取手ぽっぽ", "トリデポッポ"],
+    secondary_names=[],
+    related=["https://www.pixiv.net/en/users/13678408", "https://www.twitter.com/synindx_73train"],
+)
