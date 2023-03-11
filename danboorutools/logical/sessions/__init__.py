@@ -71,6 +71,8 @@ class Session(RequestsSession):
         else:
             logger.trace(f"{http_method} request made to {url}")
 
+        kwargs.setdefault("timeout", self._default_timeout)
+
         try:
             response = super().request(http_method, url, *args, **kwargs)
         except RequestsConnectionError as e:

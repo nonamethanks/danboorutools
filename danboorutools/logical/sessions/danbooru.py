@@ -16,6 +16,8 @@ GenericModel = TypeVar("GenericModel", bound=DanbooruModel)
 
 
 class DanbooruApi(Session):
+    _default_timeout = 60
+
     bad_source_tags = [
         "bad_source",
         "cropped",
