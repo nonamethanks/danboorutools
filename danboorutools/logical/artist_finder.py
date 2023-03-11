@@ -139,6 +139,10 @@ class ArtistFinder:
             if related_url in scanned_urls:
                 continue
 
+            if related_url.parsed_url.domain in ["t.me", "tiktok.com"]:
+                logger.debug(f"Found blacklisted url {related_url}; skipping...")
+                continue
+
             logger.debug(f"Found {related_url} while crawling {first_url}...")
             if isinstance(related_url, UnknownUrl) and related_url.parsed_url.is_base_url:
                 logger.debug("Skipping because it's a basic url...")
