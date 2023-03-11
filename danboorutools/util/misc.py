@@ -70,7 +70,7 @@ all_urls_pattern = re.compile(
 images_pattern = re.compile(r".*(jpg|jpeg|gif|png)$", re.IGNORECASE)
 
 
-def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list[str]:  # noqa: FBT
+def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list[str]:
     found = [
         u.strip().strip("/?{}()\',.\" ")
         for u in all_urls_pattern.findall(string)

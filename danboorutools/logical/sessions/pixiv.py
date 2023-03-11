@@ -10,7 +10,7 @@ from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
 from danboorutools.logical.extractors.pixiv_sketch import PixivSketchArtistUrl
 from danboorutools.logical.sessions import Response, Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel
+from danboorutools.util.misc import BaseModel, memoize
 
 DELETION_MESSAGES = [
     "User has left pixiv or the user ID does not exist.",
@@ -39,19 +39,20 @@ class PixivSession(Session):
         kwargs["cookies"] = self.cookies_from_env
         if "/img/" in args[1]:
             kwargs["headers"] = kwargs.get("headers", {}) | {"Referer": "https://app-api.pixiv.net/"}
-        request = super().request(*args, **kwargs)
-        return request
+        return super().request(*args, **kwargs)
 
     def artist_data(self, user_id: int | str) -> PixivArtistData:
         url = f"https://www.pixiv.net/touch/ajax/user/details?id={user_id}&lang=en"
-        data = self.get_json(url)["user_details"]
-        return PixivArtistData(**data)
+        data = self.get_json(url)
+        return PixivArtistData(**data["user_details"])
 
+    @memoize
     def artist_illust_data(self, user_id: int | str, page: int) -> list[PixivArtistIllustData]:
         url = f"https://www.pixiv.net/touch/ajax/user/illusts?id={user_id}&p={page}&lang=en"
         data = self.get_json(url)["illusts"]
         return [PixivArtistIllustData(**illust_data) for illust_data in data]
 
+    @memoize
     def post_data(self, post_id: int | str) -> PixivPostData:
         data = self.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}?lang=en")
         return PixivPostData(**data)

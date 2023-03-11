@@ -90,8 +90,7 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
                     elif value.startswith("ugoira"):
                         self.page = 0
                         return
-                else:
-                    self.page = 0
+                self.page = 0
             case post_id, :
                 self.post_id = int(post_id)
                 self.page = 0
@@ -125,7 +124,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
     def _extract_assets(self) -> None:
         asset_urls = [img["urls"]["original"] for img in self._pages_data]
         if "_ugoira0" in asset_urls[0]:
-            asset_urls = [self._ugoira_data["originalSrc"]]
+            asset_urls = [self.ugoira_data["originalSrc"]]
 
         for asset_url in asset_urls:
             self._register_asset(asset_url)
@@ -146,9 +145,10 @@ class PixivPostUrl(PostUrl, PixivUrl):
     def is_deleted(self) -> bool:
         try:
             _ = self._post_data
-            return False
         except UrlIsDeleted:
             return True
+        else:
+            return False
 
     @property
     def _post_data(self) -> PixivPostData:
@@ -161,7 +161,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
         return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}/pages?lang=en")
 
     @property
-    def _ugoira_data(self) -> dict:
+    def ugoira_data(self) -> dict:
         post_id = f"unlisted/{self.post_id}" if self.unlisted else self.post_id
         return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}/ugoira_meta?lang=en")
 
@@ -182,7 +182,7 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
                 post = self.build(PixivPostUrl, post_id=illust_data.id)
 
                 if illust_data.type == 2:
-                    post_ugoira_data = post._ugoira_data
+                    post_ugoira_data = post.ugoira_data
                     asset_urls = [post_ugoira_data["originalSrc"]]
                 else:
                     # Can't avoid fetching this for single-page posts because all samples are jpg, even for png files
@@ -193,7 +193,7 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
                     post=post,
                     created_at=illust_data.upload_timestamp,
                     score=illust_data.rating_count,
-                    assets=[self.parse(url) for url in asset_urls]  # type: ignore[misc]
+                    assets=[self.parse(url) for url in asset_urls],  # type: ignore[misc]
                 )
 
     @property
@@ -212,7 +212,7 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
 
     @property
     def related(self) -> list[Url]:
-        return self._artist_data.related_urls + [self.stacc_url]
+        return [*self._artist_data.related_urls, self.stacc_url]
 
     @property
     def stacc_url(self) -> PixivStaccUrl:
@@ -222,9 +222,10 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
     def is_deleted(self) -> bool:
         try:
             _ = self._artist_data
-            return False
         except UrlIsDeleted:
             return True
+        else:
+            return False
 
     @property
     def _artist_data(self) -> PixivArtistData:
