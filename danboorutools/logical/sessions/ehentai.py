@@ -31,14 +31,14 @@ class EHentaiSession(Session):
         verification_url = "https://e-hentai.org/home.php"
         verification_element = ".homebox"
 
-        if self.browser.attempt_login_with_cookies(domain=self.site_name,
+        if self.browser.attempt_login_with_cookies(domain="ehentai",
                                                    verification_url=verification_url,
                                                    verification_element=verification_element):
             self.__browser_load_exhentai_cookies()
             return
 
         self.browser.compile_login_form(
-            domain=self.site_name,
+            domain="ehentai",
             form_url="https://e-hentai.org/bounce_login.php",
             steps=[{
                 "username": "[name='UserName']",

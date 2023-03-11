@@ -10,9 +10,8 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 from bs4 import BeautifulSoup
+from cloudscraper import CloudScraper as _CloudScraper
 from ratelimit import limits, sleep_and_retry
-from requests import Response
-from requests import Session as RequestsSession
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from danboorutools import logger
@@ -24,10 +23,12 @@ from danboorutools.util.misc import memoize, random_string
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
+    from requests import Response
+
     from danboorutools.models.url import Url
 
 
-class Session(RequestsSession):
+class Session(_CloudScraper):
     _default_headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
         "Cache-Control": "no-cache, no-store, no-transform",
@@ -36,11 +37,6 @@ class Session(RequestsSession):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-
-        if self.__class__ == Session:
-            self.site_name = ""
-        else:
-            self.site_name = self.__class__.__name__.lower().removesuffix("session")  # EHentaiSession -> ehentai
 
         self.proxied_domains: dict[str, dict] = {}
 
