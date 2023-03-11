@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors.deviantart import DeviantArtArtistUrl, DeviantArtImageUrl, DeviantArtPostUrl
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
     DeviantArtPostUrl: {
@@ -46,7 +46,22 @@ urls = {
         "https://noizave.deviantart.com": "https://www.deviantart.com/noizave",
         "http://nemupanart.daportfolio.com": "https://www.deviantart.com/nemupanart",
         "http://regi-chan.artworkfolio.com": "https://www.deviantart.com/regi-chan",
-    }
+    },
 }
 
 generate_parsing_suite(urls)
+
+assert_artist_url(
+    "https://www.deviantart.com/oneori",
+    url_type=DeviantArtArtistUrl,
+    url_properties=dict(username="oneori"),
+    primary_names=["oneori"],
+    secondary_names=[],
+    related=[
+        "https://www.facebook.com/KittyRaymson/",
+        "https://www.instagram.com/o_neo_ri",
+        "https://www.youtube.com/channel/UCqiIF06TpxsxuIEuRSNsajw",
+        "https://twitter.com/o_Neo_ri",
+        "https://vk.com/neo_kitty_art",
+    ],
+)
