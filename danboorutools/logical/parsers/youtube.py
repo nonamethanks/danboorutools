@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class YoutubeComParser(UrlParser):
-    RESERVED_NAMES = {"feed", "shorts", "gaming", "premium", "kids", "music", "help", "playlist", "live", "redirect"}
+    RESERVED_NAMES = {"feed", "shorts", "gaming", "premium", "kids", "music", "help", "playlist", "live", "redirect", "results"}
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> Url | None:
