@@ -112,15 +112,16 @@ class SaucenaoSession(Session):
     def __parse_pixiv_result(self, saucenao_result: dict) -> SaucenaoArtistResult:
         pixiv_id = saucenao_result["member_id"]
         stacc = saucenao_result["member_login_name"]
+        extra_urls = [Url.build(PixivStaccUrl, stacc=stacc)] if stacc else []
+        secondary_names = [stacc, f"pixiv {pixiv_id}"] if stacc else [f"pixiv {pixiv_id}"]
 
         pixiv_artist_url = Url.build(PixivArtistUrl, user_id=pixiv_id)
-        stacc_url = Url.build(PixivStaccUrl, stacc=stacc)
 
         return SaucenaoArtistResult(
             primary_url=pixiv_artist_url,
-            extra_urls=[stacc_url],
+            extra_urls=extra_urls,  # type: ignore[arg-type]
             primary_names=[saucenao_result["member_name"]],
-            secondary_names=[stacc, f"pixiv {pixiv_id}"],
+            secondary_names=secondary_names,
         )
 
     def __parse_danbooru_result(self, saucenao_result: dict[str, dict], source_from_danbooru: Url) -> _SubResult | None:
