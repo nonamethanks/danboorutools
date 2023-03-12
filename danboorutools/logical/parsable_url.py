@@ -46,6 +46,7 @@ class ParsableUrl:
             "hostname": hostname,
             "query": url_query,
             "domain": ".".join([domain, tld]),
+            "tld": tld,
             "subdomain": subdomain,
             "url_without_query": url_without_query,
         }
@@ -61,6 +62,10 @@ class ParsableUrl:
     @property
     def domain(self) -> str:
         return self.url_data["domain"]
+
+    @property
+    def tld(self) -> str:
+        return self.url_data["tld"]
 
     @property
     def subdomain(self) -> str:

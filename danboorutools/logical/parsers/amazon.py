@@ -1,4 +1,5 @@
 from danboorutools.exceptions import UnparsableUrl
+from danboorutools.logical.extractors.amazon import AmazonAuthorUrl, AmazonItemUrl, AmazonUrl
 from danboorutools.logical.extractors.enty import EntyImageUrl
 from danboorutools.logical.extractors.skeb import SkebImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
@@ -56,11 +57,53 @@ class AmazonComParser(UrlParser):
     domains = ["amazon.com", "amazon.jp"]
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> UselessUrl | None:
+    def match_url(cls, parsable_url: ParsableUrl) -> AmazonUrl | UselessUrl | None:
+        instance: AmazonUrl
         match parsable_url.url_parts:
             case "hz", "wishlist", "ls", _wishlist_id:
-                instance = UselessUrl(parsable_url)
+                return UselessUrl(parsable_url)
+            case "gp", "registry", "wishlist", _wishlist_id:
+                return UselessUrl(parsable_url)
+
+            case _ if parsable_url.subdomain not in ["www", ""]:
+                raise UnparsableUrl(parsable_url)
+
+            # https://www.amazon.com/dp/B08BWGQ8NP/
+            # https://www.amazon.com/Yaoi-Hentai-2/dp/1933664010
+            case *_, "dp", item_id:
+                instance = AmazonItemUrl(parsable_url)
+                instance.item_id = item_id
+
+            # https://www.amazon.com/exec/obidos/ASIN/B004U99O9K/ref=nosim/accessuporg-20?SubscriptionId=1MNS6Z3H8Y5Q5XCMG582\u0026linkCode=xm2\u0026creativeASIN=B004U99O9K
+            case "exec", "obidos", "ASIN", item_id, *_:
+                instance = AmazonItemUrl(parsable_url)
+                instance.item_id = item_id
+
+            # https://www.amazon.com/gp/product/B08CTJWTMR
+            case "gp", "product", item_id:
+                instance = AmazonItemUrl(parsable_url)
+                instance.item_id = item_id
+
+            # https://www.amazon.com/Shei-Darksbane/e/B0127EHZ7W/
+            case _display_name, "e", author_id:
+                instance = AmazonAuthorUrl(parsable_url)
+                instance.author_id = author_id
+
+            # https://www.amazon.com/stores/Shei-Darksbane/author/B0127EHZ7W
+            case "stores", _display_name, "author", author_id:
+                instance = AmazonAuthorUrl(parsable_url)
+                instance.author_id = author_id
+
+            # https://www.amazon.com/stores/author/B0127EHZ7W
+            case "stores", "author", author_id:
+                instance = AmazonAuthorUrl(parsable_url)
+                instance.author_id = author_id
+
+            case _, "s":
+                raise UnparsableUrl(parsable_url)
+
             case _:
                 return None
 
+        instance.subsite = parsable_url.tld
         return instance
