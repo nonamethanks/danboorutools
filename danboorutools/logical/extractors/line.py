@@ -1,3 +1,5 @@
+from typing import Literal
+
 from danboorutools.models.url import ArtistUrl, PostUrl, Url
 
 
@@ -7,8 +9,9 @@ class LineUrl(Url):
 
 class LineArtistUrl(ArtistUrl, LineUrl):
     artist_id: int
+    store: Literal["stickershop", "themeshop"]
 
-    normalize_string = "https://store.line.me/stickershop/author/{artist_id}"
+    normalize_string = "https://store.line.me/{store}/author/{artist_id}"
 
     @property
     def is_deleted(self) -> bool:
@@ -36,9 +39,10 @@ class LineArtistUrl(ArtistUrl, LineUrl):
 
 
 class LinePostUrl(PostUrl, LineUrl):
-    product_id: int
+    product_id: str
+    store: Literal["stickershop", "themeshop"]
 
-    normalize_string = "https://store.line.me/stickershop/product/{product_id}"
+    normalize_string = "https://store.line.me/{store}/product/{product_id}"
 
     @property
     def is_deleted(self) -> bool:
