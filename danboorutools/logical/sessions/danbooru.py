@@ -21,7 +21,7 @@ from danboorutools.models.danbooru import (
     DanbooruTag,
     DanbooruUser,
 )
-from danboorutools.models.url import Url
+from danboorutools.models.url import Url, UselessUrl
 from danboorutools.version import version
 
 if TYPE_CHECKING:
@@ -178,6 +178,8 @@ class DanbooruApi(Session):
         parsed_urls = [Url.parse(url) for url in urls]
         normalized_urls: list[str] = []
         for url in parsed_urls:
+            if isinstance(url, UselessUrl):
+                continue
             try:
                 normalized_urls.append(f"-{url.normalized_url}" if url.is_deleted else url.normalized_url)
             except (ReadTimeout, CloudflareChallengeError):
@@ -186,6 +188,8 @@ class DanbooruApi(Session):
         if artist:
             for url_data in artist.json_data["urls"]:
                 parsed = Url.parse(url_data["url"])
+                if isinstance(parsed, UselessUrl):
+                    continue
                 try:
                     normalized_urls.append(f"-{parsed.normalized_url}" if parsed.is_deleted else parsed.normalized_url)
                 except (ReadTimeout, CloudflareChallengeError):
