@@ -9,6 +9,7 @@ from ratelimit import limits, sleep_and_retry
 from danboorutools.logical.extractors.dlsite import DlsiteWorkUrl
 from danboorutools.logical.extractors.fanza import FanzaUrl
 from danboorutools.logical.extractors.nicoseiga import NicoSeigaArtistUrl
+from danboorutools.logical.extractors.nijie import NijieArtistUrl
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl
 from danboorutools.logical.extractors.sakura import SakuraBlogUrl
 from danboorutools.logical.extractors.tinami import TinamiArtistUrl
@@ -93,6 +94,8 @@ class Ascii2dArtistResult:
                     self.__parse_seiga_result(creator_url, artist_name, data)
                 elif site == "tinami":
                     self.__parse_tinami_result(creator_url, artist_name, data)
+                elif site == "ニジエ":
+                    self.__parse_nijie_result(creator_url, artist_name, data)
                 else:
                     raise NotImplementedError(site, artist_element, self.search_url)
 
@@ -138,6 +141,12 @@ class Ascii2dArtistResult:
     @staticmethod
     def __parse_tinami_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
         assert isinstance(creator_url, TinamiArtistUrl)
+        data["primary_urls"].append(creator_url)
+        data["primary_names"].append(artist_name)
+
+    @staticmethod
+    def __parse_nijie_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
+        assert isinstance(creator_url, NijieArtistUrl)
         data["primary_urls"].append(creator_url)
         data["primary_names"].append(artist_name)
 
