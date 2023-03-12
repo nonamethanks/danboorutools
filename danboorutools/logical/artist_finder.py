@@ -10,7 +10,7 @@ from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
 from danboorutools.exceptions import UrlIsDeleted
-from danboorutools.logical.extractors.youtube import YoutubeVideoUrl
+from danboorutools.logical.extractors.youtube import YoutubePlaylistUrl, YoutubeVideoUrl
 from danboorutools.logical.sessions.ascii2d import Ascii2dArtistResult, Ascii2dSession
 from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.logical.sessions.saucenao import SaucenaoArtistResult, SaucenaoSession
@@ -162,7 +162,7 @@ class ArtistFinder:
                 logger.debug("Skipping because it's a useless url...")
                 continue
 
-            if isinstance(related_url, YoutubeVideoUrl):
+            if isinstance(related_url, (YoutubeVideoUrl, YoutubePlaylistUrl)):
                 logger.debug(f"Skipping {related_url} because it has a high chance of being a random video")
                 continue
 

@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class YoutubeComParser(UrlParser):
-    RESERVED_NAMES = {"feed", "shorts", "gaming", "premium", "kids", "music", "help", "playlist", "live", "redirect", "results"}
+    RESERVED_NAMES = {"feed", "shorts", "gaming", "premium", "kids", "music", "help", "live", "redirect", "results"}
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> Url | None:
@@ -65,7 +65,8 @@ class YoutubeComParser(UrlParser):
                 instance.video_id = video_id
 
             case "playlist", :
-                raise UnparsableUrl(parsable_url)
+                instance = yt.YoutubePlaylistUrl(parsable_url)
+                instance.playlist_id = parsable_url.query["list"]
 
             # https://www.youtube.com/redirect?event=channel_description&redir_token=QUFFLUhqbmhHUm1HcUowbk8wUEJVZWJpWmRfck5yRUhWUXxBQ3Jtc0tuankwTXo2TTRYMFJNdDNwbnpUZ193Vk45b3FCVGxMcDNva1Rzby1wT1J1YUZpdTFRN0RvallTN0xwYUxYQXNWS1dvNU5wRExpZ0FBT2xxUTlUOGJ4TFNpcGptQ2xoVHpaUmtWTVI2WWhlNFhSZ1hEVQ&q=https%3A%2F%2Fwww.pixiv.net%2Fusers%2F37422
             case "redirect", :

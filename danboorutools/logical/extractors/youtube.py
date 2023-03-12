@@ -2,7 +2,7 @@ from functools import cached_property
 from typing import Literal
 
 from danboorutools.logical.sessions.youtube import YoutubeChannelData, YoutubeSession
-from danboorutools.models.url import ArtistUrl, PostUrl, RedirectUrl, Url
+from danboorutools.models.url import ArtistUrl, GalleryUrl, PostUrl, RedirectUrl, Url
 
 
 class YoutubeUrl(Url):
@@ -60,6 +60,11 @@ class YoutubeChannelUrl(RedirectUrl, YoutubeUrl):
 class YoutubeVideoUrl(PostUrl, YoutubeUrl):
     video_id: str
     normalize_string = "https://www.youtube.com/watch?v={video_id}"
+
+
+class YoutubePlaylistUrl(GalleryUrl, YoutubeUrl):
+    playlist_id: str
+    normalize_string = "https://www.youtube.com/playlist?list={playlist_id}"
 
 
 class YoutubeCommunityPostUrl(PostUrl, YoutubeUrl):

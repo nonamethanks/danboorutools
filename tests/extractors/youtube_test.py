@@ -1,5 +1,6 @@
 from danboorutools.logical.extractors import youtube as yt
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl
+from danboorutools.models.url import UselessUrl
 from tests.extractors import assert_artist_url, assert_redirect_url, generate_parsing_suite
 
 urls = {
@@ -25,6 +26,9 @@ urls = {
     yt.YoutubeCommunityPostUrl: {
         "https://www.youtube.com/channel/UCMMBGMjrrWcRZmG_lW4jC-Q/community?lb=UgkxWkFtKkCgWnCoPBWsMVzEYhm3ddURD0lL": "https://www.youtube.com/channel/UCMMBGMjrrWcRZmG_lW4jC-Q/community?lb=UgkxWkFtKkCgWnCoPBWsMVzEYhm3ddURD0lL",
         "https://www.youtube.com/post/UgkxWkFtKkCgWnCoPBWsMVzEYhm3ddURD0lL": "https://www.youtube.com/post/UgkxWkFtKkCgWnCoPBWsMVzEYhm3ddURD0lL",
+    },
+    yt.YoutubePlaylistUrl: {
+        "https://youtube.com/playlist?list=PLcw27-K4pcr23t305PlCpIYvulr0m2Agu": "https://www.youtube.com/playlist?list=PLcw27-K4pcr23t305PlCpIYvulr0m2Agu",
     },
     PixivArtistUrl: {
         "https://www.youtube.com/redirect?event=channel_description&redir_token=QUFFLUhqbmhHUm1HcUowbk8wUEJVZWJpWmRfck5yRUhWUXxBQ3Jtc0tuankwTXo2TTRYMFJNdDNwbnpUZ193Vk45b3FCVGxMcDNva1Rzby1wT1J1YUZpdTFRN0RvallTN0xwYUxYQXNWS1dvNU5wRExpZ0FBT2xxUTlUOGJ4TFNpcGptQ2xoVHpaUmtWTVI2WWhlNFhSZ1hEVQ&q=https%3A%2F%2Fwww.pixiv.net%2Fusers%2F37422": "https://www.pixiv.net/en/users/37422",
