@@ -73,8 +73,6 @@ class YoutubeChannelData(BaseModel):
                 else:
                     links += link_sections
 
-        for link in links:
-            encoded_url: str = link["navigationEndpoint"]["urlEndpoint"]["url"]
-            urls.append(parse_qs(encoded_url.split("?")[-1])["q"][0])
+        urls += [link["navigationEndpoint"]["urlEndpoint"]["url"] for link in links]
 
         return [Url.parse(u) for u in list(dict.fromkeys(urls))]
