@@ -146,9 +146,12 @@ class SaucenaoSession(Session):
                 return None  # Saucenao doesn't have it
             if "," in creator:
                 raise NotImplementedError(saucenao_result)  # saucenao database is fucked
-            stacc = creator.replace(" ", "_")
-            result.extra_urls += [Url.build(PixivStaccUrl, stacc=stacc)]
-            result.secondary_names += [stacc]
+            if match := re.match(r"^pixiv id (\d+)$", creator):
+                result.extra_urls += [Url.build(PixivArtistUrl, user_id=int(match.groups()[0]))]
+            else:
+                stacc = creator.replace(" ", "_")
+                result.extra_urls += [Url.build(PixivStaccUrl, stacc=stacc)]
+                result.secondary_names += [stacc]
         else:
             raise NotImplementedError
 
