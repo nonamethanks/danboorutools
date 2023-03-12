@@ -50,7 +50,11 @@ class ArtistFinder:
                 self.skipped_posts.value = [*self.skipped_posts.value, post.id]
                 return False
 
-        artist_tag = self._find_or_create_artist_tag(artist_url, result_from_archives)
+        try:
+            artist_tag = self._find_or_create_artist_tag(artist_url, result_from_archives)
+        except Exception as e:
+            e.add_note(f"On post: {post}, artist: {artist_url}, archived result: {result_from_archives}")
+            raise
 
         danbooru_api.update_post_tags(post, ["-artist_request", artist_tag])
         return True
@@ -206,10 +210,13 @@ class ArtistFinder:
         primary_names = list(dict.fromkeys(primary_names))
         secondary_names = [n for n in list(dict.fromkeys(secondary_names)) if n not in primary_names]
 
+        attempts = []
         for primary_name in primary_names:
             candidate = cls.sanitize_tag_name(primary_name)
             if cls.valid_new_tag_name(candidate):
                 return candidate
+            else:
+                attempts.append(candidate)
 
         combinations = [
             (name, qualifier)
@@ -224,8 +231,10 @@ class ArtistFinder:
             candidate = cls.sanitize_tag_name(f"{name}_({qualifier})")
             if cls.valid_new_tag_name(candidate):
                 return candidate
+            else:
+                attempts.append(candidate)
 
-        raise NotImplementedError
+        raise NotImplementedError(attempts)
 
     @classmethod
     def sanitize_tag_name(cls, potential_tag: str) -> str:
