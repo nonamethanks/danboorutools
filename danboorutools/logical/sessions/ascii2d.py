@@ -4,8 +4,6 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
 
-from ratelimit import limits, sleep_and_retry
-
 from danboorutools.logical.extractors.dlsite import DlsiteWorkUrl
 from danboorutools.logical.extractors.fanza import FanzaUrl
 from danboorutools.logical.extractors.nicoseiga import NicoSeigaArtistUrl
@@ -15,12 +13,13 @@ from danboorutools.logical.extractors.sakura import SakuraBlogUrl
 from danboorutools.logical.extractors.tinami import TinamiArtistUrl
 from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl
 from danboorutools.logical.sessions import Session
-from danboorutools.models.danbooru import DanbooruPost
 from danboorutools.models.url import InfoUrl, PostAssetUrl, PostUrl, Url
 from danboorutools.util.misc import memoize
 
 if TYPE_CHECKING:
     from bs4 import Tag
+
+    from danboorutools.models.danbooru import DanbooruPost
 
 
 @dataclass(repr=False)
@@ -90,9 +89,8 @@ class Ascii2dArtistResult:
                 if isinstance(post_url, FanzaUrl):
                     data["primary_urls"].append(post_url.artist)
                     continue
-                else:
-                    e.add_note(str(link_object))
-                    raise
+                e.add_note(str(link_object))
+                raise
             creator_url = Url.parse(artist_element["href"])
             assert isinstance(creator_url, InfoUrl), creator_url
             artist_name = artist_element.text
@@ -180,9 +178,9 @@ class Ascii2dArtistResult:
 
 
 class Ascii2dSession(Session):
+    MAX_CALLS_PER_SECOND = 0.5
+
     @memoize
-    @sleep_and_retry
-    @limits(calls=1, period=2)
     def _reverse_search_url(self, url: str) -> list[Ascii2dArtistResult]:
         # can't use /color/md5 because sometimes the result is not cached and requires a cloudflare-protected POST
         ascii2d_url = f"https://ascii2d.net/search/url/{url}"
@@ -216,7 +214,7 @@ class Ascii2dSession(Session):
             if isinstance(original_url, PostAssetUrl):
                 original_url = original_url.post
 
-            normalized_from_result = [url.normalized_url for url in [result.primary_url] + result.extra_urls + result.posts]
+            normalized_from_result = [url.normalized_url for url in [result.primary_url, *result.extra_urls, *result.posts]]
             if original_url.normalized_url in normalized_from_result:
                 return result
 

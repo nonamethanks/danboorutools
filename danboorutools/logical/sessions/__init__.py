@@ -13,7 +13,7 @@ from urllib.parse import urlencode
 from bs4 import BeautifulSoup
 from cloudscraper import CloudScraper as _CloudScraper
 from cloudscraper.exceptions import CloudflareChallengeError
-from ratelimit import limits, sleep_and_retry
+from pyrate_limiter.limiter import Limiter, RequestRate
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from danboorutools import logger
@@ -31,11 +31,12 @@ if TYPE_CHECKING:
 
 
 class Session(_CloudScraper):
-    _default_headers = {
+    DEFAULT_HEADERS = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
         "Cache-Control": "no-cache, no-store, no-transform",
     }
-    _default_timeout = 5
+    DEFAULT_TIMEOUT = 5
+    MAX_CALLS_PER_SECOND: int | float = 3
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -48,12 +49,18 @@ class Session(_CloudScraper):
                 domain = envvar.removesuffix("_PROXY").lower().replace("_", ".")
                 self.proxied_domains[domain] = {"http": proxy, "https": proxy}
 
+        if self.MAX_CALLS_PER_SECOND < 1:
+            interval = 1 / self.MAX_CALLS_PER_SECOND
+            max_calls = 1.0
+        else:
+            max_calls = self.MAX_CALLS_PER_SECOND
+            interval = 1
+        self.limiter = Limiter(RequestRate(max_calls, interval))  # type: ignore[arg-type]
+
     @cached_property
     def browser(self) -> Browser:
         return Browser()
 
-    @sleep_and_retry
-    @limits(calls=5, period=1)
     def request(self, *args, **kwargs) -> Response:
         http_method, url, args = args[0], args[1], args[2:]
 
@@ -62,17 +69,18 @@ class Session(_CloudScraper):
 
         url_domain = ParsableUrl(url).domain
         kwargs["proxies"] = self.proxied_domains.get(url_domain)
-        kwargs["headers"] = self._default_headers | kwargs.get("headers", {})
+        kwargs["headers"] = self.DEFAULT_HEADERS | kwargs.get("headers", {})
 
         if kwargs.get("params"):
             logger.trace(f"{http_method} request made to {url}?{urlencode(kwargs['params'])}")
         else:
             logger.trace(f"{http_method} request made to {url}")
 
-        kwargs.setdefault("timeout", self._default_timeout)
+        kwargs.setdefault("timeout", self.DEFAULT_TIMEOUT)
 
         try:
-            response = super().request(http_method, url, *args, **kwargs)
+            with self.limiter.ratelimit(url_domain, delay=True):
+                response = super().request(http_method, url, *args, **kwargs)
         except RequestsConnectionError as e:
             e.add_note(f"Method: {http_method}; url: {url}")
             raise
@@ -90,9 +98,9 @@ class Session(_CloudScraper):
         if download_dir is not None:
             download_dir = Path(download_dir)
 
-        kwargs["headers"] = self._default_headers | kwargs.get("headers", {})
+        kwargs["headers"] = self.DEFAULT_HEADERS | kwargs.get("headers", {})
 
-        download_stream = self.get(url, *args, timeout=self._default_timeout, stream=True, **kwargs)  # type: ignore[arg-type]
+        download_stream = self.get(url, *args, timeout=self.DEFAULT_TIMEOUT, stream=True, **kwargs)  # type: ignore[arg-type]
         if not download_stream.ok:
             raise DownloadError(download_stream)
 

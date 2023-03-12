@@ -33,7 +33,7 @@ UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 
 class Url:
     """A generic URL model."""
-    session = Session()  # TODO: implement domain-bound rate limitings
+    session = Session()
     normalize_string: str | None = None
 
     @classmethod

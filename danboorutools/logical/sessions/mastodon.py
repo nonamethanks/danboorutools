@@ -28,7 +28,7 @@ class MastodonSession(Session):
             api_base_url=f"https://{domain}",
             version_check_mode="none",
             session=self,
-            request_timeout=self._default_timeout,
+            request_timeout=self.DEFAULT_TIMEOUT,
         )
 
     @memoize

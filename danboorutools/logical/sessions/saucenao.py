@@ -2,8 +2,6 @@ import os
 import re
 from dataclasses import dataclass
 
-from ratelimit import limits, sleep_and_retry
-
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl, PixivStaccUrl, PixivUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.danbooru import DanbooruPost
@@ -39,10 +37,9 @@ class SaucenaoSession(Session):
     ]
 
     API_KEY = os.environ["SAUCENAO_API_KEY"]
+    MAX_CALLS_PER_SECOND = 0.5
 
     @memoize
-    @sleep_and_retry
-    @limits(calls=1, period=2)
     def _reverse_search_url(self, image_url: str) -> list[dict[str, dict]]:
         """Reverse search an url."""
         saucenao_url = f"https://saucenao.com/search.php?db=999&output_type=2&numres=16&url={image_url}&api_key={self.API_KEY}"
