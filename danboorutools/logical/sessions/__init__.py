@@ -33,7 +33,7 @@ class Session(_CloudScraper):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
         "Cache-Control": "no-cache, no-store, no-transform",
     }
-    _default_timeout = 2
+    _default_timeout = 5
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
