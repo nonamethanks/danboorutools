@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import tempfile
 import time
 from functools import cached_property
@@ -11,6 +12,7 @@ from urllib.parse import urlencode
 
 from bs4 import BeautifulSoup
 from cloudscraper import CloudScraper as _CloudScraper
+from cloudscraper.exceptions import CloudflareChallengeError
 from ratelimit import limits, sleep_and_retry
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
@@ -73,6 +75,9 @@ class Session(_CloudScraper):
             response = super().request(http_method, url, *args, **kwargs)
         except RequestsConnectionError as e:
             e.add_note(f"Method: {http_method}; url: {url}")
+            raise
+        except CloudflareChallengeError:
+            del sys.tracebacklimit  # fucking cloudscraper
             raise
 
         if response.status_code == 404:

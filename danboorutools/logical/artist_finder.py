@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import pykakasi
 import unidecode
+from cloudscraper.exceptions import CloudflareChallengeError
 from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
@@ -126,7 +127,7 @@ class ArtistFinder:
         try:
             if first_url.is_deleted:
                 return list(dict.fromkeys(scanned_urls))
-        except ReadTimeout:
+        except (ReadTimeout, CloudflareChallengeError):
             return list(dict.fromkeys(scanned_urls))
 
         try:
