@@ -210,7 +210,11 @@ class ArtistFinder:
         primary_names = list(dict.fromkeys(primary_names))
         secondary_names = [n for n in list(dict.fromkeys(secondary_names)) if n not in primary_names]
 
+        if not primary_names:
+            primary_names = secondary_names
+
         attempts = []
+
         for primary_name in primary_names:
             candidate = cls.sanitize_tag_name(primary_name)
             if cls.valid_new_tag_name(candidate):
@@ -218,12 +222,13 @@ class ArtistFinder:
             else:
                 attempts.append(candidate)
 
-        combinations = [
+        combinations = list(dict.fromkeys(
             (name, qualifier)
             for name in primary_names
             for qualifier in primary_names + secondary_names
             if name != qualifier
-        ]
+        ))
+
         for name, qualifier in combinations:
             name = cls.sanitize_tag_name(name)  # noqa: PLW2901
             qualifier = cls.sanitize_tag_name(qualifier)  # noqa: PLW2901
