@@ -118,16 +118,17 @@ class Ascii2dArtistResult:
 
     def __external_case(self, url_groups: list[Tag], data: dict[str, list]) -> None:
         if not url_groups:
-            if "（DL版）" in str(self.html_data):
-                pass
-            else:
-                raise NotImplementedError(self.html_data, self.search_url)
-        elif len(url_groups) > 1:
             raise NotImplementedError(self.html_data, self.search_url)
-        elif "sakura.ne.jp" in url_groups[0].text:
+
+        if len(url_groups) > 1:
+            raise NotImplementedError(url_groups, self.search_url)
+
+        if "sakura.ne.jp" in url_groups[0].text:
             self.__parse_sakura_result(url_groups[0], data)
+        elif "DL版" in url_groups[0].text:
+            return
         else:
-            raise NotImplementedError(self.html_data, self.search_url)
+            raise NotImplementedError(url_groups, self.search_url)
 
     @staticmethod
     def __parse_pixiv_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
@@ -191,15 +192,10 @@ class Ascii2dSession(Session):
 
         results: list[Ascii2dArtistResult] = []
         for result_html in html_results:
-            if result_html.select_one(".detail-box").text.strip():  # some results have bare text that must be parsed
+            if result_html.select_one(".detail-box").text.strip():
                 result = Ascii2dArtistResult(result_html.select_one(".info-box"), ascii2d_url)
-                try:
-                    if not any(v for v in result._data.values()):  # ensure every result has some data in it
-                        raise NotImplementedError(result_html, "This result could not be parsed.")
-                except Exception as e:
-                    e.add_note(f"On {ascii2d_url}")
-                    raise
-
+                if not any(v for v in result._data.values()):
+                    continue
                 results.append(result)
 
         assert results, f"No parsable results for {url}"  # to make sure page layout hasn't changed
