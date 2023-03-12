@@ -4,6 +4,7 @@ from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
 class TwitterComParser(UrlParser):
+    RESERVED_NAMES = ["home", "i", "intent", "search", "hashtag"]
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> tw.TwitterUrl | None:
@@ -31,7 +32,7 @@ class TwitterComParser(UrlParser):
 
             # https://twitter.com/motty08111213
             # https://twitter.com/motty08111213/likes
-            case username, *_ if username not in ["home", "i", "intent", "search"]:
+            case username, *_ if username not in cls.RESERVED_NAMES:
                 instance = tw.TwitterArtistUrl(parsable_url)
                 instance.username = username
 
@@ -55,7 +56,7 @@ class TwitterComParser(UrlParser):
                 instance = tw.TwitterOnlyStatusUrl(parsable_url)
                 instance.post_id = int(parsable_url.query["tweet_id"])
 
-            case ("home" | "search"), *_:
+            case subdir, *_ if subdir in cls.RESERVED_NAMES:
                 raise UnparsableUrl(parsable_url)
 
             case "i", "timeline":
