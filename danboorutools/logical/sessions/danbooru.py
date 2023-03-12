@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal, TypeVar
 
 from backoff import expo, on_exception
+from cloudscraper.exceptions import CloudflareChallengeError
 from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
@@ -147,28 +148,51 @@ class DanbooruApi(Session):
         return self._generic_endpoint(DanbooruTag, **kwargs)
 
     def create_artist(self, name: str, other_names: list[str], urls: Sequence[Url | str]) -> None:
-        parsed_urls = [Url.parse(url) for url in urls]
-        normalized_urls: list[str] = []
-        for url in parsed_urls:
-            try:
-                if url.is_deleted:
-                    normalized_urls.append(f"-{url.normalized_url}")
-                else:
-                    normalized_urls.append(url.normalized_url)
-            except ReadTimeout:
-                continue
-
-        logger.info(f"Creating artist {name} with urls '{normalized_urls}'")
+        url_string = self._generate_url_string_for_artist(urls)
+        logger.info(f"Creating artist {name} with urls '{url_string}'")
 
         data = {
             "artist": {
                 "name": name,
-                "url_string": " ".join(normalized_urls),
+                "url_string": url_string,
                 "other_names_string": " ".join(other_names),
             },
         }
         request = self.danbooru_request("POST", "artists", json=data)
         assert isinstance(request, dict) and request["success"] is True
+
+    def update_artist_urls(self, artist: DanbooruArtist, urls: Sequence[Url | str]) -> None:
+        url_string = self._generate_url_string_for_artist(urls, artist=artist)
+
+        logger.info(f"Sending urls '{url_string}' to artist {artist}")
+
+        data = {
+            "artist": {
+                "url_string": url_string,
+            },
+        }
+        request = self.danbooru_request("PUT", artist.model_path, json=data)
+        assert isinstance(request, dict) and request["success"] is True
+
+    def _generate_url_string_for_artist(self, urls: Sequence[Url | str], artist: DanbooruArtist | None = None) -> str:
+        parsed_urls = [Url.parse(url) for url in urls]
+        normalized_urls: list[str] = []
+        for url in parsed_urls:
+            try:
+                normalized_urls.append(f"-{url.normalized_url}" if url.is_deleted else url.normalized_url)
+            except (ReadTimeout, CloudflareChallengeError):
+                continue
+
+        if artist:
+            for url_data in artist.json_data["urls"]:
+                parsed = Url.parse(url_data["url"])
+                try:
+                    normalized_urls.append(f"-{parsed.normalized_url}" if parsed.is_deleted else parsed.normalized_url)
+                except (ReadTimeout, CloudflareChallengeError):
+                    normalized_urls.append(f"-{parsed.normalized_url}" if url_data["is_deleted"] else parsed.normalized_url)
+                    continue
+
+        return " ".join(normalized_urls)
 
     def update_post_tags(self, post: DanbooruPost, tags: list[str]) -> None:
         """Update a post's tags."""
@@ -182,19 +206,6 @@ class DanbooruApi(Session):
         }
         response = self.danbooru_request("PUT", f"posts/{post.id}", json=data)
         assert isinstance(response, dict) and response["success"] is True
-
-    def update_artist_urls(self, artist: DanbooruArtist, urls: Sequence[Url | str]) -> None:
-        parsed_urls = [Url.parse(url) for url in urls]
-        url_string = [f"-{u.normalized_url}" if u.is_deleted else u.normalized_url for u in parsed_urls + artist.urls]
-        logger.info(f"Sending urls '{url_string}' to artist {artist}")
-
-        data = {
-            "artist": {
-                "url_string": " ".join(url_string),
-            },
-        }
-        request = self.danbooru_request("PUT", artist.model_path, json=data)
-        assert isinstance(request, dict) and request["success"] is True
 
     def replace(self,
                 post: DanbooruPost,
