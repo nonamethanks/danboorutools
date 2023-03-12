@@ -1,13 +1,14 @@
 from danboorutools.exceptions import UnparsableUrl
 from danboorutools.logical.extractors import twitter as tw
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.models.url import UselessUrl
 
 
 class TwitterComParser(UrlParser):
     RESERVED_NAMES = ["home", "i", "intent", "search", "hashtag"]
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> tw.TwitterUrl | None:
+    def match_url(cls, parsable_url: ParsableUrl) -> tw.TwitterUrl | UselessUrl | None:
         instance: tw.TwitterUrl
         match parsable_url.url_parts:
             # https://twitter.com/i/web/status/943446161586733056
@@ -57,10 +58,10 @@ class TwitterComParser(UrlParser):
                 instance.post_id = int(parsable_url.query["tweet_id"])
 
             case subdir, *_ if subdir in cls.RESERVED_NAMES:
-                raise UnparsableUrl(parsable_url)
+                return UselessUrl(parsable_url)
 
             case "i", "timeline":
-                raise UnparsableUrl(parsable_url)
+                return UselessUrl(parsable_url)
 
             case _:
                 return None

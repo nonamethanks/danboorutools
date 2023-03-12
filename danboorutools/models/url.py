@@ -125,7 +125,14 @@ class UnknownUrl(Url):
     """An unknown url."""
 
     @classmethod
-    def normalize(cls, **kwargs) -> None:
+    def normalize(cls, **kwargs) -> None:  # noqa: ARG003
+        return None
+
+
+class UselessUrl(Url):
+    """A known, but useless, url."""
+    @classmethod
+    def normalize(cls, **kwargs) -> None:  # noqa: ARG003
         return None
 
 

@@ -1,4 +1,5 @@
 from danboorutools.logical.extractors import twitter as tw
+from danboorutools.models.url import UselessUrl
 from tests.extractors import generate_parsing_suite
 
 urls = {
@@ -48,8 +49,9 @@ urls = {
         "https://twitter.com/i/status/943446161586733056": "https://twitter.com/i/status/943446161586733056",
         "https://twitter.com/intent/favorite?tweet_id=1300476511254753280": "https://twitter.com/i/status/1300476511254753280",
     },
-
-
+    UselessUrl: {
+        "https://twitter.com/hashtag/%E3%82%AC%E3%83%81%E3%83%A3%E3%83%89%E3%83%AD%E3%83%83%E3%82%AF?src=hashtag_click&f=live": "https://twitter.com/hashtag/%E3%82%AC%E3%83%81%E3%83%A3%E3%83%89%E3%83%AD%E3%83%83%E3%82%AF?src=hashtag_click&f=live",
+    },
 }
 
 

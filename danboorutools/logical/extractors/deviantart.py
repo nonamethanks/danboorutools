@@ -64,7 +64,7 @@ class DeviantArtImageUrl(PostAssetUrl, DeviantArtUrl):
         try:
             match = next(match for pattern in FILENAME_PATTERNS if (match := pattern.match(filename)))
         except StopIteration as e:
-            raise UnparsableUrl(self.parsed_url) from e
+            raise NotImplementedError(self.parsed_url) from e
 
         groups: dict[str, str] = match.groupdict()
         self.title = re.sub(r"_+", " ", groups["title"]).title().replace(" ", "-") if "title" in groups else None

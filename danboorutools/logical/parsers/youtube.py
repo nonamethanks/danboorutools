@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from danboorutools.exceptions import UnparsableUrl
 from danboorutools.logical.extractors import youtube as yt
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.models.url import UselessUrl
 
 if TYPE_CHECKING:
     from danboorutools.models.url import Url
@@ -71,7 +72,7 @@ class YoutubeComParser(UrlParser):
                 return cls.parse(parsable_url.query["q"])
 
             case reserved, *_ if reserved in cls.RESERVED_NAMES and parsable_url.subdomain in ["www", ""]:
-                raise UnparsableUrl(parsable_url)
+                return UselessUrl(parsable_url)
 
             case username, if parsable_url.subdomain in ["www", ""]:
                 instance = yt.YoutubeUserUrl(parsable_url)
