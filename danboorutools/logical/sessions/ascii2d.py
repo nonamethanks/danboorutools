@@ -57,7 +57,7 @@ class Ascii2dArtistResult:
         return self.html_data.select_one(".hash").text
 
     @cached_property
-    def _data(self) -> dict[str, list]:  # pylint: disable=too-many-branches # can't be helped
+    def _data(self) -> dict[str, list]:
         data: dict[str, list] = {
             "primary_urls": [],
             "extra_urls": [],
@@ -67,57 +67,69 @@ class Ascii2dArtistResult:
         }
 
         if url_groups := self.html_data.select(".detail-box h6"):
-            for link_object in url_groups:
-                site = link_object.select_one("small").text.strip()
-
-                post_url = Url.parse(link_object.select("a")[0]["href"])
-                assert isinstance(post_url, PostUrl), post_url
-                data["posts"].append(post_url)
-                try:
-                    artist_element = link_object.select("a")[1]
-                except IndexError as e:
-                    if isinstance(post_url, FanzaUrl):
-                        data["primary_urls"].append(post_url.artist)
-                        continue
-                    else:
-                        e.add_note(str(link_object))
-                        raise
-                creator_url = Url.parse(artist_element["href"])
-                assert isinstance(creator_url, InfoUrl), creator_url
-                artist_name = artist_element.text
-
-                if site == "pixiv":
-                    self.__parse_pixiv_result(creator_url, artist_name, data)
-                elif site == "twitter":
-                    self.__parse_twitter_result(creator_url, artist_name, data)
-                elif site == "ニコニコ静画":
-                    self.__parse_seiga_result(creator_url, artist_name, data)
-                elif site == "tinami":
-                    self.__parse_tinami_result(creator_url, artist_name, data)
-                elif site == "ニジエ":
-                    self.__parse_nijie_result(creator_url, artist_name, data)
-                else:
-                    raise NotImplementedError(site, artist_element, self.search_url)
-
+            self.__detail_box_h6_case(url_groups, data)
         elif url_groups := self.html_data.select(".detail-box a"):
-            for link_object in url_groups:
-                site = link_object.text.strip()
-                if site == "dlsite":
-                    self.__parse_dlsite_result(link_object, data)
-                else:
-                    raise NotImplementedError(site, link_object, self.search_url)
-
+            self.__detail_box_a_case(url_groups, data)
         elif url_groups := self.html_data.select(".external"):
-            if len(url_groups) > 1:
-                raise NotImplementedError(self.html_data, self.search_url)
-            if "sakura.ne.jp" in url_groups[0].text:
-                self.__parse_sakura_result(url_groups[0], data)
-            else:
-                raise NotImplementedError(self.html_data, self.search_url)
+            self.__external_case(url_groups, data)
         else:
             raise NotImplementedError(self.html_data, self.search_url)
 
         return {key: list(dict.fromkeys(value)) for key, value in data.items()}
+
+    def __detail_box_h6_case(self, url_groups: list[Tag], data: dict[str, list]) -> None:
+        for link_object in url_groups:
+            site = link_object.select_one("small").text.strip()
+
+            post_url = Url.parse(link_object.select("a")[0]["href"])
+            assert isinstance(post_url, PostUrl), post_url
+            data["posts"].append(post_url)
+            try:
+                artist_element = link_object.select("a")[1]
+            except IndexError as e:
+                if isinstance(post_url, FanzaUrl):
+                    data["primary_urls"].append(post_url.artist)
+                    continue
+                else:
+                    e.add_note(str(link_object))
+                    raise
+            creator_url = Url.parse(artist_element["href"])
+            assert isinstance(creator_url, InfoUrl), creator_url
+            artist_name = artist_element.text
+
+            if site == "pixiv":
+                self.__parse_pixiv_result(creator_url, artist_name, data)
+            elif site == "twitter":
+                self.__parse_twitter_result(creator_url, artist_name, data)
+            elif site == "ニコニコ静画":
+                self.__parse_seiga_result(creator_url, artist_name, data)
+            elif site == "tinami":
+                self.__parse_tinami_result(creator_url, artist_name, data)
+            elif site == "ニジエ":
+                self.__parse_nijie_result(creator_url, artist_name, data)
+            else:
+                raise NotImplementedError(site, artist_element, self.search_url)
+
+    def __detail_box_a_case(self, url_groups: list[Tag], data: dict[str, list]) -> None:
+        for link_object in url_groups:
+            site = link_object.text.strip()
+            if site == "dlsite":
+                self.__parse_dlsite_result(link_object, data)
+            else:
+                raise NotImplementedError(site, link_object, self.search_url)
+
+    def __external_case(self, url_groups: list[Tag], data: dict[str, list]) -> None:
+        if not url_groups:
+            if "（DL版）" in str(self.html_data):
+                pass
+            else:
+                raise NotImplementedError(self.html_data, self.search_url)
+        elif len(url_groups) > 1:
+            raise NotImplementedError(self.html_data, self.search_url)
+        elif "sakura.ne.jp" in url_groups[0].text:
+            self.__parse_sakura_result(url_groups[0], data)
+        else:
+            raise NotImplementedError(self.html_data, self.search_url)
 
     @staticmethod
     def __parse_pixiv_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
