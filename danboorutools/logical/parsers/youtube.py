@@ -66,7 +66,10 @@ class YoutubeComParser(UrlParser):
 
             case "playlist", :
                 instance = yt.YoutubePlaylistUrl(parsable_url)
-                instance.playlist_id = parsable_url.query["list"]
+                playlist_id = parsable_url.query.get("list") or parsable_url.query.get("p")
+                if not playlist_id:
+                    raise NotImplementedError(parsable_url)
+                instance.playlist_id = playlist_id
 
             # https://www.youtube.com/redirect?event=channel_description&redir_token=QUFFLUhqbmhHUm1HcUowbk8wUEJVZWJpWmRfck5yRUhWUXxBQ3Jtc0tuankwTXo2TTRYMFJNdDNwbnpUZ193Vk45b3FCVGxMcDNva1Rzby1wT1J1YUZpdTFRN0RvallTN0xwYUxYQXNWS1dvNU5wRExpZ0FBT2xxUTlUOGJ4TFNpcGptQ2xoVHpaUmtWTVI2WWhlNFhSZ1hEVQ&q=https%3A%2F%2Fwww.pixiv.net%2Fusers%2F37422
             case "redirect", :
