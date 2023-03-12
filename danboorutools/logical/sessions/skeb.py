@@ -8,6 +8,7 @@ from danboorutools.exceptions import HTTPError, InvalidSkebCredentials
 from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl
 from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl
+from danboorutools.logical.extractors.youtube import YoutubeChannelUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
@@ -59,7 +60,7 @@ class SkebArtistData(BaseModel):
     skima_id: int | None
     twitter_uid: int
     twitter_screen_name: str | None  # for some reason it can be None even if twitter_uid is not
-    youtube_id: int | None
+    youtube_id: str | None
 
     @property
     def related_urls(self) -> list[Url]:  # pylint: disable=too-many-branches
@@ -105,7 +106,7 @@ class SkebArtistData(BaseModel):
             urls += [Url.build(TwitterArtistUrl, username=self.twitter_screen_name)]
 
         if self.youtube_id:
-            raise NotImplementedError(self.youtube_id)
+            urls += [Url.build(YoutubeChannelUrl, channel_id=self.youtube_id)]
 
         if self.url:
             urls.append(Url.parse(self.url))
