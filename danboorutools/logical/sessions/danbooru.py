@@ -91,7 +91,7 @@ class DanbooruApi(Session):
         if not response.ok:
             raise DanbooruHTTPError(response)
 
-        if endpoint.endswith(".json"):
+        if endpoint.endswith(".json") and method != "PUT":
             return self._try_json_response(response)
         else:
             return {"success": True}
@@ -158,8 +158,8 @@ class DanbooruApi(Session):
                 "other_names_string": " ".join(other_names),
             },
         }
-        request = self.danbooru_request("POST", "artists", json=data)
-        assert isinstance(request, dict) and request["success"] is True
+        request = self.danbooru_request("POST", "artists.json", json=data)
+        assert isinstance(request, dict) and request["id"]
 
     def update_artist_urls(self, artist: DanbooruArtist, urls: Sequence[Url | str]) -> None:
         url_string = self._generate_url_string_for_artist(urls, artist=artist)
@@ -171,7 +171,7 @@ class DanbooruApi(Session):
                 "url_string": url_string,
             },
         }
-        request = self.danbooru_request("PUT", artist.model_path, json=data)
+        request = self.danbooru_request("PUT", f"{artist.model_path}.json", json=data)
         assert isinstance(request, dict) and request["success"] is True
 
     def _generate_url_string_for_artist(self, urls: Sequence[Url | str], artist: DanbooruArtist | None = None) -> str:
@@ -208,7 +208,7 @@ class DanbooruApi(Session):
                 "old_tag_string": "",
             }
         }
-        response = self.danbooru_request("PUT", f"posts/{post.id}", json=data)
+        response = self.danbooru_request("PUT", f"posts/{post.id}.json", json=data)
         assert isinstance(response, dict) and response["success"] is True
 
     def replace(self,
