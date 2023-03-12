@@ -53,7 +53,7 @@ class SkebArtistData(BaseModel):
     fanbox_id: str | None
     fantia_id: int | None
     fanza_id: int | None
-    foriio: bool  # ???
+    # foriio: bool  # seems this is only true if `url` is set to xfolio.jp?
     nijie_id: int | None
     patreon_id: int | None
     pixiv_id: int | None
@@ -86,9 +86,6 @@ class SkebArtistData(BaseModel):
 
         if self.fanza_id:
             raise NotImplementedError(self.fanza_id)
-
-        if self.foriio:  # bool???
-            raise NotImplementedError(self.foriio)
 
         if self.patreon_id:
             raise NotImplementedError(self.patreon_id)
