@@ -16,7 +16,7 @@ class LineArtistUrl(ArtistUrl, LineUrl):
             return False
 
         if self.html.select("[data-test='no-item-available-text']"):
-            return False
+            return True
 
         raise NotImplementedError(self)
 
@@ -39,3 +39,13 @@ class LinePostUrl(PostUrl, LineUrl):
     product_id: int
 
     normalize_string = "https://store.line.me/stickershop/product/{product_id}"
+
+    @property
+    def is_deleted(self) -> bool:
+        raise NotImplementedError
+        # need to implement logic in case of expired ones, such as https://store.line.me/stickershop/product/1003926/en
+
+
+class LineMangaAuthorUrl(ArtistUrl, LineUrl):
+    author_id: int
+    normalize_string = "https://manga.line.me/indies/author/detail?author_id={author_id}"
