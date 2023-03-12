@@ -33,8 +33,14 @@ class BcyPostUrl(PostUrl, BcyUrl):
 
 class OldBcyPostUrl(PostUrl, BcyUrl):
     first_id: int
-    second_id: int
-
-    normalize_string = "http://bcy.net/illust/detail/{first_id}/{second_id}"
+    second_id: int | None
 
     is_deleted = True
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str | None:
+        first_id = kwargs["first_id"]
+        if second_id := kwargs.get("second_id"):
+            return f"https://bcy.net/illust/detail/{first_id}/{second_id}"
+        else:
+            return f"https://bcy.net/illust/detail/{first_id}"

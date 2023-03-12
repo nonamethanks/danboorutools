@@ -9,7 +9,9 @@ urls = {
         "https://bcy.net/item/detail/6576655701886632206?_source_page=": "https://bcy.net/item/detail/6576655701886632206",
     },
     OldBcyPostUrl: {
-        "http://bcy.net/illust/detail/9988/801318": "http://bcy.net/illust/detail/9988/801318",
+        "http://bcy.net/illust/detail/9988/801318": "https://bcy.net/illust/detail/9988/801318",
+        "https://bcy.net/illust/detail/158436": "https://bcy.net/illust/detail/158436",
+        "https://bcy.net/coser/detail/89784": "https://bcy.net/illust/detail/89784",
     },
 }
 
