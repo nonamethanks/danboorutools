@@ -89,16 +89,16 @@ class ArtistFinder:
         return self.create_artist_tag(primary_names, secondary_names, found_artist_urls)
 
     def search_for_artist_in_archives(self, post: DanbooruPost) -> SaucenaoArtistResult | Ascii2dArtistResult | None:
-        logger.debug("Checking Saucenao...")
-        result = self.saucenao.find_gallery(post.file_url, original_url=post.source, original_post=post)
-        if result:
-            logger.debug(f"Extracted {result} for {post} from Saucenao")
-            return result
-
-        logger.debug("No result from Saucenao. Checking Ascii2d...")
-        result = self.ascii2d.find_gallery(post.file_url, original_url=post.source, original_post=post)  # type: ignore[assignment]
+        logger.debug("Checking Ascii2d...")
+        result = self.ascii2d.find_gallery(post.file_url, original_url=post.source, original_post=post)
         if result:
             logger.debug(f"Extracted {result} for {post} from Ascii2d")
+            return result
+
+        logger.debug("No result from Ascii2d. Checking Saucenao...")
+        result = self.saucenao.find_gallery(post.file_url, original_url=post.source, original_post=post)  # type: ignore[assignment]
+        if result:
+            logger.debug(f"Extracted {result} for {post} from Saucenao")
             return result
 
         logger.error(f"Couldn't extract an artist for post {post}")
