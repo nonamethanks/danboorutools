@@ -81,3 +81,18 @@ class YoutubeComParser(UrlParser):
                 return None
 
         return instance
+
+
+class YoutuBeParser(UrlParser):
+    @classmethod
+    def match_url(cls, parsable_url: ParsableUrl) -> yt.YoutubeUrl | None:
+        match parsable_url.url_parts:
+            # http://youtu.be/fb90cRgI_ZQ
+            case video_id, :
+                instance = yt.YoutubeVideoUrl(parsable_url)
+                instance.video_id = video_id
+
+            case _:
+                return None
+
+        return instance

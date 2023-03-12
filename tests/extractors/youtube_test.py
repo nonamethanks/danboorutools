@@ -20,6 +20,7 @@ urls = {
         "https://www.youtube.com/watch?v=jZjONCvSjr0": "https://www.youtube.com/watch?v=jZjONCvSjr0",
         "https://www.youtube.com/shorts/jZjONCvSjr0": "https://www.youtube.com/watch?v=jZjONCvSjr0",
         "https://img.youtube.com/vi/vTPq-9k0m3A/maxresdefault.jpg": "https://www.youtube.com/watch?v=vTPq-9k0m3A",
+        "http://youtu.be/fb90cRgI_ZQ": "https://www.youtube.com/watch?v=fb90cRgI_ZQ",
     },
     yt.YoutubeCommunityPostUrl: {
         "https://www.youtube.com/channel/UCMMBGMjrrWcRZmG_lW4jC-Q/community?lb=UgkxWkFtKkCgWnCoPBWsMVzEYhm3ddURD0lL": "https://www.youtube.com/channel/UCMMBGMjrrWcRZmG_lW4jC-Q/community?lb=UgkxWkFtKkCgWnCoPBWsMVzEYhm3ddURD0lL",
