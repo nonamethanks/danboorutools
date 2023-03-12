@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors.skima import SkimaArtistUrl, SkimaGalleryUrl, SkimaImageUrl, SkimaItemUrl
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
     SkimaArtistUrl: {
@@ -24,3 +24,13 @@ urls = {
 }
 
 generate_parsing_suite(urls)
+
+
+assert_artist_url(
+    "https://skima.jp/profile?id=244678",
+    url_type=SkimaArtistUrl,
+    url_properties=dict(user_id=244678),
+    primary_names=["隼人ろっく"],
+    secondary_names=[],
+    related=[],
+)
