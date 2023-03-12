@@ -1,6 +1,5 @@
 import re
 
-from danboorutools.exceptions import UnparsableUrl
 from danboorutools.logical.sessions.deviantart import DeviantartSession, DeviantartUserData
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
@@ -8,7 +7,9 @@ title_by_username_base36_id = re.compile(r"^(?P<title>.+)_by_(?P<username>.+)[_-
 uid_base36_id = re.compile(r"^[a-f0-9]{32}-d(?P<base36_deviation_id>[a-z0-9]+)$")
 base36_uid = re.compile(r"^d(?P<base36_deviation_id>[a-z0-9]{6})-\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$")
 title_by_username = re.compile(r"^(?P<title>.+)_by_(?P<username>.+)$")
-FILENAME_PATTERNS = [title_by_username_base36_id, uid_base36_id, base36_uid, title_by_username]
+by_username_base36_id = re.compile(r"^_by_(?P<username>.+)[_-]d(?P<base36_deviation_id>[a-z0-9]+)(?:-\w+)?$")
+nothing = re.compile(r"^[a-z0-9]{32}(?:-[a-z0-9]{6})?$")
+FILENAME_PATTERNS = [title_by_username_base36_id, uid_base36_id, base36_uid, title_by_username, by_username_base36_id, nothing]
 
 
 class DeviantArtUrl(Url):
