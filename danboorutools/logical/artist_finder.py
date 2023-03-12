@@ -10,6 +10,7 @@ from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
 from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.logical.extractors.youtube import YoutubeVideoUrl
 from danboorutools.logical.sessions.ascii2d import Ascii2dArtistResult, Ascii2dSession
 from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.logical.sessions.saucenao import SaucenaoArtistResult, SaucenaoSession
@@ -156,6 +157,10 @@ class ArtistFinder:
                 except (UrlIsDeleted, ReadTimeout) as e:
                     logger.debug(f"Couldn't resolve url {related_url} because of an exception ({e}), skipping...")
                     continue
+
+            if isinstance(related_url, YoutubeVideoUrl):
+                logger.debug(f"Skipping {related_url} because it has a high chance of being a random video")
+                continue
 
             if not isinstance(related_url, InfoUrl):
                 related_url = related_url.artist  # noqa: PLW2901
