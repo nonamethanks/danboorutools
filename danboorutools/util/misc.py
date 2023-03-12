@@ -96,7 +96,21 @@ class BaseModel(BadBaseModel):
         try:
             super().__init__(**data)
         except ValidationError as e:
-            e.add_note(f"Failed to validate:\n {json.dumps(data, indent=4)}\n")
+            values = value_from_validation_error(data, e)
+            e.add_note(f"Failed to validate:\n {values}\n")
             raise
         else:
             self._raw_data = data
+
+
+def value_from_validation_error(data: dict, exception: ValidationError) -> dict:
+    values = {}
+    for error in exception.errors():
+        loc = error["loc"]
+        value = data
+        for field in loc:
+            if field == "__root__":
+                break
+            value = value[field]
+        values[".".join([str(location) for location in loc])] = value
+    return values
