@@ -1,6 +1,6 @@
 from bs4.element import NavigableString
 
-from danboorutools.models.url import ArtistUrl, Url
+from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
 class Tw6Url(Url):
@@ -32,3 +32,21 @@ class Tw6ArtistUrl(ArtistUrl, Tw6Url):
     @property
     def related(self) -> list[Url]:
         return []  # not worth the hassle to extract them
+
+
+class Tw6PostUrl(PostUrl, Tw6Url):
+    post_id: int
+
+    normalize_template = "https://tw6.jp/gallery/?id={user_id}"
+
+
+class Tw6ImageUrl(PostAssetUrl, Tw6Url):
+    @property
+    def full_size(self) -> str:
+        return self.parsed_url.raw_url
+
+
+class Tw6CharacterUrl(PostUrl, Tw6Url):
+    character_id: str  # the fuck is this adoptable bullshit
+
+    normalize_template = "https://tw6.jp/character/status/{character_id}"
