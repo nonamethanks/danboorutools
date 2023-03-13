@@ -38,6 +38,7 @@ class SaucenaoSession(Session):
 
     API_KEY = os.environ["SAUCENAO_API_KEY"]
     MAX_CALLS_PER_SECOND = 0.5
+    DEFAULT_TIMEOUT = 10
 
     @memoize
     def _reverse_search_url(self, image_url: str) -> list[dict[str, dict]]:
