@@ -30,11 +30,11 @@ class ArtistFinder:
         self.saucenao = SaucenaoSession()
         self.ascii2d = Ascii2dSession()
 
-    def create_or_tag_artist_for_post(self, post: DanbooruPost) -> bool:
+    def create_or_tag_artist_for_post(self, post: DanbooruPost, retry_skipped: bool = False) -> bool:
         if not isinstance((source := post.source), Url):
             raise TypeError(source)
 
-        if post.id in self.skipped_posts.value:
+        if not retry_skipped and post.id in self.skipped_posts.value:
             return False
 
         logger.info(f"Extracting artist for post {post}, source {source}")
