@@ -4,6 +4,7 @@ from datetime import datetime
 from functools import cached_property
 
 from pytz import UTC
+from requests.exceptions import ProxyError
 
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.sessions.pixiv import PixivArtistData, PixivPostData, PixivSession
@@ -107,11 +108,18 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
             raise NotImplementedError(self)
 
     @property
-    def gallery(self) -> PixivArtistUrl | None:
+    def gallery(self) -> PixivArtistUrl | PixivStaccUrl | None:
         if not self.stacc:
             return None
 
-        return self.build(PixivStaccUrl, stacc=self.stacc).me_from_stacc.resolved
+        try:
+            return self.build(PixivStaccUrl, stacc=self.stacc).me_from_stacc.resolved
+        except UrlIsDeleted:
+            return self.build(PixivStaccUrl, stacc=self.stacc)
+        except ProxyError as e:
+            if "Remote end closed connection without response" in str(e):
+                return self.build(PixivStaccUrl, stacc=self.stacc)
+            raise
 
 
 class PixivPostUrl(PostUrl, PixivUrl):
