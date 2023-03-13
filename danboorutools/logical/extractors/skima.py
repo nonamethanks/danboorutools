@@ -11,7 +11,7 @@ class SkimaUrl(Url):
 class SkimaArtistUrl(ArtistUrl, SkimaUrl):
     user_id: int
 
-    normalize_string = "https://skima.jp/profile?id={user_id}"
+    normalize_template = "https://skima.jp/profile?id={user_id}"
 
     @property
     def primary_names(self) -> list[str]:
@@ -31,13 +31,13 @@ class SkimaArtistUrl(ArtistUrl, SkimaUrl):
 class SkimaItemUrl(PostUrl, SkimaUrl):
     item_id: int
 
-    normalize_string = "https://skima.jp/item/detail?item_id={item_id}"
+    normalize_template = "https://skima.jp/item/detail?item_id={item_id}"
 
 
 class SkimaGalleryUrl(PostUrl, SkimaUrl):
     gallery_id: int
 
-    normalize_string = "https://skima.jp/gallery?id={gallery_id}"
+    normalize_template = "https://skima.jp/gallery?id={gallery_id}"
 
 
 class SkimaImageUrl(PostAssetUrl, SkimaUrl):

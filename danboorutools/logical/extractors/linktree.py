@@ -4,7 +4,7 @@ from danboorutools.models.url import InfoUrl, Url
 class LinktreeUrl(InfoUrl):
     username: str
 
-    normalize_string = "https://linktr.ee/{username}"
+    normalize_template = "https://linktr.ee/{username}"
 
     @property
     def primary_names(self) -> list[str]:

@@ -8,14 +8,14 @@ class TinamiUrl(Url):
 class TinamiPostUrl(PostUrl, TinamiUrl):
     post_id: int
 
-    normalize_string = "https://www.tinami.com/view/{post_id}"
+    normalize_template = "https://www.tinami.com/view/{post_id}"
 
 
 class TinamiComicUrl(PostUrl, TinamiUrl):
     comic_id: int
     comic_title: str
 
-    normalize_string = "https://www.tinami.com/comic/{comic_title}/{comic_id}"
+    normalize_template = "https://www.tinami.com/comic/{comic_title}/{comic_id}"
 
 
 class TinamiArtistUrl(ArtistUrl, TinamiUrl):

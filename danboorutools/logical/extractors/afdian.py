@@ -11,13 +11,13 @@ class AfdianUrl(Url):
 class AfdianPostUrl(PostUrl, AfdianUrl):
     post_id: str
 
-    normalize_string = "https://afdian.net/p/{post_id}"
+    normalize_template = "https://afdian.net/p/{post_id}"
 
 
 class AfdianArtistUrl(ArtistUrl, AfdianUrl):
     username: str
 
-    normalize_string = "https://afdian.net/a/{username}"
+    normalize_template = "https://afdian.net/a/{username}"
 
     @property
     def primary_names(self) -> list[str]:

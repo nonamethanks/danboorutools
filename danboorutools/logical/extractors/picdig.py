@@ -9,12 +9,12 @@ class PicdigPostUrl(PostUrl, PicdigUrl):
     project_id: str
     username: str
 
-    normalize_string = "https://picdig.net/{username}/projects/{project_id}"
+    normalize_template = "https://picdig.net/{username}/projects/{project_id}"
 
 
 class PicdigArtistUrl(ArtistUrl, PicdigUrl):
     username: str
-    normalize_string = "https://picdig.net/{username}"
+    normalize_template = "https://picdig.net/{username}"
 
 
 class PicdigImageUrl(PostAssetUrl, PicdigUrl):

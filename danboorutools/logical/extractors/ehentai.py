@@ -67,7 +67,7 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
     page_token: str
     subsite: str
 
-    normalize_string = "https://{subsite}.org/s/{page_token}/{gallery_id}-{page_number}"
+    normalize_template = "https://{subsite}.org/s/{page_token}/{gallery_id}-{page_number}"
 
     @cached_property
     def gallery(self) -> EHentaiGalleryUrl:
@@ -116,7 +116,7 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
     gallery_token: str
     subsite: str
 
-    normalize_string = "https://{subsite}.org/g/{gallery_id}/{gallery_token}"
+    normalize_template = "https://{subsite}.org/g/{gallery_id}/{gallery_token}"
 
     def _extract_posts(self) -> None:
         raw_thumb_urls = self._get_thumb_urls()

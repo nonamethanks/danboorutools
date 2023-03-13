@@ -8,7 +8,7 @@ class Nicovideo3dUrl(Url):
 class Nicovideo3dPostUrl(PostUrl, Nicovideo3dUrl):
     post_id: int
 
-    normalize_string = "https://3d.nicovideo.jp/works/td{post_id}"
+    normalize_template = "https://3d.nicovideo.jp/works/td{post_id}"
 
 
 class Nicovideo3dArtistUrl(ArtistUrl, Nicovideo3dUrl):

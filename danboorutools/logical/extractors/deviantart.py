@@ -36,7 +36,7 @@ class DeviantArtPostUrl(PostUrl, DeviantArtUrl):
 class DeviantArtArtistUrl(ArtistUrl, DeviantArtUrl):
     username: str
 
-    normalize_string = "https://www.deviantart.com/{username}"
+    normalize_template = "https://www.deviantart.com/{username}"
 
     @property
     def artist_data(self) -> DeviantartUserData:

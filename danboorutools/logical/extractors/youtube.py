@@ -12,7 +12,7 @@ class YoutubeUrl(Url):
 class YoutubeUserUrl(ArtistUrl, YoutubeUrl):
     username: str
 
-    normalize_string = "https://www.youtube.com/@{username}"
+    normalize_template = "https://www.youtube.com/@{username}"
 
     @property
     def channel_data(self) -> YoutubeChannelData:
@@ -35,7 +35,7 @@ class YoutubeOldUserUrl(RedirectUrl, YoutubeUrl):
     username: str
     subdir: Literal["c", "user"]
 
-    normalize_string = "https://www.youtube.com/{subdir}/{username}"
+    normalize_template = "https://www.youtube.com/{subdir}/{username}"
     # direcly normalizing is not always possible:
     # https://www.youtube.com/user/kurasawakyosyo   -> ok
     # https://www.youtube.com/c/kurasawakyosyo      -> 404
@@ -46,7 +46,7 @@ class YoutubeOldUserUrl(RedirectUrl, YoutubeUrl):
 class YoutubeChannelUrl(RedirectUrl, YoutubeUrl):
     channel_id: str
 
-    normalize_string = "https://www.youtube.com/channel/{channel_id}"
+    normalize_template = "https://www.youtube.com/channel/{channel_id}"
 
     @cached_property
     def resolved(self) -> Url:
@@ -59,12 +59,12 @@ class YoutubeChannelUrl(RedirectUrl, YoutubeUrl):
 
 class YoutubeVideoUrl(PostUrl, YoutubeUrl):
     video_id: str
-    normalize_string = "https://www.youtube.com/watch?v={video_id}"
+    normalize_template = "https://www.youtube.com/watch?v={video_id}"
 
 
 class YoutubePlaylistUrl(GalleryUrl, YoutubeUrl):
     playlist_id: str
-    normalize_string = "https://www.youtube.com/playlist?list={playlist_id}"
+    normalize_template = "https://www.youtube.com/playlist?list={playlist_id}"
 
 
 class YoutubeCommunityPostUrl(PostUrl, YoutubeUrl):

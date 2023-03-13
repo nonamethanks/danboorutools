@@ -11,7 +11,7 @@ class LineArtistUrl(ArtistUrl, LineUrl):
     artist_id: int
     store: Literal["stickershop", "themeshop"]
 
-    normalize_string = "https://store.line.me/{store}/author/{artist_id}"
+    normalize_template = "https://store.line.me/{store}/author/{artist_id}"
 
     @property
     def is_deleted(self) -> bool:
@@ -42,7 +42,7 @@ class LinePostUrl(PostUrl, LineUrl):
     product_id: str
     store: Literal["stickershop", "themeshop"]
 
-    normalize_string = "https://store.line.me/{store}/product/{product_id}"
+    normalize_template = "https://store.line.me/{store}/product/{product_id}"
 
     @property
     def is_deleted(self) -> bool:
@@ -52,4 +52,4 @@ class LinePostUrl(PostUrl, LineUrl):
 
 class LineMangaAuthorUrl(ArtistUrl, LineUrl):
     author_id: int
-    normalize_string = "https://manga.line.me/indies/author/detail?author_id={author_id}"
+    normalize_template = "https://manga.line.me/indies/author/detail?author_id={author_id}"

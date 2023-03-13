@@ -11,7 +11,7 @@ class FantiaPostUrl(PostUrl, FantiaUrl):
     post_id: int
     post_type: str
 
-    normalize_string = "https://fantia.jp/{post_type}/{post_id}"
+    normalize_template = "https://fantia.jp/{post_type}/{post_id}"
 
 
 class FantiaFanclubUrl(ArtistUrl, FantiaUrl):

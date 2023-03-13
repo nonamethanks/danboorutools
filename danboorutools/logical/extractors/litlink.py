@@ -3,7 +3,7 @@ from danboorutools.models.url import InfoUrl, Url
 
 class LitlinkUrl(InfoUrl):
     username: str
-    normalize_string = "https://lit.link/{username}"
+    normalize_template = "https://lit.link/{username}"
 
     @property
     def primary_names(self) -> list[str]:

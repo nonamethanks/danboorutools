@@ -15,19 +15,19 @@ class NicoSeigaUrl(Url):
 class NicoSeigaIllustUrl(PostUrl, NicoSeigaUrl):
     illust_id: int
 
-    normalize_string = "https://seiga.nicovideo.jp/seiga/im{illust_id}"
+    normalize_template = "https://seiga.nicovideo.jp/seiga/im{illust_id}"
 
 
 class NicoSeigaMangaUrl(PostUrl, NicoSeigaUrl):
     manga_id: int
 
-    normalize_string = "https://seiga.nicovideo.jp/watch/mg{manga_id}"
+    normalize_template = "https://seiga.nicovideo.jp/watch/mg{manga_id}"
 
 
 class NicoSeigaComicUrl(ArtistAlbumUrl, NicoSeigaUrl):
     comic_id: int | str
 
-    normalize_string = "https://seiga.nicovideo.jp/comic/{comic_id}"
+    normalize_template = "https://seiga.nicovideo.jp/comic/{comic_id}"
 
     @cached_property
     def gallery(self) -> NicoSeigaArtistUrl:
@@ -40,7 +40,7 @@ class NicoSeigaComicUrl(ArtistAlbumUrl, NicoSeigaUrl):
 class NicoSeigaArtistUrl(ArtistUrl, NicoSeigaUrl):
     user_id: int
 
-    normalize_string = "https://seiga.nicovideo.jp/user/illust/{user_id}"
+    normalize_template = "https://seiga.nicovideo.jp/user/illust/{user_id}"
 
     @property
     def related(self) -> list[Url]:

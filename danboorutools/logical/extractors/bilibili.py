@@ -10,32 +10,32 @@ class BilibiliUrl(Url):
 class BilibiliVideoPostUrl(PostUrl, BilibiliUrl):
     video_id: str
 
-    normalize_string = "https://www.bilibili.com/video/{video_id}"
+    normalize_template = "https://www.bilibili.com/video/{video_id}"
 
 
 class BilibiliPostUrl(PostUrl, BilibiliUrl):
     post_id: int
     post_type: Literal["h", "t"]
 
-    normalize_string = "https://{post_type}.bilibili.com/{post_id}"
+    normalize_template = "https://{post_type}.bilibili.com/{post_id}"
 
 
 class BilibiliLiveUrl(PostUrl, BilibiliUrl):
     live_id: int
 
-    normalize_string = "https://live.bilibili.com/{live_id}"
+    normalize_template = "https://live.bilibili.com/{live_id}"
 
 
 class BilibiliArticleUrl(PostUrl, BilibiliUrl):
     article_id: int
 
-    normalize_string = "https://www.bilibili.com/read/cv{article_id}"
+    normalize_template = "https://www.bilibili.com/read/cv{article_id}"
 
 
 class BilibiliArtistUrl(ArtistUrl, BilibiliUrl):
     user_id: int
 
-    normalize_string = "https://space.bilibili.com/{user_id}"
+    normalize_template = "https://space.bilibili.com/{user_id}"
 
 
 class BilibiliImageUrl(PostAssetUrl, BilibiliUrl):

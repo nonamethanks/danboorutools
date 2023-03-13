@@ -8,13 +8,13 @@ class NicovideoOekakiUrl(Url):
 class NicovideoOekakiPostUrl(PostUrl, NicovideoOekakiUrl):
     post_id: int
 
-    normalize_string = "https://dic.nicovideo.jp/oekaki_id/{post_id}"
+    normalize_template = "https://dic.nicovideo.jp/oekaki_id/{post_id}"
 
 
 class NicovideoOekakiArtistUrl(ArtistUrl, NicovideoOekakiUrl):
     user_id: int
 
-    normalize_string = "https://dic.nicovideo.jp/u/{user_id}"
+    normalize_template = "https://dic.nicovideo.jp/u/{user_id}"
 
 
 class NicovideoOekakiImageUrl(PostAssetUrl, NicovideoOekakiUrl):

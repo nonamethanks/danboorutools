@@ -11,17 +11,17 @@ class DlsiteCienArticleUrl(PostUrl, DlsiteCienUrl):
     article_id: int
     creator_id: int
 
-    normalize_string = "https://ci-en.dlsite.com/creator/{creator_id}/article/{article_id}"
+    normalize_template = "https://ci-en.dlsite.com/creator/{creator_id}/article/{article_id}"
 
 
 class DlsiteCienCreatorUrl(ArtistUrl, DlsiteCienUrl):
-    normalize_string = "https://ci-en.dlsite.com/creator/{creator_id}"
+    normalize_template = "https://ci-en.dlsite.com/creator/{creator_id}"
     creator_id: int
 
 
 class DlsiteCienProfileUrl(RedirectUrl, DlsiteCienUrl):
     profile_id: int
-    normalize_string = "https://ci-en.dlsite.com/profile/{profile_id}"
+    normalize_template = "https://ci-en.dlsite.com/profile/{profile_id}"
 
     @cached_property
     def resolved(self) -> Url:

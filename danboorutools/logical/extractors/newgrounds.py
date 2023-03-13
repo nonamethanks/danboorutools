@@ -11,25 +11,25 @@ class NewgroundsPostUrl(PostUrl, NewgroundsUrl):
     username: str
     title: str
 
-    normalize_string = "https://www.newgrounds.com/art/view/{username}/{title}"
+    normalize_template = "https://www.newgrounds.com/art/view/{username}/{title}"
 
 
 class NewgroundsDumpUrl(PostUrl, NewgroundsUrl):
     dump_id: str
 
-    normalize_string = "https://www.newgrounds.com/dump/item/{dump_id}"
+    normalize_template = "https://www.newgrounds.com/dump/item/{dump_id}"
 
 
 class NewgroundsVideoPostUrl(PostUrl, NewgroundsUrl):
     video_id: int
 
-    normalize_string = "https://www.newgrounds.com/portal/view/{video_id}"
+    normalize_template = "https://www.newgrounds.com/portal/view/{video_id}"
 
 
 class NewgroundsArtistUrl(ArtistUrl, NewgroundsUrl):
     username: str
 
-    normalize_string = "https://{username}.newgrounds.com"
+    normalize_template = "https://{username}.newgrounds.com"
 
 
 class NewgroundsAssetUrl(PostAssetUrl, NewgroundsUrl):

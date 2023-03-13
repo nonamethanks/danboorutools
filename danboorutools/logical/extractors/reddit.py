@@ -9,7 +9,7 @@ class RedditUrl(Url):
 class RedditUserUrl(ArtistUrl, RedditUrl):
     username: str
 
-    normalize_string = "https://www.reddit.com/user/{username}"
+    normalize_template = "https://www.reddit.com/user/{username}"
 
     @property
     def primary_names(self) -> list[str]:

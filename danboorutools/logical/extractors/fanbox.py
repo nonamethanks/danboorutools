@@ -13,13 +13,13 @@ class FanboxPostUrl(PostUrl, FanboxUrl):
     username: str
     post_id: int
 
-    normalize_string = "https://{username}.fanbox.cc/posts/{post_id}"
+    normalize_template = "https://{username}.fanbox.cc/posts/{post_id}"
 
 
 class FanboxArtistUrl(ArtistUrl, FanboxUrl):
     username: str  # it's not guaranteed that this is the stacc. it might change.
 
-    normalize_string = "https://{username}.fanbox.cc"
+    normalize_template = "https://{username}.fanbox.cc"
 
     @property
     def _artist_data(self) -> FanboxArtistData:
@@ -51,7 +51,7 @@ class FanboxOldPostUrl(RedirectUrl, FanboxUrl):
     pixiv_id: int
     post_id: int
 
-    normalize_string = "https://www.pixiv.net/fanbox/creator/{pixiv_id}/post/{post_id}"
+    normalize_template = "https://www.pixiv.net/fanbox/creator/{pixiv_id}/post/{post_id}"
 
 
 class FanboxOldArtistUrl(RedirectUrl, FanboxUrl):
@@ -60,7 +60,7 @@ class FanboxOldArtistUrl(RedirectUrl, FanboxUrl):
 
     pixiv_id: int
 
-    normalize_string = "https://www.pixiv.net/fanbox/creator/{pixiv_id}"
+    normalize_template = "https://www.pixiv.net/fanbox/creator/{pixiv_id}"
 
 
 class FanboxArtistImageUrl(PostAssetUrl, FanboxUrl):

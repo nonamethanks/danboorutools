@@ -8,10 +8,10 @@ class NicovideoCommonsUrl(Url):
 class NicovideoCommonsArtistUrl(ArtistUrl, NicovideoCommonsUrl):
     user_id: int
 
-    normalize_string = "https://commons.nicovideo.jp/user/{user_id}"
+    normalize_template = "https://commons.nicovideo.jp/user/{user_id}"
 
 
 class NicovideoCommonsPostUrl(PostUrl, NicovideoCommonsUrl):
     commons_id: str
 
-    normalize_string = "https://commons.nicovideo.jp/material/{commons_id}"
+    normalize_template = "https://commons.nicovideo.jp/material/{commons_id}"

@@ -11,7 +11,7 @@ class TumblrPostUrl(PostUrl, TumblrUrl):
     post_id: int
     blog_name: str
 
-    normalize_string = "https://{blog_name}.tumblr.com/post/{post_id}"
+    normalize_template = "https://{blog_name}.tumblr.com/post/{post_id}"
 
 
 class TumblrPostRedirectUrl(RedirectUrl, TumblrUrl):
@@ -30,7 +30,7 @@ class TumblrPostRedirectUrl(RedirectUrl, TumblrUrl):
 class TumblrArtistUrl(ArtistUrl, TumblrUrl):
     blog_name: str
 
-    normalize_string = "https://{blog_name}.tumblr.com"
+    normalize_template = "https://{blog_name}.tumblr.com"
 
 
 class TumblrImageUrl(PostAssetUrl, TumblrUrl):

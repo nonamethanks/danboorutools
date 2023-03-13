@@ -9,7 +9,7 @@ class BcyUrl(Url):
 class BcyArtistUrl(ArtistUrl, BcyUrl):
     user_id: int
 
-    normalize_string = "https://bcy.net/u/{user_id}"
+    normalize_template = "https://bcy.net/u/{user_id}"
 
     @property
     def primary_names(self) -> list[str]:
@@ -28,7 +28,7 @@ class BcyArtistUrl(ArtistUrl, BcyUrl):
 class BcyPostUrl(PostUrl, BcyUrl):
     post_id: int
 
-    normalize_string = "https://bcy.net/item/detail/{post_id}"
+    normalize_template = "https://bcy.net/item/detail/{post_id}"
 
 
 class OldBcyPostUrl(PostUrl, BcyUrl):

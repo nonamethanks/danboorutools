@@ -15,13 +15,13 @@ class PixivSketchUrl(Url):
 class PixivSketchPostUrl(PostUrl, PixivSketchUrl):
     post_id: int
 
-    normalize_string = "https://sketch.pixiv.net/items/{post_id}"
+    normalize_template = "https://sketch.pixiv.net/items/{post_id}"
 
 
 class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
     stacc: str
 
-    normalize_string = "https://sketch.pixiv.net/@{stacc}"
+    normalize_template = "https://sketch.pixiv.net/@{stacc}"
 
     @property
     def stacc_url(self) -> PixivStaccUrl:

@@ -1,8 +1,8 @@
 from __future__ import annotations
-from urllib.parse import urljoin
 
 from functools import cached_property
 from typing import Literal
+from urllib.parse import urljoin
 
 from danboorutools.logical.sessions.fanza import FanzaSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
@@ -16,7 +16,7 @@ class FanzaDoujinWorkUrl(PostUrl, FanzaUrl):
     work_id: str
     subsubsite: Literal["dc", "digital", "mono"]
 
-    normalize_string = "https://www.dmm.co.jp/{subsubsite}/doujin/-/detail/=/cid={work_id}/"
+    normalize_template = "https://www.dmm.co.jp/{subsubsite}/doujin/-/detail/=/cid={work_id}/"
 
     @cached_property
     def gallery(self) -> FanzaDoujinAuthorUrl:
@@ -35,32 +35,32 @@ class FanzaDoujinAuthorUrl(ArtistUrl, FanzaUrl):
     subsubsite: str
 
     # article=maker -> circle. gotta be careful to extract the correct author
-    normalize_string = "https://www.dmm.co.jp/{subsubsite}/doujin/-/list/=/article=maker/id={user_id}/"
+    normalize_template = "https://www.dmm.co.jp/{subsubsite}/doujin/-/list/=/article=maker/id={user_id}/"
 
 
 class FanzaDlsoftWorkUrl(ArtistUrl, FanzaUrl):
     work_id: str
 
-    normalize_string = "https://dlsoft.dmm.co.jp/detail/{work_id}/"
+    normalize_template = "https://dlsoft.dmm.co.jp/detail/{work_id}/"
 
 
 class FanzaDlsoftAuthorUrl(ArtistUrl, FanzaUrl):
     user_id: int
     user_type: Literal["article=maker", "article=author"] = "article=maker"
 
-    normalize_string = "https://dlsoft.dmm.co.jp/list/{user_type}/id={user_id}/"  # circle or author
+    normalize_template = "https://dlsoft.dmm.co.jp/list/{user_type}/id={user_id}/"  # circle or author
 
 
 class FanzaGamesGameUrl(PostUrl, FanzaUrl):
     game_name: str
 
-    normalize_string = "https://games.dmm.co.jp/detail/{game_name}"
+    normalize_template = "https://games.dmm.co.jp/detail/{game_name}"
 
 
 class FanzaGamesOldGameUrl(RedirectUrl, FanzaUrl):
     game_id: int
 
-    normalize_string = "http://sp.dmm.co.jp/netgame/application/detail/app_id/{game_id}"
+    normalize_template = "http://sp.dmm.co.jp/netgame/application/detail/app_id/{game_id}"
 
 
 class FanzaBookWorkUrl(PostUrl, FanzaUrl):
@@ -80,13 +80,13 @@ class FanzaBookWorkUrl(PostUrl, FanzaUrl):
 class FanzaBookNoSeriesUrl(RedirectUrl, FanzaUrl):
     work_id: str
 
-    normalize_string = "https://book.dmm.co.jp/detail/{work_id}/"
+    normalize_template = "https://book.dmm.co.jp/detail/{work_id}/"
 
 
 class FanzaBookAuthorUrl(ArtistUrl, FanzaUrl):
     user_id: int
 
-    normalize_string = "https://book.dmm.co.jp/list/?author={user_id}"
+    normalize_template = "https://book.dmm.co.jp/list/?author={user_id}"
 
 
 class FanzaImageUrl(PostAssetUrl, FanzaUrl):

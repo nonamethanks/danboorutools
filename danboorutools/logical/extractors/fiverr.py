@@ -8,7 +8,7 @@ class FiverrUrl(Url):
 class FiverrArtistUrl(ArtistUrl, FiverrUrl):
     artist_name: str
 
-    normalize_string = "https://www.fiverr.com/{artist_name}"
+    normalize_template = "https://www.fiverr.com/{artist_name}"
 
     @property
     def primary_names(self) -> list[str]:
@@ -27,7 +27,7 @@ class FiverrPostUrl(PostUrl, FiverrUrl):
     post_title: str
     artist_name: str
 
-    normalize_string = "https://www.fiverr.com/{artist_name}/{post_title}"
+    normalize_template = "https://www.fiverr.com/{artist_name}/{post_title}"
 
     @property
     def gallery(self) -> FiverrArtistUrl:
@@ -38,7 +38,7 @@ class FiverrShareUrl(RedirectUrl, FiverrUrl):
     subdir: str
     share_code: str
 
-    normalize_string = "https://www.fiverr.com/{subdir}/{share_code}"
+    normalize_template = "https://www.fiverr.com/{subdir}/{share_code}"
 
 # class FiverrImageUrl(PostAssetUrl, FiverrUrl):
 #     pass

@@ -21,7 +21,7 @@ class TwitterPostUrl(PostUrl, TwitterUrl):
 class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     username: str
 
-    normalize_string = "https://twitter.com/{username}"
+    normalize_template = "https://twitter.com/{username}"
 
     @property
     def primary_names(self) -> list[str]:
@@ -84,7 +84,7 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
 class TwitterIntentUrl(InfoUrl, TwitterUrl):
     intent_id: int
 
-    normalize_string = "https://twitter.com/intent/user?user_id={intent_id}"
+    normalize_template = "https://twitter.com/intent/user?user_id={intent_id}"
 
     @property
     def user_url(self) -> TwitterArtistUrl:
@@ -130,7 +130,7 @@ class TwitterAssetUrl(PostAssetUrl, TwitterUrl):
 class TwitterOnlyStatusUrl(RedirectUrl, TwitterUrl):
     post_id: int
 
-    normalize_string = "https://twitter.com/i/status/{post_id}"
+    normalize_template = "https://twitter.com/i/status/{post_id}"
 
 
 class TwitterArtistImageUrl(GalleryAssetUrl, TwitterUrl):
@@ -145,4 +145,4 @@ class TwitterArtistImageUrl(GalleryAssetUrl, TwitterUrl):
 class TwitterShortenerUrl(RedirectUrl, TwitterUrl):
     shortener_id: str
 
-    normalize_string = "https://t.co/{shortener_id}"
+    normalize_template = "https://t.co/{shortener_id}"

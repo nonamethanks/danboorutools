@@ -8,13 +8,13 @@ class InstagramUrl(Url):
 class InstagramPostUrl(PostUrl, InstagramUrl):
     post_id: str
 
-    normalize_string = "https://www.instagram.com/p/{post_id}"
+    normalize_template = "https://www.instagram.com/p/{post_id}"
 
 
 class InstagramArtistUrl(ArtistUrl, InstagramUrl):
     username: str
 
-    normalize_string = "https://www.instagram.com/{username}"
+    normalize_template = "https://www.instagram.com/{username}"
 
     @property
     def primary_names(self) -> list[str]:

@@ -9,13 +9,13 @@ class AniftyPostUrl(PostUrl, AniftyUrl):
 
     post_id: int
 
-    normalize_string = "https://anifty.jp/creations/{post_id}"
+    normalize_template = "https://anifty.jp/creations/{post_id}"
 
 
 class AniftyArtistUrl(ArtistUrl, AniftyUrl):
     username: str
 
-    normalize_string = "https://anifty.jp/@{username}"
+    normalize_template = "https://anifty.jp/@{username}"
 
 
 class AniftyArtistImageUrl(GalleryAssetUrl, AniftyUrl):
@@ -39,4 +39,4 @@ class AniftyImageUrl(PostAssetUrl, AniftyUrl):
 class AniftyTokenUrl(RedirectUrl, AniftyUrl):  # redirects to AniftyPostUrl # TODO: maybe redirecturls should specify where they redirect?
     token_id: int
 
-    normalize_string = "https://anifty.jp/tokens/{token_id}"
+    normalize_template = "https://anifty.jp/tokens/{token_id}"

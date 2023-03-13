@@ -12,20 +12,20 @@ class SkebUrl(Url):
 class SkebAbsolutePostUrl(RedirectUrl, SkebUrl):
     absolute_post_id: int
 
-    normalize_string = "https://skeb.jp/works/{absolute_post_id}"
+    normalize_template = "https://skeb.jp/works/{absolute_post_id}"
 
 
 class SkebPostUrl(PostUrl, SkebUrl):
     post_id: int
     username: str
 
-    normalize_string = "https://skeb.jp/@{username}/works/{post_id}"
+    normalize_template = "https://skeb.jp/@{username}/works/{post_id}"
 
 
 class SkebArtistUrl(ArtistUrl, SkebUrl):
     username: str
 
-    normalize_string = "https://skeb.jp/@{username}"
+    normalize_template = "https://skeb.jp/@{username}"
 
     @cached_property
     def is_deleted(self) -> bool:

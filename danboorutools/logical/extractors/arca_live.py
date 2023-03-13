@@ -9,7 +9,7 @@ class ArcaLivePostUrl(PostUrl, ArcaLiveUrl):
     post_id: int
     channel: str
 
-    normalize_string = "https://arca.live/b/{channel}/{post_id}"
+    normalize_template = "https://arca.live/b/{channel}/{post_id}"
 
 
 class ArcaLiveArtistUrl(ArtistUrl, ArcaLiveUrl):

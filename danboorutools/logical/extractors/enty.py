@@ -8,7 +8,7 @@ class EntyUrl(Url):
 class EntyPostUrl(PostUrl, EntyUrl):
     post_id: int
 
-    normalize_string = "https://enty.jp/posts/{post_id}"
+    normalize_template = "https://enty.jp/posts/{post_id}"
 
 
 class EntyArtistUrl(ArtistUrl, EntyUrl):

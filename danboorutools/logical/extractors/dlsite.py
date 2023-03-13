@@ -32,7 +32,7 @@ class DlsiteWorkUrl(PostUrl, DlsiteUrl):
     work_id: str
     status: Literal["work", "announce"]
 
-    normalize_string = "https://www.dlsite.com/{subsite}/{status}/=/product_id/{work_id}"
+    normalize_template = "https://www.dlsite.com/{subsite}/{status}/=/product_id/{work_id}"
 
     @cached_property
     def gallery(self) -> DlsiteAuthorUrl:
@@ -55,7 +55,7 @@ class DlsiteImageUrl(PostAssetUrl, DlsiteUrl):
 
 class DlsiteKeywordSearch(RedirectUrl, DlsiteUrl):
     keyword: str
-    normalize_string = "https://www.dlsite.com/{subsite}/fsr/=/keyword_creater/\"{keyword}\""
+    normalize_template = "https://www.dlsite.com/{subsite}/fsr/=/keyword_creater/\"{keyword}\""
 
     @cached_property
     def resolved(self) -> Url:

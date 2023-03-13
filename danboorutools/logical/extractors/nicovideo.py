@@ -11,19 +11,19 @@ class NicovideoUrl(Url):
 class NicovideoArtistUrl(ArtistUrl, NicovideoUrl):
     user_id: int
 
-    normalize_string = "https://www.nicovideo.jp/user/{user_id}"
+    normalize_template = "https://www.nicovideo.jp/user/{user_id}"
 
 
 class NicovideoVideoUrl(PostUrl, NicovideoUrl):
     video_id: str
 
-    normalize_string = "https://www.nicovideo.jp/watch/{video_id}"
+    normalize_template = "https://www.nicovideo.jp/watch/{video_id}"
 
 
 class NicovideoCommunityUrl(InfoUrl, NicovideoUrl):
     community_id: int
 
-    normalize_string = "https://com.nicovideo.jp/community/co{community_id}"
+    normalize_template = "https://com.nicovideo.jp/community/co{community_id}"
 
     @property
     def private(self) -> bool:
@@ -68,12 +68,12 @@ class NicovideoCommunityUrl(InfoUrl, NicovideoUrl):
 class NicovideoListUrl(RedirectUrl, NicovideoUrl):
     list_id: int
 
-    normalize_string = "http://www.nicovideo.jp/mylist/{list_id}"
+    normalize_template = "http://www.nicovideo.jp/mylist/{list_id}"
 
 
 class NicovideoGameArtistUrl(ArtistUrl, NicovideoUrl):
     user_id: int
 
-    normalize_string = "https://game.nicovideo.jp/atsumaru/users/{user_id}"
+    normalize_template = "https://game.nicovideo.jp/atsumaru/users/{user_id}"
 
     # todo: related -> nicovideoartisturl

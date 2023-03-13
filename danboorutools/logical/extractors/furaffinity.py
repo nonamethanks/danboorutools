@@ -8,13 +8,13 @@ class FuraffinityUrl(Url):
 class FuraffinityPostUrl(PostUrl, FuraffinityUrl):
     post_id: int
 
-    normalize_string = "https://www.furaffinity.net/view/{post_id}"
+    normalize_template = "https://www.furaffinity.net/view/{post_id}"
 
 
 class FuraffinityArtistUrl(ArtistUrl, FuraffinityUrl):
     username: str
 
-    normalize_string = "https://www.furaffinity.net/user/{username}"
+    normalize_template = "https://www.furaffinity.net/user/{username}"
 
 
 class FuraffinityImageUrl(PostAssetUrl, FuraffinityUrl):

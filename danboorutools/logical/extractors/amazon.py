@@ -8,9 +8,10 @@ class AmazonUrl(Url):
 class AmazonAuthorUrl(ArtistUrl, AmazonUrl):
     author_id: str
 
-    normalize_string = "https://www.amazon.{subsite}/stores/author/{author_id}"
+    normalize_template = "https://www.amazon.{subsite}/stores/author/{author_id}"
+
 
 class AmazonItemUrl(PostUrl, AmazonUrl):
     item_id: str
 
-    normalize_string = "https://www.amazon.{subsite}/dp/{item_id}"
+    normalize_template = "https://www.amazon.{subsite}/dp/{item_id}"

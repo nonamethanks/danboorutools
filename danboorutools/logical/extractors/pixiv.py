@@ -25,19 +25,19 @@ class PixivProfileImageUrl(PostAssetUrl, PixivUrl):
 class PixivRequestUrl(ArtistAlbumUrl, PixivUrl):
     request_id: int
 
-    normalize_string = "https://www.pixiv.net/requests/{request_id}"
+    normalize_template = "https://www.pixiv.net/requests/{request_id}"
 
 
 class PixivNovelSeriesUrl(ArtistAlbumUrl, PixivUrl):
     series_id: int
 
-    normalize_string = "https://www.pixiv.net/novel/series/{series_id}"
+    normalize_template = "https://www.pixiv.net/novel/series/{series_id}"
 
 
 class PixivNovelUrl(PostUrl, PixivUrl):
     novel_id: int
 
-    normalize_string = "https://www.pixiv.net/novel/show.php?id={novel_id}"
+    normalize_template = "https://www.pixiv.net/novel/show.php?id={novel_id}"
 
 
 class PixivNovelImageUrl(PostAssetUrl, PixivUrl):
@@ -176,7 +176,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
 class PixivArtistUrl(ArtistUrl, PixivUrl):
     user_id: int
 
-    normalize_string = "https://www.pixiv.net/en/users/{user_id}"
+    normalize_template = "https://www.pixiv.net/en/users/{user_id}"
 
     def _extract_posts(self) -> None:
         page = 0
@@ -243,7 +243,7 @@ class PixivMeUrl(RedirectUrl, PixivUrl):
     # Useful to have separate from Stacc, to get the pixiv ID indirectly
     stacc: str
 
-    normalize_string = "https://pixiv.me/{stacc}"
+    normalize_template = "https://pixiv.me/{stacc}"
 
     resolved: PixivArtistUrl
 
@@ -251,7 +251,7 @@ class PixivMeUrl(RedirectUrl, PixivUrl):
 class PixivStaccUrl(InfoUrl, PixivUrl):
     stacc: str
 
-    normalize_string = "https://www.pixiv.net/stacc/{stacc}"
+    normalize_template = "https://www.pixiv.net/stacc/{stacc}"
 
     @property
     def me_from_stacc(self) -> PixivMeUrl:

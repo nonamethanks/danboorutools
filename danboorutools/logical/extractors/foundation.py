@@ -10,7 +10,7 @@ class FoundationPostUrl(PostUrl, FoundationUrl):
     collection: str
     post_id: int
 
-    normalize_string = "https://foundation.app/@{username}/{collection}/{post_id}"
+    normalize_template = "https://foundation.app/@{username}/{collection}/{post_id}"
 
 
 class FoundationArtistUrl(ArtistUrl, FoundationUrl):

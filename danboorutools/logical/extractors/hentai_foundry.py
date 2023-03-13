@@ -9,13 +9,13 @@ class HentaiFoundryPostUrl(PostUrl, HentaiFoundryUrl):
     username: str
     post_id: int
 
-    normalize_string = "https://www.hentai-foundry.com/pictures/user/{username}/{post_id}"
+    normalize_template = "https://www.hentai-foundry.com/pictures/user/{username}/{post_id}"
 
 
 class HentaiFoundryArtistUrl(ArtistUrl, HentaiFoundryUrl):
     username: str
 
-    normalize_string = "https://www.hentai-foundry.com/user/{username}"
+    normalize_template = "https://www.hentai-foundry.com/user/{username}"
 
 
 class HentaiFoundryImageUrl(PostAssetUrl, HentaiFoundryUrl):
@@ -30,4 +30,4 @@ class HentaiFoundryImageUrl(PostAssetUrl, HentaiFoundryUrl):
 class HentaiFoundryOldPostUrl(RedirectUrl, HentaiFoundryUrl):
     post_id: int
 
-    normalize_string = "https://www.hentai-foundry.com/pic-{post_id}"
+    normalize_template = "https://www.hentai-foundry.com/pic-{post_id}"

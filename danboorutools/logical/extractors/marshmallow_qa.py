@@ -4,7 +4,7 @@ from danboorutools.models.url import InfoUrl, Url
 class MarshmallowQaUrl(InfoUrl):
     username: str
 
-    normalize_string = "https://marshmallow-qa.com/{username}"
+    normalize_template = "https://marshmallow-qa.com/{username}"
 
     # @property
     # def primary_names(self) -> list[str]:

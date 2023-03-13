@@ -27,7 +27,7 @@ class MastodonPostUrl(PostUrl, MastodonUrl):
 class MastodonArtistUrl(ArtistUrl, MastodonUrl):
     username: str
 
-    normalize_string = "https://{site}/@{username}"
+    normalize_template = "https://{site}/@{username}"
 
     @cached_property
     def artist_data(self) -> MastodonArtistData:
@@ -62,7 +62,7 @@ class MastodonArtistUrl(ArtistUrl, MastodonUrl):
 class MastodonWebIdUrl(InfoUrl, MastodonUrl):
     user_id: int
 
-    normalize_string = "https://{site}/web/accounts/{user_id}"
+    normalize_template = "https://{site}/web/accounts/{user_id}"
 
     @property
     def artist_data(self) -> MastodonArtistData:
@@ -97,7 +97,7 @@ class MastodonWebIdUrl(InfoUrl, MastodonUrl):
 class MastodonOldImageUrl(RedirectUrl, MastodonUrl):
     filename: str
 
-    normalize_string = "https://{site}/media/{filename}"
+    normalize_template = "https://{site}/media/{filename}"
 
 
 class MastodonImageUrl(PostAssetUrl, MastodonUrl):
@@ -117,4 +117,4 @@ class MastodonImageUrl(PostAssetUrl, MastodonUrl):
 class MastodonOauthUrl(RedirectUrl, MastodonUrl):
     oauth_id: int
 
-    normalize_string = "https://{site}/oauth_authentications/{oauth_id}"
+    normalize_template = "https://{site}/oauth_authentications/{oauth_id}"

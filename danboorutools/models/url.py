@@ -34,7 +34,7 @@ UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 class Url:
     """A generic URL model."""
     session = Session()
-    normalize_string: str | None = None
+    normalize_template: str | None = None
 
     @classmethod
     def parse(cls, url: str | Url) -> Url:
@@ -49,8 +49,8 @@ class Url:
 
     @classmethod
     def normalize(cls, **kwargs) -> str | None:
-        if cls.normalize_string:
-            return cls.normalize_string.format(**kwargs)
+        if cls.normalize_template:
+            return cls.normalize_template.format(**kwargs)
         else:
             raise NotImplementedError(f"{cls} hasn't implemented .normalize()")
 

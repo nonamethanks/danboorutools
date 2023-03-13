@@ -11,13 +11,13 @@ class PoipikuPostUrl(PostUrl, PoipikuUrl):
     user_id: int
     post_id: int
 
-    normalize_string = "https://poipiku.com/{user_id}/{post_id}.html"
+    normalize_template = "https://poipiku.com/{user_id}/{post_id}.html"
 
 
 class PoipikuArtistUrl(ArtistUrl, PoipikuUrl):
     user_id: int
 
-    normalize_string = "https://poipiku.com/{user_id}/"
+    normalize_template = "https://poipiku.com/{user_id}/"
 
 
 class PoipikuImageUrl(PostAssetUrl, PoipikuUrl):

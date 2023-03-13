@@ -8,7 +8,7 @@ class XfolioUrl(Url):
 class XfolioArtistUrl(ArtistUrl, XfolioUrl):
     username: str
 
-    normalize_string = "https://xfolio.jp/portfolio/{username}"
+    normalize_template = "https://xfolio.jp/portfolio/{username}"
 
     @property
     def related(self) -> list[Url]:
@@ -36,4 +36,4 @@ class XfolioPostUrl(ArtistUrl, XfolioUrl):
     username: str
     post_id: int
 
-    normalize_string = "https://xfolio.jp/portfolio/{username}/works/{post_id}"
+    normalize_template = "https://xfolio.jp/portfolio/{username}/works/{post_id}"

@@ -23,7 +23,7 @@ class BoothItemListUrl(ArtistAlbumUrl, BoothUrl):
     username: str
     item_list_id: str
 
-    normalize_string = "https://{username}.booth.pm/item_lists/{item_list_id}"
+    normalize_template = "https://{username}.booth.pm/item_lists/{item_list_id}"
 
 
 class BoothArtistUrl(ArtistUrl, BoothUrl):

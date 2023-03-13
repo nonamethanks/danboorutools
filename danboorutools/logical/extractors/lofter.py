@@ -10,13 +10,13 @@ class LofterPostUrl(PostUrl, LofterUrl):
     username: str
     post_id: str
 
-    normalize_string = "https://{username}.lofter.com/post/{post_id}"
+    normalize_template = "https://{username}.lofter.com/post/{post_id}"
 
 
 class LofterArtistUrl(ArtistUrl, LofterUrl):
     username: str
 
-    normalize_string = "https://{username}.lofter.com"
+    normalize_template = "https://{username}.lofter.com"
 
     @property
     def primary_names(self) -> list[str]:

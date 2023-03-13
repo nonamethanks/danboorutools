@@ -9,7 +9,7 @@ class SakuraUrl(Url):
 
 
 class SakuraBlogUrl(ArtistUrl, SakuraUrl):
-    # normalize_string = "http://{blog_name}.sakura.ne.jp"  # what about all those random folders?
+    # normalize_template = "http://{blog_name}.sakura.ne.jp"  # what about all those random folders?
     # http://www17t.sakura.ne.jp/~room121/ etc
 
     @classmethod

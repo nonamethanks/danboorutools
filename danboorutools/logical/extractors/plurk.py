@@ -8,13 +8,13 @@ class PlurkUrl(Url):
 class PlurkPostUrl(PostUrl, PlurkUrl):
     post_id: str
 
-    normalize_string = "https://www.plurk.com/p/{post_id}"
+    normalize_template = "https://www.plurk.com/p/{post_id}"
 
 
 class PlurkArtistUrl(ArtistUrl, PlurkUrl):
     username: str
 
-    normalize_string = "https://www.plurk.com/{username}"
+    normalize_template = "https://www.plurk.com/{username}"
 
 
 class PlurkImageUrl(PostAssetUrl, PlurkUrl):

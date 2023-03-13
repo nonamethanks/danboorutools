@@ -10,13 +10,13 @@ class NijieUrl(Url):
 class NijiePostUrl(PostUrl, NijieUrl):
     post_id: int
 
-    normalize_string = "https://nijie.info/view.php?id={post_id}"
+    normalize_template = "https://nijie.info/view.php?id={post_id}"
 
 
 class NijieArtistUrl(ArtistUrl, NijieUrl):
     user_id: int
 
-    normalize_string = "https://nijie.info/members.php?id={user_id}"
+    normalize_template = "https://nijie.info/members.php?id={user_id}"
 
 
 class NijieImageUrl(PostAssetUrl, NijieUrl):
