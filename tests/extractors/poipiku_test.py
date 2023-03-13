@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors.poipiku import PoipikuArtistUrl, PoipikuImageUrl, PoipikuPostUrl
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
     PoipikuArtistUrl: {
@@ -25,3 +25,13 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+
+assert_artist_url(
+    "https://poipiku.com/609078/",
+    PoipikuArtistUrl,
+    url_properties=dict(user_id=609078),
+    primary_names=["jktomoeee"],
+    secondary_names=[],
+    related=["https://twitter.com/jktomoeee"],
+)

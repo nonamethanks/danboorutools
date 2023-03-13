@@ -1,6 +1,7 @@
 import re
 
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
+from danboorutools.util.misc import extract_urls_from_string
 
 
 class PoipikuUrl(Url):
@@ -18,6 +19,19 @@ class PoipikuArtistUrl(ArtistUrl, PoipikuUrl):
     user_id: int
 
     normalize_template = "https://poipiku.com/{user_id}/"
+
+    @property
+    def primary_names(self) -> list[str]:
+        return [self.html.select_one(".UserInfoUserName").text]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return []
+
+    @property
+    def related(self) -> list[Url]:
+        user_profile = str(self.html.select_one(".UserInfoProfile"))
+        return [Url.parse(u) for u in extract_urls_from_string(user_profile)]
 
 
 class PoipikuImageUrl(PostAssetUrl, PoipikuUrl):
