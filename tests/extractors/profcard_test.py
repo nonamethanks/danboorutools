@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors.profcard import ProfcardUrl
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_info_url, generate_parsing_suite
 
 urls = {
     ProfcardUrl: {
@@ -8,3 +8,12 @@ urls = {
 }
 
 generate_parsing_suite(urls)
+
+assert_info_url(
+    "https://profcard.info/u/73eXlzsmfbXKmCjqJo4SeyNE2SN2",
+    url_type=ProfcardUrl,
+    url_properties=dict(user_id="73eXlzsmfbXKmCjqJo4SeyNE2SN2"),
+    primary_names=["巴"],
+    secondary_names=[],
+    related=["https://poipiku.com/609078/"],
+)
