@@ -111,7 +111,10 @@ class Url:
         elif isinstance(self, (PostUrl, ArtistAlbumUrl, GalleryAssetUrl)):
             return self.gallery.artist
         elif isinstance(self, PostAssetUrl):
-            return self.post.artist
+            if hasattr(self, "gallery") and self.gallery:  # old pixiv urls have artist stacc data in them
+                return self.gallery
+            else:
+                return self.post.artist
         elif isinstance(self, RedirectUrl):
             return self.resolved.artist
         else:

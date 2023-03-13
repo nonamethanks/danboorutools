@@ -106,6 +106,13 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
         else:
             raise NotImplementedError(self)
 
+    @property
+    def gallery(self) -> PixivArtistUrl | None:
+        if not self.stacc:
+            return None
+
+        return self.build(PixivStaccUrl, stacc=self.stacc).me_from_stacc.resolved
+
 
 class PixivPostUrl(PostUrl, PixivUrl):
     post_id: int | str  # int if not unlisted else str
@@ -234,10 +241,11 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
 
 class PixivMeUrl(RedirectUrl, PixivUrl):
     # Useful to have separate from Stacc, to get the pixiv ID indirectly
-
     stacc: str
 
     normalize_string = "https://pixiv.me/{stacc}"
+
+    resolved: PixivArtistUrl
 
 
 class PixivStaccUrl(InfoUrl, PixivUrl):
