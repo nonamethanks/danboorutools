@@ -40,8 +40,6 @@ class ArtistFinder:
         logger.info(f"Extracting artist for post {post}, source {source}")
         try:
             artist_url = source.artist
-            logger.debug(f"Found artist url {artist_url} for source {source} for post {post}")
-            result_from_archives = None
         except UrlIsDeleted:
             artist_url = None
             logger.debug(f"{source} for post {post} is deleted.")
@@ -49,6 +47,12 @@ class ArtistFinder:
             if not result_from_archives:
                 self.skipped_posts.value = [*self.skipped_posts.value, post.id]
                 return False
+        else:
+            logger.debug(f"Found artist url {artist_url} for source {source} for post {post}")
+            result_from_archives = None
+            if artist_url.is_deleted:  # type: ignore[union-attr] # false positive
+                # still check saucenao/ascii2d for more data
+                result_from_archives = self.search_for_artist_in_archives(post)
 
         try:
             artist_tag = self._find_or_create_artist_tag(artist_url, result_from_archives)
@@ -63,10 +67,11 @@ class ArtistFinder:
                                    artist_url: ArtistUrl | None,
                                    result_from_archives: Ascii2dArtistResult | SaucenaoArtistResult | None,
                                    ) -> str:
+        found_artist_urls = []
         if artist_url:
-            found_artist_urls = self.find_all_related_urls(artist_url)
-        elif result_from_archives:
-            found_artist_urls = self.find_all_related_urls(result_from_archives.primary_url, *result_from_archives.extra_urls)
+            found_artist_urls += self.find_all_related_urls(artist_url)
+        if result_from_archives:
+            found_artist_urls += self.find_all_related_urls(result_from_archives.primary_url, *result_from_archives.extra_urls)
 
         if (artist_tag := self.find_artist_tag(found_artist_urls)):
             return artist_tag
