@@ -276,7 +276,7 @@ class ArtistFinder:
 
     @staticmethod
     def valid_new_tag_name(potential_tag: str) -> bool:
-        if len(potential_tag) <= 5:
+        if len(potential_tag) < 5:
             return False
 
         for pair in ["()", "[]"]:
