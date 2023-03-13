@@ -8,7 +8,7 @@ from danboorutools.logical.extractors.dlsite import DlsiteWorkUrl
 from danboorutools.logical.extractors.fanza import FanzaUrl
 from danboorutools.logical.extractors.nicoseiga import NicoSeigaArtistUrl
 from danboorutools.logical.extractors.nijie import NijieArtistUrl
-from danboorutools.logical.extractors.pixiv import PixivArtistUrl
+from danboorutools.logical.extractors.pixiv import PixivArtistUrl, PixivPostUrl
 from danboorutools.logical.extractors.sakura import SakuraBlogUrl
 from danboorutools.logical.extractors.tinami import TinamiArtistUrl
 from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl
@@ -78,7 +78,13 @@ class Ascii2dArtistResult:
 
     def __detail_box_h6_case(self, url_groups: list[Tag], data: dict[str, list]) -> None:
         for link_object in url_groups:
-            site = link_object.select_one("small").text.strip()
+            if link_object.text == "2ちゃんねるのログ":
+                continue
+
+            site_el = link_object.select_one("small")
+            if not site_el:
+                raise ValueError(link_object)
+            site = site_el.text.strip()
 
             post_url = Url.parse(link_object.select("a")[0]["href"])
             assert isinstance(post_url, PostUrl), post_url
@@ -113,6 +119,9 @@ class Ascii2dArtistResult:
             site = link_object.text.strip()
             if site == "dlsite":
                 self.__parse_dlsite_result(link_object, data)
+            elif isinstance(parsed := Url.parse(site), PixivPostUrl):
+                data["posts"].append(parsed)
+                data["primary_urls"].append(parsed.artist)  # gotta catch dead ones
             else:
                 raise NotImplementedError(site, link_object, self.search_url)
 
@@ -194,8 +203,12 @@ class Ascii2dSession(Session):
         for result_html in html_results:
             if result_html.select_one(".detail-box").text.strip():
                 result = Ascii2dArtistResult(result_html.select_one(".info-box"), ascii2d_url)
-                if not any(v for v in result._data.values()):
-                    continue
+                try:
+                    if not any(v for v in result._data.values()):
+                        continue
+                except Exception as e:
+                    e.add_note(f"Caught while parsing {ascii2d_url}")
+                    raise
                 results.append(result)
 
         assert results, f"No parsable results for {url}"  # to make sure page layout hasn't changed
