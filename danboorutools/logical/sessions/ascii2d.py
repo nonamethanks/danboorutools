@@ -189,6 +189,7 @@ class Ascii2dArtistResult:
 
 class Ascii2dSession(Session):
     MAX_CALLS_PER_SECOND = 0.5
+    DEFAULT_TIMEOUT = 10
 
     @memoize
     def _reverse_search_url(self, url: str) -> list[Ascii2dArtistResult]:
