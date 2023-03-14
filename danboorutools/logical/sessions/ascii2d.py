@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
 
-from danboorutools.logical.extractors.dlsite import DlsiteWorkUrl
+from danboorutools.logical.extractors.dlsite import DlsiteUrl, DlsiteWorkUrl
 from danboorutools.logical.extractors.fanza import FanzaUrl
 from danboorutools.logical.extractors.nicoseiga import NicoSeigaArtistUrl
 from danboorutools.logical.extractors.nijie import NijieArtistUrl
@@ -92,10 +92,10 @@ class Ascii2dArtistResult:
             try:
                 artist_element = link_object.select("a")[1]
             except IndexError as e:
-                if isinstance(post_url, FanzaUrl):
+                if isinstance(post_url, (FanzaUrl, DlsiteUrl)):
                     data["primary_urls"].append(post_url.artist)
                     continue
-                e.add_note(str(link_object))
+                e.add_note(f"{link_object} {post_url}")
                 raise
             creator_url = Url.parse(artist_element["href"])
             assert isinstance(creator_url, InfoUrl), creator_url

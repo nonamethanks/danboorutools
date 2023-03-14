@@ -13,6 +13,7 @@ class DlsiteComParser(UrlParser):
         "ecchi-eng": "maniax",
         "eng": "home",
         "gay": "bl",  # no homo
+        "girls-pro": "girls",
     }
     KEYWORD_MAKER_NAME_PATTERN = re.compile(r"((?:AJ|RG)\d+)$")
 
@@ -88,6 +89,7 @@ class DlsiteComParser(UrlParser):
                 instance.author_id = parsable_url.stem
 
             # http://www.dlsite.com/maniax/dlaf/=/link/work/aid/tbnb/id/RJ109634.html
+            # https://www.dlsite.com/girls-pro/dlaf/=/link/work/aid/conoco01/id/BJ327214.html
             case _, "dlaf", "=", "link", "work", *_, "id", _work_id:
                 instance = DlsiteWorkUrl(parsable_url)
                 instance.work_id = parsable_url.stem
