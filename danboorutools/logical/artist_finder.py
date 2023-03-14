@@ -215,9 +215,6 @@ class ArtistFinder:
         primary_names = list(dict.fromkeys(primary_names))
         secondary_names = [n for n in list(dict.fromkeys(secondary_names)) if n not in primary_names]
 
-        if not primary_names:
-            primary_names = secondary_names
-
         attempts = []
 
         for primary_name in primary_names:
@@ -239,6 +236,13 @@ class ArtistFinder:
             qualifier = cls.sanitize_tag_name(qualifier)  # noqa: PLW2901
 
             candidate = cls.sanitize_tag_name(f"{name}_({qualifier})")
+            if cls.valid_new_tag_name(candidate):
+                return candidate
+            else:
+                attempts.append(candidate)
+
+        for secondary_name in secondary_names:
+            candidate = cls.sanitize_tag_name(secondary_name)
             if cls.valid_new_tag_name(candidate):
                 return candidate
             else:
@@ -282,6 +286,9 @@ class ArtistFinder:
     @staticmethod
     def valid_new_tag_name(potential_tag: str) -> bool:
         if len(potential_tag) < 5:
+            return False
+
+        if potential_tag.startswith("-"):
             return False
 
         for pair in ["()", "[]"]:
