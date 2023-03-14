@@ -14,6 +14,7 @@ class ParsableUrl:
     ctld = {
         "co.uk",
         "co.jp", "ne.jp", "or.jp",
+        "com.tw",
     }
 
     @cached_property
