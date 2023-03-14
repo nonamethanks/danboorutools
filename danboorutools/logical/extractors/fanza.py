@@ -38,10 +38,16 @@ class FanzaDoujinAuthorUrl(ArtistUrl, FanzaUrl):
     normalize_template = "https://www.dmm.co.jp/{subsubsite}/doujin/-/list/=/article=maker/id={user_id}/"
 
 
-class FanzaDlsoftWorkUrl(ArtistUrl, FanzaUrl):
+class FanzaDlsoftWorkUrl(PostUrl, FanzaUrl):
     work_id: str
+    subsubsite: str
 
-    normalize_template = "https://dlsoft.dmm.co.jp/detail/{work_id}/"
+    @classmethod
+    def normalize(cls, **kwargs) -> str | None:
+        if kwargs["subsubsite"] == "mono":
+            return f"https://www.dmm.co.jp/mono/pcgame/-/detail/=/cid={kwargs['work_id']}/"
+        else:
+            return f"https://dlsoft.dmm.co.jp/detail/{kwargs['work_id']}/"
 
 
 class FanzaDlsoftAuthorUrl(ArtistUrl, FanzaUrl):

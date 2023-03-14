@@ -84,9 +84,11 @@ class DmmCoJpParser(UrlParser):
                 instance.series_id = None
 
             # http://www.dmm.co.jp/digital/pcgame/-/detail/=/cid=tech_0003/
-            case "digital", "pcgame", "-", "detail", "=", slug:
+            # https://www.dmm.co.jp/mono/pcgame/-/detail/=/cid=1001tb044/
+            case ("digital" | "mono") as subsubsite, "pcgame", "-", "detail", "=", slug:
                 instance = fz.FanzaDlsoftWorkUrl(parsable_url)
                 instance.work_id = slug.split("=")[-1]
+                instance.subsubsite = subsubsite
 
             # http://sp.dmm.co.jp/netgame/application/detail/app_id/968828
             case "netgame", "application", "detail", "app_id", game_id:
@@ -115,6 +117,7 @@ class DmmCoJpParser(UrlParser):
             # https://dlsoft.dmm.co.jp/detail/jveilelwy_0001/
             case "detail", work_id:
                 instance = fz.FanzaDlsoftWorkUrl(parsable_url)
+                instance.subsubsite = "digital"
                 instance.work_id = work_id
 
             # https://dlsoft.dmm.co.jp/list/article=maker/id=30267/

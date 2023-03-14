@@ -16,10 +16,11 @@ urls = {
     fz.FanzaDlsoftWorkUrl: {
         "https://dlsoft.dmm.co.jp/detail/jveilelwy_0001/": "https://dlsoft.dmm.co.jp/detail/jveilelwy_0001/",
         "http://www.dmm.co.jp/digital/pcgame/-/detail/=/cid=tech_0003/": "https://dlsoft.dmm.co.jp/detail/tech_0003/",
+        "https://www.dmm.co.jp/mono/pcgame/-/detail/=/cid=1001tb044/": "https://www.dmm.co.jp/mono/pcgame/-/detail/=/cid=1001tb044/",
     },
     fz.FanzaDlsoftAuthorUrl: {
         "https://dlsoft.dmm.co.jp/list/article=maker/id=30267/": "https://dlsoft.dmm.co.jp/list/article=maker/id=30267/",
-        "http://dlsoft.dmm.co.jp/list/article=author/id=239811/": "https://dlsoft.dmm.co.jp/list/article=author/id=239811/"
+        "http://dlsoft.dmm.co.jp/list/article=author/id=239811/": "https://dlsoft.dmm.co.jp/list/article=author/id=239811/",
     },
     fz.FanzaBookAuthorUrl: {
         "https://book.dmm.co.jp/list/?author=254530": "https://book.dmm.co.jp/list/?author=254530",
@@ -38,7 +39,7 @@ urls = {
     fz.FanzaBookNoSeriesUrl: {
         "http://book.dmm.co.jp/detail/b915awnmg00690/": "https://book.dmm.co.jp/detail/b915awnmg00690/",
         "http://www.dmm.co.jp/dc/book/-/detail/=/cid=b073bktcm00445": "https://book.dmm.co.jp/detail/b073bktcm00445/",
-        "http://book.dmm.co.jp/detail/b061bangl00828/ozy3jyayo-001": "https://book.dmm.co.jp/detail/b061bangl00828/"
+        "http://book.dmm.co.jp/detail/b061bangl00828/ozy3jyayo-001": "https://book.dmm.co.jp/detail/b061bangl00828/",
     },
     fz.FanzaGamesGameUrl: {
         "https://games.dmm.co.jp/detail/devilcarnival": "https://games.dmm.co.jp/detail/devilcarnival",
