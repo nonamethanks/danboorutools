@@ -81,18 +81,25 @@ class Ascii2dArtistResult:
             if not site_el:
                 raise ValueError(link_object)
             site = site_el.text.strip()
+            if site in ["dlsite", "dmm"]:
+                for sublink in link_object.select("a"):
+                    work_url = Url.parse(sublink["href"])
+                    assert isinstance(work_url, (FanzaUrl, DlsiteUrl))
+                    assert isinstance(work_url, PostUrl)
+                    data["found_urls"].append(work_url.artist)
+                continue
 
             post_url = Url.parse(link_object.select("a")[0]["href"])
             assert isinstance(post_url, PostUrl), post_url
             data["posts"].append(post_url)
-            try:
-                artist_element = link_object.select("a")[1]
-            except IndexError as e:
-                if isinstance(post_url, (FanzaUrl, DlsiteUrl)):
-                    data["found_urls"].append(post_url.artist)
-                    continue
-                e.add_note(f"{link_object} {post_url}")
-                raise
+            # try:
+            artist_element = link_object.select("a")[1]
+            # except IndexError as e:
+            #    if isinstance(post_url, (FanzaUrl, DlsiteUrl)):
+            #        data["found_urls"].append(post_url.artist)
+            #        continue
+            #    e.add_note(f"{link_object} {post_url}")
+            #    raise
             creator_url = Url.parse(artist_element["href"])
             assert isinstance(creator_url, InfoUrl), creator_url
             artist_name = artist_element.text
@@ -115,6 +122,8 @@ class Ascii2dArtistResult:
             site = link_object.text.strip()
             if site == "dlsite":
                 self.__parse_dlsite_result(link_object, data)
+            elif site == "dmm":
+                self.__parse_fanza_result(link_object, data)
             elif isinstance(parsed := Url.parse(site), PixivPostUrl):
                 data["posts"].append(parsed)
                 try:
@@ -131,9 +140,9 @@ class Ascii2dArtistResult:
         if len(url_groups) > 1:
             raise NotImplementedError(url_groups, self.search_url)
 
-        if "sakura.ne.jp" in url_groups[0].text:
+        if "sakura.ne.jp" in (url_text := url_groups[0].text.strip()):
             self.__parse_sakura_result(url_groups[0], data)
-        elif "DL版" in url_groups[0].text:
+        elif "DL版" in url_text or url_text.startswith("COMIC "):
             return
         else:
             raise NotImplementedError(url_groups, self.search_url)
@@ -178,6 +187,15 @@ class Ascii2dArtistResult:
         data["found_urls"].append(book.gallery)
 
     @staticmethod
+    def __parse_fanza_result(url_element: Tag, data: dict[str, list]) -> None:
+        url = url_element["href"]
+        book = Url.parse(url)
+        assert isinstance(book, FanzaUrl)
+        assert isinstance(book, PostUrl)
+        data["posts"].append(book)
+        data["found_urls"].append(book.gallery)
+
+    @staticmethod
     def __parse_sakura_result(element: Tag, data: dict[str, list]) -> None:
         name, url = element.text.split("'")
         sakura_url = Url.parse(url)
@@ -202,12 +220,13 @@ class Ascii2dSession(Session):
         results: list[Ascii2dArtistResult] = []
         for result_html in html_results:
             if result_html.select_one(".detail-box").text.strip():
-                result = Ascii2dArtistResult(result_html.select_one(".info-box"), ascii2d_url)
+                info_box = result_html.select_one(".info-box")
+                result = Ascii2dArtistResult(info_box, ascii2d_url)
                 try:
                     if not any(v for v in result._data.values()):
                         continue
                 except Exception as e:
-                    e.add_note(f"Caught while parsing {ascii2d_url}")
+                    e.add_note(f"{info_box}\nCaught while parsing {ascii2d_url}")
                     raise
                 results.append(result)
 
