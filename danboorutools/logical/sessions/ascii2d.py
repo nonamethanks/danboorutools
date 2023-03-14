@@ -85,8 +85,8 @@ class Ascii2dArtistResult:
             if site in ["dlsite", "dmm"]:
                 for sublink in link_object.select("a"):
                     work_url = Url.parse(sublink["href"])
-                    assert isinstance(work_url, (FanzaUrl, DlsiteUrl))
-                    assert isinstance(work_url, PostUrl)
+                    assert isinstance(work_url, (FanzaUrl, DlsiteUrl)), work_url
+                    assert isinstance(work_url, PostUrl), work_url
                     data["found_urls"].append(work_url.artist)
                 continue
 
@@ -191,21 +191,25 @@ class Ascii2dSession(Session):
             if result_html.select_one(".detail-box").text.strip():
                 info_box = result_html.select_one(".info-box")
                 result = Ascii2dArtistResult(info_box, ascii2d_url)
-                try:
-                    if not any(v for v in result._data.values()):
-                        continue
-                except Exception as e:
-                    e.add_note(f"{info_box}\nCaught while parsing {ascii2d_url}")
-                    raise
                 results.append(result)
 
         assert results, f"No parsable results for {url}"  # to make sure page layout hasn't changed
         return results
 
     def find_gallery(self, url: str, original_url: Url | str, original_post: DanbooruPost) -> Ascii2dArtistResult | None:
-        for result in self._reverse_search_url(url):
+        for index, result in enumerate(self._reverse_search_url(url)):
             if result.md5 == original_post.md5:
                 return result
+
+            if index > 5:
+                continue  # don't bother checking past the first 5 results
+
+            try:
+                if not any(v for v in result._data.values()):
+                    continue
+            except Exception as e:
+                e.add_note(f"\nHTML:\n\n{result.html_data}\n\nCaught while parsing {result.search_url}")
+                raise
 
             original_url = Url.parse(original_url)
             if isinstance(original_url, PostAssetUrl):
