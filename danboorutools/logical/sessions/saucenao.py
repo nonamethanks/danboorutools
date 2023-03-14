@@ -15,15 +15,7 @@ pixiv_id_lookup_artist_pattern = re.compile(
 
 @dataclass
 class SaucenaoArtistResult:
-    primary_url: InfoUrl
-    extra_urls: list[InfoUrl]
-    primary_names: list[str]
-    secondary_names: list[str]
-
-
-@dataclass
-class _SubResult:
-    extra_urls: list[InfoUrl]
+    found_urls: list[InfoUrl]
     primary_names: list[str]
     secondary_names: list[str]
 
@@ -51,12 +43,12 @@ class SaucenaoSession(Session):
         return results
 
     def find_gallery(self, image_url: str, original_url: Url | str, original_post: DanbooruPost | None = None) -> SaucenaoArtistResult | None:
-        subresults: list[_SubResult] = []
+        subresults = []
+
         if not isinstance(original_url, Url):
             original_url = Url.parse(original_url)
 
-        results = self._reverse_search_url(image_url)
-        for result in results:
+        for result in self._reverse_search_url(image_url):
             if result["header"]["index_id"] in self.no_artist_indexes:
                 continue
 
@@ -84,28 +76,22 @@ class SaucenaoSession(Session):
                 continue
             break
         else:
-            if subresults:
-                first_url = subresults[0].extra_urls.pop(0)
-                saucenao_result = SaucenaoArtistResult(primary_url=first_url, **subresults[0].__dict__)
-                self.__merge_results(saucenao_result, subresults[1:])
-                return saucenao_result
-
-            else:
-                return None
+            return self.__merge_results(*subresults) if subresults else None  # pylint: disable=no-value-for-parameter
 
         if isinstance(match_url, PixivUrl):
             saucenao_result = self.__parse_pixiv_result(result_data)
         else:
             raise NotImplementedError(match_url)
 
-        self.__merge_results(saucenao_result, subresults)
+        self.__merge_results(saucenao_result, *subresults)
         return saucenao_result
 
-    def __merge_results(self, saucenao_result: SaucenaoArtistResult, subresults: list[_SubResult]) -> None:
+    def __merge_results(self, saucenao_result: SaucenaoArtistResult, *subresults: SaucenaoArtistResult) -> SaucenaoArtistResult:
         for subresult in subresults:
-            saucenao_result.extra_urls += subresult.extra_urls
+            saucenao_result.found_urls += subresult.found_urls
             saucenao_result.primary_names += subresult.primary_names
             saucenao_result.secondary_names += subresult.secondary_names
+        return saucenao_result
 
     def __parse_pixiv_result(self, saucenao_result: dict) -> SaucenaoArtistResult:
         pixiv_id = saucenao_result["member_id"]
@@ -116,13 +102,12 @@ class SaucenaoSession(Session):
         pixiv_artist_url = Url.build(PixivArtistUrl, user_id=pixiv_id)
 
         return SaucenaoArtistResult(
-            primary_url=pixiv_artist_url,
-            extra_urls=extra_urls,  # type: ignore[arg-type]
+            found_urls=[pixiv_artist_url, *extra_urls],
             primary_names=[saucenao_result["member_name"]],
             secondary_names=secondary_names,
         )
 
-    def __parse_danbooru_result(self, saucenao_result: dict[str, dict], source_from_danbooru: Url) -> _SubResult | None:
+    def __parse_danbooru_result(self, saucenao_result: dict[str, dict], source_from_danbooru: Url) -> SaucenaoArtistResult | None:
         source_from_saucenao = Url.parse(saucenao_result["data"]["source"].removesuffix(" (deleted)"))  # bruh
 
         if isinstance(source_from_danbooru, PostAssetUrl):
@@ -138,7 +123,7 @@ class SaucenaoSession(Session):
         if source_from_saucenao.normalized_url != source_from_danbooru.normalized_url:
             raise NotImplementedError(saucenao_result, source_from_saucenao, source_from_danbooru)
 
-        result = _SubResult(extra_urls=[], primary_names=[], secondary_names=[])
+        result = SaucenaoArtistResult(found_urls=[], primary_names=[], secondary_names=[])
 
         if isinstance(source_from_saucenao, PixivUrl):
             if not (creator := saucenao_result["data"]["creator"]):
@@ -146,10 +131,10 @@ class SaucenaoSession(Session):
             if "," in creator:
                 raise NotImplementedError(saucenao_result)  # saucenao database is fucked
             if match := re.match(r"^pixiv id (\d+)$", creator):
-                result.extra_urls += [Url.build(PixivArtistUrl, user_id=int(match.groups()[0]))]
+                result.found_urls += [Url.build(PixivArtistUrl, user_id=int(match.groups()[0]))]
             else:
                 stacc = creator.replace(" ", "_")
-                result.extra_urls += [Url.build(PixivStaccUrl, stacc=stacc)]
+                result.found_urls += [Url.build(PixivStaccUrl, stacc=stacc)]
                 result.secondary_names += [stacc]
         else:
             raise NotImplementedError

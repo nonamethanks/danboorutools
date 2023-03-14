@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
 
+from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.extractors.dlsite import DlsiteUrl, DlsiteWorkUrl
 from danboorutools.logical.extractors.fanza import FanzaUrl
 from danboorutools.logical.extractors.nicoseiga import NicoSeigaArtistUrl
@@ -32,12 +33,8 @@ class Ascii2dArtistResult:
         return f"Ascii2dArtistResult({stringified} / {self.search_url})"
 
     @property
-    def primary_url(self) -> InfoUrl:
-        return self._data["primary_urls"][0]
-
-    @property
-    def extra_urls(self) -> list[InfoUrl]:
-        return self._data["primary_urls"][1:] + self._data["extra_urls"]
+    def found_urls(self) -> list[InfoUrl]:
+        return self._data["found_urls"]
 
     @property
     def posts(self) -> list[PostUrl]:
@@ -58,8 +55,7 @@ class Ascii2dArtistResult:
     @cached_property
     def _data(self) -> dict[str, list]:
         data: dict[str, list] = {
-            "primary_urls": [],
-            "extra_urls": [],
+            "found_urls": [],
             "primary_names": [],
             "secondary_names": [],
             "posts": [],
@@ -93,7 +89,7 @@ class Ascii2dArtistResult:
                 artist_element = link_object.select("a")[1]
             except IndexError as e:
                 if isinstance(post_url, (FanzaUrl, DlsiteUrl)):
-                    data["primary_urls"].append(post_url.artist)
+                    data["found_urls"].append(post_url.artist)
                     continue
                 e.add_note(f"{link_object} {post_url}")
                 raise
@@ -121,7 +117,10 @@ class Ascii2dArtistResult:
                 self.__parse_dlsite_result(link_object, data)
             elif isinstance(parsed := Url.parse(site), PixivPostUrl):
                 data["posts"].append(parsed)
-                data["primary_urls"].append(parsed.artist)  # gotta catch dead ones
+                try:
+                    data["found_urls"].append(parsed.artist)
+                except UrlIsDeleted:
+                    continue
             else:
                 raise NotImplementedError(site, link_object, self.search_url)
 
@@ -142,32 +141,32 @@ class Ascii2dArtistResult:
     @staticmethod
     def __parse_pixiv_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
         assert isinstance(creator_url, PixivArtistUrl)
-        data["primary_urls"].append(creator_url)
+        data["found_urls"].append(creator_url)
         data["primary_names"].append(artist_name)
 
     @staticmethod
     def __parse_twitter_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
         assert isinstance(creator_url, TwitterIntentUrl)
-        data["primary_urls"].append(Url.build(TwitterArtistUrl, username=artist_name))
-        data["extra_urls"].append(creator_url)
+        data["found_urls"].append(Url.build(TwitterArtistUrl, username=artist_name))
+        data["found_urls"].append(creator_url)
         data["secondary_names"].append(artist_name)
 
     @staticmethod
     def __parse_seiga_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
         assert isinstance(creator_url, NicoSeigaArtistUrl)
-        data["primary_urls"].append(creator_url)
+        data["found_urls"].append(creator_url)
         data["primary_names"].append(artist_name)
 
     @staticmethod
     def __parse_tinami_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
         assert isinstance(creator_url, TinamiArtistUrl)
-        data["primary_urls"].append(creator_url)
+        data["found_urls"].append(creator_url)
         data["primary_names"].append(artist_name)
 
     @staticmethod
     def __parse_nijie_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
         assert isinstance(creator_url, NijieArtistUrl)
-        data["primary_urls"].append(creator_url)
+        data["found_urls"].append(creator_url)
         data["primary_names"].append(artist_name)
 
     @staticmethod
@@ -176,7 +175,7 @@ class Ascii2dArtistResult:
         book = Url.parse(url)
         assert isinstance(book, DlsiteWorkUrl)
         data["posts"].append(book)
-        data["primary_urls"].append(book.gallery)
+        data["found_urls"].append(book.gallery)
 
     @staticmethod
     def __parse_sakura_result(element: Tag, data: dict[str, list]) -> None:
@@ -184,7 +183,7 @@ class Ascii2dArtistResult:
         sakura_url = Url.parse(url)
         assert isinstance(sakura_url, SakuraBlogUrl)
         data["primary_names"].append(name)
-        data["primary_urls"].append(sakura_url)
+        data["found_urls"].append(sakura_url)
 
 
 class Ascii2dSession(Session):
@@ -224,7 +223,7 @@ class Ascii2dSession(Session):
             if isinstance(original_url, PostAssetUrl):
                 original_url = original_url.post
 
-            normalized_from_result = [url.normalized_url for url in [result.primary_url, *result.extra_urls, *result.posts]]
+            normalized_from_result = [url.normalized_url for url in result.found_urls + result.posts]
             if original_url.normalized_url in normalized_from_result:
                 return result
 

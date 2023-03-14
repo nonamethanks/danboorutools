@@ -71,7 +71,7 @@ class ArtistFinder:
         if artist_url:
             found_artist_urls += self.find_all_related_urls(artist_url)
         if result_from_archives:
-            found_artist_urls += self.find_all_related_urls(result_from_archives.primary_url, *result_from_archives.extra_urls)
+            found_artist_urls += self.find_all_related_urls(*result_from_archives.found_urls)
 
         if (artist_tag := self.find_artist_tag(found_artist_urls)):
             return artist_tag
