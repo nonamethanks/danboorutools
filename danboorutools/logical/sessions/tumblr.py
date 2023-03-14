@@ -15,7 +15,7 @@ class TumblrSession(Session):
     def api(self) -> TumblrRestClient:
         return TumblrRestClient(
             os.environ["TUMBLR_CONSUMER_KEY"],
-            os.environ["TUMBLR_CONSUMER_KEY_SECRET"],
+            os.environ["TUMBLR_CONSUMER_SECRET"],
             os.environ["TUMBLR_ACCESS_TOKEN"],
             os.environ["TUMBLR_ACCESS_TOKEN_SECRET"],
         )
