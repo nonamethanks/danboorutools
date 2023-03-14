@@ -37,6 +37,7 @@ gelidum = "^0.5.9"
 cloudscraper = "^1.2.69"
 pyrate-limiter = "^2.10.0"
 pytumblr = "^0.1.2"
+plurk-oauth = "^0.9.2"
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.28.11.15"
