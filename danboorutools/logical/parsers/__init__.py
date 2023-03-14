@@ -62,7 +62,10 @@ class UrlParser:
 
 
 class UnsupportedParser(UrlParser):
-    domains = ["coocan.jp"]
+    domains = [
+        "coocan.jp",
+        "pixnet.net",
+    ]
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> UnsupportedUrl | None:
