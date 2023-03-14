@@ -19,7 +19,7 @@ class ParsableUrl:
     @cached_property
     def url_data(self) -> dict:
         if "?" in self.raw_url:
-            url_without_query, _, url_query = self.raw_url.rpartition("?")
+            url_without_query, _, url_query = self.raw_url.partition("?")
         else:
             url_without_query = self.raw_url
             url_query = None
