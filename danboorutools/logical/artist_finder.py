@@ -221,13 +221,13 @@ class ArtistFinder:
 
     @classmethod
     def decide_new_artist_tag_name(cls, primary_names: list[str], secondary_names: list[str]) -> str:
-        primary_names = list(dict.fromkeys(primary_names))
-        secondary_names = [n for n in list(dict.fromkeys(secondary_names)) if n not in primary_names]
+        primary_names = [cls.sanitize_tag_name(name) for name in list(dict.fromkeys(primary_names))]
+        secondary_names = [cls.sanitize_tag_name(name) for name in list(dict.fromkeys(secondary_names))
+                           if cls.sanitize_tag_name(name) not in primary_names]
 
         attempts = []
 
-        for primary_name in primary_names:
-            candidate = cls.sanitize_tag_name(primary_name)
+        for candidate in primary_names:
             if cls.valid_new_tag_name(candidate):
                 return candidate
             else:
@@ -241,17 +241,13 @@ class ArtistFinder:
         ))
 
         for name, qualifier in combinations:
-            name = cls.sanitize_tag_name(name)  # noqa: PLW2901
-            qualifier = cls.sanitize_tag_name(qualifier)  # noqa: PLW2901
-
             candidate = cls.sanitize_tag_name(f"{name}_({qualifier})")
             if cls.valid_new_tag_name(candidate):
                 return candidate
             else:
                 attempts.append(candidate)
 
-        for secondary_name in secondary_names:
-            candidate = cls.sanitize_tag_name(secondary_name)
+        for candidate in secondary_names:
             if cls.valid_new_tag_name(candidate):
                 return candidate
             else:
