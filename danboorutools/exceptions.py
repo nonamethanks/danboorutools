@@ -96,12 +96,15 @@ class DanbooruHTTPError(HTTPError):
                 self.json_response = {
                     "error": "RateLimitExceeded",
                     "message": "You're doing that too fast",
-                    "backtrace": []
+                    "backtrace": [],
                 }
             else:
                 raise NotImplementedError(response.text) from e
 
-        self.error_type = response.json()["error"]
+        try:
+            self.error_type = response.json()["error"]
+        except KeyError as e:
+            raise NotImplementedError(response.json()) from e
         self.error_message = response.json()["message"]
         self.backtrace = response.json()["backtrace"]
         super().__init__(response, *args, **kwargs)
