@@ -352,10 +352,15 @@ class RedirectUrl(Url):
     @on_exception(expo, ReadTimeout, max_tries=3)
     def resolved(self) -> Url:
         try:
-            return self.parse(self.session.unscramble(self.normalized_url))
+            resolved = self.parse(self.session.unscramble(self.normalized_url))
         except UrlIsDeleted:
             self.is_deleted = True
             raise
+
+        if resolved == self:
+            raise UrlIsDeleted(status_code=404, original_url=self.normalized_url)
+
+        return resolved
 
     @property
     def related(self) -> list[Url]:
@@ -365,7 +370,10 @@ class RedirectUrl(Url):
 
     @cached_property
     def is_deleted(self) -> bool:
-        return self.resolved.is_deleted
+        try:
+            return self.resolved.is_deleted
+        except UrlIsDeleted:
+            return True
 
 
 if TYPE_CHECKING:
