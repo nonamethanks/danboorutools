@@ -21,7 +21,7 @@ from danboorutools.models.danbooru import (
     DanbooruTag,
     DanbooruUser,
 )
-from danboorutools.models.url import Url, UselessUrl
+from danboorutools.models.url import UnknownUrl, Url, UselessUrl
 from danboorutools.version import version
 
 if TYPE_CHECKING:
@@ -191,10 +191,11 @@ class DanbooruApi(Session):
                 if isinstance(parsed, UselessUrl):
                     continue
                 try:
-                    normalized_urls.append(f"-{parsed.normalized_url}" if parsed.is_deleted else parsed.normalized_url)
+                    deleted = parsed.is_deleted if not isinstance(parsed, UnknownUrl) else (parsed.is_deleted or url_data["is_deleted"])
                 except (ReadTimeout, CloudflareChallengeError):
-                    normalized_urls.append(f"-{parsed.normalized_url}" if url_data["is_deleted"] else parsed.normalized_url)
-                    continue
+                    deleted = url_data["is_deleted"]
+
+                normalized_urls.append(f"-{parsed.normalized_url}" if deleted else parsed.normalized_url)
 
         return " ".join(normalized_urls)
 
