@@ -5,12 +5,13 @@ import os
 import sys
 import tempfile
 import time
+import warnings
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from cloudscraper import CloudScraper as _CloudScraper
 from cloudscraper.exceptions import CloudflareChallengeError
 from pyrate_limiter.limiter import Limiter, RequestRate
@@ -124,7 +125,10 @@ class Session(_CloudScraper):
         response = self.get_cached(url, *args, **kwargs)
         if not response.ok:
             raise HTTPError(response)
-        return BeautifulSoup(response.text, "html5lib")
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", XMLParsedAsHTMLWarning)
+            return BeautifulSoup(response.text, "html5lib")
 
     def get_json(self, *args, **kwargs) -> dict:
         response = self.request("GET", *args, **kwargs)
