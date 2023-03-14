@@ -24,6 +24,8 @@ class CircleMsCircleUrl(InfoUrl, CircleMsUrl):
 
     @property
     def primary_names(self) -> list[str]:
+        if self.is_deleted:
+            return []
         return [self.html.select_one(".profile-name").text.strip()]
 
     @property
@@ -32,4 +34,6 @@ class CircleMsCircleUrl(InfoUrl, CircleMsUrl):
 
     @property
     def related(self) -> list[Url]:
+        if self.is_deleted:
+            return []
         return [Url.parse(el["href"]) for el in self.html.select(".profile-link a")]
