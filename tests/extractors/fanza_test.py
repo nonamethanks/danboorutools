@@ -20,7 +20,6 @@ urls = {
     fz.FanzaDlsoftAuthorUrl: {
         "https://dlsoft.dmm.co.jp/list/article=maker/id=30267/": "https://dlsoft.dmm.co.jp/list/article=maker/id=30267/",
         "http://dlsoft.dmm.co.jp/list/article=author/id=239811/": "https://dlsoft.dmm.co.jp/list/article=author/id=239811/"
-        ""
     },
     fz.FanzaBookAuthorUrl: {
         "https://book.dmm.co.jp/list/?author=254530": "https://book.dmm.co.jp/list/?author=254530",
@@ -74,6 +73,13 @@ generate_parsing_suite(urls)
 assert_post_url(
     "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_218503/",
     url_type=fz.FanzaDoujinWorkUrl,
-    url_properties=dict(work_id="d_218503", subsite="dc"),
+    url_properties=dict(work_id="d_218503", subsubsite="dc"),
     gallery="https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/id=70980/",
+)
+
+assert_post_url(
+    "https://book.dmm.co.jp/product/4102975/b064bcmcm01996/?utm_medium=dmm_affiliate&utm_source=conoco-990&utm_campaign=affiliate_api",
+    url_type=fz.FanzaBookWorkUrl,
+    url_properties=dict(series_id=4102975, work_id="b064bcmcm01996"),
+    gallery="https://book.dmm.co.jp/list/?author=238988",
 )

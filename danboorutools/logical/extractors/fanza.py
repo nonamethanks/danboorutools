@@ -4,7 +4,7 @@ from functools import cached_property
 from typing import Literal
 from urllib.parse import urljoin
 
-from danboorutools.logical.sessions.fanza import FanzaSession
+from danboorutools.logical.sessions.fanza import FanzaBookData, FanzaSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
@@ -75,6 +75,17 @@ class FanzaBookWorkUrl(PostUrl, FanzaUrl):
             return f"https://www.dmm.co.jp/mono/book/-/detail/=/cid={kwargs['work_id']}/"
         # different from FanzaBookNoSeriesUrl, in that "mono" books do not redirect because they're region-restricted
         # what a clusterfuck!
+
+    @property
+    def book_data(self) -> FanzaBookData:
+        return self.session.book_data(self.work_id)
+
+    @property
+    def gallery(self) -> FanzaBookAuthorUrl:
+        if len(self.book_data.author) != 1:
+            raise NotImplementedError(self, self.book_data.author)
+        author_id = self.book_data.author[0]["id"]
+        return self.build(FanzaBookAuthorUrl, user_id=int(author_id))
 
 
 class FanzaBookNoSeriesUrl(RedirectUrl, FanzaUrl):
