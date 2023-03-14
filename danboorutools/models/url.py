@@ -139,6 +139,13 @@ class UselessUrl(Url):
         return None
 
 
+class UnsupportedUrl(Url):
+    """A known url that is not worth implementing individually, such as niche japanese blogs."""
+    @classmethod
+    def normalize(cls, **kwargs) -> None:  # noqa: ARG003
+        return None
+
+
 ########################################################################
 
 

@@ -14,7 +14,7 @@ from danboorutools.logical.extractors.youtube import YoutubePlaylistUrl, Youtube
 from danboorutools.logical.sessions.ascii2d import Ascii2dArtistResult, Ascii2dSession
 from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.logical.sessions.saucenao import SaucenaoArtistResult, SaucenaoSession
-from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, RedirectUrl, UnknownUrl, Url, UselessUrl
+from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, RedirectUrl, UnknownUrl, UnsupportedUrl, Url, UselessUrl
 from danboorutools.scripts import ProgressTracker
 
 if TYPE_CHECKING:
@@ -173,6 +173,10 @@ class ArtistFinder:
 
             if isinstance(related_url, (YoutubeVideoUrl, YoutubePlaylistUrl)):
                 logger.debug(f"Skipping {related_url} because it has a high chance of being a random video")
+                continue
+
+            if isinstance(related_url, UnsupportedUrl):
+                logger.debug(f"Skipping {related_url} because it's an unsupported url...")
                 continue
 
             if not isinstance(related_url, InfoUrl):

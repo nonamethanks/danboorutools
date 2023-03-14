@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import UnknownUrlError, UnparsableUrl
 from danboorutools.logical.parsable_url import ParsableUrl
+from danboorutools.models.url import UnsupportedUrl
 from danboorutools.util.misc import class_name_to_string
 
 if TYPE_CHECKING:
@@ -58,6 +59,17 @@ class UrlParser:
             if domain in parsers:
                 raise NotImplementedError(domain, (cls, parsers[domain]))
             parsers[domain] = cls
+
+
+class UnsupportedParser(UrlParser):
+    domains = ["coocan.jp"]
+
+    @classmethod
+    def match_url(cls, parsable_url: ParsableUrl) -> UnsupportedUrl | None:
+        if parsable_url.domain in cls.domains:
+            return UnsupportedUrl(parsable_url)
+        else:
+            return None
 
 
 for f in Path(__file__).parent.glob("*.py"):
