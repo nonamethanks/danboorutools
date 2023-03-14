@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.extractors.dlsite import DlsiteUrl, DlsiteWorkUrl
+from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
 from danboorutools.logical.extractors.fanza import FanzaUrl
 from danboorutools.logical.extractors.nicoseiga import NicoSeigaArtistUrl
 from danboorutools.logical.extractors.nijie import NijieArtistUrl
@@ -15,7 +16,7 @@ from danboorutools.logical.extractors.tinami import TinamiArtistUrl
 from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import InfoUrl, PostAssetUrl, PostUrl, Url
-from danboorutools.util.misc import memoize
+from danboorutools.util.misc import extract_urls_from_string, memoize
 
 if TYPE_CHECKING:
     from bs4 import Tag
@@ -104,16 +105,15 @@ class Ascii2dArtistResult:
             assert isinstance(creator_url, InfoUrl), creator_url
             artist_name = artist_element.text
 
-            if site == "pixiv":
-                self.__parse_pixiv_result(creator_url, artist_name, data)
+            if site in ["pixiv", "fanbox", "ニジエ", "tinami", "ニコニコ静画"]:
+                assert isinstance(creator_url, (PixivArtistUrl, FanboxArtistUrl, NijieArtistUrl, TinamiArtistUrl, NicoSeigaArtistUrl))
+                data["found_urls"].append(creator_url)
+                data["primary_names"].append(artist_name)
             elif site == "twitter":
-                self.__parse_twitter_result(creator_url, artist_name, data)
-            elif site == "ニコニコ静画":
-                self.__parse_seiga_result(creator_url, artist_name, data)
-            elif site == "tinami":
-                self.__parse_tinami_result(creator_url, artist_name, data)
-            elif site == "ニジエ":
-                self.__parse_nijie_result(creator_url, artist_name, data)
+                assert isinstance(creator_url, TwitterIntentUrl)
+                data["found_urls"].append(Url.build(TwitterArtistUrl, username=artist_name))
+                data["found_urls"].append(creator_url)
+                data["secondary_names"].append(artist_name)
             else:
                 raise NotImplementedError(site, artist_element, self.search_url)
 
@@ -142,41 +142,10 @@ class Ascii2dArtistResult:
 
         if "sakura.ne.jp" in (url_text := url_groups[0].text.strip()):
             self.__parse_sakura_result(url_groups[0], data)
-        elif "DL版" in url_text or url_text.startswith("COMIC "):
+        elif not (extracted_urls := extract_urls_from_string(url_text)):
             return
         else:
-            raise NotImplementedError(url_groups, self.search_url)
-
-    @staticmethod
-    def __parse_pixiv_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
-        assert isinstance(creator_url, PixivArtistUrl)
-        data["found_urls"].append(creator_url)
-        data["primary_names"].append(artist_name)
-
-    @staticmethod
-    def __parse_twitter_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
-        assert isinstance(creator_url, TwitterIntentUrl)
-        data["found_urls"].append(Url.build(TwitterArtistUrl, username=artist_name))
-        data["found_urls"].append(creator_url)
-        data["secondary_names"].append(artist_name)
-
-    @staticmethod
-    def __parse_seiga_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
-        assert isinstance(creator_url, NicoSeigaArtistUrl)
-        data["found_urls"].append(creator_url)
-        data["primary_names"].append(artist_name)
-
-    @staticmethod
-    def __parse_tinami_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
-        assert isinstance(creator_url, TinamiArtistUrl)
-        data["found_urls"].append(creator_url)
-        data["primary_names"].append(artist_name)
-
-    @staticmethod
-    def __parse_nijie_result(creator_url: InfoUrl, artist_name: str, data: dict[str, list]) -> None:
-        assert isinstance(creator_url, NijieArtistUrl)
-        data["found_urls"].append(creator_url)
-        data["primary_names"].append(artist_name)
+            raise NotImplementedError(url_groups, extracted_urls, self.search_url)
 
     @staticmethod
     def __parse_dlsite_result(url_element: Tag, data: dict[str, list]) -> None:

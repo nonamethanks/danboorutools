@@ -5,7 +5,8 @@ from urllib.parse import unquote
 
 from danboorutools.exceptions import NotAnUrl
 
-url_query_pattern = re.compile(r"(?:\?|\&(?:amp;)?)?([^=]+)=([^&]+)")
+url_query_pattern = re.compile(r"(?:\?|\&(?:amp;)*)?([^=]+)=([^&]+)")
+# note: some sites garble and double-encode ampersands
 
 
 @dataclass
