@@ -33,9 +33,10 @@ pykakasi = "^2.2.1"
 unidecode = "^1.3.6"
 pydantic = "^1.10.6"
 mastodon-py = "^1.8.0"
-gelidum = "^0.5.8"
+gelidum = "^0.5.9"
 cloudscraper = "^1.2.69"
 pyrate-limiter = "^2.10.0"
+pytumblr = "^0.1.2"
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.28.11.15"
@@ -96,6 +97,7 @@ ignore = [
     "FBT",      # flake8-boolean-trap
     "G004",     # Logging statement uses f-string
     "PLR2004",  # allow-magic-value-types
+    "RET504",   # Unnecessary variable assignment before `return` statement
     "RET505",   # Unnecessary `else` after `return` statement
     "RET506",   # Unnecessary `else` after `raise` statement
     "RUF001",   # allowed-confusables

@@ -94,7 +94,7 @@ class WeiboComParser(UrlParser):
 
 
 class SinaimgCnParser(UrlParser):
-    SIZE_STRINGS = ["mw", "large", "orj", "middle", "original", "orignal"]
+    SIZE_STRINGS = ("mw", "large", "orj", "middle", "original", "orignal")
     # yeah, "orignal" http://s3.sinaimg.cn/orignal/7011f2d7hec2cafbb7dc2\u0026amp;690
 
     @classmethod
@@ -109,7 +109,7 @@ class SinaimgCnParser(UrlParser):
             # https://wx1.sinaimg.cn/original/7004ec1cly1ge9dcbsw4lj20jg2ir7wh.jpg
             # http://s2.sinaimg.cn/middle/645f3c7fg7715a2e3b711\u0026690
             # http://s3.sinaimg.cn/orignal/7011f2d7hec2cafbb7dc2\u0026amp;690
-            case dimensions, _ if any(dimensions.startswith(string) for string in cls.SIZE_STRINGS):
+            case dimensions, _ if dimensions.startswith(cls.SIZE_STRINGS):
                 instance = WeiboImageUrl(parsable_url)
 
             case "m", "emoticon", *_:

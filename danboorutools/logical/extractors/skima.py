@@ -45,6 +45,6 @@ class SkimaImageUrl(PostAssetUrl, SkimaUrl):
 
     @property
     def full_size(self) -> str:
-        if self.parsed_url.url_parts[-1].startswith("tip-") or self.parsed_url.url_parts[-1].startswith("detail-"):
+        if self.parsed_url.url_parts[-1].startswith(("tip-", "detail-")):
             raise NotImplementedError(self)  # samples
         return self.parsed_url.raw_url

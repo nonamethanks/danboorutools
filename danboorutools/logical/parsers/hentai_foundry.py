@@ -1,5 +1,10 @@
-from danboorutools.logical.extractors.hentai_foundry import (HentaiFoundryArtistUrl, HentaiFoundryImageUrl, HentaiFoundryOldPostUrl,
-                                                             HentaiFoundryPostUrl, HentaiFoundryUrl)
+from danboorutools.logical.extractors.hentai_foundry import (
+    HentaiFoundryArtistUrl,
+    HentaiFoundryImageUrl,
+    HentaiFoundryOldPostUrl,
+    HentaiFoundryPostUrl,
+    HentaiFoundryUrl,
+)
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
@@ -53,7 +58,7 @@ class HentaiFoundryComParser(UrlParser):
 
             # http://www.hentai-foundry.com/user-RockCandy.php
             # http://www.hentai-foundry.com/profile-sawao.php
-            case artist_slug, if artist_slug.startswith("user-") or artist_slug.startswith("profile-"):
+            case artist_slug, if artist_slug.startswith(("user-", "profile-")):
                 instance = HentaiFoundryArtistUrl(parsable_url)
                 instance.username = parsable_url.stem.split("-")[-1]
 
@@ -61,7 +66,7 @@ class HentaiFoundryComParser(UrlParser):
             # http://www.hentai-foundry.com/pic-149160.html
             # http://www.hentai-foundry.com/pic-149160.php
             # http://www.hentai-foundry.com/pic_full-66045.php
-            case pic_slug, if pic_slug.startswith("pic-") or pic_slug.startswith("pic_"):
+            case pic_slug, if pic_slug.startswith(("pic-", "pic_")):
                 instance = HentaiFoundryOldPostUrl(parsable_url)
                 instance.post_id = int(parsable_url.stem.split("-")[-1])
 

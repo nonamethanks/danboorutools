@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import functools
-import json
 import random
 import re
 import weakref
