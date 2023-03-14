@@ -63,8 +63,10 @@ class UrlParser:
 
 class UnsupportedParser(UrlParser):
     domains = [
+        "amebaownd.com",
         "coocan.jp",
         "pixnet.net",
+        "whitesnow.jp",
     ]
 
     @classmethod
