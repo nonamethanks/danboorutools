@@ -149,6 +149,7 @@ urls = {
     "http://www.pixiv.net/member_illust.php?mode=manga&illust_id=18557054": "https://www.pixiv.net/en/artworks/18557054",
     "http://www.pixiv.net/member_illust.php?mode=manga_big&illust_id=18557054&page=1": "https://www.pixiv.net/en/artworks/18557054",
     "https://www.pixiv.net/index.php?mode=medium\u0026illust_id=612896": "https://www.pixiv.net/en/artworks/612896",
+    "http://www.pixiv.net/member_illust.php?mode=medium&amp;illust_id=9537211": "https://www.pixiv.net/en/artworks/9537211",
 
     "https://www.pixiv.net/en/artworks/unlisted/ntQchboUi1CsqMhDpo5j": "https://www.pixiv.net/en/artworks/unlisted/ntQchboUi1CsqMhDpo5j",
 
