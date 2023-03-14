@@ -10,6 +10,18 @@ class FacebookUserUrl(ArtistUrl, FacebookUrl):
 
     normalize_template = "https://www.facebook.com/{username}"
 
+    @property
+    def primary_names(self) -> list[str]:
+        return []
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [self.username]
+
+    @property
+    def related(self) -> list[Url]:
+        return []  # for normal users, not pages, it's simply not worth it
+
 
 class FacebookPageUrl(RedirectUrl, FacebookUrl):
     page_name: str
