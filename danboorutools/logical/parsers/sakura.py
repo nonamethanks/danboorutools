@@ -5,6 +5,8 @@ from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
 class SakuraNeJpParser(UrlParser):
+    domains = ["sakura.ne.jp", "x0.com"]
+
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> SakuraUrl | None:
         blog_name = parsable_url.subdomain

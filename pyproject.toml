@@ -98,6 +98,7 @@ ignore = [
     "FBT",      # flake8-boolean-trap
     "G004",     # Logging statement uses f-string
     "PLR2004",  # allow-magic-value-types
+    "PT",       # pytest style
     "RET504",   # Unnecessary variable assignment before `return` statement
     "RET505",   # Unnecessary `else` after `return` statement
     "RET506",   # Unnecessary `else` after `raise` statement
