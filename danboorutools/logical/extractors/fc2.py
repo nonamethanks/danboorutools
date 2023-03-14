@@ -17,6 +17,22 @@ class Fc2BlogUrl(ArtistUrl, Fc2Url):
 
     normalize_template = "http://{username}.{subsite}.{domain}"
 
+    @property
+    def primary_names(self) -> list[str]:
+        # http://mogu08.blog104.fc2.com/
+        site_title = self.html.select_one(f".site_title a[href*='//{self.username}.']")
+        if not site_title:
+            raise NotImplementedError(self)
+        return [site_title.text.strip()]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [self.username]
+
+    @property
+    def related(self) -> list[Url]:
+        return []  # too much of a hassle
+
 
 class Fc2ImageUrl(PostAssetUrl, Fc2Url):
     @property

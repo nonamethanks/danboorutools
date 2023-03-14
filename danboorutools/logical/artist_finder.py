@@ -269,6 +269,7 @@ class ArtistFinder:
         candidate = re.sub(r"_+", "_", candidate)                    # merge multiple underscores
         candidate = candidate.replace("(_", "(").replace("_)", ")")  # remove underscores inside parentheses
         candidate = candidate.strip("_(").strip()                    # strip underscores and parentheses from end of string
+        candidate = re.sub("_?()", "", candidate)
 
         return candidate.lower()
 

@@ -1,8 +1,5 @@
-from tests.extractors import generate_parsing_suite
-from ward import test
-
 from danboorutools.logical.extractors import fc2
-from danboorutools.models.url import Url
+from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
     fc2.Fc2BlogUrl: {
@@ -80,3 +77,13 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+
+assert_artist_url(
+    "http://mogu08.blog104.fc2.com/",
+    url_type=fc2.Fc2BlogUrl,
+    url_properties=dict(username="mogu08", domain="fc2.com", subsite="blog"),
+    related=[],
+    primary_names=["あきらめmo。"],
+    secondary_names=["mogu08"],
+)
