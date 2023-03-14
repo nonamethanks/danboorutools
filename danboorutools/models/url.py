@@ -85,10 +85,10 @@ class Url:
         if not isinstance(__o, type(self)):
             return False
 
-        return __o.normalized_url == self.normalized_url
+        return __o.normalized_url.__repr__().lower() == self.normalized_url.__repr__().lower()
 
     def __hash__(self) -> int:  # needed for Ward tests
-        return hash(self.__str__())
+        return hash(self.__repr__().lower())  # lower() might not be completely true, but frankly the chance of collision is not realistic
 
     @cached_property
     def is_deleted(self) -> bool:
