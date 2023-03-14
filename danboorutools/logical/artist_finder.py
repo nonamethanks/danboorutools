@@ -176,8 +176,13 @@ class ArtistFinder:
                 continue
 
             if not isinstance(related_url, InfoUrl):
-                related_url = related_url.artist  # noqa: PLW2901
-                logger.debug(f"It was resolved into {related_url}...")
+                try:
+                    related_url = related_url.artist  # noqa: PLW2901
+                except UrlIsDeleted:
+                    logger.debug("It's deleted and not a valid url; skipping...")
+                    continue
+                else:
+                    logger.debug(f"It was resolved into {related_url}...")
 
             scanned_urls += cls.extract_related_urls_recursively(related_url, scanned_urls)
             scanned_urls.append(related_url)
