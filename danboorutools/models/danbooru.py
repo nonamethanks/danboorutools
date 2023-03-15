@@ -192,7 +192,7 @@ class DanbooruArtist(DanbooruModel):
         urls = []
         for url_data in self.json_data["urls"]:
             url = Url.parse(url_data["url"])
-            # url.is_deleted = url_data["is_deleted"]
+            # url.is_deleted = not url_data["is_active"]
             urls.append(url)
         return urls
 

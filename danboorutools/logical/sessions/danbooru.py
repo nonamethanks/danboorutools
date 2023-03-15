@@ -191,9 +191,9 @@ class DanbooruApi(Session):
                 if isinstance(parsed, UselessUrl):
                     continue
                 try:
-                    deleted = parsed.is_deleted if not isinstance(parsed, UnknownUrl) else (parsed.is_deleted or url_data["is_deleted"])
+                    deleted = parsed.is_deleted if not isinstance(parsed, UnknownUrl) else (parsed.is_deleted or not url_data["is_active"])
                 except (ReadTimeout, CloudflareChallengeError):
-                    deleted = url_data["is_deleted"]
+                    deleted = url_data["is_active"]
 
                 normalized_urls.append(f"-{parsed.normalized_url}" if deleted else parsed.normalized_url)
 
