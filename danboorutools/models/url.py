@@ -93,11 +93,18 @@ class Url:
     @cached_property
     def is_deleted(self) -> bool:
         try:
-            self.session.get_cached(self.normalized_url)
+            response = self.session.get_cached(self.normalized_url)
         except UrlIsDeleted:
             return True
-        else:
-            return False
+
+        resp_url = ParsableUrl(response.url)
+        if self.parsed_url.url_parts and not resp_url.url_parts:
+            if resp_url.hostname == self.parsed_url.hostname:
+                return True
+            else:
+                raise NotImplementedError(self, resp_url)
+
+        return False
 
     @cached_property
     def html(self) -> BeautifulSoup:

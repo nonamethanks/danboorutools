@@ -5,15 +5,7 @@ from danboorutools.models.url import ArtistUrl, PostUrl, Url
 
 
 class TogetterUrl(Url):
-    @cached_property
-    def is_deleted(self) -> bool:
-        response = self.session.get(self.normalized_url)
-        if response.url.strip("/") == "https://min.togetter.com":
-            return True
-        elif response.url == self.normalized_url:
-            return False
-        else:
-            raise NotImplementedError(self, response.url)
+    pass
 
 
 class TogetterArtistUrl(ArtistUrl, TogetterUrl):
@@ -27,7 +19,7 @@ class TogetterArtistUrl(ArtistUrl, TogetterUrl):
 
     @property
     def secondary_names(self) -> list[str]:
-        return []
+        return [self.username]
 
     @property
     def primary_names(self) -> list[str]:

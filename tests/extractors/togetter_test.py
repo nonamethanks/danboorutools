@@ -10,7 +10,7 @@ urls = {
     },
     TogetterLiUrl: {
         "https://togetter.com/li/107987": "https://togetter.com/li/107987",
-    }
+    },
 }
 
 
