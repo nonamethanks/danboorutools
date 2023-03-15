@@ -27,7 +27,8 @@ class ArtstationArtistData(BaseModel):
             if u["social_network"] != "public_email"
         ]
 
-        internal_urls = ["profile_artstation_website_url", "artstation_url", "large_avatar_url", "medium_avatar_url", "default_cover_url"]
+        internal_urls = ["profile_artstation_website_url", "artstation_url",
+                         "large_avatar_url", "medium_avatar_url", "default_cover_url", "software_items"]
         for url_value in {v for k, v in self._raw_data.items() if k.endswith("_url") and v and k not in internal_urls}:
             urls += [Url.parse(url_value)]
 

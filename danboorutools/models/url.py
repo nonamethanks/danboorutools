@@ -154,17 +154,17 @@ class InfoUrl(Url):
     @property
     def related(self) -> list[Url]:
         """A list of related urls."""
-        raise NotImplementedError(self.__class__, "hasn't implemented related URL extraction.")
+        raise NotImplementedError(self, "hasn't implemented related URL extraction.")
 
     @property
     def primary_names(self) -> list[str]:
         """A list of artist names usable as tags, in order of relevance."""
-        raise NotImplementedError(self.__class__, "hasn't implemented name extraction.")
+        raise NotImplementedError(self, "hasn't implemented name extraction.")
 
     @property
     def secondary_names(self) -> list[str]:
         """A list of artist names usable as qualifiers, in order of relevance."""
-        raise NotImplementedError(self.__class__, "hasn't implemented name extraction.")
+        raise NotImplementedError(self, "hasn't implemented name extraction.")
 
 
 ########################################################################
@@ -212,7 +212,7 @@ class GalleryUrl(Url):
     #         return
 
     def _extract_posts(self) -> None:
-        raise NotImplementedError(self.__class__, "hasn't implemented post extraction.")
+        raise NotImplementedError(self, "hasn't implemented post extraction.")
 
 
 class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
@@ -226,7 +226,7 @@ class ArtistAlbumUrl(GalleryUrl, Url):
 
     @cached_property
     def gallery(self) -> GalleryUrl:
-        raise NotImplementedError(self.__class__, "hasn't implemented gallery extraction.")
+        raise NotImplementedError(self, "hasn't implemented gallery extraction.")
 
 
 ########################################################################
@@ -265,19 +265,19 @@ class PostUrl(Url):
         return self._assets
 
     def _extract_assets(self) -> None:
-        raise NotImplementedError(self.__class__, "hasn't implemented asset extraction.")
+        raise NotImplementedError(self, "hasn't implemented asset extraction.")
 
     @cached_property
     def gallery(self) -> GalleryUrl:
-        raise NotImplementedError(self.__class__, "hasn't implemented gallery extraction.")
+        raise NotImplementedError(self, "hasn't implemented gallery extraction.")
 
     @cached_property
     def created_at(self) -> datetime:
-        raise NotImplementedError(self.__class__, "hasn't implemented created_at extraction.")
+        raise NotImplementedError(self, "hasn't implemented created_at extraction.")
 
     @cached_property
     def score(self) -> int:
-        raise NotImplementedError(self.__class__, "hasn't implemented score extraction.")
+        raise NotImplementedError(self, "hasn't implemented score extraction.")
 
 
 ########################################################################
@@ -314,7 +314,7 @@ class _AssetUrl(Url):
 
     @property
     def full_size(self) -> str:
-        raise NotImplementedError(self.__class__, "hasn't implemented full_size extraction.")
+        raise NotImplementedError(self, "hasn't implemented full_size extraction.")
 
     @cached_property
     def is_deleted(self) -> bool:
@@ -329,7 +329,7 @@ class _AssetUrl(Url):
 class PostAssetUrl(_AssetUrl, Url):
     @cached_property
     def post(self) -> PostUrl:
-        raise NotImplementedError(self.__class__, "hasn't implemented post extraction.")
+        raise NotImplementedError(self, "hasn't implemented post extraction.")
 
     @cached_property
     def created_at(self) -> datetime:
@@ -340,7 +340,7 @@ class GalleryAssetUrl(_AssetUrl, Url):
     """An asset belonging to a gallery instead of a post (such as a background image)."""
     @cached_property
     def gallery(self) -> PostUrl:
-        raise NotImplementedError(self.__class__, "hasn't implemented gallery extraction.")
+        raise NotImplementedError(self, "hasn't implemented gallery extraction.")
 
 
 ########################################################################
