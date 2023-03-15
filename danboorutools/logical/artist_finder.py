@@ -45,6 +45,7 @@ class ArtistFinder:
             logger.debug(f"{source} for post {post} is deleted.")
             result_from_archives = self.search_for_artist_in_archives(post)
             if not result_from_archives:
+                logger.error(f"Couldn't extract an artist for post {post}.")  # noqa: TRY400
                 self.skipped_posts.value = [*self.skipped_posts.value, post.id]
                 return False
         else:
@@ -106,7 +107,7 @@ class ArtistFinder:
             logger.debug(f"Extracted {result} for {post} from Saucenao")
             return result
 
-        logger.error(f"Couldn't extract an artist for post {post}")
+        logger.debug(f"Couldn't extract an artist for post {post} from saucenao or ascii2d")
         return None
 
     @classmethod
