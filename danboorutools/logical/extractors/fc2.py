@@ -20,24 +20,36 @@ class Fc2PostUrl(PostUrl, Fc2Url):
 class Fc2BlogUrl(ArtistUrl, Fc2Url):
     normalize_template = "http://{username}.{subsite}.{domain}"
 
+    # title_selectors = [
+    #     # ".site_title a[href*='//{self.username}.']",  # http://mogu08.blog104.fc2.com/
+    # ]
+    sidebar_selectors = [
+        "#box_side",  # http://mogu08.blog104.fc2.com/
+        ".sidebar",   # http://laindell.blog.2nt.com/
+    ]
+
     @property
     def primary_names(self) -> list[str]:
         if self.is_deleted:
             return []
-        title_selectors = [
-            f".site_title a[href*='//{self.username}.']",  # http://mogu08.blog104.fc2.com/
-            f"#header > h1 > a[href*='//{self.username}.']",  # http://neostargate2013.blog.fc2.com/
-        ]
-        for selector in title_selectors:
-            site_title = self.html.select_one(selector)
-            if site_title:
+
+        # for selector in self.title_selectors:
+        #     site_title = self.html.select_one(selector.format(self=self))
+        #     if site_title:
+        #         name = site_title.text.strip()
+        #         break
+        # else:
+        for sidebar_selector in self.sidebar_selectors:
+            element = self.html.select_one(sidebar_selector)
+            if not element:
+                continue
+            author = re.search(r"Author:(.*)\n", element.text.strip())
+            if author:
+                name, = author.groups()
                 break
         else:
             raise NotImplementedError(self)
 
-        name = site_title.text.strip()
-        if match := re.match(r"^(.*)\(.*\sblog\)$", name):
-            name = match.groups()[0]
         return [name]
 
     @property

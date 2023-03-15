@@ -84,6 +84,15 @@ assert_artist_url(
     url_type=fc2.Fc2BlogUrl,
     url_properties=dict(username="mogu08", domain="fc2.com", subsite="blog"),
     related=[],
-    primary_names=["あきらめmo。"],
+    primary_names=["秋野あきら"],
     secondary_names=["mogu08"],
+)
+
+assert_artist_url(
+    "http://laindell.blog.2nt.com/",
+    url_type=fc2.Fc2BlogUrl,
+    url_properties=dict(username="laindell", domain="2nt.com", subsite="blog"),
+    related=[],
+    primary_names=["うよりんK"],
+    secondary_names=["laindell"],
 )
