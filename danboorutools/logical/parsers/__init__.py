@@ -66,6 +66,7 @@ class UnsupportedParser(UrlParser):
         "amebaownd.com",
         "coocan.jp",
         "pixnet.net",
+        "webnode.jp",
         "whitesnow.jp",
     ]
 
