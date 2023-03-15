@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors.odaibako import OdaibakoUrl
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_info_url, generate_parsing_suite
 
 urls = {
     OdaibakoUrl: {
@@ -9,3 +9,12 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+assert_info_url(
+    "https://odaibako.net/u/kazahana__h",
+    url_type=OdaibakoUrl,
+    url_properties=dict(username="kazahana__h"),
+    primary_names=["箱"],
+    secondary_names=["kazahana__h"],
+    related=["https://twitter.com/kazahana__h"],
+)
