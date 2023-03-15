@@ -84,7 +84,7 @@ assert_artist_url(
     url_type=fc2.Fc2BlogUrl,
     url_properties=dict(username="mogu08", domain="fc2.com", subsite="blog"),
     related=[],
-    primary_names=["秋野あきら"],
+    primary_names=["あきらめmo。"],
     secondary_names=["mogu08"],
 )
 
@@ -93,6 +93,15 @@ assert_artist_url(
     url_type=fc2.Fc2BlogUrl,
     url_properties=dict(username="laindell", domain="2nt.com", subsite="blog"),
     related=[],
-    primary_names=["うよりんK"],
+    primary_names=["れいんでる"],
     secondary_names=["laindell"],
+)
+
+assert_artist_url(
+    "http://kudanya.blog42.fc2.com/",
+    url_type=fc2.Fc2BlogUrl,
+    url_properties=dict(username="kudanya", domain="fc2.com", subsite="blog"),
+    related=[],
+    primary_names=["くだんや"],
+    secondary_names=["kudanya"],
 )

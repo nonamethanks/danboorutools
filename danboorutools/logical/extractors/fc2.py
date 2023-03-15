@@ -20,12 +20,10 @@ class Fc2PostUrl(PostUrl, Fc2Url):
 class Fc2BlogUrl(ArtistUrl, Fc2Url):
     normalize_template = "http://{username}.{subsite}.{domain}"
 
-    # title_selectors = [
-    #     # ".site_title a[href*='//{self.username}.']",  # http://mogu08.blog104.fc2.com/
-    # ]
-    sidebar_selectors = [
-        "#box_side",  # http://mogu08.blog104.fc2.com/
-        ".sidebar",   # http://laindell.blog.2nt.com/
+    title_selectors = [
+        ".site_title a[href*='//{self.username}.']",        # http://mogu08.blog104.fc2.com/
+        "#blogTitle",                                       # http://laindell.blog.2nt.com/
+        "#branding a[href*='//{self.username}.']",          # http://kudanya.blog42.fc2.com/
     ]
 
     @property
@@ -33,19 +31,10 @@ class Fc2BlogUrl(ArtistUrl, Fc2Url):
         if self.is_deleted:
             return []
 
-        # for selector in self.title_selectors:
-        #     site_title = self.html.select_one(selector.format(self=self))
-        #     if site_title:
-        #         name = site_title.text.strip()
-        #         break
-        # else:
-        for sidebar_selector in self.sidebar_selectors:
-            element = self.html.select_one(sidebar_selector)
-            if not element:
-                continue
-            author = re.search(r"Author:(.*)\n", element.text.strip())
-            if author:
-                name, = author.groups()
+        for selector in self.title_selectors:
+            site_title = self.html.select_one(selector.format(self=self))
+            if site_title:
+                name = site_title.text.strip()
                 break
         else:
             raise NotImplementedError(self)
