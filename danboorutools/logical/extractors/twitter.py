@@ -1,7 +1,7 @@
 from functools import cached_property
 
 from danboorutools.exceptions import UrlIsDeleted
-from danboorutools.logical.sessions.twitter import TwitterSession  # pylint: disable=E0401,E0611 # False positive
+from danboorutools.logical.sessions.twitter import TwitterSession
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
