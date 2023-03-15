@@ -1,5 +1,5 @@
 from danboorutools.exceptions import UnparsableUrl
-from danboorutools.logical.extractors.amazon import AmazonAuthorUrl, AmazonItemUrl, AmazonUrl
+from danboorutools.logical.extractors.amazon import AmazonAuthorUrl, AmazonItemUrl, AmazonShortenerUrl, AmazonUrl
 from danboorutools.logical.extractors.enty import EntyImageUrl
 from danboorutools.logical.extractors.skeb import SkebImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
@@ -106,4 +106,17 @@ class AmazonComParser(UrlParser):
                 return None
 
         instance.subsite = parsable_url.tld
+        return instance
+
+
+class AmznToParser(UrlParser):
+    @classmethod
+    def match_url(cls, parsable_url: ParsableUrl) -> AmazonShortenerUrl | None:
+        match parsable_url.url_parts:
+            case shortener_id, :
+                instance = AmazonShortenerUrl(parsable_url)
+                instance.shortener_id = shortener_id
+            case _:
+                return None
+
         return instance

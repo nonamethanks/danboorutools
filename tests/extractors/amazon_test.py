@@ -1,4 +1,4 @@
-from danboorutools.logical.extractors.amazon import AmazonAuthorUrl, AmazonItemUrl
+from danboorutools.logical.extractors.amazon import AmazonAuthorUrl, AmazonItemUrl, AmazonShortenerUrl
 from tests.extractors import generate_parsing_suite
 
 urls = {
@@ -12,6 +12,9 @@ urls = {
         "https://www.amazon.com/Yaoi-Hentai-2/dp/1933664010": "https://www.amazon.com/dp/1933664010",
         "https://www.amazon.com/exec/obidos/ASIN/B004U99O9K/ref=nosim/accessuporg-20?SubscriptionId=1MNS6Z3H8Y5Q5XCMG582\u0026linkCode=xm2\u0026creativeASIN=B004U99O9K": "https://www.amazon.com/dp/B004U99O9K",
         "https://www.amazon.com/gp/product/B08CTJWTMR": "https://www.amazon.com/dp/B08CTJWTMR",
+    },
+    AmazonShortenerUrl: {
+        "https://amzn.to/3iZ9vyT": "https://amzn.to/3iZ9vyT",
     },
 }
 
