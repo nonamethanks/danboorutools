@@ -103,6 +103,7 @@ ignore = [
     "RET505",   # Unnecessary `else` after `return` statement
     "RET506",   # Unnecessary `else` after `raise` statement
     "RUF001",   # allowed-confusables
+    "RUF003",   # Comment contains ambiguous unicode character
     "S101",     # assert detected
     "SIM105",   # Use `contextlib.suppress(KeyError)` instead of try-except-pass
     "TRY003",   # Avoid specifying long messages outside the exception class
@@ -118,7 +119,10 @@ ignore = [
     "A003",     # shadowing builtin variables like id can't be helped for api responsese
     "N815",     # camelCase properties from api responses
     "TCH003",   # TYPE_CHECKING suggestions, interferes with pydantic
+]
 
+"danboorutools/logical/parsers/*" = [
+    "PLR0911",  # too many returns
 ]
 
 [tool.pycodestyle]
