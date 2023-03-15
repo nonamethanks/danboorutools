@@ -21,8 +21,9 @@ class ClipStudioParser(UrlParser):
             case _, "search":
                 instance = ClipStudioUserSearchUrl(parsable_url)
                 query = parsable_url.query.copy()
-                query.pop("order")
+                query.pop("order", None)
                 # https://assets.clip-studio.com/ja-jp/search?user=%E9%9A%BC%E4%BA%BA%E3%82%8D%E3%81%A3%E3%81%8F&order=new
+                # https://assets.clip-studio.com/ja-jp/search?user=隼人ろっく
                 if list(query.keys()) == ["user"]:
                     instance.username = query["user"]
                 # https://assets.clip-studio.com/ja-jp/search?word=へいたろう\u0026order=new
