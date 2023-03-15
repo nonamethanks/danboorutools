@@ -19,6 +19,9 @@ class SaucenaoArtistResult:
     primary_names: list[str]
     secondary_names: list[str]
 
+    def __bool__(self):
+        return any([self.found_urls, self.primary_names, self.secondary_names])
+
 
 class SaucenaoSession(Session):
     no_artist_indexes = [

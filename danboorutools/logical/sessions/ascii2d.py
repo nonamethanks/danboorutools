@@ -34,6 +34,9 @@ class Ascii2dArtistResult:
         stringified = ", ".join(f"{k}={v}" for k, v in self._data.items())
         return f"Ascii2dArtistResult({stringified} / {self.search_url})"
 
+    def __bool__(self):
+        return any(v for v in self._data.values())
+
     @property
     def found_urls(self) -> list[InfoUrl]:
         return self._data["found_urls"]
@@ -218,7 +221,7 @@ class Ascii2dSession(Session):
                 continue  # don't bother checking past the first 5 results
 
             try:
-                if not any(v for v in result._data.values()):
+                if not result:
                     continue
             except Exception as e:
                 e.add_note(f"\nHTML:\n\n{result.html_data}\n\nCaught while parsing {result.search_url}")
