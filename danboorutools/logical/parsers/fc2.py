@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 from danboorutools.exceptions import UnparsableUrl
 from danboorutools.logical.extractors import fc2
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.models.url import UnsupportedUrl
 
 
 class Fc2Parser(UrlParser):
@@ -31,7 +32,7 @@ class Fc2Parser(UrlParser):
     )
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> fc2.Fc2Url | None:
+    def match_url(cls, parsable_url: ParsableUrl) -> fc2.Fc2Url | UnsupportedUrl | None:
         if "." in parsable_url.subdomain:
             username, _, subsite = parsable_url.subdomain.rpartition(".")
         else:
@@ -57,7 +58,7 @@ class Fc2Parser(UrlParser):
         elif subsite in cls.UNPARSED_SUBSITES:
             # TODO: investigate whether it's all bad_id. Same for x/h/web/etc
             # also I ain't parsing novel.fc2.com
-            raise UnparsableUrl(parsable_url)
+            return UnsupportedUrl(parsable_url)
         else:
             instance = None
 
