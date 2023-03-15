@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.logical.extractors.dlsite import DlsiteUrl, DlsiteWorkUrl
 from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
+from danboorutools.logical.extractors.fantia import FantiaFanclubUrl
 from danboorutools.logical.extractors.fanza import FanzaUrl
 from danboorutools.logical.extractors.nicoseiga import NicoSeigaArtistUrl
 from danboorutools.logical.extractors.nijie import NijieArtistUrl
@@ -105,8 +106,10 @@ class Ascii2dArtistResult:
             assert isinstance(creator_url, InfoUrl), creator_url
             artist_name = artist_element.text
 
-            if site in ["pixiv", "fanbox", "ニジエ", "tinami", "ニコニコ静画"]:
-                assert isinstance(creator_url, (PixivArtistUrl, FanboxArtistUrl, NijieArtistUrl, TinamiArtistUrl, NicoSeigaArtistUrl))
+            if site in ["pixiv", "fanbox", "ニジエ", "tinami", "ニコニコ静画", "fantia"]:
+                assert isinstance(creator_url,
+                                  (PixivArtistUrl, FanboxArtistUrl, NijieArtistUrl,
+                                   TinamiArtistUrl, NicoSeigaArtistUrl, FantiaFanclubUrl))
                 data["found_urls"].append(creator_url)
                 data["primary_names"].append(artist_name)
             elif site == "twitter":
