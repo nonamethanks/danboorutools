@@ -1,5 +1,7 @@
 import re
 
+from jinja2 import is_undefined
+
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
@@ -20,6 +22,8 @@ class Fc2BlogUrl(ArtistUrl, Fc2Url):
 
     @property
     def primary_names(self) -> list[str]:
+        if self.is_deleted:
+            return []
         title_selectors = [
             f".site_title a[href*='//{self.username}.']",  # http://mogu08.blog104.fc2.com/
             f"#header > h1 > a[href*='//{self.username}.']",  # http://neostargate2013.blog.fc2.com/
