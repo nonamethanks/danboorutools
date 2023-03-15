@@ -124,6 +124,16 @@ class Ascii2dArtistResult:
                 self.__parse_dlsite_result(link_object, data)
             elif site == "dmm":
                 self.__parse_fanza_result(link_object, data)
+            elif link_object.has_attr("href"):
+                post_url = Url.parse(url_groups[0]["href"])
+                artist_url = Url.parse(url_groups[1]["href"])
+                artist_name = url_groups[1].text
+                if isinstance(post_url, PixivPostUrl) and isinstance(artist_url, PixivArtistUrl):
+                    data["found_urls"].append(artist_url)
+                    data["primary_names"].append(artist_name)
+                    data["posts"].append(post_url)
+                else:
+                    raise NotImplementedError(link_object, self.search_url)
             elif isinstance(parsed := Url.parse(site), PixivPostUrl):
                 data["posts"].append(parsed)
                 try:
