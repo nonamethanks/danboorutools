@@ -1,3 +1,5 @@
+import re
+
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
@@ -14,16 +16,25 @@ class Fc2PostUrl(PostUrl, Fc2Url):
 
 
 class Fc2BlogUrl(ArtistUrl, Fc2Url):
-
     normalize_template = "http://{username}.{subsite}.{domain}"
 
     @property
     def primary_names(self) -> list[str]:
-        # http://mogu08.blog104.fc2.com/
-        site_title = self.html.select_one(f".site_title a[href*='//{self.username}.']")
-        if not site_title:
+        title_selectors = [
+            f".site_title a[href*='//{self.username}.']",  # http://mogu08.blog104.fc2.com/
+            f"#header > h1 > a[href*='//{self.username}.']",  # http://neostargate2013.blog.fc2.com/
+        ]
+        for selector in title_selectors:
+            site_title = self.html.select_one(selector)
+            if site_title:
+                break
+        else:
             raise NotImplementedError(self)
-        return [site_title.text.strip()]
+
+        name = site_title.text.strip()
+        if match := re.match(r"^(.*)\(.*\sblog\)$", name):
+            name = match.groups()[0]
+        return [name]
 
     @property
     def secondary_names(self) -> list[str]:
