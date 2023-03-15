@@ -207,7 +207,7 @@ class DanbooruApi(Session):
             "post": {
                 "tag_string": tag_string,
                 "old_tag_string": "",
-            }
+            },
         }
         response = self.danbooru_request("PUT", f"posts/{post.id}.json", json=data)
         assert isinstance(response, dict) and response["success"] is True

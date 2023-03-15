@@ -180,6 +180,10 @@ class ArtistFinder:
                 logger.debug(f"Skipping {related_url} because it's an unsupported url...")
                 continue
 
+            if isinstance(related_url, UnknownUrl) and not cls.is_url_worth_implementing(related_url):
+                logger.debug(f"Skipping {related_url} because it's an unknown url and there's too few results on danbooru to implement it.")
+                continue
+
             if not isinstance(related_url, InfoUrl):
                 try:
                     related_url = related_url.artist  # noqa: PLW2901
@@ -305,3 +309,8 @@ class ArtistFinder:
                 return False
 
         return not danbooru_api.tags(name=potential_tag)
+
+    @classmethod
+    def is_url_worth_implementing(cls, url: UnknownUrl) -> bool:
+        url_results = danbooru_api.artists(url_matches=f"*{url.parsed_url.domain}*", limit=20)
+        return len(url_results) > 1
