@@ -98,8 +98,9 @@ class Url:
             return True
 
         resp_url = ParsableUrl(response.url)
-        if self.parsed_url.url_parts and not resp_url.url_parts:
-            if resp_url.hostname == self.parsed_url.hostname:
+        curr_url = ParsableUrl(self.normalized_url)
+        if curr_url.url_parts and not resp_url.url_parts:
+            if resp_url.hostname == curr_url.hostname:
                 return True
             else:
                 raise NotImplementedError(self, resp_url)
