@@ -69,9 +69,9 @@ class WeiboComParser(UrlParser):
 
             # https://weibo.com/n/肆巳4
             # https://www.weibo.com/n/小小男爵不要坑
-            case "n", display_name, *_rest:
+            case "n", screen_name, *_rest:
                 instance = WeiboArtistUrl(parsable_url)
-                instance.display_name = display_name
+                instance.screen_name = screen_name
 
             case _, illust_long_id if parsable_url.subdomain == "tw" and illust_long_id.isnumeric():
                 instance = WeiboPostUrl(parsable_url)
