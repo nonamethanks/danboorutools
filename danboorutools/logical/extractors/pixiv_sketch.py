@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from danboorutools.exceptions import UrlIsDeleted
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 if TYPE_CHECKING:
@@ -35,16 +36,22 @@ class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
 
     @property
     def primary_names(self) -> list[str]:
-        # pylint: disable=import-outside-toplevel
-        from danboorutools.logical.extractors.pixiv import PixivArtistUrl
-
-        pixiv_url = self.stacc_url.me_from_stacc.resolved
-        assert isinstance(pixiv_url, PixivArtistUrl)
-        return pixiv_url.primary_names
+        return []
 
     @property
     def secondary_names(self) -> list[str]:
         return [self.stacc]
+
+    @property
+    def is_deleted(self) -> bool:
+        try:
+            response = self.session.head_cached(self.normalized_url, proxies={})  # proxies don't like pixiv sketch's 404s for some reason
+        except UrlIsDeleted:
+            return True
+        else:
+            if response.status_code != 200:
+                raise NotImplementedError(self)
+            return False
 
 
 class PixivSketchImageUrl(PostAssetUrl, PixivSketchUrl):

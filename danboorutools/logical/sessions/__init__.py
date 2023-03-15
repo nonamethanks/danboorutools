@@ -69,7 +69,6 @@ class Session(_CloudScraper):
             url = url.normalized_url
 
         url_domain = ParsableUrl(url).domain
-        kwargs["proxies"] = self.proxied_domains.get(url_domain)
         kwargs["headers"] = self.DEFAULT_HEADERS | kwargs.get("headers", {})
 
         if kwargs.get("params"):
@@ -77,6 +76,7 @@ class Session(_CloudScraper):
         else:
             logger.trace(f"{http_method} request made to {url}")
 
+        kwargs.setdefault("proxies", self.proxied_domains.get(url_domain))
         kwargs.setdefault("timeout", self.DEFAULT_TIMEOUT)
 
         try:
