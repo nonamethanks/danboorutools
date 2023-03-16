@@ -133,6 +133,8 @@ class SaucenaoSession(Session):
                 return None  # Saucenao doesn't have it
             if "," in creator:
                 return None  # saucenao database is fucked
+            if creator in saucenao_result["data"]["material"]:
+                return None  # as above
             if match := re.match(r"^pixiv id (\d+)$", creator):
                 result.found_urls += [Url.build(PixivArtistUrl, user_id=int(match.groups()[0]))]
             else:
