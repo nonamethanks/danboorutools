@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from danboorutools.logical.sessions.melonbooks import MelonbooksSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, PostAssetUrl, PostUrl, Url
 
@@ -10,6 +12,16 @@ class MelonbooksProductUrl(PostUrl, MelonbooksUrl):
     product_id: int
 
     normalize_template = "https://www.melonbooks.co.jp/detail/detail.php?product_id={product_id}"
+
+    @property
+    def gallery(self) -> MelonbooksAuthorUrl:
+        artists = self.html.find("th", string="作家名").parent.select("td a:not(.fa-heart)")
+        if len(artists) != 1:
+            raise NotImplementedError(self, artists)
+
+        parsed = Url.parse(artists[0]["href"])
+        assert isinstance(parsed, MelonbooksAuthorUrl)
+        return parsed
 
 
 class MelonbooksCircleUrl(ArtistUrl, MelonbooksUrl):

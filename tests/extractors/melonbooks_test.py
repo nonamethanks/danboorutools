@@ -1,5 +1,5 @@
 from danboorutools.logical.extractors import melonbooks as mb
-from tests.extractors import assert_artist_url, generate_parsing_suite
+from tests.extractors import assert_artist_url, assert_post_url, generate_parsing_suite
 
 urls = {
     mb.MelonbooksProductUrl: {
@@ -42,4 +42,12 @@ assert_artist_url(
     primary_names=["取手ぽっぽ", "トリデポッポ"],
     secondary_names=[],
     related=["https://www.pixiv.net/en/users/13678408", "https://www.twitter.com/synindx_73train"],
+)
+
+
+assert_post_url(
+    "https://www.melonbooks.co.jp/detail/detail.php?product_id=647344",
+    url_type=mb.MelonbooksProductUrl,
+    url_properties=dict(product_id=647344),
+    gallery="https://www.melonbooks.co.jp/search/search.php?name=mignon&text_type=author",
 )
