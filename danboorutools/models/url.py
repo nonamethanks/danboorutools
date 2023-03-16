@@ -34,6 +34,7 @@ UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 class Url:
     """A generic URL model."""
     session = Session()
+    normalizable: bool = True
     normalize_template: str | None = None
 
     @classmethod
@@ -45,6 +46,8 @@ class Url:
 
     @cached_property
     def normalized_url(self) -> str:
+        if not self.normalizable:
+            return self.parsed_url.raw_url
         return self.normalize(**self.__dict__) or self.parsed_url.raw_url
 
     @classmethod
@@ -59,6 +62,8 @@ class Url:
     @final
     def build(url_type: type[UrlSubclass], **url_properties) -> UrlSubclass:
         """Build an Url from its url properties."""
+        if not url_type.normalizable:
+            raise NotImplementedError(f"{url_type} is not buildable.")
         normalized_url = url_type.normalize(**url_properties)
         if not normalized_url:
             raise ValueError(normalized_url, url_properties)

@@ -9,6 +9,7 @@ from danboorutools.logical.extractors.dlsite import DlsiteUrl, DlsiteWorkUrl
 from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
 from danboorutools.logical.extractors.fantia import FantiaFanclubUrl
 from danboorutools.logical.extractors.fanza import FanzaUrl
+from danboorutools.logical.extractors.melonbooks import MelonbooksProductUrl
 from danboorutools.logical.extractors.nicoseiga import NicoSeigaArtistUrl
 from danboorutools.logical.extractors.nijie import NijieArtistUrl
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl, PixivPostUrl
@@ -94,9 +95,9 @@ class Ascii2dArtistResult:
                     data["found_urls"].append(work_url.artist)
                 continue
 
-            post_url = Url.parse(link_object.select("a")[0]["href"])
-            assert isinstance(post_url, PostUrl), post_url
-            data["posts"].append(post_url)
+            first_url = Url.parse(link_object.select("a")[0]["href"])
+            assert isinstance(first_url, PostUrl), first_url
+            data["posts"].append(first_url)
             # try:
             artist_element = link_object.select("a")[1]
             # except IndexError as e:
@@ -105,20 +106,25 @@ class Ascii2dArtistResult:
             #        continue
             #    e.add_note(f"{link_object} {post_url}")
             #    raise
-            creator_url = Url.parse(artist_element["href"])
-            assert isinstance(creator_url, InfoUrl), creator_url
+            second_url = Url.parse(artist_element["href"])
+            if isinstance(second_url, MelonbooksProductUrl):
+                data["posts"].append(second_url)
+                data["found_urls"] += [u.gallery for u in data["posts"]]
+                continue
+
+            assert isinstance(second_url, InfoUrl), second_url
             artist_name = artist_element.text
 
             if site in ["pixiv", "fanbox", "ニジエ", "tinami", "ニコニコ静画", "fantia"]:
-                assert isinstance(creator_url,
+                assert isinstance(second_url,
                                   (PixivArtistUrl, FanboxArtistUrl, NijieArtistUrl,
                                    TinamiArtistUrl, NicoSeigaArtistUrl, FantiaFanclubUrl))
-                data["found_urls"].append(creator_url)
+                data["found_urls"].append(second_url)
                 data["primary_names"].append(artist_name)
             elif site == "twitter":
-                assert isinstance(creator_url, TwitterIntentUrl)
+                assert isinstance(second_url, TwitterIntentUrl)
                 data["found_urls"].append(Url.build(TwitterArtistUrl, username=artist_name))
-                data["found_urls"].append(creator_url)
+                data["found_urls"].append(second_url)
                 data["secondary_names"].append(artist_name)
             else:
                 raise NotImplementedError(site, artist_element, self.search_url)
