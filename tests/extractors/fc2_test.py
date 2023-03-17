@@ -105,3 +105,12 @@ assert_artist_url(
     primary_names=["くだんや"],
     secondary_names=["kudanya"],
 )
+
+assert_artist_url(
+    "http://cocy.blog57.fc2.com/",
+    url_type=fc2.Fc2BlogUrl,
+    url_properties=dict(username="cocy", domain="fc2.com", subsite="blog"),
+    related=[],
+    primary_names=["寝起きふう"],
+    secondary_names=["cocy"],
+)

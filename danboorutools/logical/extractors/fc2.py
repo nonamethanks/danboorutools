@@ -24,6 +24,7 @@ class Fc2BlogUrl(ArtistUrl, Fc2Url):
         ".site_title a[href*='//{self.username}.']",        # http://mogu08.blog104.fc2.com/
         "#blogTitle",                                       # http://laindell.blog.2nt.com/
         "#branding a[href*='//{self.username}.']",          # http://kudanya.blog42.fc2.com/
+        "#header a[href*='//{self.username}.']",            # http://cocy.blog57.fc2.com/
     ]
 
     @property
