@@ -65,6 +65,7 @@ class UnsupportedParser(UrlParser):
     domains = [
         "amebaownd.com",
         "coocan.jp",
+        "nobody.jp",
         "pixnet.net",
         "webnode.jp",
         "whitesnow.jp",
