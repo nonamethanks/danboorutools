@@ -4,7 +4,7 @@ from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
 class MastodonParser(UrlParser):
-    domains = ["pawoo.net", "baraag.net"]
+    domains = ["pawoo.net", "baraag.net", "mstdn.jp"]
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> m.MastodonUrl | None:

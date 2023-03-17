@@ -20,7 +20,8 @@ class MastodonSession(Session):
         elif "baraag.net" in domain:
             site = "BARAAG"
         else:
-            raise NotImplementedError(domain)
+            site = "PAWOO"
+            domain = "pawoo.net"  # backend developers hate this simple trick!
         return Mastodon(
             client_id=os.environ[f"{site}_CLIENT_ID"],
             client_secret=os.environ[f"{site}_CLIENT_SECRET"],
