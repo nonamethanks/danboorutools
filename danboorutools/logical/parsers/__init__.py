@@ -31,7 +31,7 @@ class UrlParser:
     @staticmethod
     def _parse(url: str) -> Url | None:
         parsable_url = ParsableUrl(url)
-        parser = parsers.get(parsable_url.domain)
+        parser = parsers.get(parsable_url.domain.lower())
         if not parser:
             return None
 
