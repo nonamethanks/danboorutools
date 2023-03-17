@@ -20,27 +20,11 @@ class Fc2PostUrl(PostUrl, Fc2Url):
 class Fc2BlogUrl(ArtistUrl, Fc2Url):
     normalize_template = "http://{username}.{subsite}.{domain}"
 
-    title_selectors = [
-        ".site_title a[href*='//{self.username}.']",        # http://mogu08.blog104.fc2.com/
-        "#blogTitle",                                       # http://laindell.blog.2nt.com/
-        "#branding a[href*='//{self.username}.']",          # http://kudanya.blog42.fc2.com/
-        "#header a[href*='//{self.username}.']",            # http://cocy.blog57.fc2.com/
-    ]
-
     @property
     def primary_names(self) -> list[str]:
         if self.is_deleted:
             return []
-
-        for selector in self.title_selectors:
-            site_title = self.html.select_one(selector.format(self=self))
-            if site_title:
-                name = site_title.text.strip()
-                break
-        else:
-            raise NotImplementedError(self)
-
-        return [name]
+        return [self.html.select_one("title").text.strip()]
 
     @property
     def secondary_names(self) -> list[str]:

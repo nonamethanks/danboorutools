@@ -114,3 +114,12 @@ assert_artist_url(
     primary_names=["寝起きふう"],
     secondary_names=["cocy"],
 )
+
+assert_artist_url(
+    "http://xxxmixberry.web.fc2.com/",
+    url_type=fc2.Fc2BlogUrl,
+    url_properties=dict(username="xxxmixberry", domain="fc2.com", subsite="web"),
+    related=[],
+    primary_names=["millefeuille"],
+    secondary_names=["xxxmixberry"],
+)
