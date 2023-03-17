@@ -54,7 +54,9 @@ class TwitterUserData(BaseModel):
 
         related += [Url.build(TwitterIntentUrl, intent_id=self.id)]
 
-        for field in self.entities["url"]["urls"] + self.entities["description"]["urls"]:  # need to be careful here for bullshit links
+        urls = self.entities.get("url", {}).get("urls", [])
+        description_urls = self.entities.get("description", {}).get("urls", [])
+        for field in urls + description_urls:  # need to be careful here for bullshit links
             # though usually if they link other people they'll do an @, which doesn't end up appearing in the entities
             if not (url_string := field["expanded_url"]).endswith("..."):
                 related += [Url.parse(url_string)]

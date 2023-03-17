@@ -1,6 +1,6 @@
 from danboorutools.logical.extractors import twitter as tw
 from danboorutools.models.url import UselessUrl
-from tests.extractors import generate_parsing_suite
+from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
     tw.TwitterShortenerUrl: {
@@ -56,3 +56,28 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+assert_artist_url(
+    "https://twitter.com/ninomaeinanis",
+    url_type=tw.TwitterArtistUrl,
+    url_properties=dict(username="ninomaeinanis"),
+    primary_names=["Ninomae Ina’nis🐙holoEN"],
+    secondary_names=["ninomaeinanis", "twitter 1283650008835743744"],
+    related=[
+        "https://twitter.com/i/events/1390449082599018496",
+        "https://twitter.com/intent/user?user_id=1283650008835743744",
+        "https://www.youtube.com/channel/UCMwGHR0BTZuLsmjY_NT5Pwg",
+    ],
+)
+
+assert_artist_url(
+    "https://twitter.com/soyso_su40",
+    url_type=tw.TwitterArtistUrl,
+    url_properties=dict(username="soyso_su40"),
+    primary_names=["ポジティブネガ太郎"],
+    secondary_names=["soyso_su40", "twitter 2945315071"],
+    related=[
+        "https://skeb.jp/@soyso_su40",
+        "https://twitter.com/intent/user?user_id=2945315071",
+    ],
+)
