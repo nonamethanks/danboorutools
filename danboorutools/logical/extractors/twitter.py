@@ -86,15 +86,6 @@ class TwitterIntentUrl(InfoUrl, TwitterUrl):
     def artist_data(self) -> TwitterUserData:
         return self.session.user_data(user_id=self.intent_id)
 
-    @cached_property
-    def is_deleted(self) -> bool:
-        try:
-            self.artist_data
-        except UrlIsDeleted:
-            return True
-        else:
-            return False
-
 
 class TwitterAssetUrl(PostAssetUrl, TwitterUrl):
     file_path: str

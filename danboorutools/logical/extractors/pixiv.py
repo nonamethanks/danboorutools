@@ -214,36 +214,27 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
     @property
     def primary_names(self) -> list[str]:
         if not self.is_deleted:
-            return [self._artist_data.user_name]
+            return [self.artist_data.user_name]
         else:
             return []
 
     @property
     def secondary_names(self) -> list[str]:
         if not self.is_deleted:
-            return [self._artist_data.user_account, f"pixiv {self.user_id}"]
+            return [self.artist_data.user_account, f"pixiv {self.user_id}"]
         else:
             return [f"pixiv {self.user_id}"]
 
     @property
     def related(self) -> list[Url]:
-        return [*self._artist_data.related_urls, self.stacc_url]
+        return [*self.artist_data.related_urls, self.stacc_url]
 
     @property
     def stacc_url(self) -> PixivStaccUrl:
-        return self.build(PixivStaccUrl, stacc=self._artist_data.user_account)
-
-    @cached_property
-    def is_deleted(self) -> bool:
-        try:
-            _ = self._artist_data
-        except UrlIsDeleted:
-            return True
-        else:
-            return False
+        return self.build(PixivStaccUrl, stacc=self.artist_data.user_account)
 
     @property
-    def _artist_data(self) -> PixivArtistData:
+    def artist_data(self) -> PixivArtistData:
         return self.session.artist_data(self.user_id)
 
 

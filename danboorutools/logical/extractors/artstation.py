@@ -48,15 +48,6 @@ class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):
     def related(self) -> list[Url]:
         return self.artist_data.related_urls
 
-    @property
-    def is_deleted(self) -> bool:
-        try:
-            self.artist_data
-        except UrlIsDeleted:
-            return True
-        else:
-            return False
-
 
 class ArtStationImageUrl(PostAssetUrl, ArtStationUrl):
     filename: str

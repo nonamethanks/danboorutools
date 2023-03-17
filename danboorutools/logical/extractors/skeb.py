@@ -27,14 +27,6 @@ class SkebArtistUrl(ArtistUrl, SkebUrl):
 
     normalize_template = "https://skeb.jp/@{username}"
 
-    @cached_property
-    def is_deleted(self) -> bool:
-        try:
-            self.artist_data
-        except UrlIsDeleted:
-            return True
-        else:
-            return False
 
     @property
     def primary_names(self) -> list[str]:

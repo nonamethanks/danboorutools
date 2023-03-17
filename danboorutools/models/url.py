@@ -231,6 +231,18 @@ class GalleryUrl(Url):
 class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
     """An artist url is a gallery but also has other extractable data."""
 
+    @cached_property
+    def is_deleted(self) -> bool:
+        if "artist_data" in dir(self):
+            try:
+                self.artist_data  # type: ignore[attr-defined]
+            except UrlIsDeleted:
+                return True
+            else:
+                return False
+        else:
+            return super().is_deleted
+
 
 ########################################################################
 

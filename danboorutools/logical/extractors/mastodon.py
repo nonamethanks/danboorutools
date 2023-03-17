@@ -49,15 +49,6 @@ class MastodonArtistUrl(ArtistUrl, MastodonUrl):
     def secondary_names(self) -> list[str]:
         return [self.artist_data.username]
 
-    @property
-    def is_deleted(self) -> bool:
-        try:
-            _ = self.artist_data
-        except UrlIsDeleted:
-            return True
-        else:
-            return False
-
 
 class MastodonWebIdUrl(InfoUrl, MastodonUrl):
     user_id: int

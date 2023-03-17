@@ -22,29 +22,20 @@ class FanboxArtistUrl(ArtistUrl, FanboxUrl):
     normalize_template = "https://{username}.fanbox.cc"
 
     @property
-    def _artist_data(self) -> FanboxArtistData:
+    def artist_data(self) -> FanboxArtistData:
         return self.session.artist_data(self.username)
 
     @property
     def related(self) -> list[Url]:
-        return self._artist_data.related_urls
+        return self.artist_data.related_urls
 
     @property
     def primary_names(self) -> list[str]:
-        return [self._artist_data.user.name]
+        return [self.artist_data.user.name]
 
     @property
     def secondary_names(self) -> list[str]:
-        return [self._artist_data.creatorId]
-
-    @property
-    def is_deleted(self) -> bool:
-        try:
-            _ = self._artist_data
-        except UrlIsDeleted:
-            return True
-        else:
-            return False
+        return [self.artist_data.creatorId]
 
 
 class FanboxOldPostUrl(RedirectUrl, FanboxUrl):
