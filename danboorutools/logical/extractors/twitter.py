@@ -1,7 +1,7 @@
 from functools import cached_property
 
 from danboorutools.exceptions import UrlIsDeleted
-from danboorutools.logical.sessions.twitter import TwitterSession
+from danboorutools.logical.sessions.twitter import TwitterSession, TwitterUserData
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
@@ -26,7 +26,7 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     @property
     def primary_names(self) -> list[str]:
         try:
-            return [self._artist_data["name"]]
+            return [self.artist_data.name]
         except UrlIsDeleted:
             return []
 
@@ -40,44 +40,25 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
 
     @property
     def related(self) -> list[Url]:
-        related: list[Url] = []
+        try:
+            urls = self.artist_data.related_urls
+        except UrlIsDeleted:
+            urls = []
 
         from danboorutools.logical.extractors.skeb import SkebArtistUrl
         skeb = Url.build(SkebArtistUrl, username=self.username)
         if not skeb.is_deleted:
-            related += [skeb]
+            urls += [skeb]
 
-        if self.is_deleted:
-            return related
-
-        related += [Url.build(TwitterIntentUrl, intent_id=self.user_id)]
-
-        for field in ["url", "description"]:
-            try:
-                related += [Url.parse(url["expanded_url"])
-                            for url in self._artist_data["entities"][field]["urls"]
-                            if not url["expanded_url"].endswith("...")]
-            except KeyError:
-                pass
-
-        return related
+        return list(dict.fromkeys(urls))
 
     @property
     def user_id(self) -> int:
-        return self._artist_data["id"]
+        return self.artist_data.id
 
     @property
-    def _artist_data(self) -> dict:
+    def artist_data(self) -> TwitterUserData:
         return self.session.user_data(username=self.username)
-
-    @cached_property
-    def is_deleted(self) -> bool:
-        try:
-            self._artist_data
-        except UrlIsDeleted:
-            return True
-        else:
-            return False
 
 
 class TwitterIntentUrl(InfoUrl, TwitterUrl):
@@ -87,7 +68,7 @@ class TwitterIntentUrl(InfoUrl, TwitterUrl):
 
     @property
     def user_url(self) -> TwitterArtistUrl:
-        return self.build(TwitterArtistUrl, username=self._artist_data["screen_name"])
+        return self.build(TwitterArtistUrl, username=self.artist_data.screen_name)
 
     @property
     def related(self) -> list[Url]:
@@ -102,13 +83,13 @@ class TwitterIntentUrl(InfoUrl, TwitterUrl):
         return self.user_url.secondary_names
 
     @property
-    def _artist_data(self) -> dict:
+    def artist_data(self) -> TwitterUserData:
         return self.session.user_data(user_id=self.intent_id)
 
     @cached_property
     def is_deleted(self) -> bool:
         try:
-            self._artist_data
+            self.artist_data
         except UrlIsDeleted:
             return True
         else:
