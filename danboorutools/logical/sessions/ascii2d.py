@@ -16,7 +16,7 @@ from danboorutools.logical.extractors.nijie import NijieArtistUrl
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl, PixivPostUrl
 from danboorutools.logical.extractors.sakura import SakuraBlogUrl
 from danboorutools.logical.extractors.tinami import TinamiArtistUrl
-from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl
+from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl, TwitterPostUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import InfoUrl, PostAssetUrl, PostUrl, Url
 from danboorutools.util.misc import extract_urls_from_string, memoize
@@ -121,16 +121,15 @@ class Ascii2dArtistResult:
             assert isinstance(second_url, InfoUrl), second_url
             artist_name = artist_element.text
 
+            data["found_urls"].append(second_url)
             if site in ["pixiv", "fanbox", "ニジエ", "tinami", "ニコニコ静画", "fantia"]:
                 assert isinstance(second_url,
                                   (PixivArtistUrl, FanboxArtistUrl, NijieArtistUrl,
                                    TinamiArtistUrl, NicoSeigaArtistUrl, FantiaFanclubUrl))
-                data["found_urls"].append(second_url)
                 data["primary_names"].append(artist_name)
             elif site == "twitter":
                 assert isinstance(second_url, TwitterIntentUrl)
                 data["found_urls"].append(Url.build(TwitterArtistUrl, username=artist_name))
-                data["found_urls"].append(second_url)
                 data["secondary_names"].append(artist_name)
             else:
                 raise NotImplementedError(site, artist_element, self.search_url)
@@ -146,12 +145,14 @@ class Ascii2dArtistResult:
                 post_url = Url.parse(url_groups[0]["href"])
                 artist_url = Url.parse(url_groups[1]["href"])
                 artist_name = url_groups[1].text
+                data["found_urls"].append(artist_url)
                 if isinstance(post_url, PixivPostUrl) and isinstance(artist_url, PixivArtistUrl):
-                    data["found_urls"].append(artist_url)
                     data["primary_names"].append(artist_name)
                     data["posts"].append(post_url)
+                elif isinstance(post_url, TwitterPostUrl) and isinstance(artist_url, TwitterArtistUrl):
+                    data["secondary_names"].append(artist_name)
                 else:
-                    raise NotImplementedError(link_object, self.search_url)
+                    raise NotImplementedError(link_object, self.search_url, post_url, artist_url)
             elif isinstance(parsed := Url.parse(site), PixivPostUrl):
                 data["posts"].append(parsed)
                 try:
