@@ -74,6 +74,11 @@ class AmazonComParser(UrlParser):
                 instance = AmazonItemUrl(parsable_url)
                 instance.item_id = item_id
 
+            # https://amazon.jp/o/ASIN/B000P29X0G/ref=nosim/conoco-22
+            case "o", "ASIN", item_id, *_:
+                instance = AmazonItemUrl(parsable_url)
+                instance.item_id = item_id
+
             # https://www.amazon.com/exec/obidos/ASIN/B004U99O9K/ref=nosim/accessuporg-20?SubscriptionId=1MNS6Z3H8Y5Q5XCMG582\u0026linkCode=xm2\u0026creativeASIN=B004U99O9K
             case "exec", "obidos", "ASIN", item_id, *_:
                 instance = AmazonItemUrl(parsable_url)
