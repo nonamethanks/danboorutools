@@ -49,6 +49,16 @@ class FanzaDlsoftWorkUrl(PostUrl, FanzaUrl):
         else:
             return f"https://dlsoft.dmm.co.jp/detail/{kwargs['work_id']}/"
 
+    @property
+    def gallery(self) -> FanzaDlsoftAuthorUrl:
+        artists = self.html.select_one(".main-area-center").find("td", string="原画").parent.select("td.type-right a")
+        if len(artists) != 1:
+            raise NotImplementedError("Found more than one artist:", self, artists)
+
+        parsed = Url.parse(artists[0]["href"])
+        assert isinstance(parsed, FanzaDlsoftAuthorUrl)
+        return parsed
+
 
 class FanzaDlsoftAuthorUrl(ArtistUrl, FanzaUrl):
     user_id: int
