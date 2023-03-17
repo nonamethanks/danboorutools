@@ -5,10 +5,13 @@ from danboorutools.models.url import UselessUrl
 
 
 class TwitterComParser(UrlParser):
-    RESERVED_NAMES = ["home", "i", "intent", "search", "hashtag"]
+    RESERVED_NAMES = ["home", "i", "intent", "search", "hashtag", "about", "twitter"]
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> tw.TwitterUrl | UselessUrl | None:
+        if parsable_url.subdomain not in ["www", ""]:
+            return UselessUrl(parsable_url)
+
         instance: tw.TwitterUrl
         match parsable_url.url_parts:
             # https://twitter.com/i/web/status/943446161586733056
@@ -33,7 +36,7 @@ class TwitterComParser(UrlParser):
 
             # https://twitter.com/motty08111213
             # https://twitter.com/motty08111213/likes
-            case username, *_ if username not in cls.RESERVED_NAMES:
+            case username, *_ if username.lower() not in cls.RESERVED_NAMES:
                 instance = tw.TwitterArtistUrl(parsable_url)
                 instance.username = username
 
@@ -57,7 +60,7 @@ class TwitterComParser(UrlParser):
                 instance = tw.TwitterOnlyStatusUrl(parsable_url)
                 instance.post_id = int(parsable_url.query["tweet_id"])
 
-            case subdir, *_ if subdir in cls.RESERVED_NAMES:
+            case subdir, *_ if subdir.lower() in cls.RESERVED_NAMES:
                 return UselessUrl(parsable_url)
 
             case "i", "timeline":
