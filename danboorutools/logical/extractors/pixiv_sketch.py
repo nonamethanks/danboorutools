@@ -26,7 +26,6 @@ class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
 
     @property
     def stacc_url(self) -> PixivStaccUrl:
-        # pylint: disable=import-outside-toplevel
         from danboorutools.logical.extractors.pixiv import PixivStaccUrl
         return self.build(PixivStaccUrl, stacc=self.stacc)
 

@@ -27,7 +27,6 @@ class FanboxArtistData(BaseModel):
 
     @property
     def related_urls(self) -> list[Url]:
-        # pylint: disable=import-outside-toplevel
         from danboorutools.logical.extractors.pixiv import PixivArtistUrl
 
         results = [Url.parse(link) for link in self.profileLinks]

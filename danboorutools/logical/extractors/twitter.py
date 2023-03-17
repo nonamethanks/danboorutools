@@ -42,7 +42,6 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     def related(self) -> list[Url]:
         related: list[Url] = []
 
-        # pylint: disable=import-outside-toplevel
         from danboorutools.logical.extractors.skeb import SkebArtistUrl
         skeb = Url.build(SkebArtistUrl, username=self.username)
         if not skeb.is_deleted:

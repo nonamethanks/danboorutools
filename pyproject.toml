@@ -106,6 +106,7 @@ ignore = [
     "RUF003",   # Comment contains ambiguous unicode character
     "S101",     # assert detected
     "SIM105",   # Use `contextlib.suppress(KeyError)` instead of try-except-pass
+    "SLF001",   # Private member accessed
     "TRY003",   # Avoid specifying long messages outside the exception class
 ]
 
@@ -131,6 +132,7 @@ max-line-length = 140
 [tool.pylint]
 disable=[
     "broad-except",
+    "import-outside-toplevel",   # there are legitimate cases and i'm experienced enough to know when not to do this
     "missing-class-docstring",
     "missing-function-docstring",
     "missing-module-docstring",

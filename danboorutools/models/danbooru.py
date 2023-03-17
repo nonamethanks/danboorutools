@@ -25,7 +25,7 @@ class DanbooruModel:
         if self.__class__ == DanbooruModel:
             raise RuntimeError("This class cannot be instantiated directly, and must be inherited.")
 
-        from danboorutools.logical.sessions.danbooru import danbooru_api  # pylint: disable=import-outside-toplevel
+        from danboorutools.logical.sessions.danbooru import danbooru_api
         self.api = danbooru_api
         self.apply_json_data(json_data)
 
@@ -60,7 +60,7 @@ class DanbooruModel:
 
     @classmethod
     def from_id(cls, model_id: int) -> Self:
-        from danboorutools.logical.sessions.danbooru import danbooru_api  # pylint: disable=import-outside-toplevel
+        from danboorutools.logical.sessions.danbooru import danbooru_api
         json_data = danbooru_api.danbooru_request("GET", f"{cls.model_name}s/{model_id}.json")
         assert isinstance(json_data, dict)
         assert json_data["id"] == model_id

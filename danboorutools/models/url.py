@@ -395,6 +395,5 @@ if TYPE_CHECKING:
 
 @lru_cache
 def import_parser() -> UrlParser:
-    # pylint: disable=import-outside-toplevel
     from danboorutools.logical.parsers import UrlParser
     return UrlParser()
