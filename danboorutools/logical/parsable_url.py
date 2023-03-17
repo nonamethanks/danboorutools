@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from dataclasses import dataclass
 from functools import cached_property
@@ -118,3 +120,11 @@ class ParsableUrl:
 
     def __hash__(self) -> int:
         return hash(self.__str__())
+
+    def without(self, *parts: str) -> ParsableUrl:
+        string = f"{self.scheme}//{self.hostname}/" + "/".join(u for u in self.url_parts if u not in parts)
+
+        if self.query:
+            string += "?" + "&".join(f"{k}={v}" for k, v in self.query.items())
+
+        return ParsableUrl(string)
