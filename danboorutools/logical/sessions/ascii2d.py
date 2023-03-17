@@ -5,6 +5,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.logical.extractors.amazon import AmazonItemUrl
 from danboorutools.logical.extractors.dlsite import DlsiteUrl, DlsiteWorkUrl
 from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
 from danboorutools.logical.extractors.fantia import FantiaFanclubUrl
@@ -87,12 +88,17 @@ class Ascii2dArtistResult:
             if not site_el:
                 raise ValueError(link_object)
             site = site_el.text.strip()
-            if site in ["dlsite", "dmm"]:
+            if site in ["dlsite", "dmm", "amazon"]:
                 for sublink in link_object.select("a"):
                     work_url = Url.parse(sublink["href"])
-                    assert isinstance(work_url, (FanzaUrl, DlsiteUrl)), work_url
+                    assert isinstance(work_url, (FanzaUrl, DlsiteUrl, AmazonItemUrl)), work_url
                     assert isinstance(work_url, PostUrl), work_url
-                    data["found_urls"].append(work_url.artist)
+                    # try:
+                    #     data["found_urls"].append(work_url.artist)
+                    # except NotImplementedError as e:
+                    #     if "Found more than one artist:" in str(e):  # not worth it
+                    #         continue
+                    #     raise
                 continue
 
             first_url = Url.parse(link_object.select("a")[0]["href"])
@@ -237,9 +243,11 @@ class Ascii2dSession(Session):
             if isinstance(original_url, PostAssetUrl):
                 original_url = original_url.post
 
-            normalized_from_result = [url.normalized_url for url in result.found_urls + result.posts]
-            if original_url.normalized_url in normalized_from_result:
-                return result
+            if isinstance(original_url, PostUrl):
+                if original_url.normalized_url in [url.normalized_url for url in result.posts]:
+                    result._data["found_urls"] += [p.artist for p in result.posts]
+                    return result
+                continue
+            raise NotImplementedError(original_url)
 
-            continue
         return None
