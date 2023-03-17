@@ -3,10 +3,12 @@ from __future__ import annotations
 import functools
 import random
 import re
+import sys
 import weakref
 from collections.abc import Callable, Iterable
 from typing import Any, TypeVar
 
+import _testcapi
 from gelidum import freeze
 from pydantic import BaseModel as BadBaseModel
 from pydantic import PrivateAttr, ValidationError
@@ -48,15 +50,33 @@ def memoize(func: MemoizedFunction) -> MemoizedFunction:
         @functools.wraps(func)
         @functools.lru_cache
         def cached_method(*args, **kwargs):  # noqa: ANN202
-            return func(self_weak(), *args, **kwargs)
+            try:
+                return func(self_weak(), *args, **kwargs)
+            except:
+                _type, exception, _traceback = sys.exc_info()
+                _testcapi.set_exc_info(_type, exception, _traceback.tb_next)  # type: ignore[union-attr]
+                del _type, exception, _traceback
+                raise
 
         @functools.wraps(cached_method)
         def frozen_method(*args, **kwargs):  # noqa: ANN202
-            return cached_method(*freeze(args), **freeze(kwargs))
+            try:
+                return cached_method(*freeze(args), **freeze(kwargs))
+            except:
+                _type, exception, _traceback = sys.exc_info()
+                _testcapi.set_exc_info(_type, exception, _traceback.tb_next)  # type: ignore[union-attr]
+                del _type, exception, _traceback
+                raise
 
         setattr(self, func.__name__, frozen_method)
 
-        return frozen_method(*args, **kwargs)
+        try:
+            return frozen_method(*args, **kwargs)
+        except:
+            _type, exception, _traceback = sys.exc_info()
+            _testcapi.set_exc_info(_type, exception, _traceback.tb_next)  # type: ignore[union-attr]
+            del _type, exception, _traceback
+            raise
 
     return wrapped_func  # type: ignore[return-value]
 

@@ -164,4 +164,7 @@ good-names=[
 
 [tool.pylint."MESSAGES CONTROL"]
 enable="useless-suppression"
-extension-pkg-whitelist = ["pydantic"]
+extension-pkg-whitelist = [
+    "_testcapi",
+    "pydantic",
+]
