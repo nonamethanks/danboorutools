@@ -12,6 +12,8 @@ test_parsing = "danboorutools.scripts.test_parsing:main"
 replace_ehentai_samples = "danboorutools.scripts.replace_ehentai_samples:main"
 tag_paid_rewards_on_gelbooru = "danboorutools.scripts.tag_paid_rewards_on_gelbooru:main"
 
+create_url_template = "danboorutools.scripts.create_url_template:main"
+
 [tool.poetry.dependencies]
 python = "^3.11"
 requests = "^2.28.2"
