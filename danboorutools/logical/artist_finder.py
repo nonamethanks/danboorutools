@@ -209,6 +209,7 @@ class ArtistFinder:
                 if result.tag.category_name != "artist":
                     raise NotImplementedError(f"{result} is not an artist tag!")
                 danbooru_api.update_artist_urls(artist=result, urls=artist_urls)
+                logger.debug(f"Found existing artist {result}.")
                 return result.tag.name
 
         logger.debug("Found no matching artist on danbooru.")
