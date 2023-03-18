@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.toranoana import (
     ToranoanaArtistUrl,
     ToranoanaCircleUrl,
@@ -29,11 +29,11 @@ class ToranoanaJpParser(UrlParser):
             return UselessUrl(parsable_url)
         # http://img.toranoana.jp/popup_img/04/0030/13/81/040030138104-3p.jpg
         if parsable_url.subdomain == "img":  # not normalizable
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)
 
         # https://news.toranoana.jp/178996
         if parsable_url.subdomain == "news":  # not worth it
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)
 
         if parsable_url.subdomain == "ecdnimg":
             return cls._match_img(parsable_url)
@@ -138,34 +138,34 @@ class ToranoanaJpParser(UrlParser):
 
             # https://contents.toranoana.jp/ec/tora_r/cit/temp/00181/typea/C94_%E3%81%8D%E3%82%93%E3%81%8F_a.jpg
             case "ec", "tora_r", "cit", "temp", _, "typea", _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # http://www.toranoana.jp/webcomic/holic/news/20080501_yayoi_01.jpg
             case "webcomic", "holic", "news", _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://www.toranoana.jp/info/media/monmusu/fair06.html
             # https://www.toranoana.jp/info/etc/090814_gensou/img_top/main.jpg
             # http://www.toranoana.jp/info/hobby/touhou_gacha/batch04/mochi.jpg
             case "info", *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # http://www.toranoana.jp/coco2/illust/toradayo/img/0050.jpg
             case _, "illust", _, "img", _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # http://www.toranoana.jp/bl/toranomori/illust/img/0102.jpg
             case "bl", "toranomori", "illust", "img", _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://ec.toranoana.jp/tora_r/ec/cit/pages/temp-00101/00181
             case _, ("ec" | "digi"), ("cot" | "cit" | "ebk"), "pages", _, _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # http://www.toranoana.jp/mailorder/cot/pagekit/0000/00/07/000000077654/index.html
             # http://www.toranoana.jp/mailorder/cit/pagekit/0000/02/59/0000025956/040010201387-02al.jpg
             case  ("bl" | "mailorder"), ("cot" | "cit" | "ebk"), "pagekit", _, _, _, _, _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # http://www.toranoana.jp/cgi-bin/R2/d_search.cgi?bl_fg=0\u0026item_kind=0402\u0026mak=eb\u0026img=1\u0026stk=1\u0026makAg=1\u0026p1=\u0026p2=\u0026p3=
             case "cgi-bin", "R2", "d_search.cgi":

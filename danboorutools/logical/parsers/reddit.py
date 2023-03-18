@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.reddit import RedditPostUrl, RedditUrl, RedditUserUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -50,7 +50,7 @@ class RedditComParser(UrlParser):
                 instance.username = username
 
             case "r", _:  # no point in even acknowledging subreddits. they'll make a mess of the crawler otherwise
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://www.reddit.com/ttyccp
             case post_id, :

@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.foundation import FoundationImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -24,4 +24,4 @@ class CloudfrontNetParser(UrlParser):
 
             return instance
         else:
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)

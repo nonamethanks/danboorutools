@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from urllib.parse import unquote
 
-from danboorutools.exceptions import NotAnUrl
+from danboorutools.exceptions import NotAnUrlError
 
 url_query_pattern = re.compile(r"(?:\?|\&(?:amp;)*)?([^=]+)=([^&]+)")
 # note: some sites garble and double-encode ampersands
@@ -31,10 +31,10 @@ class ParsableUrl:
         try:
             [scheme, _, hostname, *url_parts] = url_without_query.split("/")
         except ValueError as e:
-            raise NotAnUrl(self.raw_url) from e
+            raise NotAnUrlError(self.raw_url) from e
 
         if scheme not in ("http:", "https:"):
-            raise NotAnUrl(self.raw_url)
+            raise NotAnUrlError(self.raw_url)
 
         hostname = hostname.split(":")[0]
         *subdomains, domain, tld = hostname.split(".")

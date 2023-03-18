@@ -1,6 +1,6 @@
 import re
 
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors import fanbox as f
 from danboorutools.logical.extractors import pixiv as p
 from danboorutools.logical.extractors import pixiv_comic as c
@@ -37,7 +37,7 @@ class PixivNetParser(UrlParser):
         # http://goods.pixiv.net/c76/images/bg_top5.jpg
         # http://dic.pixiv.net/a/あ～るさん
         elif parsable_url.subdomain in ["sensei", "imgaz", "source", "dev", "chat", "goods", "dic"]:
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)
         else:
             return None
 
@@ -130,9 +130,9 @@ class PixivNetParser(UrlParser):
                 # http://www.pixiv.net/tags.php?tag=%E5%88%86%E5%89%B2%E9%9C%8A%E5%A4%A2
                 # http://www.pixiv.net/group/?id=1992
                 if parsable_url.url_parts[0] in ["tags.php", "tags", "contest", "group"]:
-                    raise UnparsableUrl(parsable_url)
+                    raise UnparsableUrlError(parsable_url)
                 if parsable_url.url_parts[0:1] == ["en", "tags"]:
-                    raise UnparsableUrl(parsable_url)
+                    raise UnparsableUrlError(parsable_url)
                 else:
                     return None
         return instance
@@ -187,11 +187,11 @@ class PixivNetParser(UrlParser):
             # http://www.pixiv.net/fanbox/resources/entry/325/images/5rd4eo6gs2884gs80csgwc0ws8s44c0o.png
             # https://www.pixiv.net/fanbox/resources/entry/50/images/w_1200/2thpjiboyaskg8owg4owcsg48cg4s484.jpeg
             case "fanbox", "resources", "entry", _, "images", *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://www.pixiv.net/fanbox/entry.php?entry_id=1264
             case "fanbox", "entry.php":
-                raise UnparsableUrl(parsable_url)  # this is neither the pixiv id nor the post id
+                raise UnparsableUrlError(parsable_url)  # this is neither the pixiv id nor the post id
 
             case _:
                 return None

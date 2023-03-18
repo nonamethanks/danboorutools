@@ -1,6 +1,6 @@
 import re
 
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostRedirectUrl, TumblrPostUrl, TumblrUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -101,7 +101,7 @@ class TumblrComParser(UrlParser):
                 instance.blog_name = blog_name
 
             case ("tagged" | "search"), *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None

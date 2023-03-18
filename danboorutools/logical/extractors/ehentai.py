@@ -4,7 +4,7 @@ from datetime import datetime
 from functools import cached_property
 from typing import TYPE_CHECKING, Literal
 
-from danboorutools.exceptions import DownloadError, EHEntaiRateLimitError, UnknownUrlError, UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError, DownloadError, EHEntaiRateLimitError, UnknownUrlError
 from danboorutools.logical.sessions.ehentai import EHentaiSession
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.models.url import GalleryUrl, PostAssetUrl, PostUrl, Url
@@ -26,7 +26,7 @@ class EHentaiUrl(Url):
 
         try:
             return self.session.get_html(self.normalized_url)
-        except UrlIsDeleted:
+        except DeadUrlError:
             if self.subsite == "exhentai":
                 raise
 

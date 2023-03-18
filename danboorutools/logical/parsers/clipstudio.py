@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.clipstudio import (
     ClipStudioAssetPostUrl,
     ClipStudioBlogUrl,
@@ -50,7 +50,7 @@ class ClipStudioParser(UrlParser):
 
             # https://tech.clip-studio.com/howto/comicstudio/mayaaz
             case "howto", *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case "clip_site", *_:
                 return UselessUrl(parsable_url)

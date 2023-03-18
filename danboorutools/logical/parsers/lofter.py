@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.lofter import LofterArtistUrl, LofterImageUrl, LofterPostUrl, LofterUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -52,7 +52,7 @@ class Lf127NetParser(UrlParser):
             case "img", _:
                 instance = LofterImageUrl(parsable_url)
             case [_]:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
             case _:
                 return None
 

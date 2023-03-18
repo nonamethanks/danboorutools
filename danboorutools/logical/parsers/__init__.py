@@ -5,7 +5,7 @@ from importlib import import_module
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from danboorutools.exceptions import UnknownUrlError, UnparsableUrl
+from danboorutools.exceptions import UnknownUrlError, UnparsableUrlError
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.url import UnsupportedUrl
 from danboorutools.util.misc import class_name_to_string
@@ -40,7 +40,7 @@ class UrlParser:
 
         try:
             parsed_url = parser.match_url(parsable_url)
-        except UnparsableUrl:
+        except UnparsableUrlError:
             return None
 
         if not parsed_url:
@@ -69,6 +69,7 @@ class UnsupportedParser(UrlParser):
         "nobody.jp",
         "pixnet.net",
         "webnode.jp",
+        "wixsite.com",
         "whitesnow.jp",
     ]
 

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, TypeVar, final, get_type_hints
 from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
 
-from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.file import ArchiveFile, File
@@ -99,7 +99,7 @@ class Url:
     def is_deleted(self) -> bool:
         try:
             response = self.session.get_cached(self.normalized_url)
-        except UrlIsDeleted:
+        except DeadUrlError:
             return True
 
         resp_url = ParsableUrl(response.url)
@@ -236,7 +236,7 @@ class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
         if "artist_data" in dir(self):
             try:
                 self.artist_data  # type: ignore[attr-defined]
-            except UrlIsDeleted:
+            except DeadUrlError:
                 return True
             else:
                 return False
@@ -345,7 +345,7 @@ class _AssetUrl(Url):
     def is_deleted(self) -> bool:
         try:
             self.session.head_cached(self.normalized_url, allow_redirects=True)
-        except UrlIsDeleted:
+        except DeadUrlError:
             return True
         else:
             return False
@@ -378,12 +378,12 @@ class RedirectUrl(Url):
     def resolved(self) -> Url:
         try:
             resolved = self.parse(self.session.unscramble(self.normalized_url))
-        except UrlIsDeleted:
+        except DeadUrlError:
             self.is_deleted = True
             raise
 
         if resolved == self:
-            raise UrlIsDeleted(status_code=404, original_url=self.normalized_url)
+            raise DeadUrlError(status_code=404, original_url=self.normalized_url)
 
         return resolved
 
@@ -397,7 +397,7 @@ class RedirectUrl(Url):
     def is_deleted(self) -> bool:
         try:
             return self.resolved.is_deleted
-        except UrlIsDeleted:
+        except DeadUrlError:
             return True
 
 

@@ -9,7 +9,7 @@ from cloudscraper.exceptions import CloudflareChallengeError
 from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
-from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.extractors.youtube import YoutubePlaylistUrl, YoutubeVideoUrl
 from danboorutools.logical.sessions.ascii2d import Ascii2dArtistResult, Ascii2dSession
 from danboorutools.logical.sessions.danbooru import danbooru_api
@@ -40,7 +40,7 @@ class ArtistFinder:
         logger.info(f"Extracting artist for post {post}, source {source}")
         try:
             artist_url = source.artist
-        except UrlIsDeleted:
+        except DeadUrlError:
             artist_url = None
             logger.debug(f"{source} for post {post} is deleted.")
             result_from_archives = self.search_for_artist_in_archives(post)
@@ -161,7 +161,7 @@ class ArtistFinder:
                 try:
                     related_url = related_url.resolved  # noqa: PLW2901
                     logger.debug(f"It was resolved into {related_url}...")
-                except (UrlIsDeleted, ReadTimeout) as e:
+                except (DeadUrlError, ReadTimeout) as e:
                     logger.debug(f"Couldn't resolve url {related_url} because of an exception ({e}), skipping...")
                     continue
 
@@ -187,7 +187,7 @@ class ArtistFinder:
             if not isinstance(related_url, InfoUrl):
                 try:
                     related_url = related_url.artist  # noqa: PLW2901
-                except UrlIsDeleted:
+                except DeadUrlError:
                     logger.debug("It's deleted and not a valid url; skipping...")
                     continue
                 else:

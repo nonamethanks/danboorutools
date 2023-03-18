@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.line import LineArtistUrl, LineMangaAuthorUrl, LinePostUrl, LineUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 from danboorutools.models.url import UselessUrl
@@ -47,7 +47,7 @@ class LineMeParser(UrlParser):
             # https://noble.game.line.me/character/img/modern_v3/c10_list.png
             # http://destiny-child-blog.line.me/archives/23074701.html
             case _ if parsable_url.subdomain.endswith("game") or parsable_url.subdomain.endswith("blog"):
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # http://store.line.me/stickershop/search/creators/en?q=micca
             # http://store.line.me/stickershop/search/creators/ja?q=Inoki-08

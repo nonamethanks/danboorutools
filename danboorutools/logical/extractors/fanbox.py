@@ -1,6 +1,6 @@
 import re
 
-from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.fanbox import FanboxArtistData, FanboxSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 

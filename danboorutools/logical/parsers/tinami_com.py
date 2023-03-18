@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.tinami import TinamiArtistUrl, TinamiComicUrl, TinamiImageUrl, TinamiPostUrl, TinamiUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -61,7 +61,7 @@ class TinamiComParser(UrlParser):
             # http://www.tinami.com/today/artworks/t071231_130617.jpg
             # http://www.tinami.com/gallery/img/34_eri_n.jpg
             case ("today" | "gallery"), *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.piapro import PiaproArtistUrl, PiaproPostUrl, PiaproUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 from danboorutools.models.url import UselessUrl
@@ -54,10 +54,10 @@ class PiaproJpParser(UrlParser):
                     return UselessUrl(parsable_url)
 
             case "pages", "official_collabo", *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case ("timg" | "thumb_i"), *_:
-                raise UnparsableUrl(parsable_url)  # can't be arsed rn
+                raise UnparsableUrlError(parsable_url)  # can't be arsed rn
 
             case _:
                 return None

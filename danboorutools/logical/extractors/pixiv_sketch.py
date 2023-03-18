@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 if TYPE_CHECKING:
@@ -45,7 +45,7 @@ class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
     def is_deleted(self) -> bool:
         try:
             response = self.session.head_cached(self.normalized_url, proxies={})  # proxies don't like pixiv sketch's 404s for some reason
-        except UrlIsDeleted:
+        except DeadUrlError:
             return True
         else:
             if response.status_code != 200:

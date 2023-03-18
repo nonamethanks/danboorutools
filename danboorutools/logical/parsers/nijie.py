@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.nijie import NijieArtistUrl, NijieImageUrl, NijiePostUrl, NijieUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -54,7 +54,7 @@ class NijieInfoParser(UrlParser):
 
             # http://nijie.info/media/nijietan.swf
             case "media", _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None

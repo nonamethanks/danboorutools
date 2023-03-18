@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.ehentai import EHentaiGalleryUrl, EHentaiImageUrl, EHentaiPageUrl, EHentaiUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -56,7 +56,7 @@ class EhentaiOrgParser(UrlParser):
             # https://g.e-hentai.org/?f_shash=85f4d25b291210a2a6936331a1e7202741392715\u0026fs_from=_039.jpg
             case []:
                 if not parsable_url.query:
-                    raise UnparsableUrl(parsable_url)
+                    raise UnparsableUrlError(parsable_url)
                 instance = EHentaiImageUrl(parsable_url)
                 instance.file_hash = parsable_url.query["f_shash"]
                 instance.page_token = instance.file_hash[:10]
@@ -65,13 +65,13 @@ class EhentaiOrgParser(UrlParser):
 
             case _:
                 if parsable_url.raw_url == "https://exhentai.org/img/kokomade.jpg":
-                    raise UnparsableUrl(parsable_url)
+                    raise UnparsableUrlError(parsable_url)
                 # https://repo.e-hentai.org/bounty/fc/fcf12a1928e4d3b49bebe5280238e00de52027de-455288.jpg-thumb.jpg
                 elif parsable_url.subdomain in ["repo", "forums"]:
-                    raise UnparsableUrl(parsable_url)
+                    raise UnparsableUrlError(parsable_url)
                 # http://g.e-hentai.org/tag/artist%3Ayatsuki
                 elif parsable_url.url_parts[0] in ["tag"]:
-                    raise UnparsableUrl(parsable_url)
+                    raise UnparsableUrlError(parsable_url)
                 else:
                     return None
 

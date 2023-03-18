@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors import booth as b
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -62,7 +62,7 @@ class BoothPmParser(UrlParser):
                 instance.user_id = None
 
             case "apollo", *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None

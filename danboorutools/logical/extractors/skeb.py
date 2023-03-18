@@ -1,6 +1,6 @@
 from functools import cached_property
 
-from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.skeb import SkebArtistData, SkebSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
@@ -26,7 +26,6 @@ class SkebArtistUrl(ArtistUrl, SkebUrl):
     username: str
 
     normalize_template = "https://skeb.jp/@{username}"
-
 
     @property
     def primary_names(self) -> list[str]:

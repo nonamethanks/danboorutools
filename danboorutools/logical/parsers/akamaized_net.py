@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.melonbooks import MelonbooksImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -9,7 +9,7 @@ class AkamaizedNetParser(UrlParser):
         if parsable_url.subdomain == "melonbooks":
             return cls._match_melonbooks(parsable_url)
         else:
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)
 
     @staticmethod
     def _match_melonbooks(parsable_url: ParsableUrl) -> MelonbooksImageUrl | None:

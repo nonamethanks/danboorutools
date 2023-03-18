@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.bcy import BcyArtistUrl, BcyPostUrl, BcyUrl, OldBcyPostUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -34,11 +34,11 @@ class BcyNetParser(UrlParser):
 
             # http://bcy.net/illust/listhotwork/6821
             case "illust", "listhotwork", _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://bcy.net/cn719869
             case old_id, if old_id.startswith("cn"):  # dead
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None

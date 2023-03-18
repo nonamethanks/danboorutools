@@ -1,7 +1,7 @@
 import re
 from urllib.parse import unquote
 
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors import fanza as fz
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -37,10 +37,10 @@ class DmmCoJpParser(UrlParser):
 
         # http://p-xtasy.dmm.co.jp/img/web/girls/635490047292404333.png
         elif parsable_url.subdomain == "p-xtasy":
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)
 
         elif parsable_url.hostname == "ad.games.dmm.co.jp":  # could have any html page
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)
 
         else:
             return None
@@ -102,7 +102,7 @@ class DmmCoJpParser(UrlParser):
 
             # http://www.dmm.co.jp/en/digital/nijigen/mlmg_present/120720/page_siratama.html/
             case *_, "digital", "nijigen", "mlmg_present", _, _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None
@@ -129,7 +129,7 @@ class DmmCoJpParser(UrlParser):
 
             # http://dlsoft.dmm.co.jp/elf/elfall/index/
             case _, _, "index":
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None

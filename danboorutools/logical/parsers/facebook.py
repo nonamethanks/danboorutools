@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors import facebook as fb
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 from danboorutools.models.url import UselessUrl
@@ -68,7 +68,7 @@ class FacebookComParser(UrlParser):
                 instance.page_id = int(page_id)
 
             case "pages", _:  # broken urls, they don't redirect
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://www.facebook.com/pg/lanbow2000/photos/?tab=album\u0026album_id=376505442485366
             # https://www.facebook.com/pg/AzizDraws/posts/
@@ -102,7 +102,7 @@ class FacebookComParser(UrlParser):
                 instance.media_set_id = parsable_url.query["set"]
 
             case "cds.sg", _:
-                raise UnparsableUrl(parsable_url)  # game url???
+                raise UnparsableUrlError(parsable_url)  # game url???
 
             case _:
                 return None

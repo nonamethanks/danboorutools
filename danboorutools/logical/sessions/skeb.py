@@ -4,7 +4,7 @@ import os
 
 from requests import Response
 
-from danboorutools.exceptions import HTTPError, InvalidSkebCredentials
+from danboorutools.exceptions import HTTPError, InvalidSkebCredentialsError
 from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
 from danboorutools.logical.extractors.pixiv import PixivArtistUrl
 from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl
@@ -30,7 +30,7 @@ class SkebSession(Session):
             request = super().request(*args, **kwargs)
         except HTTPError as e:
             if e.status_code == 503:
-                raise InvalidSkebCredentials from e
+                raise InvalidSkebCredentialsError from e
             raise
         return request
 

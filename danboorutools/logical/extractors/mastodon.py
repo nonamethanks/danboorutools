@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import cached_property
 
-from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.mastodon import MastodonArtistData, MastodonSession
 from danboorutools.models.url import ArtistUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
@@ -79,7 +79,7 @@ class MastodonWebIdUrl(InfoUrl, MastodonUrl):
     def is_deleted(self) -> bool:
         try:
             _ = self.artist_data
-        except UrlIsDeleted:
+        except DeadUrlError:
             return True
         else:
             return False

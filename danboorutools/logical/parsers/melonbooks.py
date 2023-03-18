@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors import melonbooks as mb
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -9,7 +9,7 @@ class MelonbooksCoJpParser(UrlParser):
         instance: mb.MelonbooksUrl
 
         if parsable_url.subdomain in ("shop", ):
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)
 
         match parsable_url.url_parts:
             # https://www.melonbooks.co.jp/detail/detail.php?product_id=1484137&adult_view=1

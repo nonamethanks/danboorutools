@@ -12,7 +12,7 @@ class UnknownUrlError(Exception):
         super().__init__(message)
 
 
-class UnparsableUrl(Exception):
+class UnparsableUrlError(Exception):
     """The url is expectedly unknown."""
 
     def __init__(self, url: object) -> None:
@@ -20,7 +20,7 @@ class UnparsableUrl(Exception):
         super().__init__(message)
 
 
-class NotAnUrl(Exception):
+class NotAnUrlError(Exception):
     """The url is expectedly unknown."""
 
     def __init__(self, string: str) -> None:
@@ -28,7 +28,7 @@ class NotAnUrl(Exception):
         super().__init__(message)
 
 
-class NoCookiesForDomain(FileNotFoundError):
+class NoCookiesForDomainError(FileNotFoundError):
     """We tried to restore cookies we don't have."""
 
     def __init__(self, domain: str) -> None:
@@ -65,8 +65,8 @@ class DownloadError(HTTPError):
     """A file download failed with a specific error."""
 
 
-class UrlIsDeleted(HTTPError):
-    """The URL is deleted."""
+class DeadUrlError(HTTPError):
+    """The URL is dead."""
 
 
 class EHEntaiRateLimitError(HTTPError):
@@ -77,7 +77,7 @@ class EHEntaiRateLimitError(HTTPError):
         return f"The request to {self.original_url} failed because of too many downloads."
 
 
-class InvalidSkebCredentials(HTTPError):
+class InvalidSkebCredentialsError(HTTPError):
     """Skeb credentials are invalid or expired."""
 
     @property

@@ -15,7 +15,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webelement import WebElement
 
 from danboorutools import logger
-from danboorutools.exceptions import NoCookiesForDomain
+from danboorutools.exceptions import NoCookiesForDomainError
 
 if TYPE_CHECKING:
     from danboorutools.models.url import Url
@@ -52,7 +52,7 @@ class Browser(Chrome):
         try:
             cookies: list[dict] = pickle.load(filename.open("rb"))
         except FileNotFoundError as e:
-            raise NoCookiesForDomain(domain) from e
+            raise NoCookiesForDomainError(domain) from e
         for cookie in cookies:
             if "expiry" in cookie:
                 cookie["expires"] = cookie["expiry"]
@@ -105,7 +105,7 @@ class Browser(Chrome):
                                    ) -> bool:
         try:
             self.load_cookies(domain)
-        except NoCookiesForDomain:
+        except NoCookiesForDomainError:
             logger.debug(f"No cookies exist for domain {domain}.")
             return False
 

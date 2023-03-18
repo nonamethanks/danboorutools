@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors import youtube as yt
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 from danboorutools.models.url import UselessUrl
@@ -57,7 +57,7 @@ class YoutubeComParser(UrlParser):
                 instance.post_id = post_id
 
             case "profile", :  # /profile urls are dead
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://img.youtube.com/vi/vTPq-9k0m3A/maxresdefault.jpg
             case "vi", video_id, "maxresdefault.jpg":

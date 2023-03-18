@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.weibo import WeiboArtistUrl, WeiboImageUrl, WeiboPostUrl, WeiboUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -85,7 +85,7 @@ class WeiboComParser(UrlParser):
                 instance.username = username
 
             case "p", "searchall", *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None
@@ -113,7 +113,7 @@ class SinaimgCnParser(UrlParser):
                 instance = WeiboImageUrl(parsable_url)
 
             case "m", "emoticon", *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None

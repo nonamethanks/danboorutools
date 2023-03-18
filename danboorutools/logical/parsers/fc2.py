@@ -1,6 +1,6 @@
 from urllib.parse import urlencode
 
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors import fc2
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 from danboorutools.models.url import UnsupportedUrl
@@ -150,7 +150,7 @@ class Fc2Parser(UrlParser):
 
             case "tb.php", _:
                 # http://aenmix.blog93.fc2.com/tb.php/46-e4374dd5
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case page, if page.startswith("category"):
                 instance = fc2.Fc2BlogUrl(parsable_url)

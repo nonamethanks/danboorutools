@@ -1,7 +1,7 @@
 import re
 from urllib.parse import unquote
 
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.dlsite import DlsiteAuthorUrl, DlsiteImageUrl, DlsiteKeywordSearch, DlsiteUrl, DlsiteWorkUrl
 from danboorutools.logical.extractors.dlsite_cien import DlsiteCienArticleUrl, DlsiteCienCreatorUrl, DlsiteCienProfileUrl, DlsiteCienUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
@@ -117,27 +117,27 @@ class DlsiteComParser(UrlParser):
             # http://www.dlsite.com/modpub/images/character/1204_maniax_w1920.jpg
             # http://home.dlsite.com/modpub/images/character/0908_maniax_1600.jpg # TODO: maybe i should check if these unparsable sources are all uploaded at max res
             case *_, "modpub", "images", "character", _filename:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # http://www.dlsite.com/images/character/wallpaper/1605_maniax_w1920.jpg
             case *_, "images", "character", "wallpaper", _filename:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # http://www.dlsite.com/images/event/wallpaper_present_girls/20170430/wallpaper_1920x1200.jpg
             case *_, "images", "event", "wallpaper_present_girls", _, _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # http://www.dlsite.com/work/workshow.cgi?workno=pa2104
             case *_, "work", "workshow.cgi":
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://media.dlsite.com/proxy/41a63a3bed0252225347604b2bb53ebd6aa37487/687474703a2f2f68656e7461697472656e63682e636f6d2f696d616765732f6269675f696d616765732f323031342f30372f32392f637574652d7363686f6f6c6769726c2d31373031352e6a7067
             case *_, "proxy", _, _ if parsable_url.hostname == "media.dlsite.com":
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://media.dlsite.com/chobit/contents/0907/ckn20nx8gbsos4g408kgk0sk0/ckn20nx8gbsos4g408kgk0sk0_020.jpg
             case *_, "chobit", "contents", _, _, _ if parsable_url.hostname == "media.dlsite.com":
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # http://home.dlsite.com/dlaf/=/aid/iisearch/url/http%253A%252F%252Fmaniax.dlsite.com%252Fwork%252F%253D%252Fproduct_id%252FRJ034344.html
             case *_, "dlaf", "=", "aid", "iisearch", "url", encoded_url:
@@ -145,7 +145,7 @@ class DlsiteComParser(UrlParser):
                 return cls.parse(unquoted_url)  # type: ignore[return-value]
 
             case *_, "error.html":
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None

@@ -6,7 +6,7 @@ from functools import cached_property
 from pytz import UTC
 from requests.exceptions import ProxyError
 
-from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.pixiv import PixivArtistData, PixivPostData, PixivSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
@@ -114,7 +114,7 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
 
         try:
             return self.build(PixivStaccUrl, stacc=self.stacc).me_from_stacc.resolved
-        except UrlIsDeleted:
+        except DeadUrlError:
             return self.build(PixivStaccUrl, stacc=self.stacc)
         except ProxyError as e:
             if "Remote end closed connection without response" in str(e):
@@ -160,7 +160,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
     def is_deleted(self) -> bool:
         try:
             _ = self._post_data
-        except UrlIsDeleted:
+        except DeadUrlError:
             return True
         else:
             return False

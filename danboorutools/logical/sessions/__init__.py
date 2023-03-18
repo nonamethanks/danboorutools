@@ -18,7 +18,7 @@ from pyrate_limiter.limiter import Limiter, RequestRate
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from danboorutools import logger
-from danboorutools.exceptions import DownloadError, HTTPError, UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError, DownloadError, HTTPError
 from danboorutools.logical.browser import Browser
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.file import File, FileSubclass
@@ -90,7 +90,7 @@ class Session(_CloudScraper):
             raise
 
         if response.status_code == 404:
-            raise UrlIsDeleted(response)
+            raise DeadUrlError(response)
         return response
 
     def download_file(self, url: str | Url, *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:

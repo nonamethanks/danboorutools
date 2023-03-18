@@ -3,7 +3,7 @@ from __future__ import annotations
 from dateutil import parser as dt_parser
 
 from danboorutools import logger
-from danboorutools.exceptions import NotAnUrl
+from danboorutools.exceptions import NotAnUrlError
 from danboorutools.models.url import Url
 
 
@@ -30,7 +30,7 @@ class GelbooruPost:
         self.rating: str = json_data["rating"][0]
         try:
             self.source = Url.parse(json_data["source"])
-        except NotAnUrl:
+        except NotAnUrlError:
             self.source: str = json_data["source"]  # type: ignore[no-redef]
         self.title: str = json_data["title"]  # AFAIK unused
 

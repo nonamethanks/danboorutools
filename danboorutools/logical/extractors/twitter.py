@@ -1,6 +1,6 @@
 from functools import cached_property
 
-from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.twitter import TwitterSession, TwitterUserData
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
@@ -27,7 +27,7 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     def primary_names(self) -> list[str]:
         try:
             return [self.artist_data.name]
-        except UrlIsDeleted:
+        except DeadUrlError:
             return []
 
     @property
@@ -35,14 +35,14 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
         names = [self.username]
         try:
             return [*names, f"twitter {self.user_id}"]
-        except UrlIsDeleted:
+        except DeadUrlError:
             return names
 
     @property
     def related(self) -> list[Url]:
         try:
             urls = self.artist_data.related_urls
-        except UrlIsDeleted:
+        except DeadUrlError:
             urls = []
 
         from danboorutools.logical.extractors.skeb import SkebArtistUrl

@@ -5,7 +5,7 @@ from functools import cached_property
 
 import twitter
 
-from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, memoize
@@ -37,7 +37,7 @@ class TwitterSession(Session):
         except twitter.error.TwitterError as e:
             if "User not found." in str(e) or "User has been suspended." in str(e):
                 original_url = f"https://twitter.com/{username}" if username else f"https://twitter.com/intent/user?user_id={user_id}"
-                raise UrlIsDeleted(status_code=404, original_url=original_url) from e
+                raise DeadUrlError(status_code=404, original_url=original_url) from e
             raise
 
 

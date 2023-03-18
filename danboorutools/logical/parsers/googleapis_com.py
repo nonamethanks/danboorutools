@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.anifty import AniftyArtistImageUrl, AniftyImageUrl, AniftyUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -18,7 +18,7 @@ class GoogleapisComParser(UrlParser):
         if parsable_url.url_parts[0] == "anifty-media":
             return cls._match_anifty(parsable_url)
         else:
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)
 
     @staticmethod
     def _match_anifty(parsable_url: ParsableUrl) -> AniftyUrl | None:

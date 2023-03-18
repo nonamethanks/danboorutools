@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import Field
 
-from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
 from danboorutools.logical.extractors.pixiv_sketch import PixivSketchArtistUrl
 from danboorutools.logical.sessions import Session
@@ -35,7 +35,7 @@ class PixivSession(Session):
 
         if json_data.get("error", False) is not False:
             if json_data["message"] in DELETION_MESSAGES:
-                raise UrlIsDeleted(resp)
+                raise DeadUrlError(resp)
             raise NotImplementedError(dict(json_data))
 
         return json_data["body"]

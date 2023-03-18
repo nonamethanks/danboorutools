@@ -1,6 +1,6 @@
 import re
 
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.circle_ms import CircleMsCircleUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 from danboorutools.models.url import UselessUrl
@@ -46,15 +46,15 @@ class CircleMsParser(UrlParser):
 
             # http://p10001378.circle.ms/tu/Pixiv.aspx
             case _, "Pixiv.aspx":
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # http://p10011607.circle.ms/st/Profile.aspx
             # http://p10035738.circle.ms/ps/Profile.aspx
             case _, "Profile.aspx":
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case "assets", "images", _, _:  # various site assets
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case [] if parsable_url.subdomain.startswith("webcatalog"):
                 return UselessUrl(parsable_url)

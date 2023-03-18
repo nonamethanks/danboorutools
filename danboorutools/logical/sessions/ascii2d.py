@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
 
-from danboorutools.exceptions import UrlIsDeleted
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.extractors.amazon import AmazonItemUrl
 from danboorutools.logical.extractors.dlsite import DlsiteUrl, DlsiteWorkUrl
 from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
@@ -157,7 +157,7 @@ class Ascii2dArtistResult:
                 data["posts"].append(parsed)
                 try:
                     data["found_urls"].append(parsed.artist)
-                except UrlIsDeleted:
+                except DeadUrlError:
                     continue
             else:
                 raise NotImplementedError(site, link_object, self.search_url)

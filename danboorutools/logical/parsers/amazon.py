@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.amazon import AmazonAuthorUrl, AmazonItemUrl, AmazonShortenerUrl, AmazonUrl
 from danboorutools.logical.extractors.enty import EntyImageUrl
 from danboorutools.logical.extractors.skeb import SkebImageUrl
@@ -26,7 +26,7 @@ class AmazonawsComParser(UrlParser):
         elif parsable_url.hostname == "skeb-production.s3.ap-northeast-1.amazonaws.com":
             return cls._match_skeb(parsable_url)
         else:
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)
 
     @staticmethod
     def _match_enty(parsable_url: ParsableUrl) -> EntyImageUrl | None:
@@ -66,7 +66,7 @@ class AmazonComParser(UrlParser):
                 return UselessUrl(parsable_url)
 
             case _ if parsable_url.subdomain not in ["www", ""]:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://www.amazon.com/dp/B08BWGQ8NP/
             # https://www.amazon.com/Yaoi-Hentai-2/dp/1933664010
@@ -105,7 +105,7 @@ class AmazonComParser(UrlParser):
                 instance.author_id = author_id
 
             case _, "s":
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None

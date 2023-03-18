@@ -5,7 +5,7 @@ from typing import Self, get_type_hints
 
 from dateutil import parser as dt_parser
 
-from danboorutools.exceptions import NotAnUrl
+from danboorutools.exceptions import NotAnUrlError
 from danboorutools.models.file import File
 from danboorutools.models.url import Url
 
@@ -86,7 +86,7 @@ class DanbooruPost(DanbooruModel):
     def source(self) -> Url | str:
         try:
             return Url.parse(self.json_data["source"])
-        except NotAnUrl:
+        except NotAnUrlError:
             return self.json_data["source"]
 
     def apply_json_data(self, json_data: dict) -> None:

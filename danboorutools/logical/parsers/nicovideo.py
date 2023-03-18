@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors import nicoseiga as ns
 from danboorutools.logical.extractors import nicovideo as nv
 from danboorutools.logical.extractors import nicovideo_3d as n3
@@ -32,7 +32,7 @@ class NicovideoJp(UrlParser):
         # http://chokuhan.nicovideo.jp/products/embed/1257
         # http://info.nicovideo.jp/seiga/imas_illust_chokaigi3/
         elif parsable_url.subdomain in ("ch", "nivent", "chokuhan", "info", "bmimg"):
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)
         else:
             return None
 
@@ -99,12 +99,12 @@ class NicovideoJp(UrlParser):
 
             case "clip", _:
                 # anonymous album: https://seiga.nicovideo.jp/clip/191765
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case ("tag" | "search"), _:
                 # http://seiga.nicovideo.jp/tag/%E3%83%97%E3%83%AC%E3%83%87%E3%82%BF%E3%83%BC
                 # http://seiga.nicovideo.jp/search/halo?target=illust
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None
@@ -159,7 +159,7 @@ class NicovideoJp(UrlParser):
 
             # http://www.nicovideo.jp/search/東方恥辱日記
             case "search", *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None
@@ -195,11 +195,11 @@ class NicovideoJp(UrlParser):
             # http://dic.nicovideo.jp/id/4783847
             # http://dic.nicovideo.jp/l/七姫
             case ("id" | "a" | "l"), _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://dic.nicovideo.jp/b/a/%E3%83%A1%E3%83%88/31-#36
             case "b", ("a" | "u"), _, _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None
@@ -231,7 +231,7 @@ class NicovideoJp(UrlParser):
 
             # http://3d.nicovideo.jp/alicia/img/header_character3d.png
             case _, "img", _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None
@@ -311,11 +311,11 @@ class NimgJpParser(UrlParser):
 
             # https://dcdn.cdn.nimg.jp/niconews/articles/body_images/5544288/5b4672e6da49c2dd195a95caca424c20ff8f67f9b23cc6689fc28719de4c6037b3839d2d8757ceb8e25cfd6ce98093d71101831bbfc39e26baaca915ce32633d
             case "niconews", *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://img.cdn.nimg.jp/s/nicovideo/thumbnails/39681749/39681749.7860892.original/r1280x720l?key=8bc8ebb87e7286cef4e3303bb32e15b93e99c959e9fe4ce2af66884a4167024a  # -> https://www.nicovideo.jp/watch/sm39681749
             case _, "nicovideo", *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None
@@ -356,7 +356,7 @@ class NicoseigaJpParser(UrlParser):
 
             # https://lohas.nicoseiga.jp/material/5746c5/4459092?
             case "material", *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None

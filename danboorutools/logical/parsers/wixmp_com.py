@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors.deviantart import DeviantArtImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -28,6 +28,6 @@ class WixmpComParser(UrlParser):
             instance.parse_filename(parsable_url.url_parts[-1])
             return instance
         elif parsable_url.raw_url.startswith("https://api-da.wixmp.com/_api/download/file"):
-            raise UnparsableUrl(parsable_url)
+            raise UnparsableUrlError(parsable_url)
 
         return None

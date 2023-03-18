@@ -1,4 +1,4 @@
-from danboorutools.exceptions import UnparsableUrl
+from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.extractors import bilibili as b
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
@@ -79,7 +79,7 @@ class BilibiliComParser(UrlParser):
                 except ValueError as e:
                     if post_id == "dy12125":
                         # https://danbooru.donmai.us/posts/1332451
-                        raise UnparsableUrl(parsable_url) from e
+                        raise UnparsableUrlError(parsable_url) from e
                     else:
                         raise
 
@@ -92,16 +92,16 @@ class BilibiliComParser(UrlParser):
 
             # http://www.bilibili.com/html/bizhi.html
             case "html", _:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://game.bilibili.com/sssj/#character
             case _ if parsable_url.subdomain == "game":
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             # https://live.bilibili.com/activity/qixi-festival-2020-pc/index.html#/battle
             # https://www.bilibili.com/festival/arknights2022?bvid=BV1sr4y1e7gQ
             case ("activity" | "festival"), *_:
-                raise UnparsableUrl(parsable_url)
+                raise UnparsableUrlError(parsable_url)
 
             case _:
                 return None
@@ -132,17 +132,17 @@ class HdslbComParser(UrlParser):
             #  http://i1.hdslb.com/bfs/archive/89bfa8427528a5e45eff457d4af3a59a9d3f54e0.jpg
             # http://i0.hdslb.com/bfs/common_activity/3bc320c168494f5b7d3daa29927cfb23.jpg
             case "bfs", ("archive" | "common_activity"), _:
-                raise UnparsableUrl(parsable_url)  # 404 images I think?
+                raise UnparsableUrlError(parsable_url)  # 404 images I think?
 
             # https://i0.hdslb.com/bfs/activity-plat/static/2cf2b9af5d3c5781d611d6e36f405144/E738vcDvd3.png
             case "bfs", "activity-plat", _, _, _:
-                raise UnparsableUrl(parsable_url)  # 404 images I think?
+                raise UnparsableUrlError(parsable_url)  # 404 images I think?
 
             # https://i0.hdslb.com/u_user/879a1e5ac43748c4c27ccbb2cb3497f7.png
             # http://i0.hdslb.com/Wallpaper/summer_2011_wide.jpg
             # http://i1.hdslb.com/u_user/Wallpaper/bilibili_5th.png
             case *_, ("u_user" | "Wallpaper"), _:
-                raise UnparsableUrl(parsable_url)  # 404 images I think?
+                raise UnparsableUrlError(parsable_url)  # 404 images I think?
 
             case _:
                 return None
