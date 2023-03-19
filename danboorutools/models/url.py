@@ -104,11 +104,12 @@ class Url:
 
         resp_url = ParsableUrl(response.url)
         curr_url = ParsableUrl(self.normalized_url)
-        if curr_url.url_parts and not resp_url.url_parts:
-            if resp_url.hostname == curr_url.hostname:
+        if curr_url.url_parts and resp_url.is_base_url:
+            if resp_url.hostname in [curr_url.hostname, curr_url.domain]:
+                # "www.site.com/artist" -> "site.com" or "www.site.com"
                 return True
-            else:
-                raise NotImplementedError(self, resp_url)
+
+            raise NotImplementedError(self, resp_url)
 
         return False
 
