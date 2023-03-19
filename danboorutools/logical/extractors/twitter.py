@@ -1,5 +1,3 @@
-from functools import cached_property
-
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.twitter import TwitterSession, TwitterUserData
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
@@ -72,14 +70,20 @@ class TwitterIntentUrl(InfoUrl, TwitterUrl):
 
     @property
     def related(self) -> list[Url]:
+        if self.is_deleted:
+            return []
         return [self.user_url]
 
     @property
     def primary_names(self) -> list[str]:
+        if self.is_deleted:
+            return []
         return self.user_url.primary_names
 
     @property
     def secondary_names(self) -> list[str]:
+        if self.is_deleted:
+            return [f"twitter {self.intent_id}"]
         return self.user_url.secondary_names
 
     @property

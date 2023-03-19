@@ -9,7 +9,7 @@ class TwitterComParser(UrlParser):
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> tw.TwitterUrl | UselessUrl | None:
-        if parsable_url.subdomain not in ["www", ""]:
+        if parsable_url.subdomain not in ["www", "", "pic"]:
             return UselessUrl(parsable_url)
 
         instance: tw.TwitterUrl
