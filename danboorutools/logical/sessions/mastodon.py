@@ -64,17 +64,18 @@ class MastodonArtistData(BaseModel):
 
     note: str
     fields: list[dict]
-    oauth_authentications: list[dict]
+    oauth_authentications: list[dict] | None
 
     @property
     def related_urls(self) -> list[Url]:
         urls = [Url.parse(u) for u in extract_urls_from_string(self.note)]
 
-        for auth_data in self.oauth_authentications:
-            if auth_data["provider"] == "pixiv":
-                urls += [Url.build(PixivArtistUrl, user_id=int(auth_data["uid"]))]
-            else:
-                raise NotImplementedError(auth_data, self.username)
+        if self.oauth_authentications:
+            for auth_data in self.oauth_authentications:
+                if auth_data["provider"] == "pixiv":
+                    urls += [Url.build(PixivArtistUrl, user_id=int(auth_data["uid"]))]
+                else:
+                    raise NotImplementedError(auth_data, self.username)
 
         for field in self.fields:
             urls += [Url.parse(u) for u in extract_urls_from_string(field["value"])]

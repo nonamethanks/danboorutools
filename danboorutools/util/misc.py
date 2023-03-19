@@ -115,7 +115,10 @@ class BaseModel(BadBaseModel):
         try:
             super().__init__(**data)
         except ValidationError as e:
-            values = value_from_validation_error(data, e)
+            try:
+                values = value_from_validation_error(data, e)
+            except KeyError:
+                values = data
             e.add_note(f"Failed to validate:\n {values}\n")
             raise
         else:
