@@ -180,6 +180,18 @@ class InfoUrl(Url):
         """A list of artist names usable as qualifiers, in order of relevance."""
         raise NotImplementedError(self, "hasn't implemented name extraction.")
 
+    @cached_property
+    def is_deleted(self) -> bool:
+        if "artist_data" in dir(self):
+            try:
+                self.artist_data  # type: ignore[attr-defined]
+            except DeadUrlError:
+                return True
+            else:
+                return False
+        else:
+            return super().is_deleted
+
 
 ########################################################################
 
@@ -231,18 +243,6 @@ class GalleryUrl(Url):
 
 class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
     """An artist url is a gallery but also has other extractable data."""
-
-    @cached_property
-    def is_deleted(self) -> bool:
-        if "artist_data" in dir(self):
-            try:
-                self.artist_data  # type: ignore[attr-defined]
-            except DeadUrlError:
-                return True
-            else:
-                return False
-        else:
-            return super().is_deleted
 
 
 ########################################################################
