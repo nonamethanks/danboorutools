@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.misskey import MisskeyUrl, MisskeyUserUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.misskey import MisskeyUrl, MisskeyUserUrl
 
 
 class MisskeyIoParser(UrlParser):

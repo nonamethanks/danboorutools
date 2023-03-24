@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.litlink import LitlinkUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.litlink import LitlinkUrl
 
 
 class LitLinkParser(UrlParser):

@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.bitly import BitlyUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.bitly import BitlyUrl
 
 
 class BitLyParser(UrlParser):

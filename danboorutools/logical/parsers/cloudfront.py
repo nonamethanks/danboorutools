@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.foundation import FoundationImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.foundation import FoundationImageUrl
 
 
 class CloudfrontNetParser(UrlParser):

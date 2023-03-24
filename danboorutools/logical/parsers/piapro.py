@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.piapro import PiaproArtistUrl, PiaproPostUrl, PiaproUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.piapro import PiaproArtistUrl, PiaproPostUrl, PiaproUrl
 from danboorutools.models.url import UselessUrl
 
 if TYPE_CHECKING:

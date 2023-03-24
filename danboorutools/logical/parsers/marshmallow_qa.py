@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.marshmallow_qa import MarshmallowQaUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.marshmallow_qa import MarshmallowQaUrl
 
 
 class MarshmallowParser(UrlParser):

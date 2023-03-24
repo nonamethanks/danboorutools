@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 import re
 
-from danboorutools.logical.extractors.twitter import TwitterArtistUrl
 from danboorutools.logical.sessions import Session
+from danboorutools.logical.urls.twitter import TwitterArtistUrl
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, memoize
 

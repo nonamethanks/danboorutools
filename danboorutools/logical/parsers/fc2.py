@@ -1,8 +1,8 @@
 from urllib.parse import urlencode
 
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors import fc2
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls import fc2
 from danboorutools.models.url import UnsupportedUrl
 
 

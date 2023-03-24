@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.melonbooks import MelonbooksImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.melonbooks import MelonbooksImageUrl
 
 
 class AkamaizedNetParser(UrlParser):

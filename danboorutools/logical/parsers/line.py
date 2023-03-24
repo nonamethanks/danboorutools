@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.line import LineArtistUrl, LineMangaAuthorUrl, LinePostUrl, LineUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.line import LineArtistUrl, LineMangaAuthorUrl, LinePostUrl, LineUrl
 from danboorutools.models.url import UselessUrl
 
 

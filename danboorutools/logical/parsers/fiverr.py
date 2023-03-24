@@ -1,7 +1,7 @@
 import re
 
-from danboorutools.logical.extractors.fiverr import FiverrArtistUrl, FiverrPostUrl, FiverrShareUrl, FiverrUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.fiverr import FiverrArtistUrl, FiverrPostUrl, FiverrShareUrl, FiverrUrl
 
 
 class FiverrComParser(UrlParser):

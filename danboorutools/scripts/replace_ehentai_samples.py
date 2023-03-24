@@ -1,8 +1,8 @@
 import click
 
 from danboorutools import logger
-from danboorutools.logical.extractors.ehentai import EHentaiGalleryUrl, EHentaiPageUrl
 from danboorutools.logical.sessions.danbooru import danbooru_api
+from danboorutools.logical.urls.ehentai import EHentaiGalleryUrl, EHentaiPageUrl
 
 logger.log_to_file()
 

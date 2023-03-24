@@ -1,8 +1,8 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.anifty import AniftyImageUrl
-from danboorutools.logical.extractors.foundation import FoundationImageUrl
-from danboorutools.logical.extractors.skeb import SkebImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.anifty import AniftyImageUrl
+from danboorutools.logical.urls.foundation import FoundationImageUrl
+from danboorutools.logical.urls.skeb import SkebImageUrl
 
 
 class ImgixNetParser(UrlParser):

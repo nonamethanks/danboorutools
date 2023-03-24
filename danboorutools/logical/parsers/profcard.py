@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.profcard import ProfcardUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.profcard import ProfcardUrl
 
 
 class ProfcardInfoParser(UrlParser):

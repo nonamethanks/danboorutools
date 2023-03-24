@@ -1,5 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.toranoana import (
+from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.toranoana import (
     ToranoanaArtistUrl,
     ToranoanaCircleUrl,
     ToranoanaDojinSeriesUrl,
@@ -10,7 +11,6 @@ from danboorutools.logical.extractors.toranoana import (
     ToranoanaUrl,
     ToranoanaWebcomicPageUrl,
 )
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
 from danboorutools.models.url import UselessUrl
 
 

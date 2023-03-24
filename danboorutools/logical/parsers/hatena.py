@@ -1,6 +1,7 @@
 from urllib.parse import unquote
 
-from danboorutools.logical.extractors.hatena import (
+from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.hatena import (
     HatenaArtistImageUrl,
     HatenaBlogPostUrl,
     HatenaBlogUrl,
@@ -11,7 +12,6 @@ from danboorutools.logical.extractors.hatena import (
     HatenaUgomemoUrl,
     HatenaUrl,
 )
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
 from danboorutools.models.url import UselessUrl
 
 

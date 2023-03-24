@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.picdig import PicdigArtistImageUrl, PicdigArtistUrl, PicdigImageUrl, PicdigPostUrl, PicdigUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.picdig import PicdigArtistImageUrl, PicdigArtistUrl, PicdigImageUrl, PicdigPostUrl, PicdigUrl
 
 
 class PicdigNetParser(UrlParser):

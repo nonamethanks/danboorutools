@@ -50,7 +50,7 @@ class TwitterUserData(BaseModel):
     @property
     def related_urls(self) -> list[Url]:
         related: list[Url] = []
-        from danboorutools.logical.extractors.twitter import TwitterIntentUrl
+        from danboorutools.logical.urls.twitter import TwitterIntentUrl
 
         related += [Url.build(TwitterIntentUrl, intent_id=self.id)]
 

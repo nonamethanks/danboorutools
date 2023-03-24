@@ -2,8 +2,8 @@ import os
 import re
 from dataclasses import dataclass
 
-from danboorutools.logical.extractors.pixiv import PixivArtistUrl, PixivStaccUrl, PixivUrl
 from danboorutools.logical.sessions import Session
+from danboorutools.logical.urls.pixiv import PixivArtistUrl, PixivStaccUrl, PixivUrl
 from danboorutools.models.danbooru import DanbooruPost
 from danboorutools.models.url import InfoUrl, PostAssetUrl, PostUrl, Url
 from danboorutools.util.misc import memoize

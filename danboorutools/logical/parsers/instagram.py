@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.instagram import InstagramArtistUrl, InstagramPostUrl, InstagramUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.instagram import InstagramArtistUrl, InstagramPostUrl, InstagramUrl
 
 
 class InstagramComParser(UrlParser):

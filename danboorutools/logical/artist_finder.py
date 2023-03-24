@@ -10,10 +10,10 @@ from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
 from danboorutools.exceptions import DeadUrlError
-from danboorutools.logical.extractors.youtube import YoutubePlaylistUrl, YoutubeVideoUrl
 from danboorutools.logical.sessions.ascii2d import Ascii2dArtistResult, Ascii2dSession
 from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.logical.sessions.saucenao import SaucenaoArtistResult, SaucenaoSession
+from danboorutools.logical.urls.youtube import YoutubePlaylistUrl, YoutubeVideoUrl
 from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, RedirectUrl, UnknownUrl, UnsupportedUrl, Url, UselessUrl
 from danboorutools.scripts import ProgressTracker
 

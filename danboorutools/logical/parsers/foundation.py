@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.foundation import FoundationArtistUrl, FoundationImageUrl, FoundationPostUrl, FoundationUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.foundation import FoundationArtistUrl, FoundationImageUrl, FoundationPostUrl, FoundationUrl
 
 
 class FoundationAppParser(UrlParser):

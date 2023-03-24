@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.xfolio import XfolioArtistUrl, XfolioPostUrl, XfolioUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.xfolio import XfolioArtistUrl, XfolioPostUrl, XfolioUrl
 
 
 class XfolioJpParser(UrlParser):

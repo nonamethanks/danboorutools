@@ -1,11 +1,11 @@
 import re
 
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors import fanbox as f
-from danboorutools.logical.extractors import pixiv as p
-from danboorutools.logical.extractors import pixiv_comic as c
-from danboorutools.logical.extractors import pixiv_sketch as s
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls import fanbox as f
+from danboorutools.logical.urls import pixiv as p
+from danboorutools.logical.urls import pixiv_comic as c
+from danboorutools.logical.urls import pixiv_sketch as s
 
 img_subdomain_pattern = re.compile(r"^i(?:mg)?\d*$")
 

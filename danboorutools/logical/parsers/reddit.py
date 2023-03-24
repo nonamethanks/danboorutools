@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.reddit import RedditPostUrl, RedditUrl, RedditUserUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.reddit import RedditPostUrl, RedditUrl, RedditUserUrl
 
 
 class RedditComParser(UrlParser):

@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors import mastodon as m
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls import mastodon as m
 
 
 class MastodonParser(UrlParser):

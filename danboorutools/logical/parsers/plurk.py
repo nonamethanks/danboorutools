@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.plurk import PlurkArtistUrl, PlurkImageUrl, PlurkPostUrl, PlurkUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.plurk import PlurkArtistUrl, PlurkImageUrl, PlurkPostUrl, PlurkUrl
 
 
 class PlurkComParser(UrlParser):

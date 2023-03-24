@@ -2,9 +2,9 @@ import re
 from urllib.parse import unquote
 
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.dlsite import DlsiteAuthorUrl, DlsiteImageUrl, DlsiteKeywordSearch, DlsiteUrl, DlsiteWorkUrl
-from danboorutools.logical.extractors.dlsite_cien import DlsiteCienArticleUrl, DlsiteCienCreatorUrl, DlsiteCienProfileUrl, DlsiteCienUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.dlsite import DlsiteAuthorUrl, DlsiteImageUrl, DlsiteKeywordSearch, DlsiteUrl, DlsiteWorkUrl
+from danboorutools.logical.urls.dlsite_cien import DlsiteCienArticleUrl, DlsiteCienCreatorUrl, DlsiteCienProfileUrl, DlsiteCienUrl
 
 
 class DlsiteComParser(UrlParser):

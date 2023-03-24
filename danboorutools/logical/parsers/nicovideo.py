@@ -1,10 +1,10 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors import nicoseiga as ns
-from danboorutools.logical.extractors import nicovideo as nv
-from danboorutools.logical.extractors import nicovideo_3d as n3
-from danboorutools.logical.extractors import nicovideo_commons as nc
-from danboorutools.logical.extractors import nicovideo_oekaki as no
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls import nicoseiga as ns
+from danboorutools.logical.urls import nicovideo as nv
+from danboorutools.logical.urls import nicovideo_3d as n3
+from danboorutools.logical.urls import nicovideo_commons as nc
+from danboorutools.logical.urls import nicovideo_oekaki as no
 
 
 class NicovideoJp(UrlParser):

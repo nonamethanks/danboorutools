@@ -1,8 +1,8 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.amazon import AmazonAuthorUrl, AmazonItemUrl, AmazonShortenerUrl, AmazonUrl
-from danboorutools.logical.extractors.enty import EntyImageUrl
-from danboorutools.logical.extractors.skeb import SkebImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.amazon import AmazonAuthorUrl, AmazonItemUrl, AmazonShortenerUrl, AmazonUrl
+from danboorutools.logical.urls.enty import EntyImageUrl
+from danboorutools.logical.urls.skeb import SkebImageUrl
 from danboorutools.models.url import UselessUrl
 
 RESERVED_NAMES = {"blogs", "en", "messages", "posts", "products", "ranking",

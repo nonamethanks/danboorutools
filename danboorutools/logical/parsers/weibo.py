@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.weibo import WeiboArtistUrl, WeiboImageUrl, WeiboPostUrl, WeiboUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.weibo import WeiboArtistUrl, WeiboImageUrl, WeiboPostUrl, WeiboUrl
 
 
 class WeiboComParser(UrlParser):

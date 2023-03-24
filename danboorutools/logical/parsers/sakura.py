@@ -1,7 +1,7 @@
 import re
 
-from danboorutools.logical.extractors.sakura import SakuraBlogUrl, SakuraUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.sakura import SakuraBlogUrl, SakuraUrl
 
 
 class SakuraNeJpParser(UrlParser):

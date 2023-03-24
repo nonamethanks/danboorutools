@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.twpf import TwpfUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.twpf import TwpfUrl
 
 
 class TwpfJpParser(UrlParser):

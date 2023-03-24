@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.pixiv import PixivMeUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.pixiv import PixivMeUrl
 
 
 class PixivMeParser(UrlParser):

@@ -1,6 +1,11 @@
-from danboorutools.logical.extractors.furaffinity import (FuraffinityArtistImageUrl, FuraffinityArtistUrl, FuraffinityImageUrl,
-                                                          FuraffinityPostUrl, FuraffinityUrl)
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.furaffinity import (
+    FuraffinityArtistImageUrl,
+    FuraffinityArtistUrl,
+    FuraffinityImageUrl,
+    FuraffinityPostUrl,
+    FuraffinityUrl,
+)
 
 
 class FuraffinityNetParser(UrlParser):

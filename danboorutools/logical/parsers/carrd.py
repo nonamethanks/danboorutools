@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.carrd import CarrdUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.carrd import CarrdUrl
 
 
 class CarrdCoParser(UrlParser):

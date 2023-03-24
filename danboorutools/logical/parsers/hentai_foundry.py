@@ -1,11 +1,11 @@
-from danboorutools.logical.extractors.hentai_foundry import (
+from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.hentai_foundry import (
     HentaiFoundryArtistUrl,
     HentaiFoundryImageUrl,
     HentaiFoundryOldPostUrl,
     HentaiFoundryPostUrl,
     HentaiFoundryUrl,
 )
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 
 class HentaiFoundryComParser(UrlParser):

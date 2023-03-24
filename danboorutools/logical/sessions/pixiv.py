@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 from pydantic import Field
 
 from danboorutools.exceptions import DeadUrlError
-from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
-from danboorutools.logical.extractors.pixiv_sketch import PixivSketchArtistUrl
 from danboorutools.logical.sessions import Session
+from danboorutools.logical.urls.fanbox import FanboxArtistUrl
+from danboorutools.logical.urls.pixiv_sketch import PixivSketchArtistUrl
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, memoize
 

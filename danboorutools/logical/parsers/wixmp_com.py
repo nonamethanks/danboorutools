@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.deviantart import DeviantArtImageUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.deviantart import DeviantArtImageUrl
 
 
 class KnownHosts:

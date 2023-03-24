@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.skeb import SkebAbsolutePostUrl, SkebArtistUrl, SkebImageUrl, SkebPostUrl, SkebUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.skeb import SkebAbsolutePostUrl, SkebArtistUrl, SkebImageUrl, SkebPostUrl, SkebUrl
 
 
 class SkebJpParser(UrlParser):

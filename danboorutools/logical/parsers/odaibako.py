@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.odaibako import OdaibakoUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.odaibako import OdaibakoUrl
 
 
 class OdaibakoNetParser(UrlParser):

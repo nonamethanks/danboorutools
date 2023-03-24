@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.togetter import TogetterArtistUrl, TogetterLiUrl, TogetterPostUrl, TogetterUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.togetter import TogetterArtistUrl, TogetterLiUrl, TogetterPostUrl, TogetterUrl
 
 
 class TogetterComParser(UrlParser):

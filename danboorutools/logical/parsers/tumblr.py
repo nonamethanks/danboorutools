@@ -1,8 +1,8 @@
 import re
 
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostUrl, TumblrUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostUrl, TumblrUrl
 
 dimensions_pattern = re.compile(r"^s\d+x\d+$")
 

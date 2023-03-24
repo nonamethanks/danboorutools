@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.poipiku import PoipikuArtistUrl, PoipikuImageUrl, PoipikuPostUrl, PoipikuUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.poipiku import PoipikuArtistUrl, PoipikuImageUrl, PoipikuPostUrl, PoipikuUrl
 
 
 class PoipikuComParser(UrlParser):

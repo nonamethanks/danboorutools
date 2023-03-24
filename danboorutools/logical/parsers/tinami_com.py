@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.tinami import TinamiArtistUrl, TinamiComicUrl, TinamiImageUrl, TinamiPostUrl, TinamiUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.tinami import TinamiArtistUrl, TinamiComicUrl, TinamiImageUrl, TinamiPostUrl, TinamiUrl
 
 
 class TinamiComParser(UrlParser):

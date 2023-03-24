@@ -5,19 +5,19 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import DeadUrlError
-from danboorutools.logical.extractors.amazon import AmazonItemUrl
-from danboorutools.logical.extractors.dlsite import DlsiteUrl, DlsiteWorkUrl
-from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
-from danboorutools.logical.extractors.fantia import FantiaFanclubUrl
-from danboorutools.logical.extractors.fanza import FanzaUrl
-from danboorutools.logical.extractors.melonbooks import MelonbooksProductUrl
-from danboorutools.logical.extractors.nicoseiga import NicoSeigaArtistUrl
-from danboorutools.logical.extractors.nijie import NijieArtistUrl
-from danboorutools.logical.extractors.pixiv import PixivArtistUrl, PixivPostUrl
-from danboorutools.logical.extractors.sakura import SakuraBlogUrl
-from danboorutools.logical.extractors.tinami import TinamiArtistUrl
-from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl, TwitterPostUrl
 from danboorutools.logical.sessions import Session
+from danboorutools.logical.urls.amazon import AmazonItemUrl
+from danboorutools.logical.urls.dlsite import DlsiteUrl, DlsiteWorkUrl
+from danboorutools.logical.urls.fanbox import FanboxArtistUrl
+from danboorutools.logical.urls.fantia import FantiaFanclubUrl
+from danboorutools.logical.urls.fanza import FanzaUrl
+from danboorutools.logical.urls.melonbooks import MelonbooksProductUrl
+from danboorutools.logical.urls.nicoseiga import NicoSeigaArtistUrl
+from danboorutools.logical.urls.nijie import NijieArtistUrl
+from danboorutools.logical.urls.pixiv import PixivArtistUrl, PixivPostUrl
+from danboorutools.logical.urls.sakura import SakuraBlogUrl
+from danboorutools.logical.urls.tinami import TinamiArtistUrl
+from danboorutools.logical.urls.twitter import TwitterArtistUrl, TwitterIntentUrl, TwitterPostUrl
 from danboorutools.models.url import InfoUrl, PostAssetUrl, PostUrl, Url
 from danboorutools.util.misc import extract_urls_from_string, memoize
 

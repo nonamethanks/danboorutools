@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors import booth as b
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls import booth as b
 
 
 class BoothPmParser(UrlParser):

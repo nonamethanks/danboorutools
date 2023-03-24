@@ -27,7 +27,7 @@ class FanboxArtistData(BaseModel):
 
     @property
     def related_urls(self) -> list[Url]:
-        from danboorutools.logical.extractors.pixiv import PixivArtistUrl
+        from danboorutools.logical.urls.pixiv import PixivArtistUrl
 
         results = [Url.parse(link) for link in self.profileLinks]
         pixiv_url = PixivArtistUrl.build(PixivArtistUrl, user_id=self.user.userId)

@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.anifty import AniftyArtistUrl, AniftyPostUrl, AniftyTokenUrl, AniftyUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.anifty import AniftyArtistUrl, AniftyPostUrl, AniftyTokenUrl, AniftyUrl
 
 
 class AniftyJpParser(UrlParser):

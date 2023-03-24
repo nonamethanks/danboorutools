@@ -1,12 +1,12 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.clipstudio import (
+from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.clipstudio import (
     ClipStudioAssetPostUrl,
     ClipStudioBlogUrl,
     ClipStudioProfileUrl,
     ClipStudioUrl,
     ClipStudioUserSearchUrl,
 )
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
 from danboorutools.models.url import UselessUrl
 
 

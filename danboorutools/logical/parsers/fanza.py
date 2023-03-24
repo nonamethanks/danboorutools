@@ -2,8 +2,8 @@ import re
 from urllib.parse import unquote
 
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors import fanza as fz
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls import fanza as fz
 
 filename_pattern = re.compile(r"^(\w+)\w{2}(?:-(\d+))?\.\w+$")
 

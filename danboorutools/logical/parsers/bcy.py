@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.bcy import BcyArtistUrl, BcyPostUrl, BcyUrl, OldBcyPostUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.bcy import BcyArtistUrl, BcyPostUrl, BcyUrl, OldBcyPostUrl
 
 
 class BcyNetParser(UrlParser):

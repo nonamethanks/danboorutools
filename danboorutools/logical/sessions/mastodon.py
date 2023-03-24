@@ -6,8 +6,8 @@ from mastodon import Mastodon
 from mastodon.errors import MastodonNetworkError
 from requests.exceptions import ReadTimeout
 
-from danboorutools.logical.extractors.pixiv import PixivArtistUrl
 from danboorutools.logical.sessions import Session
+from danboorutools.logical.urls.pixiv import PixivArtistUrl
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string, memoize
 

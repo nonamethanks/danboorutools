@@ -19,7 +19,7 @@ def main(url: str, force: bool = False) -> None:
 
 
 PARSER_TEMPLATE = """
-from danboorutools.logical.extractors.{module_name} import {class_name_base}ArtistUrl, {class_name_base}ImageUrl, {class_name_base}PostUrl, {class_name_base}Url
+from danboorutools.logical.urls.{module_name} import {class_name_base}ArtistUrl, {class_name_base}ImageUrl, {class_name_base}PostUrl, {class_name_base}Url
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 class {parser_name_base}Parser(UrlParser):{domains_if_dash}
@@ -56,8 +56,8 @@ class {class_name_base}ImageUrl(PostAssetUrl, {class_name_base}Url):
 """
 
 TESTS_TEMPLATE = """
-from danboorutools.logical.extractors.{module_name} import {class_name_base}ArtistUrl, {class_name_base}PostUrl, {class_name_base}ImageUrl
-from tests.extractors import generate_parsing_suite
+from danboorutools.logical.urls.{module_name} import {class_name_base}ArtistUrl, {class_name_base}PostUrl, {class_name_base}ImageUrl
+from tests.urls import generate_parsing_suite
 
 urls = {{
     {class_name_base}ArtistUrl: {{
@@ -72,9 +72,9 @@ urls = {{
 generate_parsing_suite(urls)
 """
 
-TESTS_FOLDER = Path("tests/extractors")
+TESTS_FOLDER = Path("tests/urls")
 PARSERS_FOLDER = Path("danboorutools/logical/parsers")
-EXTRACTORS_FOLDER = Path("danboorutools/logical/extractors")
+URLS_FOLDER = Path("danboorutools/logical/urls")
 
 
 def create_url_template(url: str, force: bool = False) -> None:
@@ -82,7 +82,7 @@ def create_url_template(url: str, force: bool = False) -> None:
     name_base = parsed.domain.removesuffix(f".{parsed.tld}").replace("-", "_")
 
     parser_filename = PARSERS_FOLDER / f"{name_base}.py"
-    extractor_filename = EXTRACTORS_FOLDER / f"{name_base}.py"
+    url_filename = URLS_FOLDER / f"{name_base}.py"
     tests_filename = TESTS_FOLDER / f"{name_base}_test.py"
 
     formatted_parser = PARSER_TEMPLATE.format(
@@ -104,10 +104,10 @@ def create_url_template(url: str, force: bool = False) -> None:
             _file.write(formatted_parser)
     run_external_command(f"code --reuse-window {parser_filename.resolve()}")
 
-    if not extractor_filename.is_file() or force:
-        with extractor_filename.open(mode="w+", encoding="utf-8") as _file:
+    if not url_filename.is_file() or force:
+        with url_filename.open(mode="w+", encoding="utf-8") as _file:
             _file.write(formatted_extractor)
-    run_external_command(f"code --reuse-window {extractor_filename.resolve()}")
+    run_external_command(f"code --reuse-window {url_filename.resolve()}")
 
     if not tests_filename.is_file() or force:
         with tests_filename.open(mode="w+", encoding="utf-8") as _file:

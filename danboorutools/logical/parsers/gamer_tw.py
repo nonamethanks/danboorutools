@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.gamer_tw import GamerTwArtistUrl, GamerTwForumPostUrl, GamerTwGnnPostUrl, GamerTwPostUrl, GamerTwUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.gamer_tw import GamerTwArtistUrl, GamerTwForumPostUrl, GamerTwGnnPostUrl, GamerTwPostUrl, GamerTwUrl
 from danboorutools.models.url import UselessUrl
 
 

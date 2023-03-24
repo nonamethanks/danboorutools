@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.enty import EntyArtistImageUrl, EntyArtistUrl, EntyImageUrl, EntyPostUrl, EntyUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.enty import EntyArtistImageUrl, EntyArtistUrl, EntyImageUrl, EntyPostUrl, EntyUrl
 
 RESERVED_NAMES = {"blogs", "en", "messages", "posts", "products", "ranking",
                   "search", "series", "service_navigations", "signout", "titles", "users"}

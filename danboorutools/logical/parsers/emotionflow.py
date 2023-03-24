@@ -1,7 +1,7 @@
 import re
 
-from danboorutools.logical.extractors.emotionflow import EmotionflowArtistUrl, EmotionflowImageUrl, EmotionflowPostUrl, EmotionflowUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.emotionflow import EmotionflowArtistUrl, EmotionflowImageUrl, EmotionflowPostUrl, EmotionflowUrl
 
 
 class EmotionflowComParser(UrlParser):

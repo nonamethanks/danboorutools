@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.privatter import PrivatterArtistUrl, PrivatterImageUrl, PrivatterPostUrl, PrivatterUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.privatter import PrivatterArtistUrl, PrivatterImageUrl, PrivatterPostUrl, PrivatterUrl
 
 
 class PrivatterNetParser(UrlParser):

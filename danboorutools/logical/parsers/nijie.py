@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.nijie import NijieArtistUrl, NijieImageUrl, NijiePostUrl, NijieUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.nijie import NijieArtistUrl, NijieImageUrl, NijiePostUrl, NijieUrl
 
 
 class NijieInfoParser(UrlParser):

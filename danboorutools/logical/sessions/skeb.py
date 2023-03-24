@@ -5,11 +5,11 @@ import os
 from requests import Response
 
 from danboorutools.exceptions import HTTPError, InvalidSkebCredentialsError
-from danboorutools.logical.extractors.fanbox import FanboxArtistUrl
-from danboorutools.logical.extractors.pixiv import PixivArtistUrl
-from danboorutools.logical.extractors.twitter import TwitterArtistUrl, TwitterIntentUrl
-from danboorutools.logical.extractors.youtube import YoutubeChannelUrl
 from danboorutools.logical.sessions import Session
+from danboorutools.logical.urls.fanbox import FanboxArtistUrl
+from danboorutools.logical.urls.pixiv import PixivArtistUrl
+from danboorutools.logical.urls.twitter import TwitterArtistUrl, TwitterIntentUrl
+from danboorutools.logical.urls.youtube import YoutubeChannelUrl
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 

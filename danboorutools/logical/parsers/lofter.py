@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.lofter import LofterArtistUrl, LofterImageUrl, LofterPostUrl, LofterUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.lofter import LofterArtistUrl, LofterImageUrl, LofterPostUrl, LofterUrl
 
 
 class LofterComParser(UrlParser):

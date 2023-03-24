@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.anifty import AniftyArtistImageUrl, AniftyImageUrl, AniftyUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.anifty import AniftyArtistImageUrl, AniftyImageUrl, AniftyUrl
 
 
 class GoogleapisComParser(UrlParser):

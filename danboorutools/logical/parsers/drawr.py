@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.drawr import DrawrArtistUrl, DrawrImageUrl, DrawrPostUrl, DrawrUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.drawr import DrawrArtistUrl, DrawrImageUrl, DrawrPostUrl, DrawrUrl
 
 
 class DrawrNetParser(UrlParser):

@@ -1,8 +1,8 @@
 import re
 
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.circle_ms import CircleMsCircleUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.circle_ms import CircleMsCircleUrl
 from danboorutools.models.url import UselessUrl
 
 

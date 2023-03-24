@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.arca_live import ArcaLiveArtistUrl, ArcaLiveImageUrl, ArcaLivePostUrl, ArcaLiveUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.arca_live import ArcaLiveArtistUrl, ArcaLiveImageUrl, ArcaLivePostUrl, ArcaLiveUrl
 
 
 class ArcaLiveParser(UrlParser):

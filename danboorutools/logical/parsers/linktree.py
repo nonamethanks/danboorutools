@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.linktree import LinktreeUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.linktree import LinktreeUrl
 
 
 class LinktrEeParser(UrlParser):

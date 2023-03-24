@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors import bilibili as b
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls import bilibili as b
 
 
 class BilibiliComParser(UrlParser):

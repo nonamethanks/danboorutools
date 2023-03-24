@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors import newgrounds as ns
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls import newgrounds as ns
 
 
 class NewgroundsComParser(UrlParser):

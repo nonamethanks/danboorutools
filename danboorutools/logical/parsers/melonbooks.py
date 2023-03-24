@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors import melonbooks as mb
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls import melonbooks as mb
 
 
 class MelonbooksCoJpParser(UrlParser):

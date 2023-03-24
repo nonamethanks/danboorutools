@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.stash import StaShUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.stash import StaShUrl
 
 
 class StaShParser(UrlParser):

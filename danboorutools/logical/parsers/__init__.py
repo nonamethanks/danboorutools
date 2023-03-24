@@ -84,21 +84,3 @@ class UnsupportedParser(UrlParser):
 for f in Path(__file__).parent.glob("*.py"):
     if "__" not in f.stem:
         import_module(f".{f.stem}", __package__)
-
-
-# from danboorutools.exceptions import UnparsableUrl
-# from danboorutools.logical.extractors.Xxx import XxxArtistUrl, XxxImageUrl, XxxPostUrl, XxxUrl
-# from danboorutools.logical.parsers import ParsableUrl, UrlParser
-
-
-# class XxxXxxParser(UrlParser):
-#     @classmethod
-#     def match_url(cls, parsable_url: ParsableUrl) -> XxxUrl | None:
-#         match parsable_url.url_parts:
-#             case _, _, var:
-#                 instance = XxxArtistUrl(parsable_url)
-#                 instance.var = var
-#             case _:
-#                 return None
-
-#         return instance

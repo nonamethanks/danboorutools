@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors import facebook as fb
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls import facebook as fb
 from danboorutools.models.url import UselessUrl
 
 

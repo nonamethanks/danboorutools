@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors import twitter as tw
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls import twitter as tw
 from danboorutools.models.url import UselessUrl
 
 

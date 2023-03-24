@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.tw6 import Tw6ArtistUrl, Tw6CharacterUrl, Tw6ImageUrl, Tw6PostUrl, Tw6Url
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.tw6 import Tw6ArtistUrl, Tw6CharacterUrl, Tw6ImageUrl, Tw6PostUrl, Tw6Url
 
 
 class Tw6JpParser(UrlParser):

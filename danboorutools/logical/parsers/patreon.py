@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.patreon import PatreonArtistUrl, PatreonImageUrl, PatreonPostUrl, PatreonUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.patreon import PatreonArtistUrl, PatreonImageUrl, PatreonPostUrl, PatreonUrl
 
 
 class PatreonComParser(UrlParser):

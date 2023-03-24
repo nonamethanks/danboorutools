@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.skima import SkimaArtistUrl, SkimaGalleryUrl, SkimaImageUrl, SkimaItemUrl, SkimaUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.skima import SkimaArtistUrl, SkimaGalleryUrl, SkimaImageUrl, SkimaItemUrl, SkimaUrl
 
 
 class SkimaJpParser(UrlParser):

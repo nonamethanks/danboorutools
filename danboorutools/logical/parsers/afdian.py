@@ -1,5 +1,5 @@
-from danboorutools.logical.extractors.afdian import AfdianArtistImageUrl, AfdianArtistUrl, AfdianImageUrl, AfdianPostUrl, AfdianUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.urls.afdian import AfdianArtistImageUrl, AfdianArtistUrl, AfdianImageUrl, AfdianPostUrl, AfdianUrl
 
 
 class AfdianNetParser(UrlParser):
