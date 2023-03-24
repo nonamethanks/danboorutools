@@ -1,14 +1,25 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 from functools import cached_property
+from typing import TYPE_CHECKING
 
 import twitter
+from backoff import expo, on_exception
+from pydantic import validator
+from twitter.error import TwitterError
 
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, memoize
+from danboorutools.util.time import datetime_from_string
+
+if TYPE_CHECKING:
+    from danboorutools.logical.urls.twitter import TwitterAssetUrl
+
+SUSPENSION_MSG = "@{screen_name}'s account is temporarily unavailable because it violates the Twitter Media Policy. Learn more."
 
 
 class TwitterSession(Session):
@@ -20,7 +31,7 @@ class TwitterSession(Session):
         access_token = os.environ["TWITTER_ACCESS_TOKEN"]
         access_token_secret = os.environ["TWITTER_ACCESS_TOKEN_SECRET"]
 
-        return twitter.Api(
+        api = twitter.Api(
             consumer_key,
             consumer_secret,
             access_token,
@@ -28,6 +39,8 @@ class TwitterSession(Session):
             sleep_on_rate_limit=True,
             tweet_mode="extended",
         )
+        api._session = self
+        return api
 
     @memoize
     def user_data(self, username: str | None = None, user_id: int | None = None) -> TwitterUserData:
@@ -40,12 +53,31 @@ class TwitterSession(Session):
                 raise DeadUrlError(status_code=404, original_url=original_url) from e
             raise
 
+    @memoize
+    @on_exception(expo, TwitterError, max_tries=3)
+    def get_user_tweets(self, user_id: int, max_id: int, since_id: int) -> list[TwitterTweetData]:
+        url = f"{self.api.base_url}/statuses/user_timeline.json"
+
+        parameters = {
+            "user_id": user_id,
+            "since_id": since_id or None,
+            "max_id": max_id or None,
+            "count": 200,
+            "include_rts": False,
+            "trim_user": False,
+            "exclude_replies": False,
+        }
+
+        resp = self.api._RequestUrl(url, "GET", data=parameters)
+        data = self.api._ParseAndCheckTwitter(resp.content.decode("utf-8"))
+        return [TwitterTweetData(**tweet) for tweet in data]
+
 
 class TwitterUserData(BaseModel):
     id: int
     name: str
     screen_name: str
-    entities: dict[str, dict[str, list[dict]]]
+    entities: dict[str, dict[str, list[dict]]] | None
 
     @property
     def related_urls(self) -> list[Url]:
@@ -54,6 +86,7 @@ class TwitterUserData(BaseModel):
 
         related += [Url.build(TwitterIntentUrl, intent_id=self.id)]
 
+        assert self.entities  # so far i only found this == None if from tweet data
         urls = self.entities.get("url", {}).get("urls", [])
         description_urls = self.entities.get("description", {}).get("urls", [])
         for field in urls + description_urls:  # need to be careful here for bullshit links
@@ -62,3 +95,45 @@ class TwitterUserData(BaseModel):
                 related += [Url.parse(url_string)]
 
         return related
+
+
+class TwitterTweetData(BaseModel):
+    id: int
+    created_at: datetime
+    favorite_count: int
+    extended_entities: dict[str, list[dict]] | None
+
+    user: TwitterUserData
+
+    @ validator("created_at", pre=True)
+    def parse_created_at(cls, value: str) -> datetime:  # pylint: disable=no-self-argument # noqa: N805 # pydantic is retarded
+        return datetime_from_string(value)
+
+    @ property
+    def asset_urls(self) -> list[TwitterAssetUrl]:
+        from danboorutools.logical.urls.twitter import TwitterAssetUrl
+        if not self.extended_entities:
+            return []
+
+        assets = []
+        for item in self.extended_entities["media"]:
+            if item["type"] == "photo":
+                asset_str = item["media_url"] + ":orig"
+            elif item["type"] == "animated_gif":
+                variants = item["video_info"]["variants"]
+                if len(variants) == 1:
+                    asset_str = variants[0]["url"]
+                else:
+                    raise NotImplementedError(variants)
+            elif item["type"] == "video":
+                variants = item["video_info"]["variants"]
+                sorted_variants = sorted(variants, key=lambda k: k.get("bitrate", 0))
+                asset_str = sorted_variants[-1]["url"]
+            else:
+                raise NotImplementedError(item)
+
+            parsed = Url.parse(asset_str)
+            assert isinstance(parsed, TwitterAssetUrl)
+            assets.append(parsed)
+
+        return assets

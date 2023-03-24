@@ -18,7 +18,7 @@ class HasPosts:
     __collected_posts: list[PostUrl]
     known_posts: set[PostUrl]
 
-    posts_json_url: str
+    posts_json_url: str | None = None
     posts_objects_dig: list[str | int]
 
     quit_early_page = 0
@@ -33,7 +33,7 @@ class HasPosts:
         self.__collected_posts = []
 
         try:
-            if self.posts_json_url:
+            if self.posts_json_url is not None:
                 self._extract_from_json()  # type: ignore[misc]
             else:
                 self._extract_from_generic()
@@ -51,6 +51,8 @@ class HasPosts:
 
     def _extract_from_json(self: GalleryUrl | Feed) -> None:  # type: ignore[misc]
         """Extract posts from an url."""
+        assert self.posts_json_url
+
         page = 1
         logger.debug(f"Scanning {self} for posts...")
         while True:
@@ -113,6 +115,7 @@ class HasPosts:
             post._register_asset(asset)
 
         self.__collected_posts.append(post)
+        logger.info(f"Found {len(self.__collected_posts) + 1} posts so far...")
 
 
 class EndScan(Exception):  # noqa: N818
