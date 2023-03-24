@@ -125,6 +125,7 @@ ignore = [
 ]
 
 "danboorutools/logical/parsers/*" = [
+    "E501",     # line too long
     "PLR0911",  # too many returns
 ]
 
