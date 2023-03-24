@@ -12,7 +12,7 @@ load_dotenv()
 
 
 class Logger(_Logger):
-    def log_to_file(self, folder: str | Path | None = None, retention="7 days") -> Path:
+    def log_to_file(self, folder: str | Path | None = None, retention: str = "7 days") -> Path:
         if isinstance(folder, str):
             folder = Path(folder)
         elif not folder:
