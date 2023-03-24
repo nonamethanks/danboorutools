@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import builtins
 from functools import cached_property
-from pydoc import locate
 from typing import TYPE_CHECKING, TypeVar, final
 
 from backoff import expo, on_exception
@@ -70,10 +70,20 @@ class Url:
 
         instance = url_type(url=ParsableUrl(normalized_url))
 
-        annotations = url_type.__annotations__
+        annotations: dict[str, str] = url_type.__annotations__
         for property_name, property_value in url_properties.items():
-            value_type: type = locate(annotations[property_name])  # type: ignore[assignment]
-            assert isinstance(property_value, value_type), f"{property_name} was of type {type(property_value)} instead of {value_type}"
+            if isinstance(annotation := annotations[property_name], str):  # `from __future__ import annotations` is active
+                try:
+                    property_types = tuple(getattr(builtins, type_str.strip()) for type_str in annotations[property_name].split("|"))
+                except AttributeError as e:  # motherfucker
+                    e.add_note(f"{property_name=}, {property_value=}, {annotations[property_name]=}")
+                    raise
+            else:
+                property_types = (annotation,)
+
+            assert isinstance(property_value, property_types), \
+                f"{property_name} was of type {type(property_value)} instead of {property_types}"
+
             setattr(instance, property_name, property_value)
         return instance
 
