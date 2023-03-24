@@ -1,14 +1,14 @@
 import time
 from collections import Counter
-from typing import Callable
+from collections.abc import Callable
 
 import click
 from line_profiler import LineProfiler
 
 from danboorutools import logger
 from danboorutools.logical.parsers import ParsableUrl, UrlParser, parsers
-from danboorutools.models.url import Url  # , known_url_types
-from danboorutools.scripts import ProgressTracker
+from danboorutools.logical.progress_tracker import ProgressTracker
+from danboorutools.models.url import Url
 
 log_file = logger.log_to_file()
 
