@@ -1,7 +1,7 @@
 import re
 
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.extractors.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostRedirectUrl, TumblrPostUrl, TumblrUrl
+from danboorutools.logical.extractors.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostUrl, TumblrUrl
 from danboorutools.logical.parsers import ParsableUrl, UrlParser
 
 dimensions_pattern = re.compile(r"^s\d+x\d+$")
@@ -120,16 +120,13 @@ class TumblrComParser(UrlParser):
                 instance.post_id = int(post_id)
 
             # https://at.tumblr.com/everythingfox/everythingfox-so-sleepy/d842mqsx8lwd
-            case blog_name, title, redirect_id if blog_name not in cls.RESERVED_NAMES:
-                instance = TumblrPostRedirectUrl(parsable_url)
-                instance.redirect_id = redirect_id
+            case blog_name, _title, _redirect_id if blog_name not in cls.RESERVED_NAMES:
+                instance = TumblrArtistUrl(parsable_url)
                 instance.blog_name = blog_name
-                instance.title = title
 
             # https://at.tumblr.com/cyanideqpoison/u2czj612ttzq
-            case blog_name, redirect_id if blog_name not in cls.RESERVED_NAMES:
-                instance = TumblrPostRedirectUrl(parsable_url)
-                instance.redirect_id = redirect_id
+            case blog_name, _redirect_id if blog_name not in cls.RESERVED_NAMES:
+                instance = TumblrArtistUrl(parsable_url)
                 instance.blog_name = blog_name
 
             case _:

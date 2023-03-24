@@ -1,7 +1,7 @@
 import re
 
 from danboorutools.logical.sessions.tumblr import TumblrBlogData, TumblrSession
-from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
 class TumblrUrl(Url):
@@ -13,19 +13,6 @@ class TumblrPostUrl(PostUrl, TumblrUrl):
     blog_name: str
 
     normalize_template = "https://{blog_name}.tumblr.com/post/{post_id}"
-
-
-class TumblrPostRedirectUrl(RedirectUrl, TumblrUrl):
-    blog_name: str
-    redirect_id: str
-    title: str | None = None
-
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        if title := kwargs.get("title"):
-            return f"https://at.tumblr.com/{kwargs['blog_name']}/{title}/{kwargs['redirect_id']}"
-        else:
-            return f"https://at.tumblr.com/{kwargs['blog_name']}/{kwargs['redirect_id']}"
 
 
 class TumblrArtistUrl(ArtistUrl, TumblrUrl):

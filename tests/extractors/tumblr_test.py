@@ -1,4 +1,4 @@
-from danboorutools.logical.extractors.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostRedirectUrl, TumblrPostUrl
+from danboorutools.logical.extractors.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostUrl
 from tests.extractors import assert_artist_url, generate_parsing_suite
 
 urls = {
@@ -15,6 +15,9 @@ urls = {
         "https://rosarrie.tumblr.com/archive": "https://rosarrie.tumblr.com",
         "https://solisnotte.tumblr.com/about": "https://solisnotte.tumblr.com",
         "http://whereisnovember.tumblr.com/tagged/art": "https://whereisnovember.tumblr.com",
+
+        "https://at.tumblr.com/everythingfox/everythingfox-so-sleepy/d842mqsx8lwd": "https://everythingfox.tumblr.com",
+        "https://at.tumblr.com/cyanideqpoison/u2czj612ttzq": "https://cyanideqpoison.tumblr.com",
     },
 
     TumblrImageUrl: {
@@ -47,10 +50,6 @@ urls = {
         "https://www.tumblr.com/blog/view/artofelaineho/187614935612": "https://artofelaineho.tumblr.com/post/187614935612",
         "https://merryweather-media.tumblr.com/post/665688699379564544/blue-eyes-white-dragon": "https://merryweather-media.tumblr.com/post/665688699379564544",
         "https://www.tumblr.com/dashboard/blog/kohirasan/136686983240": "https://kohirasan.tumblr.com/post/136686983240",
-    },
-    TumblrPostRedirectUrl: {
-        "https://at.tumblr.com/everythingfox/everythingfox-so-sleepy/d842mqsx8lwd": "https://at.tumblr.com/everythingfox/everythingfox-so-sleepy/d842mqsx8lwd",
-        "https://at.tumblr.com/cyanideqpoison/u2czj612ttzq": "https://at.tumblr.com/cyanideqpoison/u2czj612ttzq",
     },
 }
 
