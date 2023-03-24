@@ -52,12 +52,6 @@ class PixivSession(Session):
         return PixivArtistData(**data["user_details"])
 
     @memoize
-    def artist_illust_data(self, user_id: int | str, page: int) -> list[PixivArtistIllustData]:
-        url = f"https://www.pixiv.net/touch/ajax/user/illusts?id={user_id}&p={page}&lang=en"
-        data = self.get_json(url)["illusts"]
-        return [PixivArtistIllustData(**illust_data) for illust_data in data]
-
-    @memoize
     def post_data(self, post_id: int | str) -> PixivPostData:
         data = self.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}?lang=en")
         return PixivPostData(**data)
@@ -92,7 +86,7 @@ class PixivArtistIllustData(BaseModel):
     id: int
     type: int = Field(..., ge=0, lt=3)
     upload_timestamp: datetime
-    rating_count: int
+    rating_count: int | None  # the feed endpoint doesn't have it
 
 
 class PixivPostData(BaseModel):

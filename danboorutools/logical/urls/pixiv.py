@@ -2,13 +2,17 @@ from __future__ import annotations
 
 from datetime import datetime
 from functools import cached_property
+from typing import TYPE_CHECKING
 
 from pytz import UTC
 from requests.exceptions import ProxyError
 
 from danboorutools.exceptions import DeadUrlError
-from danboorutools.logical.sessions.pixiv import PixivArtistData, PixivPostData, PixivSession
+from danboorutools.logical.sessions.pixiv import PixivArtistData, PixivArtistIllustData, PixivPostData, PixivSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+
+if TYPE_CHECKING:
+    from danboorutools.logical.feeds.pixiv import PixivFeed
 
 
 class PixivUrl(Url):
@@ -181,35 +185,41 @@ class PixivPostUrl(PostUrl, PixivUrl):
         return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}/ugoira_meta?lang=en")
 
 
+def _process_post_from_json(self: PixivArtistUrl | PixivFeed, post_object: dict) -> None:  # kept separate so it can be imported by PixivFeed
+    post_data = PixivArtistIllustData(**post_object)
+    post = PixivPostUrl.build(PixivPostUrl, post_id=post_data.id)
+
+    if post_data.type == 2:
+        post_ugoira_data = post.ugoira_data
+        asset_urls = [post_ugoira_data["originalSrc"]]
+    else:
+        # Can't avoid fetching this for single-page posts because all samples are jpg, even for png files
+        post_pages_data = self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post.post_id}/pages")
+        asset_urls = [img["urls"]["original"] for img in post_pages_data]
+
+    if isinstance(self, PixivArtistUrl):
+        score = post_data.rating_count  # the feed doesn't have this
+        assert score is not None
+    else:
+        score = 0
+
+    self._register_post(
+        post=post,
+        assets=[Url.parse(url) for url in asset_urls],  # type: ignore[misc]
+        created_at=post_data.upload_timestamp,
+        score=score,
+    )
+
+
 class PixivArtistUrl(ArtistUrl, PixivUrl):
     user_id: int
 
     normalize_template = "https://www.pixiv.net/en/users/{user_id}"
 
-    def _extract_posts(self) -> None:
-        page = 0
-        while True:
-            page += 1
-            illusts = self.session.artist_illust_data(user_id=self.user_id, page=page)
-            if not illusts:
-                return
-            for illust_data in illusts:
-                post = self.build(PixivPostUrl, post_id=illust_data.id)
+    posts_json_url = "https://www.pixiv.net/touch/ajax/user/illusts?id={self.user_id}&p={page}&lang=en"
+    posts_objects_dig = ["body", "illusts"]
 
-                if illust_data.type == 2:
-                    post_ugoira_data = post.ugoira_data
-                    asset_urls = [post_ugoira_data["originalSrc"]]
-                else:
-                    # Can't avoid fetching this for single-page posts because all samples are jpg, even for png files
-                    post_pages_data = self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post.post_id}/pages")
-                    asset_urls = [img["urls"]["original"] for img in post_pages_data]
-
-                self._register_post(
-                    post=post,
-                    created_at=illust_data.upload_timestamp,
-                    score=illust_data.rating_count,
-                    assets=[self.parse(url) for url in asset_urls],  # type: ignore[misc]
-                )
+    _process_post_from_json = _process_post_from_json
 
     @property
     def primary_names(self) -> list[str]:

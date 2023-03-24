@@ -1,4 +1,11 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import requests
+
+if TYPE_CHECKING:
+    from danboorutools.models.has_posts import HasPosts
 
 
 class UnknownUrlError(Exception):
@@ -117,3 +124,10 @@ class DanbooruHTTPError(HTTPError):
             for row in self.backtrace:
                 msg += f"\n     {row}"
         return msg
+
+
+class NoPostsError(Exception):
+    """No posts were found when scanning for them."""
+
+    def __init__(self, extractor: HasPosts) -> None:
+        super().__init__(f"No posts found when scanning with {extractor}")

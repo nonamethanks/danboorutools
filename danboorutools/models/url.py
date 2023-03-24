@@ -11,10 +11,10 @@ from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.models.file import ArchiveFile, File
-from danboorutools.util.time import datetime_from_string
+from danboorutools.models.has_posts import HasPosts
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Sequence
 
     # https://github.com/python/mypy/issues/5107#issuecomment-529372406
     CachedFunc = TypeVar("CachedFunc", bound=Callable)
@@ -206,49 +206,12 @@ class InfoUrl(Url):
 ########################################################################
 
 
-class GalleryUrl(Url):
+class GalleryUrl(Url, HasPosts):  # pylint: disable=abstract-method
     """A gallery contains multiple posts."""
-    _posts: list[PostUrl]
 
-    def _register_post(self, post: PostUrl, assets: list[PostAssetUrl], created_at: datetime | str, score: int) -> None:
-        if not hasattr(self, "_posts"):
-            self._posts = []
-
-        if post in self._posts:
-            raise NotImplementedError
-
-        post.created_at = datetime_from_string(created_at)
-        post.score = score
+    def _register_post(self, post: PostUrl, assets: Sequence[PostAssetUrl], created_at: datetime | str, score: int) -> None:
+        super()._register_post(post, assets, created_at, score)
         post.gallery = self
-
-        for asset in assets:
-            post._register_asset(asset)
-
-        self._posts.append(post)
-
-    @property
-    @final
-    def posts(self) -> list[PostUrl]:
-        if not hasattr(self, "_posts"):
-            try:
-                # self.extract_posts()
-                self._extract_posts()
-            except Exception:
-                if hasattr(self, "_posts"):
-                    del self._posts
-                raise
-        return self._posts
-
-    # TODO
-    # def extract_posts(self) -> None:
-    #     try:
-    #         self._extract_posts()
-    #     except PostAlreadySeen:
-    # #     in order to update with revisions, new posts for feeds, etc
-    #         return
-
-    def _extract_posts(self) -> None:
-        raise NotImplementedError(self, "hasn't implemented post extraction.")
 
 
 class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method

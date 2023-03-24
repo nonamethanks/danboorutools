@@ -24,9 +24,6 @@ class DrawrArtistUrl(ArtistUrl, DrawrUrl):
     def related(self) -> list[Url]:
         return []
 
-    def _extract_posts(self) -> None:
-        return
-
 
 class DrawrPostUrl(PostUrl, DrawrUrl):
     post_id: int

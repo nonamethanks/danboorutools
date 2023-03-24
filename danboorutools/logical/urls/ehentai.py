@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
 from functools import cached_property
 from typing import TYPE_CHECKING, Literal
 
@@ -12,6 +11,8 @@ from danboorutools.util.misc import memoize
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from bs4 import BeautifulSoup
 
 
@@ -21,8 +22,8 @@ class EHentaiUrl(Url):
 
     @cached_property
     def html(self) -> BeautifulSoup:
-        if not isinstance(self, (EHentaiPageUrl, EHentaiGalleryUrl)):
-            raise ValueError
+        if not isinstance(self, EHentaiPageUrl | EHentaiGalleryUrl):
+            raise TypeError
 
         try:
             return self.session.get_html(self.normalized_url)
@@ -46,13 +47,6 @@ class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
     @cached_property
     def created_at(self) -> datetime:
         return self.post.created_at
-
-    @cached_property
-    def post(self) -> EHentaiPageUrl:
-        if post := getattr(self, "_post"):
-            return post
-        else:
-            raise NotImplementedError
 
     @cached_property
     def full_size(self) -> str:
@@ -118,13 +112,16 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
 
     normalize_template = "https://{subsite}.org/g/{gallery_id}/{gallery_token}"
 
-    def _extract_posts(self) -> None:
+    def _extract_from_generic(self) -> None:
+        if self.known_posts:
+            return
+
         raw_thumb_urls = self._get_thumb_urls()
 
         download_url = self._get_download_url()
         files = self._download_and_extract_archive(download_url)
 
-        for raw_thumb_url, file in zip(raw_thumb_urls, files):
+        for raw_thumb_url, file in zip(raw_thumb_urls, files, strict=True):
             image: EHentaiImageUrl = self.parse(raw_thumb_url)  # type: ignore[assignment]
             assert image.page_token
             image.created_at = self.created_at

@@ -1,8 +1,14 @@
 from ward import test
 
+from danboorutools.logical.feeds.pixiv import PixivFeed
 from danboorutools.logical.urls.pixiv import PixivArtistUrl, PixivImageUrl, PixivMeUrl, PixivPostUrl, PixivStaccUrl
 from danboorutools.models.url import Url
-from tests.urls import assert_artist_url, assert_asset_url, assert_info_url, assert_post_url, assert_redirect_url, assert_url
+from tests.urls import assert_artist_url, assert_asset_url, assert_feed, assert_info_url, assert_post_url, assert_redirect_url, assert_url
+
+assert_feed(
+    PixivFeed,
+    post_count=3 * 15,
+)
 
 assert_artist_url(
     url_type=PixivArtistUrl,
@@ -61,7 +67,7 @@ assert_redirect_url(
     url_type=PixivMeUrl,
     url="https://www.pixiv.me/982430143",
     url_properties=dict(stacc="982430143"),
-    redirects_to="https://www.pixiv.net/en/users/14761279"
+    redirects_to="https://www.pixiv.net/en/users/14761279",
 )
 
 
