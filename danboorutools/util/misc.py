@@ -115,11 +115,13 @@ class BaseModel(BadBaseModel):
         try:
             super().__init__(**data)
         except ValidationError as e:
+            debug_method = print if in_ipython() else e.add_note  # https://github.com/ipython/ipython/issues/13849
             try:
                 values = value_from_validation_error(data, e)
             except KeyError:
-                values = data
-            e.add_note(f"Failed to validate:\n {values}\n")
+                debug_method(f"Failed to validate:\n {data}\n")  # type: ignore[operator]
+            else:
+                debug_method(f"\n{data}\nFailed to validate:\n{values}\n")  # type: ignore[operator]
             raise
         else:
             self._raw_data = data
@@ -136,3 +138,12 @@ def value_from_validation_error(data: dict, exception: ValidationError) -> dict:
             value = value[field]
         values[".".join([str(location) for location in loc])] = value
     return values
+
+
+def in_ipython() -> bool:
+    try:
+        get_ipython().__class__.__name__  # type: ignore[name-defined]
+    except NameError:
+        return False
+    else:
+        return True
