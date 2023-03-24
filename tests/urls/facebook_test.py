@@ -33,7 +33,7 @@ urls = {
         "https://www.facebook.com/TypeMoonWorld/photos/pcb.3060422600867484/3060422470867497/?type=3&theater": "https://www.facebook.com/TypeMoonWorld/posts/3060422470867497",
         "https://www.facebook.com/fkscrashing/posts/pfbid02DGobMuY9xXcdnitCwBQxAL6hXBgATLMprXdU4afdoTabjvULYj9LLQRxFmdCcW3Yl": "https://www.facebook.com/fkscrashing/posts/pfbid02DGobMuY9xXcdnitCwBQxAL6hXBgATLMprXdU4afdoTabjvULYj9LLQRxFmdCcW3Yl",
         "https://m.facebook.com/global.honkaiimpact/posts/wallpaper-honkai-quest-wallpaper-selection-click-the-link-using-pc-to-download-t/695401147785427/": "https://www.facebook.com/global.honkaiimpact/posts/695401147785427",
-        "https://www.facebook.com/HonkaiImpact3rd/videos/starlit-astrologos/254387989185091/": "https://www.facebook.com/HonkaiImpact3rd/videos/254387989185091",
+        "https://www.facebook.com/HonkaiImpact3rd/videos/starlit-astrologos/254387989185091/": "https://www.facebook.com/HonkaiImpact3rd/posts/254387989185091",
         "https://www.facebook.com/BoltertoKokoro/photos/a.1329829920487418/1470977829705959/?type=3://scontent.fbwn1-1.fna.fbcdn.net/v/t1.0-9/60859695_1470977833039292_7758017375433129984_n.jpg?_nc_cat=103\u0026_nc_ht=scontent.fbwn1-1.fna\u0026oh=da6331cbe01e7adf90381f7f42a46ef6\u0026oe=5D5268E9": "https://www.facebook.com/BoltertoKokoro/posts/1470977829705959",
     },
     fb.FacebookMediaSetUrl: {

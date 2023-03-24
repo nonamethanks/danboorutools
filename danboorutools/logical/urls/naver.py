@@ -19,6 +19,8 @@ class NaverCafePostUrl(PostUrl, NaverUrl):
 class NaverBlogArtistUrl(ArtistUrl, NaverUrl):
     username: str
 
+    normalize_template = "http://blog.naver.com/{username}"
+
 
 class NaverBlogPostUrl(ArtistUrl, NaverUrl):
     username: str

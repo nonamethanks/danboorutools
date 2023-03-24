@@ -37,7 +37,7 @@ class Tw6ArtistUrl(ArtistUrl, Tw6Url):
 class Tw6PostUrl(PostUrl, Tw6Url):
     post_id: int
 
-    normalize_template = "https://tw6.jp/gallery/?id={user_id}"
+    normalize_template = "https://tw6.jp/gallery/?id={post_id}"
 
 
 class Tw6ImageUrl(PostAssetUrl, Tw6Url):

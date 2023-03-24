@@ -4,7 +4,7 @@ from tests.urls import assert_info_url, assert_url, generate_parsing_suite
 urls = {
     CircleMsCircleUrl: {
         "https://portal.circle.ms/Circle/Index/10315665": "https://portal.circle.ms/Circle/Index/10315665",
-        "http://portal.circle.ms/circle/index/10022032/": "http://portal.circle.ms/circle/index/10022032/",
+        "http://portal.circle.ms/circle/index/10022032/": "https://portal.circle.ms/Circle/Index/10022032",
         "http://webcatalog.circle.ms/Perma/Circle/10217247": "https://portal.circle.ms/Circle/Index/10217247",
         "http://c10011401.circle.ms/oc/CircleProfile.aspx": "https://portal.circle.ms/Circle/Index/10011401",
         "https://webcatalog-free.circle.ms/Circle/14232303": "https://portal.circle.ms/Circle/Index/14232303",

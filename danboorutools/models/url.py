@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from functools import cached_property
-from typing import TYPE_CHECKING, TypeVar, final, get_type_hints
+from pydoc import locate
+from typing import TYPE_CHECKING, TypeVar, final
 
 from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
@@ -26,7 +27,6 @@ if TYPE_CHECKING:
     from bs4 import BeautifulSoup
 else:
     from functools import lru_cache
-
 
 UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 
@@ -70,9 +70,9 @@ class Url:
 
         instance = url_type(url=ParsableUrl(normalized_url))
 
-        type_hints = get_type_hints(url_type)
+        annotations = url_type.__annotations__
         for property_name, property_value in url_properties.items():
-            value_type = type_hints[property_name]
+            value_type: type = locate(annotations[property_name])  # type: ignore[assignment]
             assert isinstance(property_value, value_type), f"{property_name} was of type {type(property_value)} instead of {value_type}"
             setattr(instance, property_name, property_value)
         return instance
@@ -122,7 +122,7 @@ class Url:
     def artist(self) -> ArtistUrl:
         if isinstance(self, ArtistUrl):
             return self
-        elif isinstance(self, (PostUrl, ArtistAlbumUrl, GalleryAssetUrl)):
+        elif isinstance(self, PostUrl | ArtistAlbumUrl | GalleryAssetUrl):
             return self.gallery.artist
         elif isinstance(self, PostAssetUrl):
             if hasattr(self, "gallery") and self.gallery:  # old pixiv urls have artist stacc data in them
@@ -274,7 +274,7 @@ class PostUrl(Url):
         if asset in self._assets:
             raise NotImplementedError
 
-        asset.post = self
+        asset.post = self  # pylint: disable=attribute-defined-outside-init # false positive
 
         self._assets.append(asset)
 
@@ -335,7 +335,7 @@ class _AssetUrl(Url):
 
     @classmethod
     @final
-    def normalize(cls, **kwargs) -> str | None:
+    def normalize(cls, **kwargs) -> str | None:  # noqa: ARG003
         raise ValueError("Asset urls can't be normalized from a set of properties.")
 
     @property

@@ -5,6 +5,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Callable, TypeVar
 
+from danboorutools.models.feed import Feed
 from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.time import datetime_from_string
 from tests import assert_equal, assert_gte, assert_in, assert_isinstance, assert_match_in, generate_ward_test
@@ -64,12 +65,12 @@ def _assert_info_data(info_url: InfoUrl,
 def _assert_gallery_data(gallery_url: GalleryUrl,
                          post_count: int | None = None,
                          posts: list[str] | None = None) -> None:
+    found_posts = gallery_url.extract_posts()
 
     if post_count is not None:
-        assert_gte(len(gallery_url.posts), post_count)
+        assert_gte(len(found_posts), post_count)
 
     if posts is not None:
-        found_posts = gallery_url.posts
         for post in posts:
             assert_in(Url.parse(post), found_posts)
 
@@ -238,6 +239,12 @@ def assert_redirect_url(url: str,
     assert_equal(redirect_url.resolved.normalized_url, redirect_to.normalized_url)
 
 
+@generate_url_suite("Scraping a feed", tags=["feed"])
+def assert_feed(feed_type: type[Feed], post_count: int) -> None:
+    feed = feed_type()
+    assert_equal(len(feed.extract_posts()), post_count)
+
+
 def generate_parsing_suite(urls: dict[type[UrlTypeVar], dict]) -> None:
     caller = inspect.stack()[1]
     abs_path = Path(caller.filename).resolve()
@@ -255,7 +262,7 @@ def generate_parsing_suite(urls: dict[type[UrlTypeVar], dict]) -> None:
             generate_ward_test(
                 parse,
                 description=f"Parse {url_type_str}: {url_string}",
-                tags=["parsing", domain]
+                tags=["parsing", domain],
             )
 
             def normalize(url_string=url_string, expected_normalization=expected_normalization) -> None:

@@ -12,7 +12,7 @@ class PrivatterUrl(Url):
 class PrivatterArtistUrl(ArtistUrl, PrivatterUrl):
     username: str
 
-    normalize_template = "http://privatter.net/u/{username}"
+    normalize_template = "https://privatter.net/u/{username}"
 
     @property
     def primary_names(self) -> list[str]:
@@ -31,7 +31,7 @@ class PrivatterPostUrl(PostUrl, PrivatterUrl):
     post_id: int
     post_type: Literal["p", "i"]  # i seem to be login required to view
 
-    normalize_template = "http://privatter.net/{post_type}/{post_id}"
+    normalize_template = "https://privatter.net/{post_type}/{post_id}"
 
     @cached_property
     def gallery(self) -> PrivatterArtistUrl:

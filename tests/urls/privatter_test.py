@@ -3,8 +3,8 @@ from tests.urls import assert_artist_url, assert_post_url, generate_parsing_suit
 
 urls = {
     PrivatterPostUrl: {
-        "http://privatter.net/p/8096124": "http://privatter.net/p/8096124",
-        "http://privatter.net/i/2655076": "http://privatter.net/i/2655076",
+        "http://privatter.net/p/8096124": "https://privatter.net/p/8096124",
+        "http://privatter.net/i/2655076": "https://privatter.net/i/2655076",
     },
     PrivatterArtistUrl: {
         "https://privatter.net/u/uzura_55": "https://privatter.net/u/uzura_55",
