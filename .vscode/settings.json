@@ -37,4 +37,5 @@
     "pylint.severity": {
         "refactor": "Information"
     },
+    "ruff.importStrategy": "fromEnvironment",
 }
