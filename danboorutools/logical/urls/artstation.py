@@ -1,4 +1,3 @@
-from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.artstation import ArtstationArtistData, ArtstationSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
@@ -25,6 +24,13 @@ class ArtStationPostUrl(PostUrl, ArtStationUrl):
             return f"https://{username}.artstation.com/projects/{post_id}"
         else:
             return f"https://www.artstation.com/artwork/{post_id}"
+
+    def _extract_assets(self) -> None:
+        post_data = self.session.post_data(self.post_id)
+        for asset in post_data.assets:
+            if not asset["has_image"]:
+                continue
+            self._register_asset(asset["image_url"])
 
 
 class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):

@@ -9,6 +9,7 @@ from requests.exceptions import ProxyError
 
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.pixiv import PixivArtistData, PixivArtistIllustData, PixivPostData, PixivSession
+from danboorutools.models.has_posts import HasPostsOnJson
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 if TYPE_CHECKING:
@@ -185,7 +186,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
         return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}/ugoira_meta?lang=en")
 
 
-def _process_post_from_json(self: PixivArtistUrl | PixivFeed, post_object: dict) -> None:  # kept separate so it can be imported by PixivFeed
+def _process_json_post(self: PixivArtistUrl | PixivFeed, post_object: dict) -> None:  # kept separate so it can be imported by PixivFeed
     post_data = PixivArtistIllustData(**post_object)
     post = PixivPostUrl.build(PixivPostUrl, post_id=post_data.id)
 
@@ -211,7 +212,7 @@ def _process_post_from_json(self: PixivArtistUrl | PixivFeed, post_object: dict)
     )
 
 
-class PixivArtistUrl(ArtistUrl, PixivUrl):
+class PixivArtistUrl(ArtistUrl, HasPostsOnJson, PixivUrl):
     user_id: int
 
     normalize_template = "https://www.pixiv.net/en/users/{user_id}"
@@ -219,7 +220,7 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
     posts_json_url = "https://www.pixiv.net/touch/ajax/user/illusts?id={self.user_id}&p={page}&lang=en"
     posts_objects_dig = ["body", "illusts"]
 
-    _process_post_from_json = _process_post_from_json
+    _process_json_post = _process_json_post
 
     @property
     def primary_names(self) -> list[str]:

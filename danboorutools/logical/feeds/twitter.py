@@ -11,7 +11,7 @@ from danboorutools.models.has_posts import EndScan
 class TwitterFeed(Feed):
     session = TwitterSession()
 
-    def _extract_from_generic(self) -> None:
+    def _extract_posts(self) -> None:
         following_list: list[int] = list(set(self.session.api.GetFriendIDs(total_count=None)))
 
         with Path("data/twitter_follows_backup.txt").open("w+", encoding="utf-8") as backup_file:
@@ -28,12 +28,12 @@ class TwitterFeed(Feed):
             else:
                 logger.info(f"Scanning artist <c>{user_id}</> ({index + 1:>{pad}} of {total}) for the first time.")
 
-            user_last_id = self._extract_from_each_artist(user_id, last_id)
+            user_last_id = self._process_artist(user_id, last_id)
             last_scanned_ids[user_id] = user_last_id
 
         last_scanned_ids_data.value = last_scanned_ids
 
-    def _extract_from_each_artist(self, artist_id: int, last_scanned_id: int) -> int:
+    def _process_artist(self, artist_id: int, last_scanned_id: int) -> int:
         max_id = 0
         previous_max_id = None
 
