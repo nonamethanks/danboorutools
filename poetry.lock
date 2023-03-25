@@ -444,6 +444,20 @@ wrapt = ">=1.10,<2"
 dev = ["PyTest", "PyTest (<5)", "PyTest-Cov", "PyTest-Cov (<2.6)", "bump2version (<1)", "configparser (<5)", "importlib-metadata (<3)", "importlib-resources (<4)", "sphinx (<2)", "sphinxcontrib-websupport (<2)", "tox", "zipp (<2)"]
 
 [[package]]
+name = "deviantart"
+version = "0.1.5"
+description = "A Python wrapper for the DeviantArt API"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "deviantart-0.1.5.tar.gz", hash = "sha256:6100cc73f162e8c945f8304109d72a8eb94c6df8348d7319b3c86ea1bcc511b6"},
+]
+
+[package.dependencies]
+sanction = "*"
+
+[[package]]
 name = "dill"
 version = "0.3.6"
 description = "serialize all of python"
@@ -1621,6 +1635,17 @@ files = [
 ]
 
 [[package]]
+name = "sanction"
+version = "0.4.1"
+description = "A simple, lightweight OAuth2 client"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "sanction-0.4.1.tar.gz", hash = "sha256:3e41b24e28590a0dfed68eddd10e44fa01feb81812ffb49085ca764e51aea9fe"},
+]
+
+[[package]]
 name = "selenium"
 version = "4.8.3"
 description = ""
@@ -2084,4 +2109,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "6419fb01079061fdeadfd3c335475536d74a43f78c351fe881c118d0479e49fb"
+content-hash = "26a870484cba7fff61048533d83ed42a5d0e337ce2f2b88fd20b1d9c3eba4478"

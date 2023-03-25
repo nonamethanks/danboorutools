@@ -18,6 +18,7 @@ class HasPosts:
     known_posts: set[PostUrl]
 
     quit_early_page = 0
+    validate_existence_of_posts = False
 
     @final
     def extract_posts(self, known_posts: list[PostUrl] | None = None) -> list[PostUrl]:
@@ -29,7 +30,7 @@ class HasPosts:
         self._collected_posts = []
 
         try:
-            self._extract_posts()
+            self._extract_all_posts()
         except (Exception, KeyboardInterrupt):
             self._collected_posts = []
             raise
@@ -42,13 +43,13 @@ class HasPosts:
         self.known_posts |= set(collected_posts)
         return collected_posts
 
-    def _extract_posts(self) -> None:
+    def _extract_all_posts(self) -> None:
         raise NotImplementedError(f"{self} hasn't implemented posts extraction.")
 
     def _register_post(self,
                        post: PostUrl,
                        assets: Sequence[PostAssetUrl],
-                       created_at: datetime | str,
+                       created_at: datetime | str | int,
                        score: int) -> None:
         if post in self.known_posts:
             raise EndScan(Exception)
@@ -71,7 +72,7 @@ class HasPostsOnJson(HasPosts):
     posts_json_url: str
     posts_objects_dig: list[str | int]
 
-    def _extract_posts(self, /, posts_json_url: str | None = None) -> None:
+    def _extract_all_posts(self, /, posts_json_url: str | None = None) -> None:
         """Extract posts from a json endpoint."""
         if TYPE_CHECKING:
             assert isinstance(self, Feed | GalleryUrl)
@@ -96,6 +97,8 @@ class HasPostsOnJson(HasPosts):
                     raise NotImplementedError(dig_element, post_objects.keys()) from e
 
             if not post_objects:
+                if self.validate_existence_of_posts:
+                    raise NotImplementedError("No posts found")
                 logger.debug("No more posts found. Aborting...")
                 return
 

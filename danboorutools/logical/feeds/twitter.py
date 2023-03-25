@@ -11,7 +11,7 @@ from danboorutools.models.has_posts import EndScan
 class TwitterFeed(Feed):
     session = TwitterSession()
 
-    def _extract_posts(self) -> None:
+    def _extract_all_posts(self) -> None:
         following_list: list[int] = list(set(self.session.api.GetFriendIDs(total_count=None)))
 
         with Path("data/twitter_follows_backup.txt").open("w+", encoding="utf-8") as backup_file:

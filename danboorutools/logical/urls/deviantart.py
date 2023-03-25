@@ -1,3 +1,4 @@
+import binascii
 import re
 
 from danboorutools.logical.sessions.deviantart import DeviantartSession, DeviantartUserData
@@ -20,6 +21,8 @@ class DeviantArtPostUrl(PostUrl, DeviantArtUrl):
     deviation_id: int
     username: str | None
     title: str | None
+
+    uuid: str | None = None # useful to avoid api calls
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
@@ -76,3 +79,24 @@ class DeviantArtImageUrl(PostAssetUrl, DeviantArtUrl):
     def full_size(self) -> str:
         raise RuntimeError("Can't extract full size.")
         # gotta go through the post. TODO: make .files fallback on post maybe? maybe rewrite .files here?
+
+    @staticmethod
+    def _extract_best_image(image_sample: str) -> str:
+        # https://github.com/mikf/gallery-dl/commit/02a247f4e54b6835e81102b84583bdae0969a050#commitcomment-58578639
+        url, sep, _ = image_sample.partition("/v1/")
+        if not sep:
+            return image_sample
+
+        payload = (
+            b'{"sub":"urn:app:","iss":"urn:app:","obj":[[{"path":"/f/' +
+            url.partition("/f/")[2].encode() +
+            b'"}]],"aud":["urn:service:file.download"]}'
+        )
+
+        return (
+            "{}?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.{}.".format(
+                url,
+                #  base64 of 'header' is precomputed as 'eyJ0eX...'
+                #  binascii.a2b_base64(header).rstrip(b"=\n").decode(),
+                binascii.b2a_base64(payload).rstrip(b"=\n").decode())
+        )

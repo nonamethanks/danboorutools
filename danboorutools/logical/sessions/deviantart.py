@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
 import re
+from functools import cached_property
+
+import deviantart
 
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.twitter import TwitterArtistUrl
@@ -26,6 +30,34 @@ class DeviantartSession(Session):
         about_data, = (module for module in parsed_json["modules"].values() if module["type"] == "about")
 
         return DeviantartUserData(**about_data["moduleData"])
+
+    @cached_property
+    def api(self) -> deviantart.Api:
+        return deviantart.Api(
+            os.environ["DEVIANTART_CLIENT_ID"],
+            os.environ["DEVIANTART_CLIENT_SECRET"],
+        )
+
+    @memoize
+    def get_followed_artists(self) -> list[str]:
+        artists = []
+        offset = 0
+        while True:
+            get_data = {
+                "offset": offset,
+                "limit": 50,
+                "mature_content": True,
+            }
+            page_json = self.api._req("/user/friends/" + os.environ["DEVIANTART_USERNAME"], get_data=get_data)
+
+            artists += [artist_data["user"]["username"]
+                        for artist_data in page_json["results"]
+                        if artist_data["watch"]["deviations"]]
+
+            if not page_json["has_more"]:
+                return artists
+
+            offset = page_json["next_offset"]
 
 
 class DeviantartUserData(BaseModel):

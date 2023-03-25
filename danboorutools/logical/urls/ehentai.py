@@ -112,7 +112,7 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
 
     normalize_template = "https://{subsite}.org/g/{gallery_id}/{gallery_token}"
 
-    def _extract_posts(self) -> None:
+    def _extract_all_posts(self) -> None:
         if self.known_posts:
             return
 
