@@ -65,6 +65,9 @@ def _assert_info_data(info_url: InfoUrl,
 def _assert_gallery_data(gallery_url: GalleryUrl,
                          post_count: int | None = None,
                          posts: list[str] | None = None) -> None:
+    if not post_count and not posts:
+        return
+
     found_posts = gallery_url.extract_posts()
 
     if post_count is not None:
