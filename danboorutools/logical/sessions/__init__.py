@@ -128,10 +128,16 @@ class Session(_CloudScraper):
 
         return File.identify(tmp_filename, destination_dir=download_dir, md5_as_filename=True)
 
-    def get_html(self, url: str | Url, *args, **kwargs) -> BeautifulSoup:
+    def get_html(self, url: str | Url, *args, cached: bool = True, **kwargs) -> BeautifulSoup:
         if not isinstance(url, str):
             url = url.normalized_url
-        response = self.get_cached(url, *args, **kwargs)
+
+        method = self.get_cached if cached else self.get
+        response = method(url, *args, **kwargs)
+
+        return self._response_as_html(response)
+
+    def _response_as_html(self, response: Response) -> BeautifulSoup:
         if not response.ok:
             raise HTTPError(response)
 
@@ -140,7 +146,7 @@ class Session(_CloudScraper):
             return BeautifulSoup(response.text, "html5lib")
 
     def get_json(self, *args, **kwargs) -> dict:
-        response = self.request("GET", *args, **kwargs)
+        response = self.get(*args, **kwargs)
         return self._try_json_response(response)
 
     def get_json_cached(self, *args, **kwargs) -> dict:
