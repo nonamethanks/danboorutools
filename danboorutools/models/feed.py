@@ -37,16 +37,16 @@ class FeedWithSeparateArtists(Feed, Generic[ArtistTypeVar, PostDataVar]):
 
     def __artist_subloop(self, artist: ArtistTypeVar) -> None:
         for page, post_objects in enumerate(self._extract_posts_from_each_artist(artist=artist)):
-            if self.quit_early_page and page >= self.quit_early_page:
-                logger.info("Stopping early because it's a first-time scan...")
-                return
-
-            logger.info(f"At page {page}...")
+            logger.info(f"At page {page + 1}...")
 
             for post_data in post_objects:
                 self._process_post(post_data)
 
             logger.info(f"{len(self._collected_posts)} posts collected so far.")
+
+            if self.quit_early_page and page >= self.quit_early_page:
+                logger.info("Stopping early because it's a first-time scan...")
+                return
 
     def _extract_artists(self) -> list[ArtistTypeVar]:
         raise NotImplementedError(f"{self} hasn't implemented artist extraction.")

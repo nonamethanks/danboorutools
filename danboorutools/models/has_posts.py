@@ -46,11 +46,7 @@ class HasPosts(Generic[PostDataVar]):
 
     def _extract_all_posts(self) -> None:
         for page, post_objects in enumerate(self._extract_posts_from_each_page()):
-            if self.quit_early_page and page >= self.quit_early_page:
-                logger.info("Quitting early because it's a first-time scan...")
-                return
-
-            logger.info(f"At page {page}...")
+            logger.info(f"At page {page + 1}...")
 
             for post_data in post_objects:
                 try:
@@ -60,6 +56,10 @@ class HasPosts(Generic[PostDataVar]):
                     return
 
             logger.info(f"{len(self._collected_posts)} posts collected so far.")
+
+            if self.quit_early_page and page >= self.quit_early_page:
+                logger.info("Quitting early because it's a first-time scan...")
+                return
 
     def _extract_posts_from_each_page(self) -> Iterator[list[PostDataVar]]:
         raise NotImplementedError(f"{self} hasn't implemented page extraction.")
