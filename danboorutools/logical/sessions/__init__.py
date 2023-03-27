@@ -8,7 +8,7 @@ import time
 import warnings
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 from urllib.parse import urlencode
 
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
@@ -31,6 +31,9 @@ if TYPE_CHECKING:
     from danboorutools.models.url import Url
 
 
+_session_cache: dict[type[Session], Session] = {}
+
+
 class Session(_CloudScraper):
     DEFAULT_HEADERS = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
@@ -39,16 +42,22 @@ class Session(_CloudScraper):
     DEFAULT_TIMEOUT = 5
     MAX_CALLS_PER_SECOND: int | float = 3
 
+    proxied_domains: dict[str, dict] = {}
+    for envvar in os.environ:
+        if envvar.endswith("_PROXY"):
+            proxy = os.environ[envvar]
+            domain = envvar.removesuffix("_PROXY").lower().replace("_", ".")
+            proxied_domains[domain] = {"http": proxy, "https": proxy}
+
+    def __new__(cls, *args, **kwargs) -> Self:
+        if not (new_instance := _session_cache.get(cls)):
+            new_instance = _session_cache[cls] = super().__new__(cls, *args, **kwargs)
+        return new_instance  # type: ignore[return-value] # stfu
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.proxied_domains: dict[str, dict] = {}
-
-        for envvar in os.environ:
-            if envvar.endswith("_PROXY"):
-                proxy = os.environ[envvar]
-                domain = envvar.removesuffix("_PROXY").lower().replace("_", ".")
-                self.proxied_domains[domain] = {"http": proxy, "https": proxy}
+        self.session_domain = self.__class__.__name__.lower().replace("session", "")  # used in cookie saving
 
         if self.MAX_CALLS_PER_SECOND < 1:
             interval = 1 / self.MAX_CALLS_PER_SECOND
