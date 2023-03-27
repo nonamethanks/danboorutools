@@ -52,9 +52,23 @@ class PixivSession(Session):
         return PixivArtistData(**data["user_details"])
 
     @memoize
-    def post_data(self, post_id: int | str) -> PixivPostData:
+    def post_data(self, post_id: int | str) -> PixivSingleIllustData:
         data = self.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}?lang=en")
-        return PixivPostData(**data)
+        return PixivSingleIllustData(**data)
+
+    @memoize
+    def get_feed(self, page: int) -> list[PixivGroupedIllustData]:
+        url = f"https://www.pixiv.net/touch/ajax/follow/latest?type=illusts&include_meta=0&p={page}&lang=en"
+        json_data = self.get_json_cached(url)
+        if not (posts_data := json_data["body"]["illusts"]):
+            raise NotImplementedError("No posts found. Check cookie.")
+        return [PixivGroupedIllustData(**post_data) for post_data in posts_data]
+
+    @memoize
+    def get_user_illusts(self, user_id: int, page: int) -> list[PixivGroupedIllustData]:
+        url = f"https://www.pixiv.net/touch/ajax/user/illusts?id={user_id}&p={page}&lang=en"
+        json_data = self.get_json_cached(url)
+        return [PixivGroupedIllustData(**post_data) for post_data in json_data["body"]["illusts"]]
 
 
 class PixivArtistData(BaseModel):
@@ -82,14 +96,21 @@ class PixivArtistData(BaseModel):
         return urls
 
 
-class PixivArtistIllustData(BaseModel):
+class PixivGroupedIllustData(BaseModel):
     id: int
+    user_id: int
     type: int = Field(..., ge=0, lt=3)
+
     upload_timestamp: datetime
+
     rating_count: int | None  # the feed endpoint doesn't have it
 
 
-class PixivPostData(BaseModel):
+class PixivSingleIllustData(BaseModel):
+    id: int
     userId: int
+    type: int = Field(..., ge=0, lt=3)
+
     createDate: datetime  # TODO: may be worth checking uploadDate to see if it's viable to check for revisions that way
+
     likeCount: int

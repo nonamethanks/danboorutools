@@ -59,6 +59,22 @@ class DeviantartSession(Session):
 
             offset = page_json["next_offset"]
 
+    @memoize
+    def get_artist_posts(self, artist: str, offset: int = 0) -> DeviantartPostsApiData:
+        get_data = {
+            "username": artist,
+            "offset": offset,
+            "limit": 24,
+            "mature_content": True,
+        }
+        page_json = self.api._req("/gallery/all", get_data=get_data)
+        return DeviantartPostsApiData(**page_json)
+
+    @memoize
+    def get_download_url(self, uuid: str) -> str:
+        data = self.api._req(f"/deviation/download/{uuid}", get_data={"mature_content": True})
+        return data["src"]
+
 
 class DeviantartUserData(BaseModel):
     username: str
@@ -86,3 +102,20 @@ class DeviantartUserData(BaseModel):
                 urls += [Url.parse(entity["data"]["url"])]
 
         return list(dict.fromkeys(urls))
+
+
+class DeviantartPostData(BaseModel):
+    url: str
+    deviationid: str
+    published_time: int
+
+    is_downloadable: bool
+    stats: dict
+
+    content: dict
+
+
+class DeviantartPostsApiData(BaseModel):
+    has_more: bool
+    next_offset: int | None
+    results: list[DeviantartPostData]

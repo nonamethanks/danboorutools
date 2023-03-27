@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from datetime import datetime
 from functools import cached_property
+from itertools import count, repeat
 from typing import TYPE_CHECKING
 
 from pytz import UTC
 from requests.exceptions import ProxyError
 
 from danboorutools.exceptions import DeadUrlError
-from danboorutools.logical.sessions.pixiv import PixivArtistData, PixivArtistIllustData, PixivPostData, PixivSession
-from danboorutools.models.has_posts import HasPostsOnJson
+from danboorutools.logical.sessions.pixiv import PixivArtistData, PixivGroupedIllustData, PixivSession, PixivSingleIllustData
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 if TYPE_CHECKING:
@@ -171,7 +171,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
             return False
 
     @property
-    def _post_data(self) -> PixivPostData:
+    def _post_data(self) -> PixivSingleIllustData:
         post_id = f"unlisted/{self.post_id}" if self.unlisted else self.post_id
         return self.session.post_data(post_id)  # but does this work for unlisted?
 
@@ -186,11 +186,11 @@ class PixivPostUrl(PostUrl, PixivUrl):
         return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}/ugoira_meta?lang=en")
 
 
-def _process_json_post(self: PixivArtistUrl | PixivFeed, post_object: dict) -> None:  # kept separate so it can be imported by PixivFeed
-    post_data = PixivArtistIllustData(**post_object)
-    post = PixivPostUrl.build(PixivPostUrl, post_id=post_data.id)
+def _process_post(self: PixivArtistUrl | PixivFeed, post_object: PixivGroupedIllustData) -> None:
+    # kept separate so it can be imported by PixivFeed
+    post = PixivPostUrl.build(PixivPostUrl, post_id=post_object.id)
 
-    if post_data.type == 2:
+    if post_object.type == 2:
         post_ugoira_data = post.ugoira_data
         asset_urls = [post_ugoira_data["originalSrc"]]
     else:
@@ -199,7 +199,7 @@ def _process_json_post(self: PixivArtistUrl | PixivFeed, post_object: dict) -> N
         asset_urls = [img["urls"]["original"] for img in post_pages_data]
 
     if isinstance(self, PixivArtistUrl):
-        score = post_data.rating_count  # the feed doesn't have this
+        score = post_object.rating_count  # the feed doesn't have this
         assert score is not None
     else:
         score = 0
@@ -207,20 +207,20 @@ def _process_json_post(self: PixivArtistUrl | PixivFeed, post_object: dict) -> N
     self._register_post(
         post=post,
         assets=[Url.parse(url) for url in asset_urls],  # type: ignore[misc]
-        created_at=post_data.upload_timestamp,
+        created_at=post_object.upload_timestamp,
         score=score,
     )
 
 
-class PixivArtistUrl(ArtistUrl, HasPostsOnJson, PixivUrl):
+class PixivArtistUrl(ArtistUrl, PixivUrl):
     user_id: int
 
     normalize_template = "https://www.pixiv.net/en/users/{user_id}"
 
-    posts_json_url = "https://www.pixiv.net/touch/ajax/user/illusts?id={self.user_id}&p={page}&lang=en"
-    posts_objects_dig = ["body", "illusts"]
+    def _extract_posts_from_each_page(self):  # noqa: ANN202
+        return map(self.session.get_user_illusts, zip(repeat(self.user_id), count(), strict=True))
 
-    _process_json_post = _process_json_post
+    _process_post = _process_post
 
     @property
     def primary_names(self) -> list[str]:

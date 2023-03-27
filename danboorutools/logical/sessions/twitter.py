@@ -6,9 +6,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 import twitter
-from backoff import expo, on_exception
 from pydantic import validator
-from twitter.error import TwitterError
 
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
@@ -54,7 +52,6 @@ class TwitterSession(Session):
             raise
 
     @memoize
-    @on_exception(expo, TwitterError, max_tries=3)
     def get_user_tweets(self, user_id: int, max_id: int, since_id: int) -> list[TwitterTweetData]:
         url = f"{self.api.base_url}/statuses/user_timeline.json"
 
@@ -105,11 +102,11 @@ class TwitterTweetData(BaseModel):
 
     user: TwitterUserData
 
-    @ validator("created_at", pre=True)
+    @validator("created_at", pre=True)
     def parse_created_at(cls, value: str) -> datetime:  # pylint: disable=no-self-argument # noqa: N805 # pydantic is retarded
         return datetime_from_string(value)
 
-    @ property
+    @property
     def asset_urls(self) -> list[TwitterAssetUrl]:
         from danboorutools.logical.urls.twitter import TwitterAssetUrl
         if not self.extended_entities:

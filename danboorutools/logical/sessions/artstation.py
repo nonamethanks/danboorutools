@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
@@ -32,6 +33,12 @@ class ArtstationSession(Session):
         response = self.get_json(url)
         return ArtstationPostData(**response)
 
+    @memoize
+    def get_posts_from_artist(self, artist: str, page: int) -> list[ArtstationPostData]:
+        url = f"https://www.artstation.com/users/{artist}/projects.json?page={page}"
+        json_data = self.get_json_cached(url)["data"]
+        return [ArtstationPostData(**post_data) for post_data in json_data]
+
 
 class ArtstationArtistData(BaseModel):
     id: int
@@ -57,5 +64,13 @@ class ArtstationArtistData(BaseModel):
 
 
 class ArtstationPostData(BaseModel):
-    likes_count: int
     assets: list
+    asset_count: int
+
+    permalink: str
+
+    created_at: datetime
+    likes_count: int
+
+    icons: dict
+    cover: dict[str, str]

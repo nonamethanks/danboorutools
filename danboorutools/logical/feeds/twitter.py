@@ -1,69 +1,52 @@
+from collections.abc import Iterator
 from pathlib import Path
 
-from danboorutools import logger
 from danboorutools.logical.progress_tracker import ProgressTracker
-from danboorutools.logical.sessions.twitter import TwitterSession
+from danboorutools.logical.sessions.twitter import TwitterSession, TwitterTweetData
 from danboorutools.logical.urls.twitter import TwitterPostUrl
-from danboorutools.models.feed import Feed
-from danboorutools.models.has_posts import EndScan
+from danboorutools.models.feed import FeedWithSeparateArtists
 
 
-class TwitterFeed(Feed):
+class TwitterFeed(FeedWithSeparateArtists):
     session = TwitterSession()
+    previous_max_ids = ProgressTracker[dict[int, int]]("twitter_feed_last_ids", {}).value
 
-    def _extract_all_posts(self) -> None:
+    def _extract_artists(self) -> list[int]:
         following_list: list[int] = list(set(self.session.api.GetFriendIDs(total_count=None)))
 
         with Path("data/twitter_follows_backup.txt").open("w+", encoding="utf-8") as backup_file:
             backup_file.write("\n".join(map(str, following_list)))  # in case I get banned, fuck twitter
 
-        last_scanned_ids_data: ProgressTracker[dict[int, int]] = ProgressTracker("twitter_feed_last_ids", {})
-        last_scanned_ids = last_scanned_ids_data.value
-        for index, user_id in enumerate(following_list):
-            total = len(following_list)
-            pad = len(str(total))
+        return following_list
 
-            if last_id := last_scanned_ids.get(user_id, 0):
-                logger.info(f"Scanning artist <c>{user_id}</> ({index + 1:>{pad}} of {total}), since id {last_id}.")
-            else:
-                logger.info(f"Scanning artist <c>{user_id}</> ({index + 1:>{pad}} of {total}) for the first time.")
-
-            user_last_id = self._process_artist(user_id, last_id)
-            last_scanned_ids[user_id] = user_last_id
-
-        last_scanned_ids_data.value = last_scanned_ids
-
-    def _process_artist(self, artist_id: int, last_scanned_id: int) -> int:
-        max_id = 0
-        previous_max_id = None
+    def _extract_posts_from_each_artist(self, artist: int) -> Iterator[list[TwitterTweetData]]:
+        previously_found_max_id = self.previous_max_ids.get(artist, 0)
+        current_max_id_found = 0
 
         while True:
-            tweets = self.session.get_user_tweets(user_id=artist_id, since_id=last_scanned_id, max_id=previous_max_id)
+            tweets = self.session.get_user_tweets(user_id=artist, since_id=previously_found_max_id, max_id=current_max_id_found)
+
+            current_max_id_found = max(current_max_id_found, previously_found_max_id, *[tweet.id for tweet in tweets])
+            if current_max_id_found != previously_found_max_id:
+                self.previous_max_ids[artist] = current_max_id_found
+
             if not tweets:
-                return max_id
+                return
 
-            previous_max_id = min(tweets, key=lambda x: x.id).id - 1
-            max_id = max(max_id, *[tweet.id for tweet in tweets])
+            yield tweets
 
-            for tweet in tweets:
-                if not tweet.asset_urls:
-                    continue
+    def _post_scan_hook(self) -> None:
+        ProgressTracker[dict[int, int]]("twitter_feed_previous_max_ids", {}).value = self.previous_max_ids
 
-                post = TwitterPostUrl.build(TwitterPostUrl, username=tweet.user.screen_name, post_id=tweet.id)
+    def _process_post(self, post_object: TwitterTweetData) -> None:
+        if not post_object.asset_urls:
+            return
 
-                try:
-                    self._register_post(
-                        post=post,
-                        assets=tweet.asset_urls,
-                        created_at=tweet.created_at,
-                        score=tweet.favorite_count or 0,
-                    )
-                except EndScan:
-                    return max_id
+        post = TwitterPostUrl.build(TwitterPostUrl, username=post_object.user.screen_name, post_id=post_object.id)
 
-                if not last_scanned_id:
-                    return max_id
-
-            if not last_scanned_id:
-                # needed here too because the loop above might never reach the return if no tweet has media
-                return max_id
+        self._register_post(
+            post=post,
+            assets=post_object.asset_urls,
+            created_at=post_object.created_at,
+            score=post_object.favorite_count or 0,
+        )

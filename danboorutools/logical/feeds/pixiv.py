@@ -1,12 +1,14 @@
+from itertools import count
+
 from danboorutools.logical.sessions.pixiv import PixivSession
-from danboorutools.logical.urls.pixiv import _process_json_post
-from danboorutools.models.feed import JsonFeed
+from danboorutools.logical.urls.pixiv import _process_post
+from danboorutools.models.feed import Feed
 
 
-class PixivFeed(JsonFeed):
+class PixivFeed(Feed):
     session = PixivSession()
 
-    posts_json_url = "https://www.pixiv.net/touch/ajax/follow/latest?type=illusts&include_meta=0&p={page}&lang=en"
-    posts_objects_dig = ["body", "illusts"]
+    def _extract_posts_from_each_page(self):  # noqa: ANN202
+        return map(self.session.get_feed, count())
 
-    _process_json_post = _process_json_post
+    _process_post = _process_post
