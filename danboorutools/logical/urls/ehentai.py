@@ -73,13 +73,13 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
                           gallery_id=self.gallery_id,
                           subsite=self.subsite)
 
-    def _extract_assets(self) -> None:
+    def _extract_assets(self) -> list[EHentaiImageUrl]:
         asset = self._get_direct_url()
 
         asset.created_at = self.created_at
         asset.extract_files()
 
-        self._register_asset(asset)
+        return [asset]
 
     def _get_direct_url(self) -> EHentaiImageUrl:
         # Can't be cached because download urls expire fast

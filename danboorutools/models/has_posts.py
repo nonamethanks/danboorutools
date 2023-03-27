@@ -57,7 +57,7 @@ class HasPosts(Generic[PostDataVar]):
 
             logger.info(f"{len(self._collected_posts)} posts collected so far.")
 
-            if self.quit_early_page and page >= self.quit_early_page:
+            if self.quit_early_page and page + 1 >= self.quit_early_page:
                 logger.info("Quitting early because it's a first-time scan...")
                 return
 
@@ -91,7 +91,7 @@ class HasPosts(Generic[PostDataVar]):
             post._register_asset(asset)
 
         self._collected_posts.append(post)
-        logger.info(f"Found {len(self._collected_posts)} posts so far...")
+        logger.info(f"Found {len(self._collected_posts):>4} posts so far. Last collected: {post}")
 
 
 class FoundKnownPost(Exception):  # noqa: N818

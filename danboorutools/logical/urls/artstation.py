@@ -25,12 +25,9 @@ class ArtStationPostUrl(PostUrl, ArtStationUrl):
         else:
             return f"https://www.artstation.com/artwork/{post_id}"
 
-    def _extract_assets(self) -> None:
+    def _extract_assets(self) -> list[str]:
         post_data = self.session.post_data(self.post_id)
-        for asset in post_data.assets:
-            if not asset["has_image"]:
-                continue
-            self._register_asset(asset["image_url"])
+        return [asset["image_url"] for asset in post_data.assets if asset["has_image"]]
 
 
 class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):

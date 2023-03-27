@@ -141,13 +141,12 @@ class PixivPostUrl(PostUrl, PixivUrl):
         else:
             return f"https://www.pixiv.net/en/artworks/{post_id}"
 
-    def _extract_assets(self) -> None:
+    def _extract_assets(self) -> list[str]:
         asset_urls = [img["urls"]["original"] for img in self._pages_data]
         if "_ugoira0" in asset_urls[0]:
             asset_urls = [self.ugoira_data["originalSrc"]]
 
-        for asset_url in asset_urls:
-            self._register_asset(asset_url)
+        return asset_urls
 
     @cached_property
     def created_at(self) -> datetime:

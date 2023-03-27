@@ -257,16 +257,12 @@ class PostUrl(Url):
     @property
     @final
     def assets(self) -> list[PostAssetUrl]:
-        if not hasattr(self, "_assets"):
-            try:
-                self._extract_assets()
-            except Exception:
-                if hasattr(self, "_assets"):
-                    del self._assets
-                raise
+        assets = self._extract_assets()
+        for asset in assets:
+            self._register_asset(asset)
         return self._assets
 
-    def _extract_assets(self) -> None:
+    def _extract_assets(self) -> Sequence[PostAssetUrl] | list[str]:
         raise NotImplementedError(self, "hasn't implemented asset extraction.")
 
     @cached_property
