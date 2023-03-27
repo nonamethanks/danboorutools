@@ -53,7 +53,10 @@ class Url:
     @classmethod
     def normalize(cls, **kwargs) -> str | None:
         if cls.normalize_template:
-            return cls.normalize_template.format(**kwargs)
+            try:
+                return cls.normalize_template.format(**kwargs)
+            except KeyError as e:
+                raise KeyError(f"Tried to normalize an url of type {cls.__name__} without passing {e}.") from e
         else:
             raise NotImplementedError(f"{cls} hasn't implemented .normalize()")
 
@@ -209,7 +212,7 @@ class InfoUrl(Url):
 class GalleryUrl(Url, HasPosts):  # pylint: disable=abstract-method
     """A gallery contains multiple posts."""
 
-    def _register_post(self, post: PostUrl, assets: Sequence[PostAssetUrl], created_at: datetime | str, score: int) -> None:
+    def _register_post(self, post: PostUrl, assets: Sequence[PostAssetUrl | str], created_at: datetime | str, score: int) -> None:
         super()._register_post(post, assets, created_at, score)
         post.gallery = self
 

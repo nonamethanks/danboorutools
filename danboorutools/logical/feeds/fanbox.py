@@ -24,9 +24,6 @@ class FanboxFeed(Feed):
     def _process_post(self, post_object: int) -> None:
         post_data = self.session.post_data(post_object)
 
-        if not post_data.assets:
-            return
-
         post = FanboxPostUrl.build(FanboxPostUrl, username=post_data.creatorId, post_id=post_data.id)
 
         self._register_post(

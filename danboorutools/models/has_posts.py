@@ -69,7 +69,7 @@ class HasPosts(Generic[PostDataVar]):
 
     def _register_post(self,
                        post: PostUrl,
-                       assets: Sequence[PostAssetUrl],
+                       assets: Sequence[PostAssetUrl | str],
                        created_at: datetime | str | int,
                        score: int) -> None:
         if post in self.known_posts:
@@ -77,6 +77,11 @@ class HasPosts(Generic[PostDataVar]):
 
         if post in self._collected_posts:
             raise NotImplementedError
+
+        if not assets:
+            # allowed to be empty so that revisions that become private, like fanbox or fantia,
+            # still go through the known posts check in order to abort early during rescans
+            return
 
         post.created_at = datetime_from_string(created_at)
         post.score = score

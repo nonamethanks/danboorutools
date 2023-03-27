@@ -1,10 +1,12 @@
 import re
+from functools import cached_property
 
+from danboorutools.logical.sessions.fantia import FantiaPostData, FantiaSession
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, PostAssetUrl, PostUrl, Url
 
 
 class FantiaUrl(Url):
-    pass
+    session = FantiaSession()
 
 
 class FantiaPostUrl(PostUrl, FantiaUrl):
@@ -12,6 +14,13 @@ class FantiaPostUrl(PostUrl, FantiaUrl):
     post_type: str
 
     normalize_template = "https://fantia.jp/{post_type}/{post_id}"
+
+    @cached_property
+    def post_data(self) -> FantiaPostData:
+        if self.post_type == "posts":
+            return self.session.get_post_data(self.post_id)
+        else:
+            raise NotImplementedError(self)
 
 
 class FantiaFanclubUrl(ArtistUrl, FantiaUrl):
