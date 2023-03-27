@@ -1,17 +1,21 @@
 from __future__ import annotations
 
 import functools
+import pickle
 import random
 import re
 import sys
 import weakref
 from collections.abc import Callable, Iterable
+from pathlib import Path
 from typing import Any, TypeVar
 
 import _testcapi
 from gelidum import freeze
 from pydantic import BaseModel as BadBaseModel
 from pydantic import PrivateAttr, ValidationError
+
+from danboorutools.exceptions import NoCookiesForDomainError
 
 
 def random_string(length: int) -> str:
@@ -147,3 +151,26 @@ def in_ipython() -> bool:
         return False
     else:
         return True
+
+
+cookie_dir = Path("cookies")
+
+
+def load_cookies_for(domain: str) -> list[dict[str, str]]:
+    filename = cookie_dir / f"cookies-{domain}.pkl"
+    try:
+        cookies: list[dict] = pickle.load(filename.open("rb"))
+    except FileNotFoundError as e:
+        raise NoCookiesForDomainError(domain) from e
+    for cookie in cookies:
+        if "expiry" in cookie:
+            cookie["expires"] = cookie["expiry"]
+            del cookie["expiry"]
+    return cookies
+
+
+def save_cookies_for(domain: str, cookies: list[dict[str, str]]) -> None:
+    """Save cookies for a domain."""
+    filename = cookie_dir / f"cookies-{domain}.pkl"
+    cookie_dir.mkdir(exist_ok=True)
+    pickle.dump(cookies, filename.open("wb+"))

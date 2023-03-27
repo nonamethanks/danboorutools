@@ -22,7 +22,7 @@ from danboorutools.exceptions import DeadUrlError, DownloadError, HTTPError
 from danboorutools.logical.browser import Browser
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.file import File, FileSubclass
-from danboorutools.util.misc import memoize, random_string
+from danboorutools.util.misc import load_cookies_for, memoize, random_string, save_cookies_for
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -171,3 +171,30 @@ class Session(_CloudScraper):
         if resp.status_code != 200:
             return url
         return resp.url
+
+    @cached_property
+    def browser_cookies(self) -> dict:
+        self.browser_login()
+        cookies = {}
+        for browser_cookie in self.browser.get_cookies():
+            cookies[browser_cookie["name"]] = browser_cookie["value"]
+        return cookies
+
+    def browser_login(self) -> None:
+        while True:
+            raise NotImplementedError(self)
+
+    def save_cookies(self, *cookies: str) -> None:
+        to_save = [
+            {
+                "name": cookie_name,
+                "value": self.cookies[cookie_name],
+            }
+            for cookie_name in cookies
+        ]
+        save_cookies_for(self.session_domain, cookies=to_save)
+
+    def load_cookies(self) -> None:
+        """Load cookies for a domain."""
+        for cookie in load_cookies_for(self.session_domain):
+            self.cookies.set(**cookie)

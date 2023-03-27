@@ -15,14 +15,6 @@ if TYPE_CHECKING:
 
 
 class EHentaiSession(Session):
-    @cached_property
-    def browser_cookies(self) -> dict:
-        self.browser_login()
-        cookies = {}
-        for browser_cookie in self.browser.get_cookies():
-            cookies[browser_cookie["name"]] = browser_cookie["value"]
-        return cookies
-
     def request(self, *args, **kwargs) -> Response:
         return super().request(*args, cookies=self.browser_cookies, **kwargs)
 
@@ -34,7 +26,6 @@ class EHentaiSession(Session):
         if self.browser.attempt_login_with_cookies(domain="ehentai",
                                                    verification_url=verification_url,
                                                    verification_element=verification_element):
-            self.__browser_load_exhentai_cookies()
             return
 
         self.browser.compile_login_form(
@@ -48,15 +39,6 @@ class EHentaiSession(Session):
             verification_url=verification_url,
             verification_element=verification_element,
         )
-        self.__browser_load_exhentai_cookies()
-
-    def __browser_load_exhentai_cookies(self) -> None:
-        cookies = self.browser._get_cookies_for("ehentai")
-        self.browser.execute_cdp_cmd('Network.enable', {})
-        for cookie in cookies:
-            cookie["domain"] = ".exhentai.org"
-            self.browser.execute_cdp_cmd('Network.setCookie', cookie)
-        self.browser.execute_cdp_cmd('Network.disable', {})
 
     def get_html(self, url: str | Url, *args, **kwargs) -> BeautifulSoup:
         self.browser_login()

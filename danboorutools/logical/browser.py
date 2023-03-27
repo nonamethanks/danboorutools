@@ -3,21 +3,23 @@ from __future__ import annotations
 import atexit
 import datetime
 import os
-import pickle
 import random
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pytz import UTC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.remote.webelement import WebElement
 
 from danboorutools import logger
 from danboorutools.exceptions import NoCookiesForDomainError
+from danboorutools.util.misc import load_cookies_for, save_cookies_for
 
 if TYPE_CHECKING:
+    from selenium.webdriver.remote.webelement import WebElement
+
     from danboorutools.models.url import Url
 
 
@@ -47,32 +49,13 @@ class Browser(Chrome):
     def __del__(self) -> None:
         self.quit()
 
-    def _get_cookies_for(self, domain: str) -> list[dict[str, str]]:
-        filename = self.cookie_dir / f"cookies-{domain}.pkl"
-        try:
-            cookies: list[dict] = pickle.load(filename.open("rb"))
-        except FileNotFoundError as e:
-            raise NoCookiesForDomainError(domain) from e
-        for cookie in cookies:
-            if "expiry" in cookie:
-                cookie["expires"] = cookie["expiry"]
-                del cookie["expiry"]
-        return cookies
-
     def load_cookies(self, domain: str) -> None:
         """Load cookies for a domain."""
         self.delete_all_cookies()
-        self.execute_cdp_cmd('Network.enable', {})
-        cookies = self._get_cookies_for(domain)
-        for cookie in cookies:
-            self.execute_cdp_cmd('Network.setCookie', cookie)
-        self.execute_cdp_cmd('Network.disable', {})
-
-    def save_cookies(self, domain: str) -> None:
-        """Save cookies for a domain."""
-        filename = self.cookie_dir / f"cookies-{domain}.pkl"
-        self.cookie_dir.mkdir(exist_ok=True)
-        pickle.dump(self.get_cookies(), filename.open("wb+"))
+        self.execute_cdp_cmd("Network.enable", {})
+        for cookie in load_cookies_for(domain):
+            self.execute_cdp_cmd("Network.setCookie", cookie)
+        self.execute_cdp_cmd("Network.disable", {})
 
     def get(self, url: str | Url) -> None:
         if not isinstance(url, str):
@@ -89,11 +72,7 @@ class Browser(Chrome):
                               full_match: bool = True,
                               ) -> list[WebElement]:
         """Find an element based on its text in a page."""
-        if full_match:
-            search_string = f"//*[text()='{text}']"
-        else:
-            search_string = f"//*[contains(text(), '{text}')]"
-
+        search_string = f"//*[text()='{text}']" if full_match else f"//*[contains(text(), '{text}')]"
         element = element or self
         elements = element.find_elements("xpath", search_string)
         return elements
@@ -157,11 +136,11 @@ class Browser(Chrome):
             raise
         else:
             logger.debug("Login successful. Saving cookies...")
-            self.save_cookies(domain)
+            save_cookies_for(domain, self.get_cookies())
 
     def screenshot(self) -> Path:
         """Take a screenshot of the current page."""
-        now_str = datetime.datetime.utcnow().isoformat(timespec="milliseconds")
+        now_str = datetime.datetime.now(tz=UTC).isoformat(timespec="milliseconds")
         filename = (self.screenshot_dir / f"screenshot_{now_str}.png").resolve()
         self.save_screenshot(filename)
         logger.debug(f"Screenshot saved at {filename}")

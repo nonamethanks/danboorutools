@@ -40,7 +40,7 @@ class NoCookiesForDomainError(FileNotFoundError):
 
     def __init__(self, domain: str) -> None:
         self.domain = domain
-        message = f"Tried to restore Selenium cookies for {self.domain} but found none."
+        message = f"Tried to restore cookies for {self.domain} but found none."
         super().__init__(message)
 
 
