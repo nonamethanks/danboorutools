@@ -22,16 +22,23 @@ class TwitterFeed(FeedWithSeparateArtists):
     def _extract_posts_from_each_artist(self, artist: int) -> Iterator[list[TwitterTweetData]]:
         previously_found_max_id = self.previous_max_ids.get(artist, 0)
         current_max_id_found = 0
+        current_min_id_found = 0
 
         while True:
-            tweets = self.session.get_user_tweets(user_id=artist, since_id=previously_found_max_id, max_id=current_max_id_found)
-
-            current_max_id_found = max(current_max_id_found, previously_found_max_id, *[tweet.id for tweet in tweets])
-            if current_max_id_found != previously_found_max_id:
-                self.previous_max_ids[artist] = current_max_id_found
+            tweets = self.session.get_user_tweets(
+                user_id=artist,
+                max_id=current_min_id_found,
+                since_id=previously_found_max_id,
+            )
 
             if not tweets:
                 return
+
+            current_max_id_found = max(tweets, key=lambda x: x.id).id
+            current_min_id_found = min(tweets, key=lambda x: x.id).id
+
+            if current_max_id_found < self.previous_max_ids.get(artist, 0):
+                self.previous_max_ids[artist] = current_max_id_found
 
             yield tweets
 
