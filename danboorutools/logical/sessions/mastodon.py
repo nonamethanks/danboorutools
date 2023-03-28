@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 
 from mastodon import Mastodon
 from mastodon.errors import MastodonNetworkError
@@ -56,6 +57,17 @@ class MastodonSession(Session):
                 return user
         raise NotImplementedError(domain, username)
 
+    @memoize
+    def get_feed(self, domain: str, max_id: int) -> list[MastodonPostData]:
+        posts: list[dict] = self.api(domain).timeline_home(
+            max_id=max_id or None,
+            only_media=True,
+            local=True,
+            remote=False,
+        )
+
+        return [MastodonPostData(**post) for post in posts]
+
 
 class MastodonArtistData(BaseModel):
     id: int
@@ -81,3 +93,15 @@ class MastodonArtistData(BaseModel):
             urls += [Url.parse(u) for u in extract_urls_from_string(field["value"])]
 
         return list(dict.fromkeys(urls))
+
+
+class MastodonPostData(BaseModel):
+    id: int
+    url: str
+    media_attachments: list[dict]
+    created_at: datetime
+    favourites_count: int
+
+    @property
+    def assets(self) -> list[str]:
+        return [image_data["url"] for image_data in self.media_attachments]
