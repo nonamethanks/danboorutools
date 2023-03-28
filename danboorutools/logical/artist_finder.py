@@ -172,7 +172,7 @@ class ArtistFinder:
                 logger.debug("Skipping because it's a useless url...")
                 continue
 
-            if isinstance(related_url, (YoutubeVideoUrl, YoutubePlaylistUrl)):
+            if isinstance(related_url, YoutubeVideoUrl | YoutubePlaylistUrl):
                 logger.debug(f"Skipping {related_url} because it has a high chance of being a random video")
                 continue
 
