@@ -53,7 +53,7 @@ class FanboxArtistData(BaseModel):
         from danboorutools.logical.urls.pixiv import PixivArtistUrl
 
         results = [Url.parse(link) for link in self.profileLinks]
-        pixiv_url = PixivArtistUrl.build(PixivArtistUrl, user_id=self.user.userId)
+        pixiv_url = PixivArtistUrl.build(user_id=self.user.userId)
         if pixiv_url not in results:
             # you never know with these sites
             results += [pixiv_url]

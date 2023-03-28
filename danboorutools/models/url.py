@@ -53,19 +53,19 @@ class Url:
             raise NotImplementedError(f"{cls} hasn't implemented .normalize()")
 
     @ring.lru()
-    @staticmethod
     @final
-    def build(url_type: type[UrlSubclass], **url_properties) -> UrlSubclass:
+    @classmethod
+    def build(cls: type[UrlSubclass], /, **url_properties) -> UrlSubclass:
         """Build an Url from its url properties."""
-        if not url_type.normalizable:
-            raise NotImplementedError(f"{url_type} is not buildable.")
-        normalized_url = url_type.normalize(**url_properties)
+        if not cls.normalizable:
+            raise NotImplementedError(f"{cls} is not buildable.")
+        normalized_url = cls.normalize(**url_properties)
         if not normalized_url:
             raise ValueError(normalized_url, url_properties)
 
-        instance = url_type(url=ParsableUrl(normalized_url))
+        instance = cls(url=ParsableUrl(normalized_url))
 
-        annotations: dict[str, str] = url_type.__annotations__
+        annotations: dict[str, str] = cls.__annotations__
         for property_name, property_value in url_properties.items():
             if isinstance(annotation := annotations[property_name], str):  # `from __future__ import annotations` is active
                 try:

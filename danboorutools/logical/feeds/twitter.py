@@ -49,7 +49,7 @@ class TwitterFeed(FeedWithSeparateArtists):
         if not post_object.asset_urls:
             return
 
-        post = TwitterPostUrl.build(TwitterPostUrl, username=post_object.user.screen_name, post_id=post_object.id)
+        post = TwitterPostUrl.build(username=post_object.user.screen_name, post_id=post_object.id)
 
         self._register_post(
             post=post,

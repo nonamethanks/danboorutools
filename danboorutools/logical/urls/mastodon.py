@@ -35,7 +35,7 @@ class MastodonArtistUrl(ArtistUrl, MastodonUrl):
 
     @property
     def user_id_url(self) -> MastodonWebIdUrl:
-        return Url.build(MastodonWebIdUrl, user_id=self.artist_data.id, site=self.site)
+        return MastodonWebIdUrl.build(user_id=self.artist_data.id, site=self.site)
 
     @property
     def related(self) -> list[Url]:
@@ -61,7 +61,7 @@ class MastodonWebIdUrl(InfoUrl, MastodonUrl):
 
     @property
     def artist_url(self) -> MastodonArtistUrl:
-        return Url.build(MastodonArtistUrl, username=self.artist_data.username, site=self.site)
+        return MastodonArtistUrl.build(username=self.artist_data.username, site=self.site)
 
     @property
     def related(self) -> list[Url]:

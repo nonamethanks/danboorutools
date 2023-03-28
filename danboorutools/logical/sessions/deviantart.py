@@ -89,7 +89,7 @@ class DeviantartUserData(BaseModel):
         urls = [Url.parse(data["value"]) for data in self.socialLinks]
 
         if self.twitterUsername:
-            urls += [Url.build(TwitterArtistUrl, username=self.twitterUsername)]
+            urls += [TwitterArtistUrl.build(username=self.twitterUsername)]
 
         if self.website:
             website = self.website if self.website.startswith("http") else f"https://{self.website}"

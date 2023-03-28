@@ -18,7 +18,7 @@ class FantiaFeed(Feed):
             yield page_json["posts"]
 
     def _process_post(self, post_object: dict) -> None:
-        post = FantiaPostUrl.build(FantiaPostUrl, post_id=post_object["id"], post_type="posts")
+        post = FantiaPostUrl.build(post_id=post_object["id"], post_type="posts")
 
         self._register_post(
             post=post,

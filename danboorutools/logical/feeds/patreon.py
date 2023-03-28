@@ -40,7 +40,7 @@ class PatreonFeed(Feed):
         username_match = re.search(r"\/join\/(\w+)\/checkout", upgrade_url)
         if not username_match:
             raise NotImplementedError
-        post.gallery = PatreonArtistUrl.build(PatreonArtistUrl, username=username_match.groups()[0])
+        post.gallery = PatreonArtistUrl.build(username=username_match.groups()[0])
 
         self._register_post(
             post=post,

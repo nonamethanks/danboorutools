@@ -1,5 +1,3 @@
-from functools import cached_property
-
 from danboorutools.logical.urls.twitter import TwitterArtistUrl
 from danboorutools.models.url import ArtistUrl, PostUrl, Url
 
@@ -15,7 +13,7 @@ class TogetterArtistUrl(ArtistUrl, TogetterUrl):
 
     @property
     def related(self) -> list[Url]:
-        return [Url.build(TwitterArtistUrl, username=self.username)]
+        return [TwitterArtistUrl.build(username=self.username)]
 
     @property
     def secondary_names(self) -> list[str]:

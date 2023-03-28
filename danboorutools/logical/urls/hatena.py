@@ -24,7 +24,7 @@ class HatenaFotolifeArtistUrl(ArtistUrl, HatenaUrl):
 
     @property
     def related(self) -> list[Url]:
-        return [Url.build(HatenaProfileUrl, username=self.username)]
+        return [HatenaProfileUrl.build(username=self.username)]
 
 
 class HatenaFotolifePostUrl(PostUrl, HatenaUrl):

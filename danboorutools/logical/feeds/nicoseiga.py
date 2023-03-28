@@ -34,7 +34,7 @@ class NicoSeigaFeed(Feed):
 
         post = Url.parse(post_object.object["url"])
         assert isinstance(post, NicoSeigaIllustUrl)
-        post.gallery = Url.build(NicoSeigaArtistUrl, user_id=int(post_object.muteContext["sender"]["id"]))
+        post.gallery = NicoSeigaArtistUrl.build(user_id=int(post_object.muteContext["sender"]["id"]))
 
         image = f"https://seiga.nicovideo.jp/image/source/{post.illust_id}"
 

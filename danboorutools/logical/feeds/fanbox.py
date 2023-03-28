@@ -24,7 +24,7 @@ class FanboxFeed(Feed):
     def _process_post(self, post_object: int) -> None:
         post_data = self.session.post_data(post_object)
 
-        post = FanboxPostUrl.build(FanboxPostUrl, username=post_data.creatorId, post_id=post_data.id)
+        post = FanboxPostUrl.build(username=post_data.creatorId, post_id=post_data.id)
 
         self._register_post(
             post=post,

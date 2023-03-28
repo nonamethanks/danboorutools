@@ -100,10 +100,10 @@ class SaucenaoSession(Session):
     def __parse_pixiv_result(self, saucenao_result: dict) -> SaucenaoArtistResult:
         pixiv_id = saucenao_result["member_id"]
         stacc = saucenao_result["member_login_name"]
-        extra_urls = [Url.build(PixivStaccUrl, stacc=stacc)] if stacc else []
+        extra_urls = [PixivStaccUrl.build(stacc=stacc)] if stacc else []
         secondary_names = [stacc, f"pixiv {pixiv_id}"] if stacc else [f"pixiv {pixiv_id}"]
 
-        pixiv_artist_url = Url.build(PixivArtistUrl, user_id=pixiv_id)
+        pixiv_artist_url = PixivArtistUrl.build(user_id=pixiv_id)
 
         return SaucenaoArtistResult(
             found_urls=[pixiv_artist_url, *extra_urls],
@@ -137,10 +137,10 @@ class SaucenaoSession(Session):
             if creator in saucenao_result["data"]["material"]:
                 return None  # as above
             if match := re.match(r"^pixiv id (\d+)$", creator):
-                result.found_urls += [Url.build(PixivArtistUrl, user_id=int(match.groups()[0]))]
+                result.found_urls += [PixivArtistUrl.build(user_id=int(match.groups()[0]))]
             else:
                 stacc = creator.replace(" ", "_")
-                result.found_urls += [Url.build(PixivStaccUrl, stacc=stacc)]
+                result.found_urls += [PixivStaccUrl.build(stacc=stacc)]
                 result.secondary_names += [stacc]
         else:
             raise NotImplementedError

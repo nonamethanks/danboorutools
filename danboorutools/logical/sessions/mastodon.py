@@ -86,7 +86,7 @@ class MastodonArtistData(BaseModel):
         if self.oauth_authentications:
             for auth_data in self.oauth_authentications:
                 if auth_data["provider"] == "pixiv":
-                    urls += [Url.build(PixivArtistUrl, user_id=int(auth_data["uid"]))]
+                    urls += [PixivArtistUrl.build(user_id=int(auth_data["uid"]))]
                 else:
                     raise NotImplementedError(auth_data, self.username)
 

@@ -81,7 +81,7 @@ class SkebArtistData(BaseModel):
             raise NotImplementedError(self.enty_id)
 
         if self.fanbox_id:
-            urls += [Url.build(FanboxArtistUrl, username=self.fanbox_id)]
+            urls += [FanboxArtistUrl.build(username=self.fanbox_id)]
 
         if self.fantia_id:
             raise NotImplementedError(self.fantia_id)
@@ -93,19 +93,19 @@ class SkebArtistData(BaseModel):
             raise NotImplementedError(self.patreon_id)
 
         if self.pixiv_id:
-            urls += [Url.build(PixivArtistUrl, user_id=self.pixiv_id)]
+            urls += [PixivArtistUrl.build(user_id=self.pixiv_id)]
 
         if self.skima_id:
             raise NotImplementedError(self.skima_id)
 
         if self.twitter_uid:
-            urls += [Url.build(TwitterIntentUrl, intent_id=self.twitter_uid)]
+            urls += [TwitterIntentUrl.build(intent_id=self.twitter_uid)]
 
         if self.twitter_screen_name:
-            urls += [Url.build(TwitterArtistUrl, username=self.twitter_screen_name)]
+            urls += [TwitterArtistUrl.build(username=self.twitter_screen_name)]
 
         if self.youtube_id:
-            urls += [Url.build(YoutubeChannelUrl, channel_id=self.youtube_id)]
+            urls += [YoutubeChannelUrl.build(channel_id=self.youtube_id)]
 
         if self.url:
             urls.append(Url.parse(self.url))

@@ -16,5 +16,5 @@ class TwpfUrl(InfoUrl):
 
     @property
     def related(self) -> list[Url]:
-        twitter_url = Url.build(TwitterArtistUrl, username=self.username)
+        twitter_url = TwitterArtistUrl.build(username=self.username)
         return [twitter_url]

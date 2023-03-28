@@ -24,7 +24,7 @@ class PrivatterArtistUrl(ArtistUrl, PrivatterUrl):
 
     @property
     def related(self) -> list[Url]:
-        return [Url.build(TwitterArtistUrl, username=self.username)]
+        return [TwitterArtistUrl.build(username=self.username)]
 
 
 class PrivatterPostUrl(PostUrl, PrivatterUrl):
@@ -38,7 +38,7 @@ class PrivatterPostUrl(PostUrl, PrivatterUrl):
         username = self.html.select_one("#right .panel-default a.panel-title").text.strip()
         if not username.startswith("@"):
             raise NotImplementedError(self, username)
-        return Url.build(PrivatterArtistUrl, username=username.removeprefix("@"))
+        return PrivatterArtistUrl.build(username=username.removeprefix("@"))
 
 
 class PrivatterImageUrl(PostAssetUrl, PrivatterUrl):

@@ -103,7 +103,7 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
 
     @cached_property
     def post(self) -> PixivPostUrl:
-        return self.build(PixivPostUrl, post_id=self.post_id, unlisted=self.unlisted)
+        return PixivPostUrl.build(post_id=self.post_id, unlisted=self.unlisted)
 
     @property
     def full_size(self) -> str:
@@ -117,13 +117,14 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
         if not self.stacc:
             return None
 
+        stacc = PixivStaccUrl.build(stacc=self.stacc)
         try:
-            return self.build(PixivStaccUrl, stacc=self.stacc).me_from_stacc.resolved
+            return stacc.me_from_stacc.resolved
         except DeadUrlError:
-            return self.build(PixivStaccUrl, stacc=self.stacc)
+            return stacc
         except ProxyError as e:
             if "Remote end closed connection without response" in str(e):
-                return self.build(PixivStaccUrl, stacc=self.stacc)
+                return stacc
             raise
 
 
@@ -187,7 +188,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
 
 def _process_post(self: PixivArtistUrl | PixivFeed, post_object: PixivGroupedIllustData) -> None:
     # kept separate so it can be imported by PixivFeed
-    post = PixivPostUrl.build(PixivPostUrl, post_id=post_object.id)
+    post = PixivPostUrl.build(post_id=post_object.id)
 
     if post_object.type == 2:
         post_ugoira_data = post.ugoira_data
@@ -241,7 +242,7 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
 
     @property
     def stacc_url(self) -> PixivStaccUrl:
-        return self.build(PixivStaccUrl, stacc=self.artist_data.user_account)
+        return PixivStaccUrl.build(stacc=self.artist_data.user_account)
 
     @property
     def artist_data(self) -> PixivArtistData:
@@ -264,7 +265,7 @@ class PixivStaccUrl(InfoUrl, PixivUrl):
 
     @property
     def me_from_stacc(self) -> PixivMeUrl:
-        return self.build(PixivMeUrl, stacc=self.stacc)
+        return PixivMeUrl.build(stacc=self.stacc)
 
     @property
     def related(self) -> list[Url]:

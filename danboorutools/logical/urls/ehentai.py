@@ -69,10 +69,9 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
         gallery_token = self.session.get_gallery_token_from_page_data(gallery_id=self.gallery_id,
                                                                       page_token=self.page_token,
                                                                       page_number=self.page_number)
-        return self.build(url_type=EHentaiGalleryUrl,
-                          gallery_token=gallery_token,
-                          gallery_id=self.gallery_id,
-                          subsite=self.subsite)
+        return EHentaiGalleryUrl.build(gallery_token=gallery_token,
+                                       gallery_id=self.gallery_id,
+                                       subsite=self.subsite)
 
     def _extract_assets(self) -> list[EHentaiImageUrl]:
         asset = self._get_direct_url()
@@ -128,8 +127,7 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
             image.created_at = self.created_at
             image._files = [file]
 
-            page = self.build(
-                url_type=EHentaiPageUrl,
+            page = EHentaiPageUrl.build(
                 subsite=self.subsite,
                 page_token=image.page_token,
                 gallery_id=self.gallery_id,

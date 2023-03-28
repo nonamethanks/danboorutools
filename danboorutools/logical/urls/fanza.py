@@ -101,7 +101,7 @@ class FanzaBookWorkUrl(PostUrl, FanzaUrl):
         if len(self.book_data.author) != 1:
             raise NotImplementedError(self, self.book_data.author)
         author_id = self.book_data.author[0]["id"]
-        return self.build(FanzaBookAuthorUrl, user_id=int(author_id))
+        return FanzaBookAuthorUrl.build(user_id=int(author_id))
 
 
 class FanzaBookNoSeriesUrl(RedirectUrl, FanzaUrl):

@@ -82,9 +82,9 @@ class PixivArtistData(BaseModel):
         urls = [Url.parse(url_dict["url"]) for url_dict in self.social.values()]
 
         if self.fanbox_details:
-            urls += [FanboxArtistUrl.build(FanboxArtistUrl, username=self.fanbox_details["creator_id"])]
+            urls += [FanboxArtistUrl.build(username=self.fanbox_details["creator_id"])]
 
-        sketch_url = PixivSketchArtistUrl.build(PixivSketchArtistUrl, stacc=self.user_account)
+        sketch_url = PixivSketchArtistUrl.build(stacc=self.user_account)
         if not sketch_url.is_deleted:
             urls += [sketch_url]
 

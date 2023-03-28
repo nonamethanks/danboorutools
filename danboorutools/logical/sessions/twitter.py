@@ -82,7 +82,7 @@ class TwitterUserData(BaseModel):
         related: list[Url] = []
         from danboorutools.logical.urls.twitter import TwitterIntentUrl
 
-        related += [Url.build(TwitterIntentUrl, intent_id=self.id)]
+        related += [TwitterIntentUrl.build(intent_id=self.id)]
 
         assert self.entities  # so far i only found this == None if from tweet data
         urls = self.entities.get("url", {}).get("urls", [])

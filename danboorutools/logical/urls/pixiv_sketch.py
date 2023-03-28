@@ -28,7 +28,7 @@ class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
     @property
     def stacc_url(self) -> PixivStaccUrl:
         from danboorutools.logical.urls.pixiv import PixivStaccUrl
-        return self.build(PixivStaccUrl, stacc=self.stacc)
+        return PixivStaccUrl.build(stacc=self.stacc)
 
     @property
     def related(self) -> list[Url]:

@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
 from functools import cached_property
+from typing import TYPE_CHECKING
 
 from danboorutools.logical.sessions.newgrounds import NewgroundsSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 from danboorutools.util.time import datetime_from_string
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class NewgroundsUrl(Url):
@@ -45,7 +48,7 @@ class NewgroundsPostUrl(PostUrl, NewgroundsUrl):
 
     @property
     def gallery(self) -> NewgroundsArtistUrl:
-        return NewgroundsArtistUrl.build(NewgroundsArtistUrl, username=self.username)
+        return NewgroundsArtistUrl.build(username=self.username)
 
 
 class NewgroundsDumpUrl(PostUrl, NewgroundsUrl):

@@ -31,8 +31,8 @@ class NijieFeed(Feed):
 
     def _process_post(self, post_object: Tag) -> None:
         img_thumb = post_object.select_one("img.mozamoza")
-        post = NijiePostUrl.build(NijiePostUrl, post_id=int(img_thumb["illust_id"]))
-        post.gallery = NijieArtistUrl.build(NijieArtistUrl, user_id=int(img_thumb["user_id"]))
+        post = NijiePostUrl.build(post_id=int(img_thumb["illust_id"]))
+        post.gallery = NijieArtistUrl.build(user_id=int(img_thumb["user_id"]))
 
         self._register_post(
             post=post,

@@ -31,7 +31,7 @@ class FiverrPostUrl(PostUrl, FiverrUrl):
 
     @property
     def gallery(self) -> FiverrArtistUrl:
-        return self.build(FiverrArtistUrl, artist_name=self.artist_name)
+        return FiverrArtistUrl.build(artist_name=self.artist_name)
 
 
 class FiverrShareUrl(RedirectUrl, FiverrUrl):

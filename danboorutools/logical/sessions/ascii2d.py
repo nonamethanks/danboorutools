@@ -131,7 +131,7 @@ class Ascii2dArtistResult:
                 data["primary_names"].append(artist_name)
             elif site == "twitter":
                 assert isinstance(second_url, TwitterIntentUrl)
-                data["found_urls"].append(Url.build(TwitterArtistUrl, username=artist_name))
+                data["found_urls"].append(TwitterArtistUrl.build(username=artist_name))
                 data["secondary_names"].append(artist_name)
             else:
                 raise NotImplementedError(site, artist_element, self.search_url)
