@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from datetime import datetime
 
+import ring
 from mastodon import Mastodon
 from mastodon.errors import MastodonNetworkError
 from requests.exceptions import ReadTimeout
@@ -10,11 +11,11 @@ from requests.exceptions import ReadTimeout
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.pixiv import PixivArtistUrl
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel, extract_urls_from_string, memoize
+from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 
 class MastodonSession(Session):
-    @memoize
+    @ring.lru()
     def api(self, domain: str) -> Mastodon:
         if "pawoo.net" in domain:
             site = "PAWOO"
@@ -33,7 +34,7 @@ class MastodonSession(Session):
             request_timeout=self.DEFAULT_TIMEOUT,
         )
 
-    @memoize
+    @ring.lru()
     def user_data(self, domain: str, /, user_id: int | None = None, username: str | None = None) -> MastodonArtistData:
         if not username and not user_id:
             raise ValueError(username, user_id)
@@ -50,14 +51,14 @@ class MastodonSession(Session):
         else:
             return MastodonArtistData(**user_data)
 
-    @memoize
+    @ring.lru()
     def _user_data_from_username(self, /, domain: str, username: str) -> dict:
         for user in self.api(domain).account_search(f"{username}@{domain}"):
             if user["username"] == username:
                 return user
         raise NotImplementedError(domain, username)
 
-    @memoize
+    @ring.lru()
     def get_feed(self, domain: str, max_id: int) -> list[MastodonPostData]:
         posts: list[dict] = self.api(domain).timeline_home(
             max_id=max_id or None,

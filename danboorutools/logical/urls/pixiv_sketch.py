@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import cached_property
 from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import DeadUrlError
@@ -41,10 +42,11 @@ class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
     def secondary_names(self) -> list[str]:
         return [self.stacc]
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         try:
-            response = self.session.head_cached(self.normalized_url, proxies={})  # proxies don't like pixiv sketch's 404s for some reason
+            # proxies don't like pixiv sketch's 404s for some reason
+            response = self.session.head(self.normalized_url, cached=True, proxies={})
         except DeadUrlError:
             return True
         else:

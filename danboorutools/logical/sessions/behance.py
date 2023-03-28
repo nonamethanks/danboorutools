@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+import ring
+
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel, memoize
+from danboorutools.util.misc import BaseModel
 
 
 class BehanceSession(Session):
-    @memoize
+    @ring.lru()
     def user_data(self, username: str) -> BehanceUserData:
         headers = {"x-requested-with": "XMLHttpRequest"}
-        user_data = self.get_json_cached(f"https://www.behance.net/{username}/projects", headers=headers)
+        user_data = self.get_json(f"https://www.behance.net/{username}/projects", headers=headers)
         return BehanceUserData(**user_data["profile"]["owner"])
 
 

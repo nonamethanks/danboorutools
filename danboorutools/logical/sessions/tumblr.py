@@ -3,11 +3,12 @@ from __future__ import annotations
 import os
 from functools import cached_property
 
+import ring
 from pytumblr import TumblrRestClient
 
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel, extract_urls_from_string, memoize
+from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 
 class TumblrSession(Session):
@@ -20,7 +21,7 @@ class TumblrSession(Session):
             os.environ["TUMBLR_ACCESS_TOKEN_SECRET"],
         )
 
-    @memoize
+    @ring.lru()
     def blog_data(self, blog_name: str) -> TumblrBlogData:
         blog_data = self.api.blog_info(blog_name)
         return TumblrBlogData(**blog_data["blog"])
@@ -33,4 +34,4 @@ class TumblrBlogData(BaseModel):
 
     @property
     def related_urls(self) -> list[Url]:
-        return [Url.parse(u) for u in extract_urls_from_string(self.description) ]
+        return [Url.parse(u) for u in extract_urls_from_string(self.description)]

@@ -5,9 +5,11 @@ import re
 from typing import TYPE_CHECKING
 from urllib.parse import parse_qs
 
+import ring
+
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel, memoize
+from danboorutools.util.misc import BaseModel
 
 if TYPE_CHECKING:
     from requests import Response
@@ -20,9 +22,9 @@ class YoutubeSession(Session):
         kwargs["cookies"] = kwargs.get("cookies", {}) | {"CONSENT": "YES+cb.20211212-16-p1.en+FX+793"}
         return super().request(*args, **kwargs)
 
-    @memoize
+    @ring.lru()
     def channel_data(self, artist_url: str) -> YoutubeChannelData:
-        request = self.get_cached(f"{artist_url}/about")
+        request = self.get(f"{artist_url}/about", cached=True)
         json_data = JSON_DATA_PATTERN.search(request.text)
         if not json_data:
             raise NotImplementedError

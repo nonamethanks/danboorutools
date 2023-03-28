@@ -1,21 +1,18 @@
 from __future__ import annotations
 
-import functools
 import pickle
 import random
 import re
-import sys
-import weakref
-from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
-import _testcapi
-from gelidum import freeze
 from pydantic import BaseModel as BadBaseModel
 from pydantic import PrivateAttr, ValidationError
 
 from danboorutools.exceptions import NoCookiesForDomainError
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 def random_string(length: int) -> str:
@@ -39,50 +36,6 @@ def natsort_array(array: Iterable[Variable]) -> list[Variable]:
     # https://stackoverflow.com/a/4623518/11558993
     return sorted(array, key=lambda key: [tryint(c) for c in re.split("([0-9]+)", str(key))])
 
-
-#################################
-
-
-MemoizedFunction = TypeVar("MemoizedFunction", bound=Callable[..., Any])
-
-
-def memoize(func: MemoizedFunction) -> MemoizedFunction:
-    @functools.wraps(func)
-    def wrapped_func(self, *args, **kwargs):  # noqa: ANN001,ANN202
-        self_weak = weakref.ref(self)
-
-        @functools.wraps(func)
-        @functools.lru_cache
-        def cached_method(*args, **kwargs):  # noqa: ANN202
-            try:
-                return func(self_weak(), *args, **kwargs)
-            except:
-                _type, exception, _traceback = sys.exc_info()
-                _testcapi.set_exc_info(_type, exception, _traceback.tb_next)  # type: ignore[union-attr]
-                del _type, exception, _traceback
-                raise
-
-        @functools.wraps(cached_method)
-        def frozen_method(*args, **kwargs):  # noqa: ANN202
-            try:
-                return cached_method(*freeze(args), **freeze(kwargs))
-            except:
-                _type, exception, _traceback = sys.exc_info()
-                _testcapi.set_exc_info(_type, exception, _traceback.tb_next)  # type: ignore[union-attr]
-                del _type, exception, _traceback
-                raise
-
-        setattr(self, func.__name__, frozen_method)
-
-        try:
-            return frozen_method(*args, **kwargs)
-        except:
-            _type, exception, _traceback = sys.exc_info()
-            _testcapi.set_exc_info(_type, exception, _traceback.tb_next)  # type: ignore[union-attr]
-            del _type, exception, _traceback
-            raise
-
-    return wrapped_func  # type: ignore[return-value]
 
 #################################
 

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import ring
+
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel, memoize
+from danboorutools.util.misc import BaseModel
 
 
 class MisskeySession(Session):
-    @memoize
+    @ring.lru()
     def artist_data(self, username: str) -> MisskeyUserData:
         response = self.post(
             "https://misskey.io/api/users/show",

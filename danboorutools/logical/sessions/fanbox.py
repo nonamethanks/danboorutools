@@ -3,18 +3,21 @@ from __future__ import annotations
 import os
 from datetime import datetime
 
+import ring
+
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel, memoize
+from danboorutools.util.misc import BaseModel
 
 
 class FanboxSession(Session):
+    @ring.lru()
     def artist_data(self, username: str) -> FanboxArtistData:
         headers = {"Origin": f"https://{username}.fanbox.cc", "Referer": f"https://{username}.fanbox.cc/"}
         artist_data = self.get_and_parse_fanbox_json(f"https://api.fanbox.cc/creator.get?creatorId={username}", headers=headers)
         return FanboxArtistData(**artist_data)
 
-    @memoize
+    @ring.lru()
     def post_data(self, post_id: int) -> FanboxPostData:
         post_json = self.get_and_parse_fanbox_json(f"https://api.fanbox.cc/post.info?postId={post_id}")
         return FanboxPostData(**post_json)
@@ -25,7 +28,7 @@ class FanboxSession(Session):
         if use_cookies:
             kwargs["cookies"] = {"FANBOXSESSID": os.environ["FANBOX_FANBOXSESSID"]} | kwargs.get("cookies", {})
 
-        data = self.get_json_cached(json_url, *args, **kwargs)
+        data = self.get_json(json_url, *args, **kwargs)
         if data.get("error") == "general_error":
             raise NotImplementedError(f"Couldn't get the data from {json_url}: {data}")
 

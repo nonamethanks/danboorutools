@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import re
 
+import ring
+
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import memoize
 
 BEARER_TOKEN_PATTERN = re.compile(r"accessToken\":\"([\w-]+)\"")
 
@@ -12,10 +13,10 @@ BEARER_TOKEN_PATTERN = re.compile(r"accessToken\":\"([\w-]+)\"")
 class RedditSession(Session):
     bearer_token: str | None = None
 
-    @memoize
+    @ring.lru()
     def get_social_links(self, username: str) -> list[Url]:
         if not self.bearer_token:
-            response = self.get_cached(f"https://www.reddit.com/user/{username}")
+            response = self.get(f"https://www.reddit.com/user/{username}", cached=True)
             match = BEARER_TOKEN_PATTERN.search(response.text)
             if not match:
                 raise NotImplementedError(username, response.status_code)

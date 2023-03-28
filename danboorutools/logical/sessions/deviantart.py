@@ -6,17 +6,18 @@ import re
 from functools import cached_property
 
 import deviantart
+import ring
 
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.twitter import TwitterArtistUrl
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel, memoize
+from danboorutools.util.misc import BaseModel
 
 data_pattern = re.compile(r"window.__INITIAL_STATE__ = JSON.parse\(\"(.*)\"\);")
 
 
 class DeviantartSession(Session):
-    @memoize
+    @ring.lru()
     def user_data(self, username: str) -> DeviantartUserData:
         html = self.get_html(f"https://www.deviantart.com/{username}")
         script = next(el.string for el in html.select("script") if el.string and "window.__INITIAL_STATE__ = JSON.parse" in el.string)
@@ -38,7 +39,7 @@ class DeviantartSession(Session):
             os.environ["DEVIANTART_CLIENT_SECRET"],
         )
 
-    @memoize
+    @ring.lru()
     def get_followed_artists(self) -> list[str]:
         artists = []
         offset = 0
@@ -59,7 +60,7 @@ class DeviantartSession(Session):
 
             offset = page_json["next_offset"]
 
-    @memoize
+    @ring.lru()
     def get_artist_posts(self, artist: str, offset: int = 0) -> DeviantartPostsApiData:
         get_data = {
             "username": artist,
@@ -70,7 +71,7 @@ class DeviantartSession(Session):
         page_json = self.api._req("/gallery/all", get_data=get_data)
         return DeviantartPostsApiData(**page_json)
 
-    @memoize
+    @ring.lru()
     def get_download_url(self, uuid: str) -> str:
         data = self.api._req(f"/deviation/download/{uuid}", get_data={"mature_content": True})
         return data["src"]

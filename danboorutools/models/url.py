@@ -4,6 +4,7 @@ import builtins
 from functools import cached_property
 from typing import TYPE_CHECKING, TypeVar, final
 
+import ring
 from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
 
@@ -14,19 +15,10 @@ from danboorutools.models.file import ArchiveFile, File
 from danboorutools.models.has_posts import HasPosts
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Sequence
-
-    # https://github.com/python/mypy/issues/5107#issuecomment-529372406
-    CachedFunc = TypeVar("CachedFunc", bound=Callable)
-
-    def lru_cache(method: CachedFunc) -> CachedFunc:  # pylint: disable=unused-argument  # noqa: ARG001
-        ...
-
+    from collections.abc import Sequence
     from datetime import datetime
 
     from bs4 import BeautifulSoup
-else:
-    from functools import lru_cache
 
 UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 
@@ -60,8 +52,8 @@ class Url:
         else:
             raise NotImplementedError(f"{cls} hasn't implemented .normalize()")
 
+    @ring.lru()
     @staticmethod
-    @lru_cache
     @final
     def build(url_type: type[UrlSubclass], **url_properties) -> UrlSubclass:
         """Build an Url from its url properties."""
@@ -111,7 +103,7 @@ class Url:
     @cached_property
     def is_deleted(self) -> bool:
         try:
-            response = self.session.get_cached(self.normalized_url)
+            response = self.session.get(self.normalized_url, cached=True)
         except DeadUrlError:
             return True
 
@@ -314,7 +306,7 @@ class _AssetUrl(Url):
     @cached_property
     def is_deleted(self) -> bool:
         try:
-            self.session.head_cached(self.normalized_url, allow_redirects=True)
+            self.session.head(self.normalized_url, cached=True, allow_redirects=True)
         except DeadUrlError:
             return True
         else:
@@ -375,7 +367,7 @@ if TYPE_CHECKING:
     from danboorutools.logical.parsers import UrlParser
 
 
-@lru_cache
+@ring.lru()
 def import_parser() -> UrlParser:
     from danboorutools.logical.parsers import UrlParser
     return UrlParser()

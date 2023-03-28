@@ -34,7 +34,7 @@ class AfdianArtistUrl(ArtistUrl, AfdianUrl):
 
     @cached_property
     def _user_data(self) -> dict:
-        response = self.session.get_json_cached(f"https://afdian.net/api/user/get-profile-by-slug?url_slug={self.username}")
+        response = self.session.get_json(f"https://afdian.net/api/user/get-profile-by-slug?url_slug={self.username}")
         return response["data"]["user"]
 
 

@@ -3,10 +3,10 @@ from __future__ import annotations
 from functools import cached_property
 from typing import TYPE_CHECKING
 
+import ring
 from bs4 import BeautifulSoup
 
 from danboorutools.logical.sessions import Session
-from danboorutools.util.misc import memoize
 
 if TYPE_CHECKING:
     from requests import Response
@@ -18,7 +18,7 @@ class EHentaiSession(Session):
     def request(self, *args, **kwargs) -> Response:
         return super().request(*args, cookies=self.browser_cookies, **kwargs)
 
-    @memoize
+    @ring.lru()
     def browser_login(self) -> None:
         verification_url = "https://e-hentai.org/home.php"
         verification_element = ".homebox"

@@ -2,11 +2,12 @@ import os
 import re
 from dataclasses import dataclass
 
+import ring
+
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.pixiv import PixivArtistUrl, PixivStaccUrl, PixivUrl
 from danboorutools.models.danbooru import DanbooruPost
 from danboorutools.models.url import InfoUrl, PostAssetUrl, PostUrl, Url
-from danboorutools.util.misc import memoize
 
 pixiv_id_lookup_artist_pattern = re.compile(
     r"User ID: (?P<id>\d+)Login Username: (?P<stacc>\w+)Display Username\(s\):(?P<name>.*) \(\d+\)\n",
@@ -35,7 +36,7 @@ class SaucenaoSession(Session):
     MAX_CALLS_PER_SECOND = 0.5
     DEFAULT_TIMEOUT = 10
 
-    @memoize
+    @ring.lru()
     def _reverse_search_url(self, image_url: str) -> list[dict[str, dict]]:
         """Reverse search an url."""
         saucenao_url = f"https://saucenao.com/search.php?db=999&output_type=2&numres=16&url={image_url}&api_key={self.API_KEY}"

@@ -3,18 +3,20 @@ from __future__ import annotations
 import os
 from datetime import datetime
 
+import ring
+
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel, memoize
+from danboorutools.util.misc import BaseModel
 
 
 class ArtstationSession(Session):
-    @memoize
+    @ring.lru()
     def artist_data(self, username: str) -> ArtstationArtistData:
-        response = self.get_json_cached(f"https://www.artstation.com/users/{username}.json")
+        response = self.get_json(f"https://www.artstation.com/users/{username}.json")
         return ArtstationArtistData(**response)
 
-    @memoize
+    @ring.lru()
     def get_followed_artists(self) -> list[str]:
         username = os.environ["ARTSTATION_USERNAME"]
         artists: set[str] = set()
@@ -27,16 +29,16 @@ class ArtstationSession(Session):
             else:
                 return list(artists)
 
-    @memoize
+    @ring.lru()
     def post_data(self, post_id: str) -> ArtstationPostData:
         url = f"https://www.artstation.com/projects/{post_id}.json"
         response = self.get_json(url)
         return ArtstationPostData(**response)
 
-    @memoize
+    @ring.lru()
     def get_posts_from_artist(self, artist: str, page: int) -> list[ArtstationPostData]:
         url = f"https://www.artstation.com/users/{artist}/projects.json?page={page}"
-        json_data = self.get_json_cached(url)["data"]
+        json_data = self.get_json(url)["data"]
         return [ArtstationPostData(**post_data) for post_data in json_data]
 
 

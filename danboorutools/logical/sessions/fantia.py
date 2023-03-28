@@ -5,10 +5,11 @@ import os
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+import ring
 from pydantic import validator
 
 from danboorutools.logical.sessions import Session
-from danboorutools.util.misc import BaseModel, memoize
+from danboorutools.util.misc import BaseModel
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -24,18 +25,18 @@ class FantiaSession(Session):
         kwargs["cookies"] = self._cookies | kwargs.get("cookies", {})
         return super().request(*args, **kwargs)
 
-    @memoize
+    @ring.lru()
     def get_feed(self, page: int) -> dict:
-        page_json = self.get_json_cached(f"https://fantia.jp/api/v1/me/timelines/posts?page={page}&per=24")
+        page_json = self.get_json(f"https://fantia.jp/api/v1/me/timelines/posts?page={page}&per=24")
         return page_json
 
-    @memoize
+    @ring.lru()
     def get_post_data(self, post_id: int) -> FantiaPostData:
         post_url = f"https://fantia.jp/posts/{post_id}"
         html = self.get_html(post_url)
         csrf = html.select_one("meta[name='csrf-token']")["content"]
 
-        api_response = self.get_json_cached(f"https://fantia.jp/api/v1/posts/{post_id}", headers={"X-CSRF-Token": csrf})
+        api_response = self.get_json(f"https://fantia.jp/api/v1/posts/{post_id}", headers={"X-CSRF-Token": csrf})
         if not api_response.get("post"):
             raise NotImplementedError(f"Could not parse fantia api response for {post_url}: {api_response}")
 

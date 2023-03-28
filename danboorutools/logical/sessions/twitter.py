@@ -5,13 +5,14 @@ from datetime import datetime
 from functools import cached_property
 from typing import TYPE_CHECKING
 
+import ring
 import twitter
 from pydantic import validator
 
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel, memoize
+from danboorutools.util.misc import BaseModel
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -40,7 +41,7 @@ class TwitterSession(Session):
         api._session = self
         return api
 
-    @memoize
+    @ring.lru()
     def user_data(self, username: str | None = None, user_id: int | None = None) -> TwitterUserData:
         assert username or user_id
         try:
@@ -51,7 +52,7 @@ class TwitterSession(Session):
                 raise DeadUrlError(status_code=404, original_url=original_url) from e
             raise
 
-    @memoize
+    @ring.lru()
     def get_user_tweets(self, user_id: int, max_id: int, since_id: int) -> list[TwitterTweetData]:
         url = f"{self.api.base_url}/statuses/user_timeline.json"
 

@@ -2,11 +2,11 @@ import os
 import re
 import time
 
+import ring
 from requests import Response
 
 from danboorutools.logical.sessions import Session
 from danboorutools.models.gelbooru import GelbooruPost
-from danboorutools.util.misc import memoize
 from danboorutools.version import version
 
 
@@ -23,7 +23,7 @@ class GelbooruApi(Session):
         self.config_password = os.environ["GELBOORU_PASSWORD"]
         self.auth = (self.config_user_id, os.environ["GELBOORU_API_KEY"])
 
-    @memoize
+    @ring.lru()
     def login(self) -> None:
         data = {
             "user": self.config_username,

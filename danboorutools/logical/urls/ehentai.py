@@ -3,11 +3,12 @@ from __future__ import annotations
 from functools import cached_property
 from typing import TYPE_CHECKING, Literal
 
+import ring
+
 from danboorutools.exceptions import DeadUrlError, DownloadError, EHEntaiRateLimitError, UnknownUrlError
 from danboorutools.logical.sessions.ehentai import EHentaiSession
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.models.url import GalleryUrl, PostAssetUrl, PostUrl, Url
-from danboorutools.util.misc import memoize
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -154,7 +155,7 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
         score_element, = element.parent.select(".gdt2")
         return int(score_element.text.split()[0])
 
-    @memoize
+    @ring.lru()
     def _get_thumb_urls(self) -> list[str]:
         gallery_paginator = self.html.select(".ptt td")
         if len(gallery_paginator) > 3:
@@ -175,7 +176,7 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
         download_url = browser.find_elements_by_text("Click Here To Start Downloading")[0].get_attribute("href")
         return download_url
 
-    @memoize
+    @ring.lru()
     def _download_and_extract_archive(self, download_url: str) -> list[File]:
         headers = {"Referer": self.normalized_url}
         try:

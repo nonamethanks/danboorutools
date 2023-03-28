@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 
+import ring
 from requests import Response
 
 from danboorutools.exceptions import HTTPError, InvalidSkebCredentialsError
@@ -34,8 +35,9 @@ class SkebSession(Session):
             raise
         return request
 
+    @ring.lru()
     def artist_data(self, username: str) -> SkebArtistData:
-        response = self.get_json_cached(f"https://skeb.jp/api/users/{username}")
+        response = self.get_json(f"https://skeb.jp/api/users/{username}")
 
         return SkebArtistData(**response)
 

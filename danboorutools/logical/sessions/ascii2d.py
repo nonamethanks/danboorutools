@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
 
+import ring
+
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.amazon import AmazonItemUrl
@@ -19,7 +21,7 @@ from danboorutools.logical.urls.sakura import SakuraBlogUrl
 from danboorutools.logical.urls.tinami import TinamiArtistUrl
 from danboorutools.logical.urls.twitter import TwitterArtistUrl, TwitterIntentUrl, TwitterPostUrl
 from danboorutools.models.url import InfoUrl, PostAssetUrl, PostUrl, Url
-from danboorutools.util.misc import extract_urls_from_string, memoize
+from danboorutools.util.misc import extract_urls_from_string
 
 if TYPE_CHECKING:
     from bs4 import Tag
@@ -206,7 +208,7 @@ class Ascii2dSession(Session):
     MAX_CALLS_PER_SECOND = 0.5
     DEFAULT_TIMEOUT = 60
 
-    @memoize
+    @ring.lru()
     def _reverse_search_url(self, url: str) -> list[Ascii2dArtistResult]:
         # can't use /color/md5 because sometimes the result is not cached and requires a cloudflare-protected POST
         ascii2d_url = f"https://ascii2d.net/search/url/{url}"

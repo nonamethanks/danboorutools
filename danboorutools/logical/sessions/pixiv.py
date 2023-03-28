@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+import ring
 from pydantic import Field
 
 from danboorutools.exceptions import DeadUrlError
@@ -11,7 +12,7 @@ from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.pixiv_sketch import PixivSketchArtistUrl
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel, memoize
+from danboorutools.util.misc import BaseModel
 
 if TYPE_CHECKING:
     from requests import Response
@@ -28,9 +29,9 @@ class PixivSession(Session):
     def cookies_from_env(self) -> dict:
         return {"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]}.copy()
 
-    def get_json(self, *args, **kwargs) -> dict:
+    def get_json(self, *args, cached: bool = True, **kwargs) -> dict:
         self.cookies.clear()  # pixiv does not like it if I send it the cookies from a previous request
-        resp = self.get_cached(*args, **kwargs)
+        resp = self.get(*args, cached=cached, **kwargs)
         json_data = self._try_json_response(resp)
 
         if json_data.get("error", False) is not False:
@@ -51,23 +52,20 @@ class PixivSession(Session):
         data = self.get_json(url)
         return PixivArtistData(**data["user_details"])
 
-    @memoize
     def post_data(self, post_id: int | str) -> PixivSingleIllustData:
         data = self.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}?lang=en")
         return PixivSingleIllustData(**data)
 
-    @memoize
     def get_feed(self, page: int) -> list[PixivGroupedIllustData]:
         url = f"https://www.pixiv.net/touch/ajax/follow/latest?type=illusts&include_meta=0&p={page}&lang=en"
-        json_data = self.get_json_cached(url)
-        if not (posts_data := json_data["body"]["illusts"]):
+        json_data = self.get_json(url)
+        if not (posts_data := json_data["illusts"]):
             raise NotImplementedError("No posts found. Check cookie.")
         return [PixivGroupedIllustData(**post_data) for post_data in posts_data]
 
-    @memoize
     def get_user_illusts(self, user_id: int, page: int) -> list[PixivGroupedIllustData]:
         url = f"https://www.pixiv.net/touch/ajax/user/illusts?id={user_id}&p={page}&lang=en"
-        json_data = self.get_json_cached(url)
+        json_data = self.get_json(url)
         return [PixivGroupedIllustData(**post_data) for post_data in json_data["body"]["illusts"]]
 
 

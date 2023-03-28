@@ -526,17 +526,6 @@ files = [
 ]
 
 [[package]]
-name = "gelidum"
-version = "0.5.9"
-description = "Freeze your python objects"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "gelidum-0.5.9.tar.gz", hash = "sha256:a0501ed08fa123a800355989b47868ee995543d5e107e59fc44b6f535fdb25ef"},
-]
-
-[[package]]
 name = "h11"
 version = "0.14.0"
 description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
@@ -1608,6 +1597,27 @@ pygments = ">=2.13.0,<3.0.0"
 jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
+name = "ring"
+version = "0.10.0"
+description = "Function-oriented cache interface with built-in memcache & redis + asyncio support."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ring-0.10.0.tar.gz", hash = "sha256:8d67e3b46372199b2a4501dc1ff5f8a812a82dec9444f85f95e157366bcf832f"},
+]
+
+[package.dependencies]
+attrs = ">=19.3.0"
+six = ">=1.11.0"
+wirerope = ">=0.4.7"
+
+[package.extras]
+dev = ["aiomcache", "aioredis (>=2.0.0)", "diskcache (>=4.1.0)", "django", "django (<4)", "mock", "numpy", "patch", "pylibmc", "pymemcache", "pytest (>=3.10.1)", "pytest-asyncio", "pytest-cov", "pytest-lazy-fixture (>=0.6.2)", "python3-memcached", "redis", "requests", "sphinx"]
+docs = ["django", "sphinx"]
+tests = ["aiomcache", "aioredis (>=2.0.0)", "diskcache (>=4.1.0)", "django (<4)", "mock", "numpy", "patch", "pylibmc", "pymemcache", "pytest (>=3.10.1)", "pytest-asyncio", "pytest-cov", "pytest-lazy-fixture (>=0.6.2)", "python3-memcached", "redis", "requests"]
+
+[[package]]
 name = "ruff"
 version = "0.0.254"
 description = "An extremely fast Python linter, written in Rust."
@@ -2007,6 +2017,24 @@ files = [
 dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 
 [[package]]
+name = "wirerope"
+version = "0.4.7"
+description = "'Turn functions and methods into fully controllable objects'"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "wirerope-0.4.7.tar.gz", hash = "sha256:f3961039218276283c5037da0fa164619def0327595f10892d562a61a8603990"},
+]
+
+[package.dependencies]
+six = ">=1.11.0"
+
+[package.extras]
+doc = ["sphinx"]
+test = ["pytest (>=4.6.7)", "pytest-cov (>=2.6.1)"]
+
+[[package]]
 name = "wrapt"
 version = "1.15.0"
 description = "Module for decorators, wrappers and monkey patching."
@@ -2109,4 +2137,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "26a870484cba7fff61048533d83ed42a5d0e337ce2f2b88fd20b1d9c3eba4478"
+content-hash = "41a3075b79ce8850b9b75b13eeaf68e4e220395da04cdf156fc805068035f9c9"

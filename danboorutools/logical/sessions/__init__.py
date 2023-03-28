@@ -11,10 +11,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
+import ring
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from cloudscraper import CloudScraper as _CloudScraper
 from cloudscraper.exceptions import CloudflareChallengeError
-from gelidum import freeze
 from pyrate_limiter.limiter import Limiter, RequestRate
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
@@ -23,17 +23,13 @@ from danboorutools.exceptions import DeadUrlError, DownloadError, HTTPError
 from danboorutools.logical.browser import Browser
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.file import File, FileSubclass
-from danboorutools.util.misc import load_cookies_for, memoize, random_string, save_cookies_for
+from danboorutools.util.misc import load_cookies_for, random_string, save_cookies_for
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
-    from gelidum.typing import FrozenType
     from requests import Response
 
     from danboorutools.models.url import Url
-
-
-_session_cache: dict[tuple[type[Session], FrozenType, FrozenType], Session] = {}
 
 
 class Session(_CloudScraper):
@@ -44,11 +40,12 @@ class Session(_CloudScraper):
     DEFAULT_TIMEOUT = 5
     MAX_CALLS_PER_SECOND: int | float = 3
 
-    def __new__(cls, *args, **kwargs):
-        cache_key = (cls, freeze(args), freeze(kwargs))
-        if not (new_instance := _session_cache.get(cache_key)):
-            new_instance = _session_cache[cache_key] = super().__new__(cls)
-        return new_instance  # type: ignore[return-value] # stfu
+    @ring.lru()
+    def __new__(cls, *args, **kwargs):  # noqa: ARG003 # pylint: disable=W0613
+        return super().__new__(cls)
+
+    def __str__(self) -> str:  # needed for ring.lru()
+        return f"{self.__class__.__name__}[]"
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -74,13 +71,20 @@ class Session(_CloudScraper):
     def browser(self) -> Browser:
         return Browser()
 
-    def request(self, *args, **kwargs) -> Response:
-        http_method, url, args = args[0], args[1], args[2:]
+    def request(self, *args, cached: bool = False, **kwargs) -> Response:
+        if cached:
+            return self._cached_request(*args, **kwargs)
+        else:
+            return self._uncached_request(*args, **kwargs)
 
+    @ring.lru()
+    def _cached_request(self, *args, **kwargs) -> Response:
+        return self._uncached_request(*args, **kwargs)
+
+    def _uncached_request(self, http_method: str, url: str | Url, *args, **kwargs) -> Response:
         if not isinstance(url, str):
             url = url.normalized_url
 
-        url_domain = ParsableUrl(url).domain
         kwargs["headers"] = self.DEFAULT_HEADERS | kwargs.get("headers", {})
 
         if kwargs.get("params"):
@@ -88,6 +92,7 @@ class Session(_CloudScraper):
         else:
             logger.trace(f"{http_method} request made to {url}")
 
+        url_domain = ParsableUrl(url).domain
         kwargs.setdefault("proxies", self.proxied_domains.get(url_domain))
         kwargs.setdefault("timeout", self.DEFAULT_TIMEOUT)
 
@@ -131,13 +136,11 @@ class Session(_CloudScraper):
 
         return File.identify(tmp_filename, destination_dir=download_dir, md5_as_filename=True)
 
-    def get_html(self, url: str | Url, *args, cached: bool = True, **kwargs) -> BeautifulSoup:
+    def get_html(self, url: str | Url, *args, **kwargs) -> BeautifulSoup:
         if not isinstance(url, str):
             url = url.normalized_url
 
-        method = self.get_cached if cached else self.get
-        response = method(url, *args, **kwargs)
-
+        response = self.get(url, *args, **kwargs)
         return self._response_as_html(response)
 
     def _response_as_html(self, response: Response) -> BeautifulSoup:
@@ -152,18 +155,6 @@ class Session(_CloudScraper):
         response = self.get(*args, **kwargs)
         return self._try_json_response(response)
 
-    def get_json_cached(self, *args, **kwargs) -> dict:
-        response = self.get_cached(*args, **kwargs)
-        return self._try_json_response(response)
-
-    @memoize
-    def get_cached(self, *args, **kwargs) -> Response:
-        return self.get(*args, **kwargs)
-
-    @memoize
-    def head_cached(self, *args, **kwargs) -> Response:
-        return self.head(*args, **kwargs)
-
     @staticmethod
     def _try_json_response(response: Response) -> dict:
         try:
@@ -176,7 +167,7 @@ class Session(_CloudScraper):
                 raise
 
     def unscramble(self, url: str) -> str:
-        resp = self.head_cached(url, allow_redirects=True)
+        resp = self.head(url, allow_redirects=True)
         if resp.status_code != 200:
             return url
         return resp.url
@@ -207,3 +198,16 @@ class Session(_CloudScraper):
         """Load cookies for a domain."""
         for cookie in load_cookies_for(self.session_domain):
             self.cookies.set(**cookie)
+
+    if TYPE_CHECKING:
+        def get(self, *args, **kwargs) -> Response:
+            ...
+
+        def post(self, *args, **kwargs) -> Response:
+            ...
+
+        def head(self, *args, **kwargs) -> Response:
+            ...
+
+        def delete(self, *args, **kwargs) -> Response:
+            ...

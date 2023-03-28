@@ -3,10 +3,11 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
+import ring
+
 from danboorutools.exceptions import NoCookiesForDomainError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import memoize
 
 if TYPE_CHECKING:
     from bs4 import BeautifulSoup
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class HentaiFoundrySession(Session):
-    @memoize
+    @ring.lru()
     def get_html(self, url: str | Url, *args, raise_for_filters: bool = False, **kwargs) -> BeautifulSoup:
         if not isinstance(url, str):
             url = url.normalized_url
@@ -82,7 +83,7 @@ class HentaiFoundrySession(Session):
         self.cookies.clear()
         self.load_cookies()
 
-    @memoize
+    @ring.lru()
     def get_feed_posts(self, page: int) -> list[HentaiFoundryPostUrl]:
         username = os.environ["HENTAI_FOUNDRY_USERNAME"]
 

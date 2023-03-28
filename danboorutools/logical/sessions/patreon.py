@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import re
 
+import ring
+
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
@@ -12,7 +14,7 @@ JSON_DATA_PATTERN = re.compile(r"bootstrap, ({.*?)\);\s", re.DOTALL)
 
 class PatreonSession(Session):
     def artist_data(self, url: str) -> PatreonArtistData:
-        request = self.get_cached(url)
+        request = self.get(url, cached=True)
         json_data = JSON_DATA_PATTERN.search(request.text)
         if not json_data:
             raise NotImplementedError(url)

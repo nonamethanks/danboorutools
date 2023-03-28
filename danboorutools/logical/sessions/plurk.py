@@ -3,11 +3,12 @@ from __future__ import annotations
 import os
 from functools import cached_property
 
+import ring
 from requests_oauthlib import OAuth1
 
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel, extract_urls_from_string, memoize
+from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 
 class PlurkSession(Session):
@@ -20,7 +21,7 @@ class PlurkSession(Session):
             os.environ["PLURK_ACCESS_TOKEN_SECRET"],
         )
 
-    @memoize
+    @ring.lru()
     def user_data(self, username: str) -> PlurkArtistData:
         response = self.post("https://www.plurk.com/APP/Profile/getPublicProfile", json={"user_id": username}, auth=self.oauth)
         response_data = self._try_json_response(response)
