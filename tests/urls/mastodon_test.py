@@ -22,6 +22,7 @@ urls = {
     m.MastodonPostUrl: {
         "https://pawoo.net/@evazion/19451018": "https://pawoo.net/@evazion/19451018",
         "https://baraag.net/@curator/102270656480174153": "https://baraag.net/@curator/102270656480174153",
+        "https://baraag.net/users/Butterchalk/statuses/110020463245055611/activity": "https://baraag.net/@Butterchalk/110020463245055611",
         "https://pawoo.net/web/statuses/19451018": "https://pawoo.net/web/statuses/19451018",
         "https://pawoo.net/web/statuses/19451018/favorites": "https://pawoo.net/web/statuses/19451018",
         "https://baraag.net/web/statuses/102270656480174153": "https://baraag.net/web/statuses/102270656480174153",
@@ -38,7 +39,7 @@ urls = {
     },
     m.MastodonOauthUrl: {
         "https://pawoo.net/oauth_authentications/25289748": "https://pawoo.net/oauth_authentications/25289748",
-    }
+    },
 }
 
 

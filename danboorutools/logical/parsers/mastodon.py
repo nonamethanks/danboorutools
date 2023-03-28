@@ -64,15 +64,21 @@ class MastodonParser(UrlParser):
                 instance = m.MastodonArtistUrl(parsable_url)
                 instance.username = username.removeprefix("@")
 
-            # https://pawoo.net/users/esoraneko",
-            # https://pawoo.net/users/khurata/media",
+            # https://baraag.net/users/Butterchalk/statuses/110020463245055611/activity
+            case "users", username, "statuses", post_id, *_rest if post_id.isnumeric():
+                instance = m.MastodonPostUrl(parsable_url)
+                instance.username = username.removeprefix("@")
+                instance.post_id = int(post_id)
+
+            # https://pawoo.net/users/esoraneko
+            # https://pawoo.net/users/khurata/media
             case "users", username, *_:
                 instance = m.MastodonArtistUrl(parsable_url)
                 instance.username = username
 
-            # https://pawoo.net/web/statuses/19451018",
-            # https://pawoo.net/web/statuses/19451018/favorites",
-            # https://baraag.net/web/statuses/102270656480174153",
+            # https://pawoo.net/web/statuses/19451018
+            # https://pawoo.net/web/statuses/19451018/favorites
+            # https://baraag.net/web/statuses/102270656480174153
             case "web", "statuses", post_id, *_:
                 instance = m.MastodonPostUrl(parsable_url)
                 instance.username = None
