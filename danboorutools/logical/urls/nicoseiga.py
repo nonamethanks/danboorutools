@@ -4,7 +4,7 @@ from functools import cached_property
 from typing import Literal
 from urllib.parse import urljoin
 
-from danboorutools.logical.sessions.nicovideo import NicoseigaArtistData, NicovideoSession
+from danboorutools.logical.sessions.nicovideo import NicoSeigaArtistData, NicovideoSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
@@ -56,7 +56,7 @@ class NicoSeigaArtistUrl(ArtistUrl, NicoSeigaUrl):
         return [f"nicovideo {self.user_id}"]
 
     @cached_property
-    def artist_data(self) -> NicoseigaArtistData:
+    def artist_data(self) -> NicoSeigaArtistData:
         return self.session.nicoseiga_artist_data(self.user_id)
 
 

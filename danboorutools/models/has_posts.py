@@ -74,7 +74,7 @@ class HasPosts(Generic[PostDataVar]):
             raise FoundKnownPost(Exception)
 
         if post in self._collected_posts:
-            raise NotImplementedError
+            raise NotImplementedError(post)
 
         if not assets:
             # allowed to be empty so that revisions that become private, like fanbox or fantia,
