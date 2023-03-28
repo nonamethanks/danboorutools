@@ -150,27 +150,27 @@ class PixivPostUrl(PostUrl, PixivUrl):
 
     @cached_property
     def created_at(self) -> datetime:
-        return self._post_data.createDate
+        return self.post_data.createDate
 
     @cached_property
     def score(self) -> int:
-        return self._post_data.likeCount
+        return self.post_data.likeCount
 
     @cached_property
     def gallery(self) -> PixivArtistUrl:
-        return self.build(PixivArtistUrl, user_id=self._post_data.userId)
+        return self.build(PixivArtistUrl, user_id=self.post_data.userId)
 
     @cached_property
     def is_deleted(self) -> bool:
         try:
-            _ = self._post_data
+            _ = self.post_data
         except DeadUrlError:
             return True
         else:
             return False
 
     @property
-    def _post_data(self) -> PixivSingleIllustData:
+    def post_data(self) -> PixivSingleIllustData:
         post_id = f"unlisted/{self.post_id}" if self.unlisted else self.post_id
         return self.session.post_data(post_id)  # but does this work for unlisted?
 

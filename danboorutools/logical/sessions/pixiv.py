@@ -109,7 +109,7 @@ class PixivGroupedIllustData(BaseModel):
 class PixivSingleIllustData(BaseModel):
     id: int
     userId: int
-    type: int = Field(..., ge=0, lt=3)
+    # type: int = Field(..., ge=0, lt=3) # not present for single illusts
 
     createDate: datetime  # TODO: may be worth checking uploadDate to see if it's viable to check for revisions that way
 
