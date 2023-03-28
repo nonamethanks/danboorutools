@@ -8,7 +8,7 @@ from danboorutools.models.feed import Feed
 class FantiaFeed(Feed):
     session = FantiaSession()
 
-    def _extract_posts_from_each_page(self) -> Iterator[list[int]]:
+    def _extract_posts_from_each_page(self) -> Iterator[list[dict]]:
         page = 1
         while True:
             page_json = self.session.get_feed(page=page)
