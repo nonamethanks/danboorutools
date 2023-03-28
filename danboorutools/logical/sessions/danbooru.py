@@ -25,14 +25,13 @@ from danboorutools.models.url import UnknownUrl, Url, UselessUrl
 from danboorutools.version import version
 
 if TYPE_CHECKING:
-    from requests import Response
-
     from danboorutools.models.file import File
 
 GenericModel = TypeVar("GenericModel", bound=DanbooruModel)
 
 
 class DanbooruApi(Session):
+    DISABLE_AUTOMATIC_CACHE = True
     DEFAULT_TIMEOUT = 60
 
     bad_source_tags = [
@@ -86,7 +85,7 @@ class DanbooruApi(Session):
         kwargs["headers"] = {"User-Agent": f"DanbooruTools/{version}"}
 
         endpoint_url = self.base_url.strip("/") + "/" + endpoint.strip("/")
-        response: Response = self.request(method, endpoint_url, *args, **kwargs)
+        response = self.request(method, endpoint_url, *args, **kwargs)
 
         if not response.ok:
             raise DanbooruHTTPError(response)

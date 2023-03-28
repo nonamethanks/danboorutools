@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class HentaiFoundrySession(Session):
     @ring.lru()
-    def get_html(self, url: str | Url, *args, raise_for_filters: bool = False, **kwargs) -> BeautifulSoup:
+    def get_html(self, url: str | Url, *args, skip_cache: bool = False, **kwargs) -> BeautifulSoup:
         if not isinstance(url, str):
             url = url.normalized_url
 
@@ -26,17 +26,17 @@ class HentaiFoundrySession(Session):
         except NoCookiesForDomainError:
             pass
 
-        response = self.get(url, *args, **kwargs)
+        response = self.get(url, *args, skip_cache=skip_cache, **kwargs)
         html = self._response_as_html(response)
 
         if self._filters_are_set(html):
             return html
 
-        if raise_for_filters:
+        if skip_cache:
             raise NotImplementedError(url)
 
         self._set_filters(html)
-        return self.get_html(url, *args, raise_for_filters=True, **kwargs)
+        return self.get_html(url, *args, skip_cache=True, **kwargs)
 
     def _filters_are_set(self, html: BeautifulSoup) -> bool:
         filter_form = html.select_one("#FilterBox form")

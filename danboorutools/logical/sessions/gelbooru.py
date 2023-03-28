@@ -11,6 +11,8 @@ from danboorutools.version import version
 
 
 class GelbooruApi(Session):
+    DISABLE_AUTOMATIC_CACHE = True
+
     base_url = "https://gelbooru.com"
 
     csrf_pattern = re.compile(r'name="csrf-token" value="(\w+)"/>')
@@ -28,7 +30,7 @@ class GelbooruApi(Session):
         data = {
             "user": self.config_username,
             "pass": self.config_password,
-            "submit": "Log in"
+            "submit": "Log in",
         }
         response = self.gelbooru_request("POST", "/index.php?page=account&s=login&code=00", data=data)
         assert response.ok

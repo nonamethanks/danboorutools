@@ -16,7 +16,7 @@ class RedditSession(Session):
     @ring.lru()
     def get_social_links(self, username: str) -> list[Url]:
         if not self.bearer_token:
-            response = self.get(f"https://www.reddit.com/user/{username}", cached=True)
+            response = self.get(f"https://www.reddit.com/user/{username}")
             match = BEARER_TOKEN_PATTERN.search(response.text)
             if not match:
                 raise NotImplementedError(username, response.status_code)

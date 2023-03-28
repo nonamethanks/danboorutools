@@ -103,7 +103,7 @@ class Url:
     @cached_property
     def is_deleted(self) -> bool:
         try:
-            response = self.session.get(self.normalized_url, cached=True)
+            response = self.session.get(self.normalized_url)
         except DeadUrlError:
             return True
 
@@ -306,7 +306,7 @@ class _AssetUrl(Url):
     @cached_property
     def is_deleted(self) -> bool:
         try:
-            self.session.head(self.normalized_url, cached=True, allow_redirects=True)
+            self.session.head(self.normalized_url, allow_redirects=True)
         except DeadUrlError:
             return True
         else:

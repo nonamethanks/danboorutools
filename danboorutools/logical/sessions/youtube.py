@@ -24,7 +24,7 @@ class YoutubeSession(Session):
 
     @ring.lru()
     def channel_data(self, artist_url: str) -> YoutubeChannelData:
-        request = self.get(f"{artist_url}/about", cached=True)
+        request = self.get(f"{artist_url}/about")
         json_data = JSON_DATA_PATTERN.search(request.text)
         if not json_data:
             raise NotImplementedError

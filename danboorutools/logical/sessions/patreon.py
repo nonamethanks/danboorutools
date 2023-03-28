@@ -14,7 +14,7 @@ JSON_DATA_PATTERN = re.compile(r"bootstrap, ({.*?)\);\s", re.DOTALL)
 
 class PatreonSession(Session):
     def artist_data(self, url: str) -> PatreonArtistData:
-        request = self.get(url, cached=True)
+        request = self.get(url)
         json_data = JSON_DATA_PATTERN.search(request.text)
         if not json_data:
             raise NotImplementedError(url)

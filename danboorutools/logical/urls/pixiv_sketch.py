@@ -46,7 +46,7 @@ class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
     def is_deleted(self) -> bool:
         try:
             # proxies don't like pixiv sketch's 404s for some reason
-            response = self.session.head(self.normalized_url, cached=True, proxies={})
+            response = self.session.head(self.normalized_url, proxies={})
         except DeadUrlError:
             return True
         else:

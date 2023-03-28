@@ -33,6 +33,7 @@ if TYPE_CHECKING:
 
 
 class Session(_CloudScraper):
+    DISABLE_AUTOMATIC_CACHE = False
     DEFAULT_HEADERS = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
         "Cache-Control": "no-cache, no-store, no-transform",
@@ -71,17 +72,15 @@ class Session(_CloudScraper):
     def browser(self) -> Browser:
         return Browser()
 
-    def request(self, *args, cached: bool = False, **kwargs) -> Response:
-        if cached:
-            return self._cached_request(*args, **kwargs)
-        else:
-            return self._uncached_request(*args, **kwargs)
+    def request(self, method: str, *args, **kwargs) -> Response:
+        if kwargs.pop("skip_cache", self.DISABLE_AUTOMATIC_CACHE) or method.lower() not in ["get", "head"]:
+            # always cache every request by default, but discard the cache if a subsequent call is made that does not want a cached version
+            # in theory cache access is slower, but who cares, the limiter will always be the request itself anyway
+            self._cached_request.delete(method, *args, **kwargs)
+        return self._cached_request(method, *args, **kwargs)
 
     @ring.lru()
-    def _cached_request(self, *args, **kwargs) -> Response:
-        return self._uncached_request(*args, **kwargs)
-
-    def _uncached_request(self, http_method: str, url: str | Url, *args, **kwargs) -> Response:
+    def _cached_request(self, http_method: str, url: str | Url, *args, **kwargs) -> Response:
         if not isinstance(url, str):
             url = url.normalized_url
 
@@ -192,6 +191,7 @@ class Session(_CloudScraper):
             }
             for cookie_name in cookies
         ]
+        logger.debug(f"Saving cookies: {', '.join(c['name'] for c in to_save)}.")
         save_cookies_for(self.session_domain, cookies=to_save)
 
     def load_cookies(self) -> None:

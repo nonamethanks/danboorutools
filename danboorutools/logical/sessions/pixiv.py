@@ -29,9 +29,9 @@ class PixivSession(Session):
     def cookies_from_env(self) -> dict:
         return {"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]}.copy()
 
-    def get_json(self, *args, cached: bool = True, **kwargs) -> dict:
+    def get_json(self, *args, skip_cache: bool = False, **kwargs) -> dict:
         self.cookies.clear()  # pixiv does not like it if I send it the cookies from a previous request
-        resp = self.get(*args, cached=cached, **kwargs)
+        resp = self.get(*args, skip_cache=skip_cache, **kwargs)
         json_data = self._try_json_response(resp)
 
         if json_data.get("error", False) is not False:
