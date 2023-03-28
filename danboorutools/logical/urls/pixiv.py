@@ -217,7 +217,7 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
     normalize_template = "https://www.pixiv.net/en/users/{user_id}"
 
     def _extract_posts_from_each_page(self):  # noqa: ANN202
-        return map(self.session.get_user_illusts, zip(repeat(self.user_id), count(), strict=True))
+        return map(self.session.get_user_illusts, zip(repeat(self.user_id), count(1), strict=True))
 
     _process_post = _process_post
 

@@ -9,6 +9,6 @@ class PixivFeed(Feed):
     session = PixivSession()
 
     def _extract_posts_from_each_page(self):  # noqa: ANN202
-        return map(self.session.get_feed, count())
+        return map(self.session.get_feed, count(1))
 
     _process_post = _process_post

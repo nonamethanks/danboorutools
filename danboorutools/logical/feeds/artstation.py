@@ -13,7 +13,7 @@ class ArtstationFeed(FeedWithSeparateArtists):
     _extract_artists = session.get_followed_artists
 
     def _extract_posts_from_each_artist(self, artist: str) -> Iterator[list[ArtstationPostData]]:
-        return map(self.session.get_posts_from_artist, zip(repeat(artist), count(), strict=True))
+        return map(self.session.get_posts_from_artist, zip(repeat(artist), count(1), strict=True))
 
     def _process_post(self, post_object: ArtstationPostData) -> None:
         if post_object.icons["pano"]:
