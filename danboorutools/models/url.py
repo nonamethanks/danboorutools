@@ -248,8 +248,12 @@ class PostUrl(Url):
     @cached_property
     def assets(self) -> list[PostAssetUrl]:  # pylint: disable=method-hidden
         if "assets" not in self.__dict__:
-            self._extract_assets()
-        return self.assets
+            assets = self._extract_assets()
+            if not assets:
+                return []
+            for asset in assets:
+                self._register_asset(asset)
+        return self.__dict__["assets"]  # I'm gonna do what's called a "pro gamer move"
 
     def _extract_assets(self) -> Sequence[PostAssetUrl] | list[str]:
         raise NotImplementedError(self, "hasn't implemented asset extraction.")
