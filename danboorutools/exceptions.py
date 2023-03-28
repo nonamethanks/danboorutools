@@ -76,6 +76,10 @@ class DeadUrlError(HTTPError):
     """The URL is dead."""
 
 
+class RateLimitError(HTTPError):
+    """Got 429."""
+
+
 class EHEntaiRateLimitError(HTTPError):
     """E-Hentai is ratelimiting."""
 

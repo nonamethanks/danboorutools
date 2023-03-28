@@ -6,7 +6,7 @@ from dateutil import parser
 
 def datetime_from_string(time_value: str | int | float | datetime.datetime, backup_tz: str | None = None) -> datetime.datetime:
     """Parse an int or str into a datetime."""
-    if isinstance(time_value, (int, float)) or (isinstance(time_value, str) and time_value.isnumeric()):
+    if isinstance(time_value, int | float) or (isinstance(time_value, str) and time_value.isnumeric()):
         # unix timestamp
         while len(str(int(time_value))) > 10:
             time_value = float(time_value) / 10

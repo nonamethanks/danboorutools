@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 import ring
+from backoff import constant, on_exception
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from cloudscraper import CloudScraper as _CloudScraper
 from cloudscraper.exceptions import CloudflareChallengeError
@@ -19,7 +20,7 @@ from pyrate_limiter.limiter import Limiter, RequestRate
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from danboorutools import logger
-from danboorutools.exceptions import DeadUrlError, DownloadError, HTTPError
+from danboorutools.exceptions import DeadUrlError, DownloadError, HTTPError, RateLimitError
 from danboorutools.logical.browser import Browser
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.file import File, FileSubclass
@@ -80,6 +81,7 @@ class Session(_CloudScraper):
         return self._cached_request(method, *args, **kwargs)
 
     @ring.lru()
+    @on_exception(constant, RateLimitError, max_tries=1, interval=30)
     def _cached_request(self, http_method: str, url: str | Url, *args, **kwargs) -> Response:
         if not isinstance(url, str):
             url = url.normalized_url
@@ -107,6 +109,8 @@ class Session(_CloudScraper):
 
         if response.status_code == 404:
             raise DeadUrlError(response)
+        if response.status_code == 429:
+            raise RateLimitError(response)
         return response
 
     def download_file(self, url: str | Url, *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:
@@ -135,11 +139,8 @@ class Session(_CloudScraper):
 
         return File.identify(tmp_filename, destination_dir=download_dir, md5_as_filename=True)
 
-    def get_html(self, url: str | Url, *args, **kwargs) -> BeautifulSoup:
-        if not isinstance(url, str):
-            url = url.normalized_url
-
-        response = self.get(url, *args, **kwargs)
+    def get_html(self, *args, **kwargs) -> BeautifulSoup:
+        response = self.get(*args, **kwargs)
         return self._response_as_html(response)
 
     def _response_as_html(self, response: Response) -> BeautifulSoup:
@@ -196,6 +197,7 @@ class Session(_CloudScraper):
 
     def load_cookies(self) -> None:
         """Load cookies for a domain."""
+        self.cookies.clear()
         for cookie in load_cookies_for(self.session_domain):
             self.cookies.set(**cookie)
 

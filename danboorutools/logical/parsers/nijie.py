@@ -85,10 +85,12 @@ class NijieNetParser(UrlParser):
             # https://pic.nijie.net/06/nijie/17/14/236014/illust/218856_1_7646cf57f6f1c695_f2ed81.png
             # https://pic.nijie.net/02/nijie/15/46/3846/illust/110835_0_e4f46a73bd61a738_421472.jpg
             # https://pic.nijie.net/04/nijie/14/36/13836/illust/107712_0_3152831264061229_e9b955.jpg
-            case _, "nijie", _, _, user_id, "illust", filename:
+            # https://pic.nijie.net/02/__rs_l120x120/nijie/23m03/71/23671/illust/547821_0_d9b4b00e9b8ea900_e0f435.png
+            case *_, "nijie", _, _, user_id, "illust", filename:
                 instance = NijieImageUrl(parsable_url)
                 instance.parse_filename(filename)
                 instance.user_id = int(user_id)
+
 
             case _:
                 return None

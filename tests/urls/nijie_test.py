@@ -27,6 +27,7 @@ urls = {
         "http://pic.nijie.net/01/__rs_l120x120/dojin_main/dojin_sam/20120213044700コピー ～ 0011のコピー.jpg": "https://pic.nijie.net/01/dojin_main/dojin_sam/20120213044700コピー ～ 0011のコピー.jpg",
         "https://pic.nijie.net/02/nijie/15/46/3846/illust/110835_0_e4f46a73bd61a738_421472.jpg": "https://pic.nijie.net/02/nijie/15/46/3846/illust/110835_0_e4f46a73bd61a738_421472.jpg",
         "https://pic.nijie.net/04/nijie/14/36/13836/illust/107712_0_3152831264061229_e9b955.jpg": "https://pic.nijie.net/04/nijie/14/36/13836/illust/107712_0_3152831264061229_e9b955.jpg",
+        "https://pic.nijie.net/02/__rs_l120x120/nijie/23m03/71/23671/illust/547821_0_d9b4b00e9b8ea900_e0f435.png": "https://pic.nijie.net/02/nijie/23m03/71/23671/illust/547821_0_d9b4b00e9b8ea900_e0f435.png",
 
     },
     NijiePostUrl: {

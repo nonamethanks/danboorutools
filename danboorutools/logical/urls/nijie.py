@@ -1,16 +1,51 @@
 import re
+from datetime import datetime
+from functools import cached_property
+from urllib.parse import urljoin
 
+from danboorutools.logical.sessions.nijie import NijieSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
+from danboorutools.util.time import datetime_from_string
 
 
 class NijieUrl(Url):
-    pass
+    session = NijieSession()
 
 
 class NijiePostUrl(PostUrl, NijieUrl):
     post_id: int
 
     normalize_template = "https://nijie.info/view.php?id={post_id}"
+
+    @cached_property
+    def score(self) -> int:
+        return self.html.select_one("#good_cnt").text
+
+    @cached_property
+    def created_at(self) -> datetime:
+        timestamp_match = re.search(r"投稿時間：(?P<time>[\w\-: ]+)", str(self.html))
+        timestamp_match = timestamp_match or re.search(r"投稿日:\s<span>(?P<time>[\w\-: ]+)</span>", str(self.html))
+        if not timestamp_match:
+            raise NotImplementedError(self)
+
+        timestamp = timestamp_match.groupdict()["time"].strip()
+        return datetime_from_string(timestamp, backup_tz="Asia/Tokyo")
+
+    def _extract_assets(self) -> list[str]:
+        if self.html.select_one("#dojin_left"):
+            main_image = self.html.select_one("#dojin_left .left img")
+            other_images_container = self.html.select_one("div#dojin_diff")
+
+        elif self.html.select_one("#view-center"):
+            main_image = self.html.select_one("#img_filter img.ngtag")
+            other_images_container = self.html.select_one("div#img_diff")
+        else:
+            raise NotImplementedError(self)
+
+        assert main_image, self
+        other_images = other_images_container.select("img.mozamoza.ngtag")
+
+        return [urljoin("https://", img["src"]) for img in [main_image, *other_images]]
 
 
 class NijieArtistUrl(ArtistUrl, NijieUrl):
@@ -56,7 +91,7 @@ class NijieImageUrl(PostAssetUrl, NijieUrl):
             self.page = int(filename_parts[1])
             self.user_id = None
 
-    @property
+    @ property
     def full_size(self) -> str:
         if self.parsed_url.url_parts[-1] == "view_popup.php":
             if self.post_id is None or self.page is None:
