@@ -10,6 +10,7 @@ urls = {
     yt.YoutubeChannelUrl: {
         "https://www.youtube.com/channel/UC-v9d2zDU1Bjshz3r3CDhUA": "https://www.youtube.com/channel/UC-v9d2zDU1Bjshz3r3CDhUA",
         "https://www.youtube.com/channel/UC-v9d2zDU1Bjshz3r3CDhUA/about": "https://www.youtube.com/channel/UC-v9d2zDU1Bjshz3r3CDhUA",
+        "http://youtube.com/@channel/UCxw3WZ7N63dYExDwbZbHvqg": "https://www.youtube.com/channel/UCxw3WZ7N63dYExDwbZbHvqg",
     },
     yt.YoutubeOldUserUrl: {
         "https://www.youtube.com/c/kurasawakyosyo": "https://www.youtube.com/c/kurasawakyosyo",

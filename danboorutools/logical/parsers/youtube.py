@@ -35,11 +35,6 @@ class YoutubeComParser(UrlParser):
                 instance.username = username
                 instance.subdir = subdir
 
-            # https://www.youtube.com/@kyosyo/featured
-            case username, *_rest if username.startswith("@"):
-                instance = yt.YoutubeUserUrl(parsable_url)
-                instance.username = username.removeprefix("@")
-
             # https://www.youtube.com/channel/UCMMBGMjrrWcRZmG_lW4jC-Q/community?lb=UgkxWkFtKkCgWnCoPBWsMVzEYhm3ddURD0lL
             case "channel", channel_id, "community" if parsable_url.query["lb"]:
                 instance = yt.YoutubeCommunityPostUrl(parsable_url)
@@ -47,9 +42,15 @@ class YoutubeComParser(UrlParser):
                 instance.channel_id = channel_id
 
             # https://www.youtube.com/channel/UC-v9d2zDU1Bjshz3r3CDhUA
-            case "channel", channel_id, *_:
+            # http://youtube.com/@channel/UCxw3WZ7N63dYExDwbZbHvqg (broken url, found in behance)
+            case ("channel" | "@channel"), channel_id, *_:
                 instance = yt.YoutubeChannelUrl(parsable_url)
                 instance.channel_id = channel_id
+
+            # https://www.youtube.com/@kyosyo/featured
+            case username, *_rest if username.startswith("@"):
+                instance = yt.YoutubeUserUrl(parsable_url)
+                instance.username = username.removeprefix("@")
 
             # https://www.youtube.com/post/UgkxWkFtKkCgWnCoPBWsMVzEYhm3ddURD0lL
             case "post", post_id:
