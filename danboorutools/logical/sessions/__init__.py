@@ -8,12 +8,13 @@ import time
 import warnings
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from cloudscraper import CloudScraper as _CloudScraper
 from cloudscraper.exceptions import CloudflareChallengeError
+from gelidum import freeze
 from pyrate_limiter.limiter import Limiter, RequestRate
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
@@ -26,12 +27,13 @@ from danboorutools.util.misc import load_cookies_for, memoize, random_string, sa
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
+    from gelidum.typing import FrozenType
     from requests import Response
 
     from danboorutools.models.url import Url
 
 
-_session_cache: dict[type[Session], Session] = {}
+_session_cache: dict[tuple[type[Session], FrozenType, FrozenType], Session] = {}
 
 
 class Session(_CloudScraper):
@@ -42,22 +44,23 @@ class Session(_CloudScraper):
     DEFAULT_TIMEOUT = 5
     MAX_CALLS_PER_SECOND: int | float = 3
 
-    proxied_domains: dict[str, dict] = {}
-    for envvar in os.environ:
-        if envvar.endswith("_PROXY"):
-            proxy = os.environ[envvar]
-            domain = envvar.removesuffix("_PROXY").lower().replace("_", ".")
-            proxied_domains[domain] = {"http": proxy, "https": proxy}
-
-    def __new__(cls, *args, **kwargs) -> Self:
-        if not (new_instance := _session_cache.get(cls)):
-            new_instance = _session_cache[cls] = super().__new__(cls, *args, **kwargs)
+    def __new__(cls, *args, **kwargs):
+        cache_key = (cls, freeze(args), freeze(kwargs))
+        if not (new_instance := _session_cache.get(cache_key)):
+            new_instance = _session_cache[cache_key] = super().__new__(cls)
         return new_instance  # type: ignore[return-value] # stfu
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.session_domain = self.__class__.__name__.lower().replace("session", "")  # used in cookie saving
+        self.proxied_domains: dict[str, dict] = {}
+        for envvar in os.environ:
+            if envvar.endswith("_PROXY"):
+                proxy = os.environ[envvar]
+                domain = envvar.removesuffix("_PROXY").lower().replace("_", ".")
+                self.proxied_domains[domain] = {"http": proxy, "https": proxy}
+
+        self.session_domain = self.__class__.__name__.removesuffix("Session").removesuffix("Api").lower()  # used in cookie saving
 
         if self.MAX_CALLS_PER_SECOND < 1:
             interval = 1 / self.MAX_CALLS_PER_SECOND
