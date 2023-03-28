@@ -212,7 +212,7 @@ class InfoUrl(Url):
 class GalleryUrl(Url, HasPosts):  # pylint: disable=abstract-method
     """A gallery contains multiple posts."""
 
-    def _register_post(self, post: PostUrl, assets: Sequence[PostAssetUrl | str], created_at: datetime | str, score: int) -> None:
+    def _register_post(self, post: PostUrl, assets: Sequence[PostAssetUrl | str], created_at: datetime | str | int, score: int) -> None:
         super()._register_post(post, assets, created_at, score)
         post.gallery = self
 
@@ -236,31 +236,28 @@ class ArtistAlbumUrl(GalleryUrl, Url):
 
 class PostUrl(Url):
     """A post contains multiple assets."""
-    _assets: list[PostAssetUrl]
 
     def _register_asset(self, asset: PostAssetUrl | str) -> None:
-        if not hasattr(self, "_assets"):
-            self._assets = []
+        if "assets" not in self.__dict__:
+            self.assets = []
 
         if isinstance(asset, str):
             parsed_asset = Url.parse(asset)
             assert isinstance(parsed_asset, PostAssetUrl), parsed_asset
             asset = parsed_asset
 
-        if asset in self._assets:
-            raise NotImplementedError
+        if asset in self.assets:
+            raise NotImplementedError(asset, self.assets)
 
         asset.post = self  # pylint: disable=attribute-defined-outside-init # false positive
 
-        self._assets.append(asset)
+        self.assets.append(asset)
 
-    @property
-    @final
-    def assets(self) -> list[PostAssetUrl]:
-        assets = self._extract_assets()
-        for asset in assets:
-            self._register_asset(asset)
-        return self._assets
+    @cached_property
+    def assets(self) -> list[PostAssetUrl]:  # pylint: disable=method-hidden
+        if "assets" not in self.__dict__:
+            self._extract_assets()
+        return self.assets
 
     def _extract_assets(self) -> Sequence[PostAssetUrl] | list[str]:
         raise NotImplementedError(self, "hasn't implemented asset extraction.")

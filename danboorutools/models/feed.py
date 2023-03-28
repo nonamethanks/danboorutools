@@ -42,8 +42,6 @@ class FeedWithSeparateArtists(Feed, Generic[ArtistTypeVar, PostDataVar]):
             for post_data in post_objects:
                 self._process_post(post_data)
 
-            logger.info(f"{len(self._collected_posts)} posts collected so far.")
-
             if self.quit_early_page and page + 1 >= self.quit_early_page:
                 logger.info("Stopping early because it's a first-time scan...")
                 return

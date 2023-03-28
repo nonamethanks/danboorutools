@@ -55,8 +55,6 @@ class HasPosts(Generic[PostDataVar]):
                     logger.info("Reached a previously-seen post. Quitting...")
                     return
 
-            logger.info(f"{len(self._collected_posts)} posts collected so far.")
-
             if self.quit_early_page and page + 1 >= self.quit_early_page:
                 logger.info("Quitting early because it's a first-time scan...")
                 return
@@ -86,7 +84,7 @@ class HasPosts(Generic[PostDataVar]):
         post.created_at = datetime_from_string(created_at)
         post.score = score
 
-        post._assets = []  # what if revision?
+        post.assets = []  # what if revision?
         for asset in assets:
             post._register_asset(asset)
 
