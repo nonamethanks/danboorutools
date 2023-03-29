@@ -7,11 +7,10 @@ from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import UnknownUrlError, UnparsableUrlError
 from danboorutools.logical.parsable_url import ParsableUrl
-from danboorutools.models.url import UnsupportedUrl
 from danboorutools.util.misc import class_name_to_string
 
 if TYPE_CHECKING:
-    from danboorutools.models.url import Url
+    from danboorutools.models.url import UnsupportedUrl, Url
 
 parsers: dict[str, type[UrlParser]] = {}
 
@@ -19,9 +18,17 @@ parsers: dict[str, type[UrlParser]] = {}
 class UrlParser:
     domains: list[str] = []
 
+    @staticmethod
+    @lru_cache
+    def setup_subclasses() -> None:
+        for _file in Path(__file__).parent.glob("*.py"):
+            if "__" not in _file.stem:
+                import_module(f".{_file.stem}", __package__)
+
     @classmethod
     @lru_cache
     def parse(cls, url: str) -> Url | None:
+        cls.setup_subclasses()
         try:
             return cls._parse(url)
         except Exception as e:
@@ -76,11 +83,7 @@ class UnsupportedParser(UrlParser):
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> UnsupportedUrl | None:
         if parsable_url.domain in cls.domains:
+            from danboorutools.models.url import UnsupportedUrl
             return UnsupportedUrl(parsable_url)
         else:
             return None
-
-
-for f in Path(__file__).parent.glob("*.py"):
-    if "__" not in f.stem:
-        import_module(f".{f.stem}", __package__)

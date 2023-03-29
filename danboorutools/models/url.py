@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import builtins
-from functools import cached_property
+from functools import cached_property, lru_cache
 from typing import TYPE_CHECKING, TypeVar, final
 
-import ring
 from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
 
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.parsable_url import ParsableUrl
+from danboorutools.logical.parsers import UrlParser
 from danboorutools.logical.sessions import Session
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.models.has_posts import HasPosts
@@ -33,8 +33,7 @@ class Url:
     def parse(cls, url: str | Url) -> Url:
         if isinstance(url, Url):
             return url
-        url_parser = import_parser()
-        return url_parser.parse(url) or UnknownUrl(ParsableUrl(url))
+        return UrlParser.parse(url) or UnknownUrl(ParsableUrl(url))
 
     @cached_property
     def normalized_url(self) -> str:
@@ -52,10 +51,10 @@ class Url:
         else:
             raise NotImplementedError(f"{cls} hasn't implemented .normalize()")
 
-    @ring.lru()
     @final
     @classmethod
-    def build(cls: type[UrlSubclass], **url_properties) -> UrlSubclass:  # TODO:  https://github.com/youknowone/ring/issues/192
+    @lru_cache
+    def build(cls: type[UrlSubclass], /, **url_properties) -> UrlSubclass:
         """Build an Url from its url properties."""
         if not cls.normalizable:
             raise NotImplementedError(f"{cls} is not buildable.")
@@ -365,13 +364,3 @@ class RedirectUrl(Url):
             return self.resolved.is_deleted
         except DeadUrlError:
             return True
-
-
-if TYPE_CHECKING:
-    from danboorutools.logical.parsers import UrlParser
-
-
-@ring.lru()
-def import_parser() -> UrlParser:
-    from danboorutools.logical.parsers import UrlParser
-    return UrlParser()
