@@ -1,18 +1,22 @@
 from __future__ import annotations
 
 import os
+from typing import TYPE_CHECKING
 
 import ring
-from requests import Response
 
 from danboorutools.exceptions import HTTPError, InvalidSkebCredentialsError
 from danboorutools.logical.sessions import Session
+from danboorutools.logical.urls.booth import BoothArtistUrl
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.pixiv import PixivArtistUrl
 from danboorutools.logical.urls.twitter import TwitterArtistUrl, TwitterIntentUrl
 from danboorutools.logical.urls.youtube import YoutubeChannelUrl
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
+
+if TYPE_CHECKING:
+    from requests import Response
 
 
 class SkebSession(Session):
@@ -48,7 +52,7 @@ class SkebArtistData(BaseModel):
     description: str
     url: str | None
 
-    booth_id: int | None
+    booth_id: str | None
     coconala_id: int | None
     dlsite_id: int | None
     enty_id: int | None
@@ -69,7 +73,7 @@ class SkebArtistData(BaseModel):
         urls: list[Url] = []
 
         if self.booth_id:
-            raise NotImplementedError(self.booth_id)
+            urls += [BoothArtistUrl.build(username=self.booth_id)]
 
         if self.coconala_id:
             raise NotImplementedError(self.coconala_id)
