@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import builtins
 from functools import cached_property, lru_cache
-from typing import TYPE_CHECKING, TypeVar, final
+from typing import TYPE_CHECKING, Self, TypeVar, final
 
 from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
@@ -26,8 +26,8 @@ UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 class Url:
     """A generic URL model."""
     session = Session()
-    normalizable: bool = True
-    normalize_template: str | None = None
+    normalizable = True
+    normalize_template = ""
 
     @classmethod
     def parse(cls, url: str | Url) -> Url:
@@ -54,7 +54,7 @@ class Url:
     @final
     @classmethod
     @lru_cache
-    def build(cls: type[UrlSubclass], /, **url_properties) -> UrlSubclass:
+    def build(cls, /, **url_properties) -> Self:
         """Build an Url from its url properties."""
         if not cls.normalizable:
             raise NotImplementedError(f"{cls} is not buildable.")
@@ -80,6 +80,13 @@ class Url:
 
             setattr(instance, property_name, property_value)
         return instance
+
+    if TYPE_CHECKING:
+        # mypy, you disgusting fucking monkey, shut the fuck up
+        @classmethod  # type: ignore[no-redef]
+        def build(cls: type[UrlSubclass], /, **url_properties) -> UrlSubclass:  # type: ignore[no-redef] # noqa: F811,E501 # pylint: disable=E0102,W0613
+            # sometimes type checkers really make me want to kill myself
+            ...
 
     def __init__(self, url: ParsableUrl):
         self.parsed_url = url
