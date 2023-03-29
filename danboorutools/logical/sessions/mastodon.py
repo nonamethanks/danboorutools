@@ -15,6 +15,8 @@ from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 
 class MastodonSession(Session):
+    DISABLE_AUTOMATIC_CACHE = True
+
     @ring.lru()
     def api(self, domain: str) -> Mastodon:
         if "pawoo.net" in domain:

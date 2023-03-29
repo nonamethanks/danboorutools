@@ -3,22 +3,18 @@ from __future__ import annotations
 import os
 from datetime import datetime
 
-import ring
-
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 
 class NicovideoSession(Session):
-    @ring.lru()
     def nicoseiga_artist_data(self, user_id: int) -> NicoSeigaArtistData:
         url = f"https://nvapi.nicovideo.jp/v1/users/{user_id}"
         headers = {"X-Frontend-Id": "3"}
         response = self.get_json(url, headers=headers)["data"]["user"]
         return NicoSeigaArtistData(**response)
 
-    @ring.lru()
     def get_nicoseiga_feed(self, min_id: int | None = None) -> NicoSeigaFeedData:
         page_url = "https://public.api.nicovideo.jp/v1/timelines/nicorepo/last-1-month/my/pc/entries.json"
         if min_id:

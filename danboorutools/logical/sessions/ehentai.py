@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from functools import cached_property
 from typing import TYPE_CHECKING
 
 import ring
@@ -51,12 +50,13 @@ class EHentaiSession(Session):
 
         return BeautifulSoup(self.browser.page_source, "html5lib")
 
+    @ring.lru()
     def get_gallery_token_from_page_data(self, gallery_id: int | str, page_token: str, page_number: int | str) -> str:
         data = {
             "method": "gtoken",
             "pagelist": [
-                [gallery_id, page_token, page_number]
-            ]
+                [gallery_id, page_token, page_number],
+            ],
         }
 
         response = self.post("https://api.e-hentai.org/api.php", json=data)
@@ -68,6 +68,6 @@ class EHentaiSession(Session):
             e.add_note(f"Response: {json_response}")
             raise
 
-    def download_file(self, url, *args, download_dir=None, **kwargs):  # noqa
+    def download_file(self, url, *args, download_dir=None, **kwargs):
         kwargs.pop("cookies", None)
         return super().download_file(url, *args, download_dir=download_dir, **kwargs)

@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import ring
 
 from danboorutools.logical.sessions import Session
-from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
+
+if TYPE_CHECKING:
+    from danboorutools.models.url import Url
 
 
 class MisskeySession(Session):

@@ -83,7 +83,6 @@ class HentaiFoundrySession(Session):
         self.cookies.clear()
         self.load_cookies()
 
-    @ring.lru()
     def get_feed_posts(self, page: int) -> list[HentaiFoundryPostUrl]:
         username = os.environ["HENTAI_FOUNDRY_USERNAME"]
 

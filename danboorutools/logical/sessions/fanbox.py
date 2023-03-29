@@ -3,21 +3,17 @@ from __future__ import annotations
 import os
 from datetime import datetime
 
-import ring
-
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
 
 
 class FanboxSession(Session):
-    @ring.lru()
     def artist_data(self, username: str) -> FanboxArtistData:
         headers = {"Origin": f"https://{username}.fanbox.cc", "Referer": f"https://{username}.fanbox.cc/"}
         artist_data = self.get_and_parse_fanbox_json(f"https://api.fanbox.cc/creator.get?creatorId={username}", headers=headers)
         return FanboxArtistData(**artist_data)
 
-    @ring.lru()
     def post_data(self, post_id: int) -> FanboxPostData:
         post_json = self.get_and_parse_fanbox_json(f"https://api.fanbox.cc/post.info?postId={post_id}")
         return FanboxPostData(**post_json)

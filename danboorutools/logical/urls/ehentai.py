@@ -19,7 +19,6 @@ if TYPE_CHECKING:
 
 class EHentaiUrl(Url):
     session = EHentaiSession()
-    subsite: str | None = None
 
     @cached_property
     def html(self) -> BeautifulSoup:
@@ -38,12 +37,12 @@ class EHentaiUrl(Url):
 
 
 class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
+    image_type: Literal["direct", "thumbnail", "download", "hash_link"]  # TODO: fix the rest of possible url types in other extractors
     original_filename: str | None
+    file_hash: str | None  # TODO: use this to find the original gallery, maybe combined with original filename?
     gallery_id: int | None = None
     page_number: int | None = None
     page_token: str | None = None  # TODO: is this just file_hash[:10] every time? i don't think so
-    file_hash: str | None  # TODO: use this to find the original gallery, maybe combined with original filename?
-    image_type: Literal["direct", "thumbnail", "download", "hash_link"]  # TODO: fix the rest of possible url types in other extractors
 
     @cached_property
     def created_at(self) -> datetime:
@@ -125,7 +124,7 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
             image: EHentaiImageUrl = self.parse(raw_thumb_url)  # type: ignore[assignment]
             assert image.page_token
             image.created_at = self.created_at
-            image._files = [file]
+            image.files = [file]
 
             page = EHentaiPageUrl.build(
                 subsite=self.subsite,
@@ -153,7 +152,6 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
         score_element, = element.parent.select(".gdt2")
         return int(score_element.text.split()[0])
 
-    @ring.lru()
     def _get_thumb_urls(self) -> list[str]:
         gallery_paginator = self.html.select(".ptt td")
         if len(gallery_paginator) > 3:

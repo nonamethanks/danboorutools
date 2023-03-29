@@ -2,8 +2,6 @@ import os
 import re
 from dataclasses import dataclass
 
-import ring
-
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.pixiv import PixivArtistUrl, PixivStaccUrl, PixivUrl
 from danboorutools.models.danbooru import DanbooruPost
@@ -36,7 +34,6 @@ class SaucenaoSession(Session):
     MAX_CALLS_PER_SECOND = 0.5
     DEFAULT_TIMEOUT = 10
 
-    @ring.lru()
     def _reverse_search_url(self, image_url: str) -> list[dict[str, dict]]:
         """Reverse search an url."""
         saucenao_url = f"https://saucenao.com/search.php?db=999&output_type=2&numres=16&url={image_url}&api_key={self.API_KEY}"

@@ -5,7 +5,6 @@ import os
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-import ring
 from pydantic import validator
 
 from danboorutools.logical.sessions import Session
@@ -25,12 +24,10 @@ class FantiaSession(Session):
         kwargs["cookies"] = self._cookies | kwargs.get("cookies", {})
         return super().request(*args, **kwargs)
 
-    @ring.lru()
     def get_feed(self, page: int) -> dict:
         page_json = self.get_json(f"https://fantia.jp/api/v1/me/timelines/posts?page={page}&per=24")
         return page_json
 
-    @ring.lru()
     def get_post_data(self, post_id: int) -> FantiaPostData:
         post_url = f"https://fantia.jp/posts/{post_id}"
         html = self.get_html(post_url)

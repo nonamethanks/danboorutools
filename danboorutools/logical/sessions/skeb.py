@@ -3,8 +3,6 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-import ring
-
 from danboorutools.exceptions import HTTPError, InvalidSkebCredentialsError
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.booth import BoothArtistUrl
@@ -39,7 +37,6 @@ class SkebSession(Session):
             raise
         return request
 
-    @ring.lru()
     def artist_data(self, username: str) -> SkebArtistData:
         response = self.get_json(f"https://skeb.jp/api/users/{username}")
 

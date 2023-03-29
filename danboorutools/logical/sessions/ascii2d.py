@@ -4,8 +4,6 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
 
-import ring
-
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.amazon import AmazonItemUrl
@@ -93,7 +91,7 @@ class Ascii2dArtistResult:
             if site in ["dlsite", "dmm", "amazon"]:
                 for sublink in link_object.select("a"):
                     work_url = Url.parse(sublink["href"])
-                    assert isinstance(work_url, (FanzaUrl, DlsiteUrl, AmazonItemUrl)), work_url
+                    assert isinstance(work_url, FanzaUrl | DlsiteUrl | AmazonItemUrl), work_url
                     assert isinstance(work_url, PostUrl), work_url
                     # try:
                     #     data["found_urls"].append(work_url.artist)
@@ -208,7 +206,6 @@ class Ascii2dSession(Session):
     MAX_CALLS_PER_SECOND = 0.5
     DEFAULT_TIMEOUT = 60
 
-    @ring.lru()
     def _reverse_search_url(self, url: str) -> list[Ascii2dArtistResult]:
         # can't use /color/md5 because sometimes the result is not cached and requires a cloudflare-protected POST
         ascii2d_url = f"https://ascii2d.net/search/url/{url}"

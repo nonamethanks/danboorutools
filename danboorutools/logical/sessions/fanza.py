@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import ring
-
 from danboorutools.logical.sessions import Session
 from danboorutools.util.misc import BaseModel
 
@@ -16,7 +14,6 @@ class FanzaSession(Session):
         kwargs["cookies"] = kwargs.get("cookies", {}) | {"age_check_done": "1"}
         return super().request(*args, **kwargs)
 
-    @ring.lru()
     def book_data(self, book_id: str) -> FanzaBookData:
         response = self.get_json(f"https://book.dmm.co.jp/ajax/bff/content/?shop_name=adult&content_id={book_id}")
         return FanzaBookData(**response)

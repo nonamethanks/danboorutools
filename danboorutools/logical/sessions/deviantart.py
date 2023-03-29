@@ -17,7 +17,6 @@ data_pattern = re.compile(r"window.__INITIAL_STATE__ = JSON.parse\(\"(.*)\"\);")
 
 
 class DeviantartSession(Session):
-    @ring.lru()
     def user_data(self, username: str) -> DeviantartUserData:
         html = self.get_html(f"https://www.deviantart.com/{username}")
         script = next(el.string for el in html.select("script") if el.string and "window.__INITIAL_STATE__ = JSON.parse" in el.string)

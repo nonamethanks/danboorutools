@@ -2,6 +2,8 @@ import re
 from functools import cached_property
 from typing import Literal
 
+from danboorutools.logical.sessions.dlsite import DlsiteSession
+from danboorutools.logical.urls.dlsite_cien import DlsiteCienCreatorUrl
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
@@ -13,6 +15,8 @@ class DlsiteUrl(Url):
         "doujin",                   # Doujinshi images, redirects to the above ones
         "pro",                      # H Games
     ]
+
+    session = DlsiteSession()
 
 
 class DlsiteAuthorUrl(ArtistUrl, DlsiteUrl):
@@ -26,6 +30,11 @@ class DlsiteAuthorUrl(ArtistUrl, DlsiteUrl):
             return f"https://www.dlsite.com/books/author/=/author_id/{kwargs['author_id']}"
         else:
             raise NotImplementedError(subsite)
+
+    @property
+    def related(self) -> list[Url]:
+        cien_id = self.session.cien_id_from_circle_id(self.author_id)
+        return [DlsiteCienCreatorUrl.build(creator_id=cien_id)]
 
 
 class DlsiteWorkUrl(PostUrl, DlsiteUrl):
