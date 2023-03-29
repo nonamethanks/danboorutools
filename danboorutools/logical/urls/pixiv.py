@@ -159,7 +159,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
 
     @cached_property
     def gallery(self) -> PixivArtistUrl:
-        return self.build(PixivArtistUrl, user_id=self.post_data.userId)
+        return PixivArtistUrl.build(user_id=self.post_data.userId)
 
     @cached_property
     def is_deleted(self) -> bool:

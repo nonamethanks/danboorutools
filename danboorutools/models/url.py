@@ -55,7 +55,7 @@ class Url:
     @ring.lru()
     @final
     @classmethod
-    def build(cls: type[UrlSubclass], /, **url_properties) -> UrlSubclass:
+    def build(cls: type[UrlSubclass], **url_properties) -> UrlSubclass:  # TODO:  https://github.com/youknowone/ring/issues/192
         """Build an Url from its url properties."""
         if not cls.normalizable:
             raise NotImplementedError(f"{cls} is not buildable.")
