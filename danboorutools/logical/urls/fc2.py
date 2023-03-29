@@ -6,18 +6,21 @@ from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
 class Fc2Url(Url):
-    subsite: str
-    domain: str
     username: str
 
 
 class Fc2PostUrl(PostUrl, Fc2Url):
     post_id: int
+    subsite: str
+    domain: str
 
     normalize_template = "http://{username}.{subsite}.{domain}/blog-entry-{post_id}.html"
 
 
 class Fc2BlogUrl(ArtistUrl, Fc2Url):
+    subsite: str
+    domain: str
+
     normalize_template = "http://{username}.{subsite}.{domain}"
 
     @property
@@ -36,13 +39,14 @@ class Fc2BlogUrl(ArtistUrl, Fc2Url):
 
 
 class Fc2ImageUrl(PostAssetUrl, Fc2Url):
+    subsite: str
+
     @property
     def full_size(self) -> str:
         return self.parsed_url.raw_url
 
 
 class Fc2PiyoBlogUrl(ArtistUrl, Fc2Url):
-
     normalize_template = "https://piyo.fc2.com/{username}"
 
 

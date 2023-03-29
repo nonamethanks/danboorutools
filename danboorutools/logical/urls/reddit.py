@@ -25,10 +25,11 @@ class RedditUserUrl(ArtistUrl, RedditUrl):
 
 
 class RedditPostUrl(ArtistUrl, RedditUrl):
+    post_id: str
+
     subreddit: str | None = None
     username: str | None = None
 
-    post_id: str
     title: str | None = None
 
     second_post_id: str | None = None

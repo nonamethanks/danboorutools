@@ -1,5 +1,5 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.anifty import AniftyImageUrl
 from danboorutools.logical.urls.foundation import FoundationImageUrl
 from danboorutools.logical.urls.skeb import SkebImageUrl
@@ -40,55 +40,54 @@ class ImgixNetParser(UrlParser):
             raise UnparsableUrlError(parsable_url)
 
     @staticmethod
-    def _match_anifty(parsable_url: ParsableUrl) -> AniftyImageUrl | None:
+    def _match_anifty(parsable_url: ParsableUrl) -> AniftyImageUrl | None:  # type: ignore[return]
         match parsable_url.url_parts:
             case _, artist_hash, filename if artist_hash.startswith("0x"):
-                instance = AniftyImageUrl(parsable_url)
-                instance.artist_hash = artist_hash
-                instance.filename = filename
+                return AniftyImageUrl(parsed_url=parsable_url,
+                                      artist_hash=artist_hash,
+                                      filename=filename)
+
             case _:
                 return None
-
-        return instance
 
     @staticmethod
-    def _match_foundation(parsable_url: ParsableUrl) -> FoundationImageUrl | None:
+    def _match_foundation(parsable_url: ParsableUrl) -> FoundationImageUrl | None:  # type: ignore[return]
         match parsable_url.url_parts:
             case token_id, work_id, file_hash, _ if token_id.startswith("0x"):
-                instance = FoundationImageUrl(parsable_url)
-                instance.token_id = token_id
-                instance.work_id = int(work_id)
-                instance.file_hash = file_hash
+                return FoundationImageUrl(parsed_url=parsable_url,
+                                          token_id=token_id,
+                                          file_hash=file_hash,
+                                          work_id=int(work_id))
             case token_id, work_id, _ if token_id.startswith("0x"):
-                instance = FoundationImageUrl(parsable_url)
-                instance.token_id = token_id
-                instance.work_id = int(work_id)
-                instance.file_hash = None
+                return FoundationImageUrl(parsed_url=parsable_url,
+                                          token_id=token_id,
+                                          file_hash=None,
+                                          work_id=int(work_id))
+
             case file_hash, _:
-                instance = FoundationImageUrl(parsable_url)
-                instance.file_hash = file_hash
-                instance.token_id = None
-                instance.work_id = None
+                return FoundationImageUrl(parsed_url=parsable_url,
+                                          file_hash=file_hash,
+                                          work_id=None,
+                                          token_id=None)
+
             case _:
                 return None
-
-        return instance
 
     @staticmethod
     def _match_skeb(parsable_url: ParsableUrl) -> SkebImageUrl | None:
         match parsable_url.url_parts:
             case "requests", filename:
-                instance = SkebImageUrl(parsable_url)
-                [instance.post_id, instance.page] = map(int, filename.split("_"))
-                instance.image_uuid = None
+                [post_id, page] = map(int, filename.split("_"))
+                return SkebImageUrl(parsed_url=parsable_url,
+                                    post_id=post_id,
+                                    page=page,
+                                    image_uuid=None)
 
             case *_, "uploads", "origins", image_uuid:
-                instance = SkebImageUrl(parsable_url)
-                instance.image_uuid = image_uuid
-                instance.page = None
-                instance.post_id = None
+                return SkebImageUrl(parsed_url=parsable_url,
+                                    image_uuid=image_uuid,
+                                    post_id=None,
+                                    page=None)
 
             case _:
                 return None
-
-        return instance

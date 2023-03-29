@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from functools import cached_property
 from itertools import count, repeat
 from typing import TYPE_CHECKING
 
-from pytz import UTC
 from requests.exceptions import ProxyError
 
 from danboorutools.exceptions import DeadUrlError
@@ -71,35 +71,29 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
     post_id: int
     page: int  # starts from 0
 
+    stacc: str | None = None
     unlisted: bool = False
-    stacc: str | None
 
-    def parse_filename(self, filename_stem: str, *date: str) -> None:
-        if date:
-            self.created_at = datetime(year=int(date[0]), month=int(date[1]), day=int(date[2]),
-                                       hour=int(date[3]), minute=int(date[4]), second=int(date[5]), tzinfo=UTC)
+    page_regex = re.compile(r"^p(\d+)$")
 
-        match filename_stem.split("_"):
-            case post_id, *rest:
-                try:
-                    self.post_id = int(post_id)
-                except ValueError:
-                    # https://i.pximg.net/img-original/img/2018/03/30/10/50/16/67982747-04d810bf32ebd071927362baec4057b6_p0.png
-                    if "-" in post_id:
-                        post_id, _private_string = post_id.split("-")
-                        self.post_id = int(post_id)  # this is wrong: the post cannot be accessed this way
-                        self.unlisted = True
-                for value in rest:
-                    if value.startswith("p"):
-                        self.page = int(value.removeprefix("p"))
-                        return
-                    elif value.startswith("ugoira"):
-                        self.page = 0
-                        return
-                self.page = 0
-            case post_id, :
-                self.post_id = int(post_id)
-                self.page = 0
+    @classmethod
+    def parse_filename(cls, filename_stem: str) -> tuple[int, int, bool]:
+        parts = filename_stem.split("_")
+        unlisted = False
+        page = 0
+        post_id_str, *parts = parts
+        try:
+            post_id = int(post_id_str)
+        except ValueError:
+            unlisted = True
+            post_id_str, _private_hash = post_id_str.split("-")
+            post_id = int(post_id_str)
+        for part in parts:
+            if match := cls.page_regex.match(part):
+                page = int(match.groups()[0])
+                break
+
+        return post_id, page, unlisted
 
     @cached_property
     def post(self) -> PixivPostUrl:
@@ -254,8 +248,6 @@ class PixivMeUrl(RedirectUrl, PixivUrl):
     stacc: str
 
     normalize_template = "https://pixiv.me/{stacc}"
-
-    resolved: PixivArtistUrl
 
 
 class PixivStaccUrl(InfoUrl, PixivUrl):

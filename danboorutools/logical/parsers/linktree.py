@@ -1,4 +1,4 @@
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.linktree import LinktreeUrl
 
 
@@ -8,9 +8,8 @@ class LinktrEeParser(UrlParser):
         match parsable_url.url_parts:
             # https://linktr.ee/tyanka6
             case username, :
-                instance = LinktreeUrl(parsable_url)
-                instance.username = username
+                return LinktreeUrl(parsed_url=parsable_url,
+                                   username=username)
+
             case _:
                 return None
-
-        return instance

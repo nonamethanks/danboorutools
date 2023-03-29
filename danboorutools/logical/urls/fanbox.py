@@ -56,7 +56,6 @@ class FanboxOldArtistUrl(RedirectUrl, FanboxUrl):
 
 class FanboxArtistImageUrl(PostAssetUrl, FanboxUrl):
     pixiv_id: int
-    filename: str
     image_type: str
 
     @property
@@ -68,7 +67,6 @@ class FanboxImageUrl(PostAssetUrl, FanboxUrl):
     # https://null.fanbox.cc/39714 TODO: use this to get the post -> dont assign directly, first fetch to check if alive
     post_id: int | None
     pixiv_id: int | None
-    filename: str
     image_type: str
 
     @property

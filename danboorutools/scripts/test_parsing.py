@@ -1,13 +1,14 @@
 import time
 from collections import Counter
 from collections.abc import Callable
+from pathlib import Path
 
 import click
 from line_profiler import LineProfiler
 
 from danboorutools import logger
-from danboorutools.logical.parsers import ParsableUrl, UrlParser, parsers
 from danboorutools.logical.progress_tracker import ProgressTracker
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser, parsers
 from danboorutools.models.url import Url
 
 log_file = logger.log_to_file()
@@ -37,24 +38,23 @@ def print_unparsed(test_set: list[str]) -> None:
         parsed_url = ParsableUrl(url_string)
         if parsed_url.domain not in parsers:
             unparsed_domains.append(parsed_url.domain)
-
     domains = Counter(unparsed_domains)
     logger.info("Most common unparsed domains:")
     for index, (domain, number) in enumerate(domains.most_common(20)):
-        print(f"{index + 1:2d}: {domain} ({number})")
+        logger.info(f"{index + 1:2d}: {domain} ({number})")
 
 
 def prepare_test_set(times: int) -> list[str]:
     logger.info("Loading data...")
     logger.info("Loading artist urls...")
-    with open("data/artist_urls.txt", encoding="utf-8") as myf:
+    with Path("data/artist_urls.txt").open(encoding="utf-8") as myf:
         # TODO: add script to update this and the below from bq
         # https://github.com/danbooru/danbooru/issues/5440 this needs to be fixed first
-        test_set = [line.strip().strip("\"") for line in myf if line.strip()]
+        test_set = [line.strip().strip('"') for line in myf if line.strip()]
     logger.info("Artist urls loaded.")
     logger.info("Loading sources...")
-    with open("data/sources.txt", encoding="utf-8") as myf:
-        test_set += [line.strip().strip("\"") for line in myf if line.strip()]
+    with Path("data/sources.txt").open(encoding="utf-8") as myf:
+        test_set += [line.strip().strip('"') for line in myf if line.strip()]
     logger.info("Sources loaded.")
 
     if times:

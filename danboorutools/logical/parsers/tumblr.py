@@ -1,7 +1,7 @@
 import re
 
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostUrl, TumblrUrl
 
 dimensions_pattern = re.compile(r"^s\d+x\d+$")
@@ -29,7 +29,7 @@ class TumblrComParser(UrlParser):
             # https://66.media.tumblr.com/168dabd09d5ad69eb5fedcf94c45c31a/3dbfaec9b9e0c2e3-72/s640x960/bf33a1324f3f36d2dc64f011bfeab4867da62bc8.png
             # https://66.media.tumblr.com/5a2c3fe25c977e2281392752ab971c90/3dbfaec9b9e0c2e3-92/s500x750/4f92bbaaf95c0b4e7970e62b1d2e1415859dd659.png
             case *_, dimensions, _ if dimensions_pattern.match(dimensions):
-                return TumblrImageUrl(parsable_url)
+                return TumblrImageUrl(parsed_url=parsable_url)
 
             # http://data.tumblr.com/07e7bba538046b2b586433976290ee1f/tumblr_o3gg44HcOg1r9pi29o1_raw.jpg
             # https://40.media.tumblr.com/de018501416a465d898d24ad81d76358/tumblr_nfxt7voWDX1rsd4umo1_r23_1280.jpg
@@ -40,7 +40,7 @@ class TumblrComParser(UrlParser):
             # https://66.media.tumblr.com/b9395771b2d0435fe4efee926a5a7d9c/tumblr_pg2wu1L9DM1trd056o2_500h.png
             # https://media.tumblr.com/701a535af224f89684d2cfcc097575ef/tumblr_pjsx70RakC1y0gqjko1_1280.pnj
             case _, filename if filename.startswith("tumblr"):
-                return TumblrImageUrl(parsable_url)
+                return TumblrImageUrl(parsed_url=parsable_url)
 
             # https://25.media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_500.png
             # https://media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_1280.png
@@ -48,57 +48,56 @@ class TumblrComParser(UrlParser):
             # https://media.tumblr.com/tumblr_m24kbxqKAX1rszquso1_1280.jpg
             # https://va.media.tumblr.com/tumblr_pgohk0TjhS1u7mrsl.mp4
             case [_]:
-                return TumblrImageUrl(parsable_url)
+                return TumblrImageUrl(parsed_url=parsable_url)
 
             case _:
                 return None
 
     @classmethod
-    def _match_no_subdomain(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:
-        instance: TumblrUrl
+    def _match_no_subdomain(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:  # type: ignore[return]
         match parsable_url.url_parts:
             # https://tumblr.com/munespice/683613396085719040",  # new dashboard link
             # https://www.tumblr.com/yamujiburo/682910938493599744/will-tumblr-let-me-keep-this-up
             case blog_name, post_id, *_ if post_id.isnumeric():
-                instance = TumblrPostUrl(parsable_url)
-                instance.blog_name = blog_name
-                instance.post_id = int(post_id)
+                return TumblrPostUrl(parsed_url=parsable_url,
+                                     blog_name=blog_name,
+                                     post_id=int(post_id))
 
             # https://www.tumblr.com/blog/view/artofelaineho/187614935612   # old dashboard link
             case "blog", "view", blog_name, post_id:
-                instance = TumblrPostUrl(parsable_url)
-                instance.blog_name = blog_name
-                instance.post_id = int(post_id)
+                return TumblrPostUrl(parsed_url=parsable_url,
+                                     blog_name=blog_name,
+                                     post_id=int(post_id))
 
             # https://www.tumblr.com/blog/view/artofelaineho
             # https://tumblr.com/blog/view/artofelaineho
             case "blog", "view", blog_name:
-                instance = TumblrArtistUrl(parsable_url)
-                instance.blog_name = blog_name
+                return TumblrArtistUrl(parsed_url=parsable_url,
+                                       blog_name=blog_name)
 
             # https://www.tumblr.com/blog/artofelaineho
             # http://tumblr.com/blog/kervalchan
             case "blog", blog_name:
-                instance = TumblrArtistUrl(parsable_url)
-                instance.blog_name = blog_name
+                return TumblrArtistUrl(parsed_url=parsable_url,
+                                       blog_name=blog_name)
 
             # https://www.tumblr.com/dashboard/blog/kohirasan/136686983240
             case "dashboard", "blog", blog_name, post_id:
-                instance = TumblrPostUrl(parsable_url)
-                instance.blog_name = blog_name
-                instance.post_id = int(post_id)
+                return TumblrPostUrl(parsed_url=parsable_url,
+                                     blog_name=blog_name,
+                                     post_id=int(post_id))
 
             # https://www.tumblr.com/dashboard/blog/dankwartart
             # https://tumblr.com/dashboard/blog/dankwartart
             case "dashboard", "blog", blog_name:
-                instance = TumblrArtistUrl(parsable_url)
-                instance.blog_name = blog_name
+                return TumblrArtistUrl(parsed_url=parsable_url,
+                                       blog_name=blog_name)
 
             # https://www.tumblr.com/tawni-tailwind
             # https://tumblr.com/tawni-tailwind
             case blog_name, if blog_name not in cls.RESERVED_NAMES:
-                instance = TumblrArtistUrl(parsable_url)
-                instance.blog_name = blog_name
+                return TumblrArtistUrl(parsed_url=parsable_url,
+                                       blog_name=blog_name)
 
             case ("tagged" | "search"), *_:
                 raise UnparsableUrlError(parsable_url)
@@ -106,37 +105,31 @@ class TumblrComParser(UrlParser):
             case _:
                 return None
 
-        return instance
-
     @classmethod
-    def _match_at_subdomain(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:
-        instance: TumblrUrl
+    def _match_at_subdomain(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:  # type: ignore[return]
         match parsable_url.url_parts:
 
             # https://at.tumblr.com/pizza-and-ramen/118684413624/uqndb20nkyob
             case blog_name, post_id, _title if post_id.isnumeric():
-                instance = TumblrPostUrl(parsable_url)
-                instance.blog_name = blog_name
-                instance.post_id = int(post_id)
+                return TumblrPostUrl(parsed_url=parsable_url,
+                                     blog_name=blog_name,
+                                     post_id=int(post_id))
 
             # https://at.tumblr.com/everythingfox/everythingfox-so-sleepy/d842mqsx8lwd
             case blog_name, _title, _redirect_id if blog_name not in cls.RESERVED_NAMES:
-                instance = TumblrArtistUrl(parsable_url)
-                instance.blog_name = blog_name
+                return TumblrArtistUrl(parsed_url=parsable_url,
+                                       blog_name=blog_name)
 
             # https://at.tumblr.com/cyanideqpoison/u2czj612ttzq
             case blog_name, _redirect_id if blog_name not in cls.RESERVED_NAMES:
-                instance = TumblrArtistUrl(parsable_url)
-                instance.blog_name = blog_name
+                return TumblrArtistUrl(parsed_url=parsable_url,
+                                       blog_name=blog_name)
 
             case _:
                 return None
 
-        return instance
-
     @classmethod
-    def _match_with_subdomain(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:
-        instance: TumblrUrl
+    def _match_with_subdomain(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:  # type: ignore[return]
         match parsable_url.url_parts:
             # https://merryweather-media.tumblr.com/post/665688699379564544/blue-eyes-white-dragon
             # https://marmaladica.tumblr.com/post/188237914346/saved
@@ -145,18 +138,16 @@ class TumblrComParser(UrlParser):
             # https://make-do5.tumblr.com/post/619663949657423872
             # http://raspdraws.tumblr.com/image/70021467381
             case ("post" | "image"), post_id, *_ if post_id.isnumeric():
-                instance = TumblrPostUrl(parsable_url)
-                instance.blog_name = parsable_url.subdomain
-                instance.post_id = int(post_id)
+                return TumblrPostUrl(parsed_url=parsable_url,
+                                     blog_name=parsable_url.subdomain,
+                                     post_id=int(post_id))
 
             # https://rosarrie.tumblr.com/archive
             # https://solisnotte.tumblr.com/about
             # http://whereisnovember.tumblr.com/tagged/art
             case *_, :
-                instance = TumblrArtistUrl(parsable_url)
-                instance.blog_name = parsable_url.subdomain
+                return TumblrArtistUrl(parsed_url=parsable_url,
+                                       blog_name=parsable_url.subdomain)
 
             case _:
                 return None
-
-        return instance

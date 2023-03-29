@@ -1,6 +1,6 @@
 import re
 
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.sakura import SakuraBlogUrl, SakuraUrl
 
 
@@ -14,7 +14,5 @@ class SakuraNeJpParser(UrlParser):
             _, blog_name = re.split(r"www\d*.", parsable_url.subdomain)
         assert blog_name
 
-        instance = SakuraBlogUrl(parsable_url)
-
-        instance.blog_name = blog_name
-        return instance
+        return SakuraBlogUrl(parsed_url=parsable_url,
+                             blog_name=blog_name)

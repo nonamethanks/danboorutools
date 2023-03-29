@@ -1,34 +1,32 @@
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.arca_live import ArcaLiveArtistUrl, ArcaLiveImageUrl, ArcaLivePostUrl, ArcaLiveUrl
 
 
 class ArcaLiveParser(UrlParser):
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> ArcaLiveUrl | None:
-        instance: ArcaLiveUrl
+    def match_url(cls, parsable_url: ParsableUrl) -> ArcaLiveUrl | None:  # type: ignore[return]
         match parsable_url.url_parts:
 
             # https://arca.live/b/arknights/66031722
             case "b", channel, post_id:
-                instance = ArcaLivePostUrl(parsable_url)
-                instance.post_id = int(post_id)
-                instance.channel = channel
+                return ArcaLivePostUrl(parsed_url=parsable_url,
+                                       post_id=int(post_id),
+                                       channel=channel)
 
             # https://arca.live/u/@Si리링
             case "u", username, user_id if username.startswith("@"):
-                instance = ArcaLiveArtistUrl(parsable_url)
-                instance.user_id = int(user_id)
-                instance.username = username.removeprefix("@")
+                return ArcaLiveArtistUrl(parsed_url=parsable_url,
+                                         user_id=int(user_id),
+                                         username=username.removeprefix("@"))
 
             # https://arca.live/u/@Nauju/45320365
             case "u", username if username.startswith("@"):
-                instance = ArcaLiveArtistUrl(parsable_url)
-                instance.username = username.removeprefix("@")
-                instance.user_id = None
+                return ArcaLiveArtistUrl(parsed_url=parsable_url,
+                                         username=username.removeprefix("@"),
+                                         user_id=None)
 
             case _:
                 return None
-        return instance
 
 
 class NamuLaParser(UrlParser):
@@ -43,11 +41,9 @@ class NamuLaParser(UrlParser):
             # https://ac-o.namu.la/20221211sac/7f73beefc4f18a2f986bc4c6821caba706e27f4c94cb828fc16e2af1253402d9.gif?type=orig
             # https://ac.namu.la/20221211sac/7f73beefc4f18a2f986bc4c6821caba706e27f4c94cb828fc16e2af1253402d9.mp4
             case date_string, filename:
-                instance = ArcaLiveImageUrl(parsable_url)
-                instance.date_string = date_string
-                instance.filename = filename
+                return ArcaLiveImageUrl(parsed_url=parsable_url,
+                                        date_string=date_string,
+                                        filename=filename)
 
             case _:
                 return None
-
-        return instance

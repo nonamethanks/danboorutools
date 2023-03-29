@@ -1,5 +1,5 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.anifty import AniftyArtistImageUrl, AniftyImageUrl, AniftyUrl
 
 
@@ -10,7 +10,7 @@ class GoogleapisComParser(UrlParser):
         ],
         AniftyArtistImageUrl: [
             "https://storage.googleapis.com/anifty-media/profile/0x961d09077b4a9f7a27f6b7ee78cb4c26f0e72c18/a6d2c366a3e876ddbf04fc269b63124be18af424.png",
-        ]
+        ],
     }
 
     @classmethod
@@ -21,19 +21,18 @@ class GoogleapisComParser(UrlParser):
             raise UnparsableUrlError(parsable_url)
 
     @staticmethod
-    def _match_anifty(parsable_url: ParsableUrl) -> AniftyUrl | None:
-        instance: AniftyUrl
+    def _match_anifty(parsable_url: ParsableUrl) -> AniftyUrl | None:  # type: ignore[return]
         match parsable_url.url_parts:
             case "anifty-media", ("creation" | "profile") as image_type, artist_hash, filename if artist_hash.startswith("0x"):
                 if image_type == "profile":
-                    instance = AniftyArtistImageUrl(parsable_url)
-                    instance.artist_hash = artist_hash
-                    instance.filename = filename
+                    return AniftyArtistImageUrl(parsed_url=parsable_url,
+                                                artist_hash=artist_hash,
+                                                filename=filename)
+
                 else:
-                    instance = AniftyImageUrl(parsable_url)
-                    instance.artist_hash = artist_hash
-                    instance.filename = filename
+                    return AniftyImageUrl(parsed_url=parsable_url,
+                                          artist_hash=artist_hash,
+                                          filename=filename)
+
             case _:
                 return None
-
-        return instance

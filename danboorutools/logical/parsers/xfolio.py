@@ -1,33 +1,31 @@
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.xfolio import XfolioArtistUrl, XfolioPostUrl, XfolioUrl
 
 
 class XfolioJpParser(UrlParser):
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> XfolioUrl | None:
-        instance: XfolioUrl
-
         match parsable_url.url_parts:
             # https://xfolio.jp/portfolio/Rei_0127/works/59931
             case "portfolio", username, "works", work_id:
-                instance = XfolioPostUrl(parsable_url)
-                instance.username = username
-                instance.post_id = int(work_id)
+                return XfolioPostUrl(parsed_url=parsable_url,
+                                     username=username,
+                                     post_id=int(work_id))
 
             # https://xfolio.jp/portfolio/hayato69/free/33407
             case "portfolio", username, "free", _:
-                instance = XfolioArtistUrl(parsable_url)
-                instance.username = username
+                return XfolioArtistUrl(parsed_url=parsable_url,
+                                       username=username)
 
             # https://xfolio.jp/portfolio/hayato69/works
             case "portfolio", username, _:
-                instance = XfolioArtistUrl(parsable_url)
-                instance.username = username
+                return XfolioArtistUrl(parsed_url=parsable_url,
+                                       username=username)
 
             # https://xfolio.jp/portfolio/hayato69
             case "portfolio", username:
-                instance = XfolioArtistUrl(parsable_url)
-                instance.username = username
+                return XfolioArtistUrl(parsed_url=parsable_url,
+                                       username=username)
 
             # https://assets.xfolio.jp/secure/1359786657/creator/8006/kv/233681_BGJnDS9ZTG.webp?hash=uRlp4fCpLOcPRcxXGBw5gw&expires=1678611600&type=main_visual&template=emotion&device=pc&pos=0
             # https://assets.xfolio.jp/secure/1359786657/creator/4227/works/59931/215274_8ZVhvrPBNn.webp?hash=89GVelCa2DOeRq-ElxxWJg&expires=1678611600
@@ -35,5 +33,3 @@ class XfolioJpParser(UrlParser):
 
             case _:
                 return None
-
-        return instance

@@ -4,7 +4,7 @@ import pickle
 import random
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, dataclass_transform
 
 from pydantic import BaseModel as BadBaseModel
 from pydantic import PrivateAttr, ValidationError
@@ -127,3 +127,8 @@ def save_cookies_for(domain: str, cookies: list[dict[str, str]]) -> None:
     filename = cookie_dir / f"cookies-{domain}.pkl"
     cookie_dir.mkdir(exist_ok=True)
     pickle.dump(cookies, filename.open("wb+"))
+
+
+@dataclass_transform()
+class PseudoDataclass(type):
+    ...

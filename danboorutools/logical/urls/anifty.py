@@ -6,7 +6,6 @@ class AniftyUrl(Url):
 
 
 class AniftyPostUrl(PostUrl, AniftyUrl):
-
     post_id: int
 
     normalize_template = "https://anifty.jp/creations/{post_id}"

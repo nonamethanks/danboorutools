@@ -22,7 +22,7 @@ class DeviantArtPostUrl(PostUrl, DeviantArtUrl):
     username: str | None
     title: str | None
 
-    uuid: str | None = None # useful to avoid api calls
+    uuid: str | None = None  # useful to avoid api calls
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
@@ -63,17 +63,17 @@ class DeviantArtImageUrl(PostAssetUrl, DeviantArtUrl):
     title: str | None
     username: str | None
 
-    def parse_filename(self, filename: str) -> None:
+    @staticmethod
+    def parse_filename(filename: str) -> tuple[str | None, int | None, str | None]:
         filename = filename.split(".")[0]
-        try:
-            match = next(match for pattern in FILENAME_PATTERNS if (match := pattern.match(filename)))
-        except StopIteration as e:
-            raise NotImplementedError(self.parsed_url) from e
+        match = next(match for pattern in FILENAME_PATTERNS if (match := pattern.match(filename)))
 
         groups: dict[str, str] = match.groupdict()
-        self.title = re.sub(r"_+", " ", groups["title"]).title().replace(" ", "-") if "title" in groups else None
-        self.username = groups["username"].replace("_", "-") if "username" in groups else None
-        self.deviation_id = int(groups["base36_deviation_id"], 36) if "base36_deviation_id" in groups else None
+        username = groups["username"].replace("_", "-") if "username" in groups else None
+        deviation_id = int(groups["base36_deviation_id"], 36) if "base36_deviation_id" in groups else None
+        title = re.sub(r"_+", " ", groups["title"]).title().replace(" ", "-") if "title" in groups else None
+
+        return username, deviation_id, title
 
     @property
     def full_size(self) -> str:

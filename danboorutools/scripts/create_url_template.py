@@ -20,24 +20,22 @@ def main(url: str, force: bool = False) -> None:
 
 PARSER_TEMPLATE = """
 from danboorutools.logical.urls.{module_name} import {class_name_base}ArtistUrl, {class_name_base}ImageUrl, {class_name_base}PostUrl, {class_name_base}Url
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 
 class {parser_name_base}Parser(UrlParser):{domains_if_dash}
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> {class_name_base}Url | None:
-        instance: {class_name_base}Url
-
         match parsable_url.url_parts:
             case _,:
-                instance = {class_name_base}ArtistUrl(parsable_url)
-                instance.username = username
+                return {class_name_base}ArtistUrl(parsed_url=parsable_url,
+                                                  instance.username = username)
             case _:
                 return None
-        return instance
 """
 
 EXTRACTOR_TEMPLATE = """
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
+
 
 class {class_name_base}Url(Url):
     pass

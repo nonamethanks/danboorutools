@@ -1,18 +1,20 @@
 from __future__ import annotations
 
-import builtins
+# import inspect
 from functools import cached_property, lru_cache
-from typing import TYPE_CHECKING, Self, TypeVar, final
+from typing import TYPE_CHECKING, Self, TypeVar, final  # , get_type_hints
 
 from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
 
+# from typeguard import check_type
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.parsable_url import ParsableUrl
-from danboorutools.logical.parsers import UrlParser
 from danboorutools.logical.sessions import Session
+from danboorutools.logical.url_parser import UrlParser
 from danboorutools.models.file import ArchiveFile, File
 from danboorutools.models.has_posts import HasPosts
+from danboorutools.util.misc import PseudoDataclass
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -23,17 +25,33 @@ if TYPE_CHECKING:
 UrlSubclass = TypeVar("UrlSubclass", bound="Url")
 
 
-class Url:
+class Url(metaclass=PseudoDataclass):
     """A generic URL model."""
     session = Session()
     normalizable = True
     normalize_template = ""
 
+    parsed_url: ParsableUrl
+
+    def __init__(self, /, parsed_url: ParsableUrl, **url_properties):
+        self.parsed_url = parsed_url
+        for property_name, property_value in url_properties.items():
+            # check_type(property_value, self.computed_type_hints[property_name])  # type: ignore[attr-defined]
+            setattr(self, property_name, property_value)
+
+    # def __init_subclass__(cls) -> None:
+    #     if inspect.getfile(cls) == __file__:
+    #         return
+
+    #     from typing import Literal
+    #     computed_type_hints = get_type_hints(cls, globalns=globals() | {"Literal": Literal})
+    #     cls.computed_type_hints = computed_type_hints  # type: ignore[attr-defined]
+
     @classmethod
     def parse(cls, url: str | Url) -> Url:
         if isinstance(url, Url):
             return url
-        return UrlParser.parse(url) or UnknownUrl(ParsableUrl(url))
+        return UrlParser.parse(url) or UnknownUrl(parsed_url=ParsableUrl(url))
 
     @cached_property
     def normalized_url(self) -> str:
@@ -61,35 +79,14 @@ class Url:
         normalized_url = cls.normalize(**url_properties)
         if not normalized_url:
             raise ValueError(normalized_url, url_properties)
-
-        instance = cls(url=ParsableUrl(normalized_url))
-
-        annotations: dict[str, str] = cls.__annotations__
-        for property_name, property_value in url_properties.items():
-            if isinstance(annotation := annotations[property_name], str):  # `from __future__ import annotations` is active
-                try:
-                    property_types = tuple(getattr(builtins, type_str.strip()) for type_str in annotations[property_name].split("|"))
-                except AttributeError as e:  # motherfucker
-                    e.add_note(f"{property_name=}, {property_value=}, {annotations[property_name]=}")
-                    raise
-            else:
-                property_types = (annotation,)
-
-            assert isinstance(property_value, property_types), \
-                f"{property_name} was of type {type(property_value)} instead of {property_types}"
-
-            setattr(instance, property_name, property_value)
-        return instance
+        return cls(parsed_url=ParsableUrl(normalized_url), **url_properties)
 
     if TYPE_CHECKING:
-        # mypy, you disgusting fucking monkey, shut the fuck up
+        # fucking mypy
         @classmethod  # type: ignore[no-redef]
-        def build(cls: type[UrlSubclass], /, **url_properties) -> UrlSubclass:  # type: ignore[no-redef] # noqa: F811,E501 # pylint: disable=E0102,W0613
+        def build(cls: type[UrlSubclass], /, **url_properties) -> UrlSubclass:  # type: ignore[no-redef] # noqa: E501,F811 # pylint: disable=E0102,W0613
             # sometimes type checkers really make me want to kill myself
             ...
-
-    def __init__(self, url: ParsableUrl):
-        self.parsed_url = url
 
     def __repr__(self) -> str:
         try:
@@ -215,7 +212,7 @@ class GalleryUrl(Url, HasPosts):  # pylint: disable=abstract-method
         post.gallery = self
 
 
-class ArtistUrl(GalleryUrl, InfoUrl, Url):  # pylint: disable=abstract-method
+class ArtistUrl(GalleryUrl, InfoUrl):  # pylint: disable=abstract-method
     """An artist url is a gallery but also has other extractable data."""
 
 
@@ -282,21 +279,19 @@ class PostUrl(Url):
 
 class _AssetUrl(Url):
     """An asset contains a list of files. It's usually a list of a single file, but it can be a zip file with multiple subfiles."""
-    _files: list[File]
+    @cached_property
+    def files(self) -> list[File]:  # pylint: disable=method-hidden
+        if "files" not in self.__dict__:
+            self.files = self.extract_files()
 
-    @property
-    def files(self) -> list[File]:
-        if not hasattr(self, "_files"):
-            self.extract_files()
+        return self.files
 
-        return self._files
-
-    def extract_files(self) -> None:
+    def extract_files(self) -> list[File]:
         downloaded_file = self.session.download_file(self.normalized_url)
         if isinstance(downloaded_file, ArchiveFile):
-            self._files = downloaded_file.extracted_files
+            return downloaded_file.extracted_files
         else:
-            self._files = [downloaded_file]
+            return [downloaded_file]
 
     @cached_property  # type: ignore[misc]
     @final

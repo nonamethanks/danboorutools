@@ -1,4 +1,4 @@
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.skeb import SkebAbsolutePostUrl, SkebArtistUrl, SkebImageUrl, SkebPostUrl, SkebUrl
 
 
@@ -24,34 +24,31 @@ class SkebJpParser(UrlParser):
             "https://skeb.jp/@nasuno42/works/30",
         ],
         SkebAbsolutePostUrl: [
-            "https://skeb.jp/works/713654"
-        ]
+            "https://skeb.jp/works/713654",
+        ],
     }
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> SkebUrl | None:
-        instance: SkebUrl
+    def match_url(cls, parsable_url: ParsableUrl) -> SkebUrl | None:  # type: ignore[return]
         match parsable_url.url_parts:
             case username, "works", post_id:
-                instance = SkebPostUrl(parsable_url)
-                instance.post_id = int(post_id)
-                instance.username = username.removeprefix("@")
+                return SkebPostUrl(parsed_url=parsable_url,
+                                   post_id=int(post_id),
+                                   username=username.removeprefix("@"))
 
             case "uploads", "outputs", image_uuid:
-                instance = SkebImageUrl(parsable_url)
-                instance.image_uuid = image_uuid
-                instance.page = None
-                instance.post_id = None
+                return SkebImageUrl(parsed_url=parsable_url,
+                                    image_uuid=image_uuid,
+                                    page=None,
+                                    post_id=None)
 
             case "works", post_id:
-                instance = SkebAbsolutePostUrl(parsable_url)
-                instance.absolute_post_id = int(post_id)
+                return SkebAbsolutePostUrl(parsed_url=parsable_url,
+                                           absolute_post_id=int(post_id))
 
             case username, *_ if username not in cls.RESERVED_USERNAMES:
-                instance = SkebArtistUrl(parsable_url)
-                instance.username = username.removeprefix("@")
+                return SkebArtistUrl(parsed_url=parsable_url,
+                                     username=username.removeprefix("@"))
 
             case _:
                 return None
-
-        return instance

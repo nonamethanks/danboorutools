@@ -1,5 +1,5 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.melonbooks import MelonbooksImageUrl
 
 
@@ -16,16 +16,14 @@ class AkamaizedNetParser(UrlParser):
         match parsable_url.url_parts:
             # https://melonbooks.akamaized.net/user_data/packages/resize_image.php?width=450&height=450&image=212001389346.jpg&c=1&aa=1
             case "user_data", "packages", "resize_image.php":
-                instance = MelonbooksImageUrl(parsable_url)
-                instance.filename = parsable_url.query["image"]
+                return MelonbooksImageUrl(parsed_url=parsable_url,
+                                          filename=parsable_url.query["image"])
 
             # https://melonbooks.akamaized.net/cplus/user_data/packages/resize_image.php?image=810000212400.jpg\u0026c=0\u0026aa=0
             # https://melonbooks.akamaized.net/fromagee/user_data/packages/resize_image.php?image=216001052635.jpg\u0026c=1\u0026aa=0
             case ("cplus" | "fromagee"), "user_data", "packages", "resize_image.php":
-                instance = MelonbooksImageUrl(parsable_url)
-                instance.filename = parsable_url.query["image"]
+                return MelonbooksImageUrl(parsed_url=parsable_url,
+                                          filename=parsable_url.query["image"])
 
             case _:
                 return None
-
-        return instance

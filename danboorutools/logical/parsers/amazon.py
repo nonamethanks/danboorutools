@@ -1,5 +1,5 @@
 from danboorutools.exceptions import UnparsableUrlError
-from danboorutools.logical.parsers import ParsableUrl, UrlParser
+from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.amazon import AmazonAuthorUrl, AmazonItemUrl, AmazonShortenerUrl, AmazonUrl
 from danboorutools.logical.urls.enty import EntyImageUrl
 from danboorutools.logical.urls.skeb import SkebImageUrl
@@ -32,38 +32,34 @@ class AmazonawsComParser(UrlParser):
     def _match_enty(parsable_url: ParsableUrl) -> EntyImageUrl | None:
         match parsable_url.url_parts:
             case "uploads", "post", "attachment", post_id, _:
-                instance = EntyImageUrl(parsable_url)
-                instance.post_id = int(post_id)
+                return EntyImageUrl(parsed_url=parsable_url,
+                                    post_id=int(post_id))
+
             case _:
                 return None
-
-        return instance
 
     @staticmethod
     def _match_skeb(parsable_url: ParsableUrl) -> SkebImageUrl | None:
         match parsable_url.url_parts:
             case "uploads", "outputs", image_uuid:
-                instance = SkebImageUrl(parsable_url)
-                instance.image_uuid = image_uuid
-                instance.page = None
-                instance.post_id = None
+                return SkebImageUrl(parsed_url=parsable_url,
+                                    image_uuid=image_uuid,
+                                    page=None,
+                                    post_id=None)
             case _:
                 return None
-
-        return instance
 
 
 class AmazonComParser(UrlParser):
     domains = ["amazon.com", "amazon.jp"]
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> AmazonUrl | UselessUrl | None:
-        instance: AmazonUrl
+    def match_url(cls, parsable_url: ParsableUrl) -> AmazonUrl | UselessUrl | None:  # type: ignore[return]
         match parsable_url.url_parts:
             case "hz", "wishlist", "ls", _wishlist_id:
-                return UselessUrl(parsable_url)
+                return UselessUrl(parsed_url=parsable_url)
             case "gp", "registry", "wishlist", _wishlist_id:
-                return UselessUrl(parsable_url)
+                return UselessUrl(parsed_url=parsable_url)
 
             case _ if parsable_url.subdomain not in ["www", ""]:
                 raise UnparsableUrlError(parsable_url)
@@ -71,38 +67,45 @@ class AmazonComParser(UrlParser):
             # https://www.amazon.com/dp/B08BWGQ8NP/
             # https://www.amazon.com/Yaoi-Hentai-2/dp/1933664010
             case *_, "dp", item_id:
-                instance = AmazonItemUrl(parsable_url)
-                instance.item_id = item_id
+                return AmazonItemUrl(parsed_url=parsable_url,
+                                     item_id=item_id,
+                                     subsite=parsable_url.tld)
 
             # https://amazon.jp/o/ASIN/B000P29X0G/ref=nosim/conoco-22
             case "o", "ASIN", item_id, *_:
-                instance = AmazonItemUrl(parsable_url)
-                instance.item_id = item_id
+                return AmazonItemUrl(parsed_url=parsable_url,
+                                     item_id=item_id,
+                                     subsite=parsable_url.tld)
 
             # https://www.amazon.com/exec/obidos/ASIN/B004U99O9K/ref=nosim/accessuporg-20?SubscriptionId=1MNS6Z3H8Y5Q5XCMG582\u0026linkCode=xm2\u0026creativeASIN=B004U99O9K
             case "exec", "obidos", "ASIN", item_id, *_:
-                instance = AmazonItemUrl(parsable_url)
-                instance.item_id = item_id
+                return AmazonItemUrl(parsed_url=parsable_url,
+                                     item_id=item_id,
+                                     subsite=parsable_url.tld)
 
             # https://www.amazon.com/gp/product/B08CTJWTMR
             case "gp", "product", item_id:
-                instance = AmazonItemUrl(parsable_url)
-                instance.item_id = item_id
+                return AmazonItemUrl(parsed_url=parsable_url,
+                                     item_id=item_id,
+                                     subsite=parsable_url.tld)
 
             # https://www.amazon.com/Shei-Darksbane/e/B0127EHZ7W/
             case _display_name, "e", author_id:
-                instance = AmazonAuthorUrl(parsable_url)
-                instance.author_id = author_id
+                return AmazonAuthorUrl(parsed_url=parsable_url,
+                                       author_id=author_id,
+                                       subsite=parsable_url.tld)
 
             # https://www.amazon.com/stores/Shei-Darksbane/author/B0127EHZ7W
             case "stores", _display_name, "author", author_id:
-                instance = AmazonAuthorUrl(parsable_url)
-                instance.author_id = author_id
+                return AmazonAuthorUrl(parsed_url=parsable_url,
+                                       author_id=author_id,
+                                       subsite=parsable_url.tld)
 
             # https://www.amazon.com/stores/author/B0127EHZ7W
             case "stores", "author", author_id:
-                instance = AmazonAuthorUrl(parsable_url)
-                instance.author_id = author_id
+                return AmazonAuthorUrl(parsed_url=parsable_url,
+                                       author_id=author_id,
+                                       subsite=parsable_url.tld)
 
             case _, "s":
                 raise UnparsableUrlError(parsable_url)
@@ -110,18 +113,14 @@ class AmazonComParser(UrlParser):
             case _:
                 return None
 
-        instance.subsite = parsable_url.tld
-        return instance
-
 
 class AmznToParser(UrlParser):
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> AmazonShortenerUrl | None:
         match parsable_url.url_parts:
             case shortener_id, :
-                instance = AmazonShortenerUrl(parsable_url)
-                instance.shortener_id = shortener_id
+                return AmazonShortenerUrl(parsed_url=parsable_url,
+                                          shortener_id=shortener_id)
+
             case _:
                 return None
-
-        return instance
