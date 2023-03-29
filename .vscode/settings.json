@@ -33,9 +33,8 @@
             "source.organizeImports": true,
         },
     },
-    "pylint.importStrategy": "fromEnvironment",
-    "pylint.severity": {
-        "refactor": "Information"
-    },
     "ruff.importStrategy": "fromEnvironment",
+    "python.analysis.logLevel": "Trace",
+    "python.linting.pylintCategorySeverity.convention": "Warning",
+    "python.linting.pylintCategorySeverity.refactor": "Warning",
 }
