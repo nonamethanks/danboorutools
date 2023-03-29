@@ -18,6 +18,21 @@ class DlsiteCienCreatorUrl(ArtistUrl, DlsiteCienUrl):
     normalize_template = "https://ci-en.dlsite.com/creator/{creator_id}"
     creator_id: int
 
+    @property
+    def primary_names(self) -> list[str]:
+        return [self.html.select_one(".c-accountInfo .e-userName").text.strip()]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return []
+
+    @property
+    def related(self) -> list[Url]:
+        related_links = self.html.select(".l-creatorPage-main .e-box:nth-child(1) li.c-snsList-item a")
+        if not related_links:
+            raise NotImplementedError(self)
+        return [Url.parse(el["href"]) for el in related_links]
+
 
 class DlsiteCienProfileUrl(RedirectUrl, DlsiteCienUrl):
     profile_id: int

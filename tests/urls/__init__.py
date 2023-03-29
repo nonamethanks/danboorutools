@@ -1,9 +1,10 @@
 import inspect
 import re
+from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
-from typing import Callable, TypeVar
+from typing import TypeVar
 
 from danboorutools.models.feed import Feed
 from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url

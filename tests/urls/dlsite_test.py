@@ -23,7 +23,7 @@ urls = {
         "https://www.dlsite.com/maniax/fsr/=/kw/RG29700/": "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG29700",
         "http://www.dlsite.com/maniax/fsr/=/keyword_maker_name/空道へのR%20RG25050/ana_flg/all/from/work.same_maker": "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG25050",
         "http://www.dlsite.com/maniax-touch/circle/profile/=/from/work.maker/maker_id/RG36965.html": "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG36965",
-        "https://www.dlsite.com/maniax/dlaf/=/link/profile/aid/sotokanda/maker/RG03905.html": "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG03905"
+        "https://www.dlsite.com/maniax/dlaf/=/link/profile/aid/sotokanda/maker/RG03905.html": "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG03905",
     },
     DlsiteWorkUrl: {
         "https://www.dlsite.com/books/work/=/product_id/BJ115183": "https://www.dlsite.com/books/work/=/product_id/BJ115183",
@@ -35,7 +35,7 @@ urls = {
         "http://www.dlsite.com/maniax/dlaf/=/link/work/aid/tbnb/id/RJ109634.html": "https://www.dlsite.com/maniax/work/=/product_id/RJ109634",
         "https://www.dlsite.com/maniax/dlaf/=/t/s/link/work/aid/yuen/locale/en_US/id/RJ326899.html/?locale=en_US": "https://www.dlsite.com/maniax/work/=/product_id/RJ326899",
         "http://home.dlsite.com/dlaf/=/aid/iisearch/url/http%253A%252F%252Fmaniax.dlsite.com%252Fwork%252F%253D%252Fproduct_id%252FRJ034344.html": "https://www.dlsite.com/maniax/work/=/product_id/RJ034344",
-        "http://maniax.dlsite.com/work/=/product_site/1/product_id/RJ025429.html": "https://www.dlsite.com/maniax/work/=/product_id/RJ025429"
+        "http://maniax.dlsite.com/work/=/product_site/1/product_id/RJ025429.html": "https://www.dlsite.com/maniax/work/=/product_id/RJ025429",
     },
     DlsiteImageUrl: {
         "https://img.dlsite.jp/resize/images2/work/books/BJ007000/BJ006925_img_main_240x240.jpg": "https://img.dlsite.jp/modpub/images2/work/books/BJ007000/BJ006925_img_main.jpg",

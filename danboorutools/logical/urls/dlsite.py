@@ -36,6 +36,15 @@ class DlsiteAuthorUrl(ArtistUrl, DlsiteUrl):
         cien_id = self.session.cien_id_from_circle_id(self.author_id)
         return [DlsiteCienCreatorUrl.build(creator_id=cien_id)]
 
+    @property
+    def primary_names(self) -> list[str]:
+        # this is in 99% of cases the circle's name, so it's not worth it
+        return []
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return []
+
 
 class DlsiteWorkUrl(PostUrl, DlsiteUrl):
     work_id: str
