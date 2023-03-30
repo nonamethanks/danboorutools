@@ -34,15 +34,35 @@ class {parser_name_base}Parser(UrlParser):{domains_if_dash}
 """
 
 EXTRACTOR_TEMPLATE = """
+from danboorutools.logical.sessions.{module_name} import {class_name_base}ArtistData, {class_name_base}Session
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
 class {class_name_base}Url(Url):
-    pass
+    session = {class_name_base}Session()
 
 
 class {class_name_base}ArtistUrl(ArtistUrl, {class_name_base}Url):
     username: str
+
+    @property
+    def artist_data(self) -> {class_name_base}ArtistData:
+        return self.session.artist_data(self.username)
+
+    @property
+    def primary_names(self) -> list[str]:
+        raise NotImplementedError
+        return [self.artist_data.name]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        raise NotImplementedError
+        return [self.username]
+
+    @property
+    def related(self) -> list[Url]:
+        raise NotImplementedError
+        return self.artist_data.related_urls
 
 
 class {class_name_base}PostUrl(PostUrl, {class_name_base}Url):
@@ -51,6 +71,27 @@ class {class_name_base}PostUrl(PostUrl, {class_name_base}Url):
 
 class {class_name_base}ImageUrl(PostAssetUrl, {class_name_base}Url):
     ...
+"""
+
+SESSION_TEMPLATE = """
+from __future__ import annotations
+
+from danboorutools.logical.sessions import Session
+from danboorutools.util.misc import BaseModel
+
+
+class {class_name_base}Session(Session):
+    def artist_data(self, username: str) -> {class_name_base}ArtistData:
+        artist_data = self.get_json(f"")
+        return {class_name_base}ArtistData(**artist_data)
+
+
+class {class_name_base}ArtistData(BaseModel):
+    name: str
+
+    @property
+    def related_urls(self) -> list[Url]:
+        raise NotImplementedError
 """
 
 TESTS_TEMPLATE = """
@@ -73,6 +114,7 @@ generate_parsing_suite(urls)
 TESTS_FOLDER = Path("tests/urls")
 PARSERS_FOLDER = Path("danboorutools/logical/parsers")
 URLS_FOLDER = Path("danboorutools/logical/urls")
+SESSION_FOLDER = Path("danboorutools/logical/sessions")
 
 
 def create_url_template(url: str, force: bool = False) -> None:
@@ -81,6 +123,7 @@ def create_url_template(url: str, force: bool = False) -> None:
 
     parser_filename = PARSERS_FOLDER / f"{name_base}.py"
     url_filename = URLS_FOLDER / f"{name_base}.py"
+    session_filename = SESSION_FOLDER / f"{name_base}.py"
     tests_filename = TESTS_FOLDER / f"{name_base}_test.py"
 
     formatted_parser = PARSER_TEMPLATE.format(
@@ -90,7 +133,15 @@ def create_url_template(url: str, force: bool = False) -> None:
         domains_if_dash=f'\n    domains = ["{parsed.domain}"]\n' if "-" in parsed.domain else "",
     ).strip() + "\n"
 
-    formatted_extractor = EXTRACTOR_TEMPLATE.format(class_name_base=name_base.title()).strip() + "\n"
+    formatted_extractor = EXTRACTOR_TEMPLATE.format(
+        class_name_base=name_base.title(),
+        module_name=name_base.replace("-", "_"),
+    ).strip() + "\n"
+
+    formatted_session = SESSION_TEMPLATE.format(
+        class_name_base=name_base.title(),
+        module_name=name_base.replace("-", "_"),
+    ).strip() + "\n"
 
     formatted_tests = TESTS_TEMPLATE.format(
         class_name_base=name_base.title(),
@@ -111,3 +162,13 @@ def create_url_template(url: str, force: bool = False) -> None:
         with tests_filename.open(mode="w+", encoding="utf-8") as _file:
             _file.write(formatted_tests)
     run_external_command(f"code --reuse-window {tests_filename.resolve()}")
+
+    if not tests_filename.is_file() or force:
+        with tests_filename.open(mode="w+", encoding="utf-8") as _file:
+            _file.write(formatted_tests)
+    run_external_command(f"code --reuse-window {tests_filename.resolve()}")
+
+    if not session_filename.is_file() or force:
+        with session_filename.open(mode="w+", encoding="utf-8") as _file:
+            _file.write(formatted_session)
+    run_external_command(f"code --reuse-window {session_filename.resolve()}")
