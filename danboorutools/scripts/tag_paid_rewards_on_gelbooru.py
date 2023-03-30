@@ -2,6 +2,7 @@ import datetime
 from typing import Literal
 
 import click
+from pytz import UTC
 
 from danboorutools import logger
 from danboorutools.logical.sessions.danbooru import danbooru_api
@@ -25,7 +26,7 @@ def tag_paid_rewards_on_gelbooru(mode: Literal["all", "latest"]) -> None:
     if mode == "all":
         posts = danbooru_api.all_posts(["paid_reward"])
     elif mode == "latest":
-        one_month_ago = datetime.datetime.now() - datetime.timedelta(days=30)
+        one_month_ago = datetime.datetime.now(tz=UTC) - datetime.timedelta(days=30)
         page = 1
         all_versions: list[DanbooruPostVersion] = []
         while True:
