@@ -22,6 +22,10 @@ class Feed(HasPosts):  # pylint: disable=abstract-method
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}[]"
 
+    @property
+    def pathable_name(self) -> str:
+        return f"Feed.{self.__class__.__name__}"
+
     @staticmethod
     @lru_cache
     def get_all_feeds() -> list[type[Feed]]:

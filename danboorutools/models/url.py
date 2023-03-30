@@ -35,6 +35,7 @@ class Url(metaclass=PseudoDataclass):
 
     def __init__(self, /, parsed_url: ParsableUrl, **url_properties):
         self.parsed_url = parsed_url
+        self.url_properties = url_properties
         for property_name, property_value in url_properties.items():
             # check_type(property_value, self.computed_type_hints[property_name])  # type: ignore[attr-defined]
             setattr(self, property_name, property_value)
@@ -46,6 +47,11 @@ class Url(metaclass=PseudoDataclass):
     #     from typing import Literal
     #     computed_type_hints = get_type_hints(cls, globalns=globals() | {"Literal": Literal})
     #     cls.computed_type_hints = computed_type_hints  # type: ignore[attr-defined]
+
+    @property
+    def pathable_name(self) -> str:
+        prop_string = ".".join(f"{key}:{value.__class__.__name__}:{value}" for key, value in self.url_properties.items())
+        return f"Url.{self.__class__.__name__}.{prop_string}"
 
     @classmethod
     def parse(cls, url: str | Url) -> Url:
