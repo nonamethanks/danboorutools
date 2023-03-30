@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Generic, TypeVar, final
+from typing import TYPE_CHECKING, Any, final
 
 from pytz import UTC
 
@@ -13,10 +13,8 @@ if TYPE_CHECKING:
 
     from danboorutools.models.url import PostAssetUrl, PostUrl
 
-PostDataVar = TypeVar("PostDataVar")
 
-
-class HasPosts(Generic[PostDataVar]):
+class HasPosts:
     _collected_posts: list[PostUrl]
     known_posts: set[PostUrl]
 
@@ -61,10 +59,10 @@ class HasPosts(Generic[PostDataVar]):
                 logger.info("Quitting early because it's a first-time scan...")
                 return
 
-    def _extract_posts_from_each_page(self) -> Iterator[list[PostDataVar]]:
+    def _extract_posts_from_each_page(self) -> Iterator[list]:
         raise NotImplementedError(f"{self} hasn't implemented page extraction.")
 
-    def _process_post(self, post_object: PostDataVar) -> None:
+    def _process_post(self, post_object: Any) -> None:  # noqa: ANN401
         raise NotImplementedError(f"{self} hasn't implemented post object processing.")
 
     def _register_post(self,

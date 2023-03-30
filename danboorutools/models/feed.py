@@ -1,9 +1,17 @@
+from __future__ import annotations
+
+import inspect
 from collections.abc import Iterator
+from functools import lru_cache
+from importlib import import_module
+from pathlib import Path
 from typing import Generic, TypeVar
 
 from danboorutools import logger
 from danboorutools.logical.sessions import Session
 from danboorutools.models.has_posts import FoundKnownPost, HasPosts
+
+feeds: list[type[Feed]] = []
 
 
 class Feed(HasPosts):  # pylint: disable=abstract-method
@@ -13,6 +21,24 @@ class Feed(HasPosts):  # pylint: disable=abstract-method
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}[]"
+
+    @staticmethod
+    @lru_cache
+    def get_all_feeds() -> list[type[Feed]]:
+        feed_folder = Path(__file__).parent.parent / "logical" / "feeds"
+        for _file in feed_folder.glob("*.py"):
+            if "__" not in _file.stem:
+                import_module(f"danboorutools.logical.feeds.{_file.stem}")
+        return feeds
+
+    def __init_subclass__(cls, *args, **kwargs) -> None:
+        if cls.__name__.startswith("_"):
+            return
+
+        if inspect.getfile(cls) == __file__:
+            return
+
+        feeds.append(cls)
 
 
 ArtistTypeVar = TypeVar("ArtistTypeVar")
