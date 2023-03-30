@@ -21,7 +21,7 @@ class UrlParser:
     @staticmethod
     @lru_cache
     def setup_subclasses() -> None:
-        for _file in Path("danboorutools/logical/parsers").glob("*.py"):
+        for _file in (Path(__file__).parent / "parsers").glob("*.py"):
             if "__" not in _file.stem:
                 import_module(f"danboorutools.logical.parsers.{_file.stem}")
 
