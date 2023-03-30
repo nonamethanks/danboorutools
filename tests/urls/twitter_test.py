@@ -36,6 +36,7 @@ urls = {
         "https://twitter.com/intent/user?screen_name=ryuudog_NFT": "https://twitter.com/ryuudog_NFT",
         "https://twitter.com/motty08111213": "https://twitter.com/motty08111213",
         "https://twitter.com/motty08111213/likes": "https://twitter.com/motty08111213",
+        "https://mobile.twitter.com/_158161163": "https://twitter.com/_158161163",
 
     },
     tw.TwitterPostUrl: {
