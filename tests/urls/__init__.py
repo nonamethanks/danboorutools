@@ -259,8 +259,9 @@ def generate_parsing_suite(urls: dict[type[UrlTypeVar], dict]) -> None:
 
         for url_string, expected_normalization in string_and_normalization.items():
 
-            def parse(url_type=url_type, url_string=url_string) -> None:
-                parsed_url = Url.parse(url_string)
+            parsed_url = Url.parse(url_string)
+
+            def parse(parsed_url=parsed_url, url_type=url_type) -> None:
                 assert_isinstance(parsed_url, url_type)
 
             generate_ward_test(
@@ -269,9 +270,12 @@ def generate_parsing_suite(urls: dict[type[UrlTypeVar], dict]) -> None:
                 tags=["parsing", domain],
             )
 
-            def normalize(url_string=url_string, expected_normalization=expected_normalization) -> None:
-                parsed_url = Url.parse(url_string)
-                assert_equal(parsed_url.normalized_url, expected_normalization)
+            if expected_normalization:
+                def normalize(parsed_url=parsed_url, expected_normalization=expected_normalization) -> None:
+                    assert_equal(parsed_url.normalized_url, expected_normalization)
+            else:
+                def normalize(parsed_url=parsed_url, expected_normalization=expected_normalization) -> None:
+                    parsed_url.normalized_url
 
             generate_ward_test(
                 normalize,
