@@ -19,10 +19,10 @@ def main(url: str, force: bool = False) -> None:
 
 
 PARSER_TEMPLATE = """
-from danboorutools.logical.urls.{module_name} import {class_name_base}ArtistUrl, {class_name_base}ImageUrl, {class_name_base}PostUrl, {class_name_base}Url
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
+from danboorutools.logical.urls.{module_name} import {class_name_base}ArtistUrl, {class_name_base}ImageUrl, {class_name_base}PostUrl, {class_name_base}Url
 
-class {parser_name_base}Parser(UrlParser):{domains_if_dash}
+class {class_name_base}Parser(UrlParser):{domains_if_bad_chars}
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> {class_name_base}Url | None:
         match parsable_url.url_parts:
@@ -95,7 +95,7 @@ class {class_name_base}ArtistData(BaseModel):
 """
 
 TESTS_TEMPLATE = """
-from danboorutools.logical.urls.{module_name} import {class_name_base}ArtistUrl, {class_name_base}PostUrl, {class_name_base}ImageUrl
+from danboorutools.logical.urls.{module_name} import {class_name_base}ArtistUrl, {class_name_base}ImageUrl, {class_name_base}PostUrl
 from tests.urls import generate_parsing_suite
 
 urls = {{
@@ -117,34 +117,38 @@ URLS_FOLDER = Path("danboorutools/logical/urls")
 SESSION_FOLDER = Path("danboorutools/logical/sessions")
 
 
+def classize(string: str) -> str:
+    return string.title().replace(".", "").replace("-", "")
+
+
 def create_url_template(url: str, force: bool = False) -> None:
     parsed = ParsableUrl(url)
-    name_base = parsed.domain.removesuffix(f".{parsed.tld}").replace("-", "_")
+    name_base = parsed.domain.removesuffix(f".{parsed.tld}")
 
-    parser_filename = PARSERS_FOLDER / f"{name_base}.py"
-    url_filename = URLS_FOLDER / f"{name_base}.py"
-    session_filename = SESSION_FOLDER / f"{name_base}.py"
-    tests_filename = TESTS_FOLDER / f"{name_base}_test.py"
+    parser_filename = PARSERS_FOLDER / f"{name_base.replace('-', '_')}.py"
+    url_filename = URLS_FOLDER / f"{name_base.replace('-', '_')}.py"
+    session_filename = SESSION_FOLDER / f"{name_base.replace('-', '_')}.py"
+    tests_filename = TESTS_FOLDER / f"{name_base.replace('-', '_')}_test.py"
 
     formatted_parser = PARSER_TEMPLATE.format(
-        class_name_base=name_base.title(),
-        parser_name_base=parsed.domain.title().replace(".", ""),
+        class_name_base=classize(name_base),
+        parser_name_base=classize(parsed.domain),
         module_name=name_base.replace("-", "_"),
-        domains_if_dash=f'\n    domains = ["{parsed.domain}"]\n' if "-" in parsed.domain else "",
+        domains_if_bad_chars=f'\n    domains = ["{parsed.domain}"]\n' if not parsed.domain.isalnum() else "",
     ).strip() + "\n"
 
     formatted_extractor = EXTRACTOR_TEMPLATE.format(
-        class_name_base=name_base.title(),
+        class_name_base=classize(name_base),
         module_name=name_base.replace("-", "_"),
     ).strip() + "\n"
 
     formatted_session = SESSION_TEMPLATE.format(
-        class_name_base=name_base.title(),
+        class_name_base=classize(name_base),
         module_name=name_base.replace("-", "_"),
     ).strip() + "\n"
 
     formatted_tests = TESTS_TEMPLATE.format(
-        class_name_base=name_base.title(),
+        class_name_base=classize(name_base),
         module_name=name_base.replace("-", "_"),
     ).strip() + "\n"
 
