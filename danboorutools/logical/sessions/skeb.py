@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import TYPE_CHECKING
 
-from danboorutools.exceptions import HTTPError, InvalidSkebCredentialsError
+import ring
+
+from danboorutools.exceptions import HTTPError
+from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.booth import BoothArtistUrl
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
@@ -14,26 +18,22 @@ from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 if TYPE_CHECKING:
+    from bs4 import BeautifulSoup
     from requests import Response
 
 
 class SkebSession(Session):
-    _bearer_cookie = os.environ["SKEB_BEARER_TOKEN"]
-
-    @property
-    def cookies_from_env(self) -> dict:
-        return {
-            "_interslice_session": os.environ["SKEB_COOKIE_INTERSLICE_SESSION"],
-        }.copy()
-
-    def request(self, *args, **kwargs) -> Response:
-        kwargs["cookies"] = self.cookies_from_env
-        kwargs["headers"] = kwargs.get("headers", {}) | {"Authorization": f"Bearer {self._bearer_cookie}"}
+    def request(self, *args, is_retry: bool = False, **kwargs) -> Response:
+        bearer = self.try_login_and_return_bearer()
+        kwargs["headers"] = kwargs.get("headers", {}) | {"Authorization": f"Bearer {bearer}"}
         try:
             request = super().request(*args, **kwargs)
         except HTTPError as e:
             if e.status_code == 503:
-                raise InvalidSkebCredentialsError from e
+                if is_retry:
+                    raise
+                self.try_login_and_return_bearer.storage.backend.clear()
+                self.request(*args, is_retry=True, **kwargs)
             raise
         return request
 
@@ -41,6 +41,95 @@ class SkebSession(Session):
         response = self.get_json(f"https://skeb.jp/api/users/{username}")
 
         return SkebArtistData(**response)
+
+    @ring.lru()
+    def try_login_and_return_bearer(self) -> str:
+        try:
+            self.load_cookies()
+        except FileNotFoundError:
+            self.login()
+        bearer = Path("cookies/skeb_bearer.txt").read_text(encoding="utf-8")
+        return bearer
+
+    def login(self) -> None:
+        username = os.environ["TWITTER_USERNAME"]
+        password = os.environ["TWITTER_PASSWORD"]
+
+        response = super().request("POST", "https://skeb.jp/api/auth/twitter")
+        oauth_url = response.url
+        assert oauth_url.startswith("https://api.twitter.com/oauth/authenticate?oauth_token="), oauth_url
+        html = self._response_as_html(response)
+
+        data = {
+            "authenticity_token": html.select_one("input[name='authenticity_token']")["value"],
+            "redirect_after_login": oauth_url,
+            "oauth_token": ParsableUrl(oauth_url).query["oauth_token"],
+            "session[username_or_email]": username,
+            "session[password]": password,
+            "remember_me": "1",
+        }
+        headers = {
+            "origin": "https://api.twitter.com",
+            "referer": oauth_url,
+        }
+        response = super().request("POST", "https://api.twitter.com/oauth/authenticate", data=data, headers=headers)
+        html = self._response_as_html(response)
+        if "Verify your identity by entering the phone number associated with your Twitter account." in str(html):
+            html = self.__login_with_phone(oauth_url, html)
+
+        skeb_callback = html.select_one("a.maintain-context")["href"]
+        response = super().request("GET", skeb_callback, skip_cache=True)
+
+        bearer = ParsableUrl(response.history[0].headers["Location"]).query["auth_token"]
+        Path("cookies/skeb_bearer.txt").write_text(bearer, encoding="utf-8")
+        self.save_cookies("_interslice_session")
+
+    def __login_with_phone(self, oauth_url: str, html: BeautifulSoup) -> BeautifulSoup:
+        phone_number = os.environ["TWITTER_PHONE_NUMBER"]
+        headers = {
+            "origin": "https://api.twitter.com",
+            "referer": oauth_url,
+        }
+        data = {
+            "authenticity_token": html.select_one("input[name='authenticity_token']")["value"],
+            "challenge_id": html.select_one("input[name='challenge_id']")["value"],
+            "enc_user_id": html.select_one("input[name='enc_user_id']")["value"],
+            "challenge_type": "RetypePhoneNumber",
+            "platform": "web",
+            "redirect_after_login": html.select_one("input[name='authenticity_token']")["value"],
+            "remember_me": "",
+            "challenge_response": phone_number,
+        }
+        response = super().request("POST", "https://twitter.com/account/login_challenge", data=data, headers=headers)
+        if not response.status_code == 200:
+            raise NotImplementedError(self)
+        return self._response_as_html(response)
+
+    def get_feed(self, offset: int | None = None, limit: int | None = None) -> list[SkebPostFeedData]:
+        username = os.environ["TWITTER_USERNAME"]
+        offset = offset or 0
+        limit = limit or 90
+        feed_data = self.get_json(f"https://skeb.jp/api/users/{username}/following_works?sort=date&offset={offset}&limit={limit}")
+        if not feed_data:
+            raise NotImplementedError("No posts found. Check cookies.")
+        if not isinstance(feed_data, list):
+            raise NotImplementedError(feed_data)
+        return [SkebPostFeedData(**post) for post in feed_data]
+
+    def get_post_data(self, /, post_id: int, username: str) -> SkebPostData:
+        headers = {"Referer": f"https://skeb.jp/@{username}/works/{post_id}"}
+        post_data = self.get_json(f"https://skeb.jp/api/users/{username}/works/{post_id}", headers=headers)
+        return SkebPostData(**post_data)
+
+
+class SkebPostFeedData(BaseModel):
+    private: bool
+    path: str
+
+
+class SkebPostData(BaseModel):
+    previews: list[dict]
+    article_image_url: str | None
 
 
 class SkebArtistData(BaseModel):
@@ -65,7 +154,7 @@ class SkebArtistData(BaseModel):
     twitter_screen_name: str | None  # for some reason it can be None even if twitter_uid is not
     youtube_id: str | None
 
-    @property
+    @ property
     def related_urls(self) -> list[Url]:  # pylint: disable=too-many-branches
         urls: list[Url] = []
 

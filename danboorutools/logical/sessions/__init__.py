@@ -73,8 +73,8 @@ class Session(_CloudScraper):
     def browser(self) -> Browser:
         return Browser()
 
-    def request(self, method: str, *args, **kwargs) -> Response:
-        if kwargs.pop("skip_cache", self.DISABLE_AUTOMATIC_CACHE) or method.lower() not in ["get", "head"]:
+    def request(self, method: str, *args, skip_cache: bool | None = None, **kwargs) -> Response:
+        if skip_cache is True or (skip_cache is None and self.DISABLE_AUTOMATIC_CACHE) or method.lower() not in ["get", "head"]:
             # always cache every request by default, but discard the cache if a subsequent call is made that does not want a cached version
             # in theory cache access is slower, but who cares, the limiter will always be the request itself anyway
             self._cached_request.delete(method, *args, **kwargs)
@@ -121,7 +121,7 @@ class Session(_CloudScraper):
 
         kwargs["headers"] = self.DEFAULT_HEADERS | kwargs.get("headers", {})
 
-        download_stream = self.get(url, *args, timeout=self.DEFAULT_TIMEOUT, stream=True, **kwargs)  # type: ignore[arg-type]
+        download_stream = self.get(url, *args, timeout=self.DEFAULT_TIMEOUT, stream=True, **kwargs)
         if not download_stream.ok:
             raise DownloadError(download_stream)
 
@@ -185,6 +185,8 @@ class Session(_CloudScraper):
             raise NotImplementedError(self)
 
     def save_cookies(self, *cookies: str) -> None:
+        if not cookies:
+            raise ValueError("At least one cookie must be saved.")
         to_save = [
             {
                 "name": cookie_name,
@@ -202,14 +204,14 @@ class Session(_CloudScraper):
             self.cookies.set(**cookie)
 
     if TYPE_CHECKING:
-        def get(self, *args, **kwargs) -> Response:
+        def get(self, *args, **kwargs) -> Response:  # pylint: disable=unused-argument
             ...
 
-        def post(self, *args, **kwargs) -> Response:
+        def post(self, *args, **kwargs) -> Response:  # pylint: disable=unused-argument
             ...
 
-        def head(self, *args, **kwargs) -> Response:
+        def head(self, *args, **kwargs) -> Response:  # pylint: disable=unused-argument
             ...
 
-        def delete(self, *args, **kwargs) -> Response:
+        def delete(self, *args, **kwargs) -> Response:  # pylint: disable=unused-argument
             ...

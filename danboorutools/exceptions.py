@@ -88,14 +88,6 @@ class EHEntaiRateLimitError(HTTPError):
         return f"The request to {self.original_url} failed because of too many downloads."
 
 
-class InvalidSkebCredentialsError(HTTPError):
-    """Skeb credentials are invalid or expired."""
-
-    @property
-    def message(self) -> str:
-        return f"The request to {self.original_url} failed because the provided Skeb credentials are invalid or expired."
-
-
 class DanbooruHTTPError(HTTPError):
     """A danbooru HTTP error."""
 

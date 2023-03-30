@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Generic, TypeVar, final
+
+from pytz import UTC
 
 from danboorutools import logger
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
-    from datetime import datetime
 
     from danboorutools.models.url import PostAssetUrl, PostUrl
 
@@ -68,7 +70,7 @@ class HasPosts(Generic[PostDataVar]):
     def _register_post(self,
                        post: PostUrl,
                        assets: Sequence[PostAssetUrl | str],
-                       created_at: datetime | str | int,
+                       created_at: datetime | str | int | None,
                        score: int) -> None:
         if post in self.known_posts:
             raise FoundKnownPost(Exception)
@@ -81,7 +83,7 @@ class HasPosts(Generic[PostDataVar]):
             # still go through the known posts check in order to abort early during rescans
             return
 
-        post.created_at = datetime_from_string(created_at)
+        post.created_at = datetime_from_string(created_at) if created_at else datetime.now(tz=UTC)
         post.score = score
 
         post.assets = []  # what if revision?

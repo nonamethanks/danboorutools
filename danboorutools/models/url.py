@@ -83,7 +83,7 @@ class Url(metaclass=PseudoDataclass):
     if TYPE_CHECKING:
         # fucking mypy
         @classmethod  # type: ignore[no-redef]
-        def build(cls: type[UrlSubclass], /, **url_properties) -> UrlSubclass:  # type: ignore[no-redef] # noqa: E501,F811 # pylint: disable=E0102,W0613
+        def build(cls: type[UrlSubclass], /, **url_properties) -> UrlSubclass:  # noqa: F811 # pylint: disable=E0102,W0613
             # sometimes type checkers really make me want to kill myself
             ...
 
@@ -206,7 +206,11 @@ class InfoUrl(Url):
 class GalleryUrl(Url, HasPosts):  # pylint: disable=abstract-method
     """A gallery contains multiple posts."""
 
-    def _register_post(self, post: PostUrl, assets: Sequence[PostAssetUrl | str], created_at: datetime | str | int, score: int) -> None:
+    def _register_post(self,
+                       post: PostUrl,
+                       assets: Sequence[PostAssetUrl | str],
+                       created_at: datetime | str | int | None,
+                       score: int) -> None:
         super()._register_post(post, assets, created_at, score)
         post.gallery = self
 
@@ -265,7 +269,7 @@ class PostUrl(Url):
         raise NotImplementedError(self, "hasn't implemented gallery extraction.")
 
     @cached_property
-    def created_at(self) -> datetime:
+    def created_at(self) -> datetime | None:
         raise NotImplementedError(self, "hasn't implemented created_at extraction.")
 
     @cached_property
@@ -292,7 +296,7 @@ class _AssetUrl(Url):
         else:
             return [downloaded_file]
 
-    @cached_property  # type: ignore[misc]
+    @cached_property
     @final
     def normalized_url(self) -> str:
         # it doesn't make sense for files to have to implement normalize()
@@ -323,7 +327,7 @@ class PostAssetUrl(_AssetUrl, Url):
         raise NotImplementedError(self, "hasn't implemented post extraction.")
 
     @cached_property
-    def created_at(self) -> datetime:
+    def created_at(self) -> datetime | None:
         return self.post.created_at
 
 
