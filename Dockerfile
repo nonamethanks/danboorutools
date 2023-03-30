@@ -32,8 +32,5 @@ RUN mkdir /home/danboorutools/.ipython
 
 RUN poetry install --no-interaction --no-ansi
 
-# Fucking abandoned libraries, man
-RUN rm -rf "$(poetry env info -p)/lib/python3.11/site-packages/tests"
-
 ENV SHELL /bin/bash
 ENV TERM xterm-256color
