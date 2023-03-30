@@ -4,12 +4,12 @@ from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostUrl, TumblrUrl
 
-dimensions_pattern = re.compile(r"^s\d+x\d+$")
-
 
 class TumblrComParser(UrlParser):
     RESERVED_NAMES = {"about", "app", "blog", "dashboard", "developers", "explore", "jobs",
                       "login", "logo", "policy", "press", "register", "security", "tagged", "tips"}
+
+    dimensions_pattern = re.compile(fr"^{TumblrImageUrl.dimensions_pattern.pattern}$")
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:
@@ -28,7 +28,8 @@ class TumblrComParser(UrlParser):
 
             # https://66.media.tumblr.com/168dabd09d5ad69eb5fedcf94c45c31a/3dbfaec9b9e0c2e3-72/s640x960/bf33a1324f3f36d2dc64f011bfeab4867da62bc8.png
             # https://66.media.tumblr.com/5a2c3fe25c977e2281392752ab971c90/3dbfaec9b9e0c2e3-92/s500x750/4f92bbaaf95c0b4e7970e62b1d2e1415859dd659.png
-            case *_, dimensions, _ if dimensions_pattern.match(dimensions):
+            # https://64.media.tumblr.com/69d9610907a11c401a1fb1082afc5c58/1ff28e90379f022e-78/s75x75_c1/a6e19624f4194d59f453b7e9d75b3ed5a3e441a1.jpg
+            case *_, dimensions, _ if cls.dimensions_pattern.match(dimensions):
                 return TumblrImageUrl(parsed_url=parsable_url)
 
             # http://data.tumblr.com/07e7bba538046b2b586433976290ee1f/tumblr_o3gg44HcOg1r9pi29o1_raw.jpg

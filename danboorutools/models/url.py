@@ -245,7 +245,7 @@ class PostUrl(Url):
             asset = parsed_asset
 
         if asset in self.assets:
-            raise NotImplementedError(asset, self.assets)
+            raise NotImplementedError(self, asset, self.assets)
 
         asset.post = self  # pylint: disable=attribute-defined-outside-init # false positive
 

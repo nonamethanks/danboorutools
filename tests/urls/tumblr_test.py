@@ -23,6 +23,7 @@ urls = {
     TumblrImageUrl: {
         "https://66.media.tumblr.com/168dabd09d5ad69eb5fedcf94c45c31a/3dbfaec9b9e0c2e3-72/s640x960/bf33a1324f3f36d2dc64f011bfeab4867da62bc8.png": "https://66.media.tumblr.com/168dabd09d5ad69eb5fedcf94c45c31a/3dbfaec9b9e0c2e3-72/s21000x21000/bf33a1324f3f36d2dc64f011bfeab4867da62bc8.png",
         "https://66.media.tumblr.com/5a2c3fe25c977e2281392752ab971c90/3dbfaec9b9e0c2e3-92/s500x750/4f92bbaaf95c0b4e7970e62b1d2e1415859dd659.png": "https://66.media.tumblr.com/5a2c3fe25c977e2281392752ab971c90/3dbfaec9b9e0c2e3-92/s21000x21000/4f92bbaaf95c0b4e7970e62b1d2e1415859dd659.png",
+        "https://64.media.tumblr.com/69d9610907a11c401a1fb1082afc5c58/1ff28e90379f022e-78/s75x75_c1/a6e19624f4194d59f453b7e9d75b3ed5a3e441a1.jpg": "https://64.media.tumblr.com/69d9610907a11c401a1fb1082afc5c58/1ff28e90379f022e-78/s21000x21000/a6e19624f4194d59f453b7e9d75b3ed5a3e441a1.jpg",
         # "http://data.tumblr.com/07e7bba538046b2b586433976290ee1f/tumblr_o3gg44HcOg1r9pi29o1_raw.jpg": "http://data.tumblr.com/07e7bba538046b2b586433976290ee1f/tumblr_o3gg44HcOg1r9pi29o1_raw.jpg",
         # "https://40.media.tumblr.com/de018501416a465d898d24ad81d76358/tumblr_nfxt7voWDX1rsd4umo1_r23_1280.jpg": "https://40.media.tumblr.com/de018501416a465d898d24ad81d76358/tumblr_nfxt7voWDX1rsd4umo1_r23_1280.jpg",
         # "https://media.tumblr.com/de018501416a465d898d24ad81d76358/tumblr_nfxt7voWDX1rsd4umo1_r23_raw.jpg": "https://media.tumblr.com/de018501416a465d898d24ad81d76358/tumblr_nfxt7voWDX1rsd4umo1_r23_raw.jpg",

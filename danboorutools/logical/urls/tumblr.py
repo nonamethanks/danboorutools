@@ -38,9 +38,11 @@ class TumblrArtistUrl(ArtistUrl, TumblrUrl):
 
 
 class TumblrImageUrl(PostAssetUrl, TumblrUrl):
+    dimensions_pattern = re.compile(r"s\d+x\d+(?:_c\d)?")
+
     @property
     def full_size(self) -> str:
-        if re.search(r"\/s\d+x\d+\/", self.parsed_url.raw_url):
-            return re.sub(r"\/s\d+x\d+\/", "/s21000x21000/", self.parsed_url.raw_url)
+        if self.dimensions_pattern.search(self.parsed_url.raw_url):
+            return re.sub(rf"\/{self.dimensions_pattern.pattern}\/", "/s21000x21000/", self.parsed_url.raw_url)
         else:
             raise NotImplementedError
