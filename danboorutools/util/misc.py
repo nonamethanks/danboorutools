@@ -132,3 +132,24 @@ def save_cookies_for(domain: str, cookies: list[dict[str, str]]) -> None:
 @dataclass_transform()
 class PseudoDataclass(type):
     ...
+
+
+def base36encode(number: int) -> str:
+    """Base36-encode a number."""
+    alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+    base36 = ""
+    sign = ""
+
+    if number < 0:
+        sign = "-"
+        number = -number
+
+    if 0 <= number < len(alphabet):
+        return sign + alphabet[number]
+
+    while number != 0:
+        number, index = divmod(number, len(alphabet))
+        base36 = alphabet[index] + base36
+
+    return sign + base36
