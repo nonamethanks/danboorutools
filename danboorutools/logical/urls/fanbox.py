@@ -63,11 +63,11 @@ class FanboxArtistImageUrl(PostAssetUrl, FanboxUrl):
         return re.sub(r"\/[cw]\/\w+\/", "/", self.parsed_url.raw_url)
 
 
-class FanboxImageUrl(PostAssetUrl, FanboxUrl):
+class FanboxAssetUrl(PostAssetUrl, FanboxUrl):
     # https://null.fanbox.cc/39714 TODO: use this to get the post -> dont assign directly, first fetch to check if alive
     post_id: int | None
     pixiv_id: int | None
-    image_type: str
+    asset_type: str
 
     @property
     def full_size(self) -> str:

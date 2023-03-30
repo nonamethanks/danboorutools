@@ -5,7 +5,7 @@ from pytz import UTC
 
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.booth import BoothImageUrl, BoothProfileImageUrl, BoothUrl
-from danboorutools.logical.urls.fanbox import FanboxArtistImageUrl, FanboxImageUrl, FanboxUrl
+from danboorutools.logical.urls.fanbox import FanboxArtistImageUrl, FanboxAssetUrl, FanboxUrl
 from danboorutools.logical.urls.pixiv import PixivGalleryAssetUrl, PixivImageUrl, PixivNovelImageUrl, PixivProfileImageUrl, PixivUrl
 from danboorutools.logical.urls.pixiv_sketch import PixivSketchImageUrl
 
@@ -17,15 +17,6 @@ class PixivPaths:
 
 class PximgNetParser(UrlParser):
     test_cases = {
-        FanboxImageUrl: [
-            "https://pixiv.pximg.net/c/1200x630_90_a2_g5/fanbox/public/images/post/186919/cover/VCI1Mcs2rbmWPg0mmiTisovn.jpeg",
-            "https://pixiv.pximg.net/fanbox/public/images/post/186919/cover/VCI1Mcs2rbmWPg0mmiTisovn.jpeg",
-        ],
-        FanboxArtistImageUrl: [
-            "https://pixiv.pximg.net/c/400x400_90_a2_g5/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg",
-            "https://pixiv.pximg.net/c/1620x580_90_a2_g5/fanbox/public/images/creator/1566167/cover/QqxYtuWdy4XWQx1ZLIqr4wvA.jpeg",
-            "https://pixiv.pximg.net/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg",
-        ],
         PixivImageUrl: [
             "https://i-f.pximg.net/img-original/img/2020/02/19/00/40/18/79584713_p0.png",
             "https://i.pximg.net/c/250x250_80_a2/img-master/img/2014/10/29/09/27/19/46785915_p0_square1200.jpg",
@@ -181,10 +172,10 @@ class PximgNetParser(UrlParser):
             # https://pixiv.pximg.net/c/1200x630_90_a2_g5/fanbox/public/images/post/186919/cover/VCI1Mcs2rbmWPg0mmiTisovn.jpeg
             # https://pixiv.pximg.net/fanbox/public/images/post/186919/cover/VCI1Mcs2rbmWPg0mmiTisovn.jpeg
             case *_, "fanbox", "public", "images", "post", post_id, "cover" as image_type, _filename:
-                return FanboxImageUrl(parsed_url=parsable_url,
+                return FanboxAssetUrl(parsed_url=parsable_url,
                                       post_id=int(post_id),
                                       pixiv_id=None,
-                                      image_type=image_type)
+                                      asset_type=image_type)
 
             # https://pixiv.pximg.net/c/400x400_90_a2_g5/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg
             # https://pixiv.pximg.net/c/1620x580_90_a2_g5/fanbox/public/images/creator/1566167/cover/QqxYtuWdy4XWQx1ZLIqr4wvA.jpeg

@@ -197,15 +197,15 @@ class PixivNetParser(UrlParser):
                 return None
 
     @staticmethod
-    def _match_fanbox_subdomain(parsable_url: ParsableUrl) -> f.FanboxImageUrl | None:
+    def _match_fanbox_subdomain(parsable_url: ParsableUrl) -> f.FanboxAssetUrl | None:
         match parsable_url.url_parts:
             # https://fanbox.pixiv.net/images/post/39714/JvjJal8v1yLgc5DPyEI05YpT.png  # old
             # https://fanbox.pixiv.net/files/post/207010/y1qrUK90dn63JXqUE21itupM.png
             case ("images" | "files"), "post", post_id, _filename:
-                return f.FanboxImageUrl(parsed_url=parsable_url,
+                return f.FanboxAssetUrl(parsed_url=parsable_url,
                                         post_id=int(post_id),
                                         pixiv_id=None,
-                                        image_type="post")
+                                        asset_type="post")
             case _:
                 return None
 
@@ -285,23 +285,6 @@ class PixivNetParser(UrlParser):
         s.PixivSketchArtistUrl: [
             "https://sketch.pixiv.net/@user_ejkv8372",
             "https://sketch.pixiv.net/@user_ejkv8372/followings",
-        ],
-        f.FanboxImageUrl: [
-            "https://fanbox.pixiv.net/images/post/39714/JvjJal8v1yLgc5DPyEI05YpT.png",
-            "https://fanbox.pixiv.net/files/post/207010/y1qrUK90dn63JXqUE21itupM.png",
-        ],
-        f.FanboxOldArtistUrl: [
-            "https://pixiv.net/fanbox/creator/1566167",
-            "https://www.pixiv.net/fanbox/creator/1566167",
-            "https://www.pixiv.net/fanbox/user/3410642",
-            "https://www.pixiv.net/fanbox/creator/18915237/post",
-            "http://pixiv.net/fanbox/member.php?user_id=3410642",
-            "http://www.pixiv.net/fanbox/member.php?user_id=3410642",
-        ],
-        f.FanboxOldPostUrl: [
-            "https://pixiv.net/fanbox/creator/1566167/post/39714",
-            "https://www.pixiv.net/fanbox/creator/1566167/post/39714",
-            # "https://www.pixiv.net/fanbox/entry.php?entry_id=1264"
         ],
         p.PixivArtistUrl: [
             "https://www.pixiv.net/u/9202877",

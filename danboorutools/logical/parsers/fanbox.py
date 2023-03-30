@@ -1,29 +1,8 @@
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
-from danboorutools.logical.urls.fanbox import FanboxArtistUrl, FanboxImageUrl, FanboxPostUrl, FanboxUrl
+from danboorutools.logical.urls.fanbox import FanboxArtistUrl, FanboxAssetUrl, FanboxPostUrl, FanboxUrl
 
 
 class FanboxCcParser(UrlParser):
-    test_cases = {
-        FanboxArtistUrl: [
-            "https://www.fanbox.cc/@tsukiori",
-
-            "https://omu001.fanbox.cc",
-            "https://omu001.fanbox.cc/posts",
-            "https://omu001.fanbox.cc/plans",
-        ],
-        FanboxImageUrl: [
-            "https://downloads.fanbox.cc/images/post/39714/JvjJal8v1yLgc5DPyEI05YpT.png",
-            "https://downloads.fanbox.cc/images/post/39714/c/1200x630/JvjJal8v1yLgc5DPyEI05YpT.jpeg",
-            "https://downloads.fanbox.cc/images/post/39714/w/1200/JvjJal8v1yLgc5DPyEI05YpT.jpeg",
-        ],
-        FanboxPostUrl: [
-            "https://www.fanbox.cc/@tsukiori/posts/1080657",
-
-            "https://omu001.fanbox.cc/posts/39714",
-            "https://brllbrll.fanbox.cc/posts/626093",
-        ],
-    }
-
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> FanboxUrl | None:
         if parsable_url.subdomain in ["www", ""]:
@@ -68,15 +47,17 @@ class FanboxCcParser(UrlParser):
                                        username=parsable_url.subdomain.removeprefix("@"))
 
     @staticmethod
-    def _match_image(parsable_url: ParsableUrl) -> FanboxImageUrl | None:
+    def _match_image(parsable_url: ParsableUrl) -> FanboxAssetUrl | None:
         # https://downloads.fanbox.cc/images/post/39714/JvjJal8v1yLgc5DPyEI05YpT.png
         # https://downloads.fanbox.cc/images/post/39714/c/1200x630/JvjJal8v1yLgc5DPyEI05YpT.jpeg
         # https://downloads.fanbox.cc/images/post/39714/w/1200/JvjJal8v1yLgc5DPyEI05YpT.jpeg
+        # https://downloads.fanbox.cc/files/post/4978617/T4xNyKH6GB4lJoBbRX2PqzqH.psd
+        # https://downloads.fanbox.cc/files/post/4978617/r3QhOHFnivsSpMtO9KcLhczP.zip
         match parsable_url.url_parts:
-            case "images", "post", post_id, *_, _filename:
-                return FanboxImageUrl(parsed_url=parsable_url,
+            case ("images" | "files"), "post", post_id, *_, _filename:
+                return FanboxAssetUrl(parsed_url=parsable_url,
                                       post_id=int(post_id),
-                                      image_type="post",
+                                      asset_type="post",
                                       pixiv_id=None)
 
             case _:
