@@ -4,7 +4,6 @@ import os
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-import ring
 from pydantic import Field
 
 from danboorutools.exceptions import DeadUrlError
@@ -26,7 +25,7 @@ DELETION_MESSAGES = [
 
 class PixivSession(Session):
     @property
-    def cookies_from_env(self) -> dict:
+    def cookies_from_env(self) -> dict[str, str]:
         return {"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]}.copy()
 
     def get_json(self, *args, skip_cache: bool = False, **kwargs) -> dict:

@@ -61,13 +61,12 @@ class Url(metaclass=PseudoDataclass):
 
     @classmethod
     def normalize(cls, **kwargs) -> str | None:
-        if cls.normalize_template:
-            try:
-                return cls.normalize_template.format(**kwargs)
-            except KeyError as e:
-                raise KeyError(f"Tried to normalize an url of type {cls.__name__} without passing {e}.") from e
-        else:
+        if not cls.normalize_template:
             raise NotImplementedError(f"{cls} hasn't implemented .normalize()")
+        try:
+            return cls.normalize_template.format(**kwargs)
+        except KeyError as e:
+            raise KeyError(f"Tried to normalize an url of type {cls.__name__} without passing {e}.") from e
 
     @final
     @classmethod
