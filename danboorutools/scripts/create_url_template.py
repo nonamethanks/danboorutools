@@ -28,7 +28,7 @@ class {parser_name_base}Parser(UrlParser):{domains_if_dash}
         match parsable_url.url_parts:
             case _,:
                 return {class_name_base}ArtistUrl(parsed_url=parsable_url,
-                                                  instance.username = username)
+                                                  username=username)
             case _:
                 return None
 """

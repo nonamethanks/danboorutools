@@ -78,6 +78,7 @@ line_length = 140
 check_untyped_defs = true
 enable_error_code = "redundant-expr,ignore-without-code"
 ignore_missing_imports = true
+warn_unused_ignores = true
 no_pretty = true
 show_column_numbers = true
 show_error_codes = true
