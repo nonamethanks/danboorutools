@@ -13,6 +13,7 @@ urls = {
         # "https://video.twimg.com/ext_tw_video/1496554514312269828/pu/vid/360x270/SygSrUcDpCr1AnOf.mp4?tag=12": "https://video.twimg.com/ext_tw_video/1496554514312269828/pu/vid/360x270/SygSrUcDpCr1AnOf.mp4?tag=12",
         # "https://video.twimg.com/ext_tw_video/1496554514312269828/pu/vid/960x720/wiC1XIw8QehhL5JL.mp4?tag=12": "https://video.twimg.com/ext_tw_video/1496554514312269828/pu/vid/960x720/wiC1XIw8QehhL5JL.mp4?tag=12",
         # "https://video.twimg.com/ext_tw_video/1496554514312269828/pu/vid/480x360/amWjOw0MmLdnPMPB.mp4?tag=12": "https://video.twimg.com/ext_tw_video/1496554514312269828/pu/vid/480x360/amWjOw0MmLdnPMPB.mp4?tag=12",
+        # "https://video.twimg.com/amplify_video/1640962950688284675/vid/1920x1080/mqVgMLEUs3VmXIvf.mp4?tag=16": "https://video.twimg.com/amplify_video/1640962950688284675/vid/1920x1080/mqVgMLEUs3VmXIvf.mp4?tag=16",
         "https://pbs.twimg.com/media/EBGbJe_U8AA4Ekb.jpg": "https://pbs.twimg.com/media/EBGbJe_U8AA4Ekb.jpg:orig",
         "https://pbs.twimg.com/media/EBGbJe_U8AA4Ekb.jpg:small": "https://pbs.twimg.com/media/EBGbJe_U8AA4Ekb.jpg:orig",
         "https://pbs.twimg.com/media/EBGbJe_U8AA4Ekb?format=jpg&name=900x900": "https://pbs.twimg.com/media/EBGbJe_U8AA4Ekb.jpg:orig",
@@ -20,7 +21,6 @@ urls = {
         "https://pbs.twimg.com/ext_tw_video_thumb/1243725361986375680/pu/img/JDA7g7lcw7wK-PIv.jpg": "https://pbs.twimg.com/ext_tw_video_thumb/1243725361986375680/pu/img/JDA7g7lcw7wK-PIv.jpg:orig",
         "https://pbs.twimg.com/amplify_video_thumb/1215590775364259840/img/lolCkEEioFZTb5dl.jpg": "https://pbs.twimg.com/amplify_video_thumb/1215590775364259840/img/lolCkEEioFZTb5dl.jpg:orig",
         "https://p.twimg.com/Ax7-w7ZCMAAQegx.jpg:large": "https://p.twimg.com/Ax7-w7ZCMAAQegx.jpg:orig",
-
     },
     tw.TwitterArtistImageUrl: {
         "https://pbs.twimg.com/profile_banners/780804311529906176/1475001696": "https://pbs.twimg.com/profile_banners/780804311529906176/1475001696/1500x500",

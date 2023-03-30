@@ -88,10 +88,11 @@ class TwimgComParser(UrlParser):
             # https://video.twimg.com/ext_tw_video/1496554514312269828/pu/vid/360x270/SygSrUcDpCr1AnOf.mp4?tag=12
             # https://video.twimg.com/ext_tw_video/1496554514312269828/pu/vid/960x720/wiC1XIw8QehhL5JL.mp4?tag=12
             # https://video.twimg.com/ext_tw_video/1496554514312269828/pu/vid/480x360/amWjOw0MmLdnPMPB.mp4?tag=12
+            # https://video.twimg.com/amplify_video/1640962950688284675/vid/1920x1080/mqVgMLEUs3VmXIvf.mp4?tag=16
             # https://pbs.twimg.com/tweet_video_thumb/ETkN_L3X0AMy1aT.jpg
             # https://pbs.twimg.com/ext_tw_video_thumb/1243725361986375680/pu/img/JDA7g7lcw7wK-PIv.jpg
             # https://pbs.twimg.com/amplify_video_thumb/1215590775364259840/img/lolCkEEioFZTb5dl.jpg
-            case ("tweet_video" | "ext_tw_video" | "ext_tw_video_thumb" | "tweet_video_thumb" | "amplify_video_thumb"), *_dirs, _filename:
+            case ("tweet_video" | "ext_tw_video" | "ext_tw_video_thumb" | "tweet_video_thumb" | "amplify_video" | "amplify_video_thumb"), *_dirs, _filename:
                 return tw.TwitterAssetUrl(parsed_url=parsable_url,
                                           file_path="/".join(parsable_url.url_parts))
 
