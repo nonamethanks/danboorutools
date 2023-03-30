@@ -40,7 +40,7 @@ pyrate-limiter = "^2.10.0"
 pytumblr = "^0.1.2"
 requests-oauthlib = "^1.3.1"
 deviantart = "^0.1.5"
-ring = "^0.10.0"
+ring = "^0.10.1"
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.28.11.17"
