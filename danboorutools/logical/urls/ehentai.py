@@ -45,10 +45,6 @@ class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):
     page_token: str | None = None  # TODO: is this just file_hash[:10] every time? i don't think so
 
     @cached_property
-    def created_at(self) -> datetime:
-        return self.post.created_at
-
-    @cached_property
     def full_size(self) -> str:
         if self.image_type == "download":
             return self.parsed_url.raw_url
@@ -74,10 +70,7 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
 
     def _extract_assets(self) -> list[EHentaiImageUrl]:
         asset = self._get_direct_url()
-
-        asset.created_at = self.created_at
         asset.extract_files()
-
         return [asset]
 
     def _get_direct_url(self) -> EHentaiImageUrl:
@@ -123,7 +116,6 @@ class EHentaiGalleryUrl(GalleryUrl, EHentaiUrl):
         for raw_thumb_url, file in zip(raw_thumb_urls, files, strict=True):
             image: EHentaiImageUrl = self.parse(raw_thumb_url)  # type: ignore[assignment]
             assert image.page_token
-            image.created_at = self.created_at
             image.files = [file]
 
             page = EHentaiPageUrl.build(
