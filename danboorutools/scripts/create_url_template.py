@@ -4,7 +4,7 @@ from pathlib import Path
 
 import click
 
-from danboorutools import logger
+from danboorutools import logger, settings
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.util.system import run_external_command
 
@@ -111,10 +111,11 @@ urls = {{
 generate_parsing_suite(urls)
 """
 
-TESTS_FOLDER = Path("tests/urls")
-PARSERS_FOLDER = Path("danboorutools/logical/parsers")
-URLS_FOLDER = Path("danboorutools/logical/urls")
-SESSION_FOLDER = Path("danboorutools/logical/sessions")
+BASE_FOLDER = settings.BASE_FOLDER / "danboorutools"
+TESTS_FOLDER = BASE_FOLDER / "tests"/"urls"
+PARSERS_FOLDER = BASE_FOLDER/"logical"/"parsers"
+URLS_FOLDER = BASE_FOLDER / "logical"/"urls"
+SESSION_FOLDER = BASE_FOLDER/"logical"/"sessions"
 
 
 def classize(string: str) -> str:

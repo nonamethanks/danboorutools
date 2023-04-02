@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import ring
 
+from danboorutools import settings
 from danboorutools.exceptions import HTTPError
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
@@ -48,7 +48,7 @@ class SkebSession(Session):
             self.load_cookies()
         except FileNotFoundError:
             self.login()
-        bearer = Path("cookies/skeb_bearer.txt").read_text(encoding="utf-8")
+        bearer = (settings.BASE_FOLDER / "cookies" / "skeb_bearer.txt").read_text(encoding="utf-8")
         return bearer
 
     def login(self) -> None:
@@ -81,7 +81,7 @@ class SkebSession(Session):
         response = super().request("GET", skeb_callback, skip_cache=True)
 
         bearer = ParsableUrl(response.history[0].headers["Location"]).query["auth_token"]
-        Path("cookies/skeb_bearer.txt").write_text(bearer, encoding="utf-8")
+        (settings.BASE_FOLDER / "cookies" / "skeb_bearer.txt").write_text(bearer, encoding="utf-8")
         self.save_cookies("_interslice_session")
 
     def __login_with_phone(self, oauth_url: str, html: BeautifulSoup) -> BeautifulSoup:

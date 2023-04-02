@@ -11,13 +11,20 @@ from loguru._logger import Logger as _Logger
 load_dotenv()
 
 
+class _GlobalSettings:
+    BASE_FOLDER = Path(__file__).parent.parent
+
+
+settings = _GlobalSettings()
+
+
 class Logger(_Logger):
     def log_to_file(self, folder: str | Path | None = None, retention: str = "7 days") -> Path:
         if isinstance(folder, str):
             folder = Path(folder)
         elif not folder:
             caller_path = Path(inspect.stack()[1].filename)
-            folder = Path("logs/scripts") / caller_path.stem
+            folder = settings.BASE_FOLDER / "logs" / "scripts" / caller_path.stem
 
         file_handler = self.add(folder / "{time}.log", retention=retention, enqueue=True, level="TRACE")
 

@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import inspect
-from collections.abc import Iterator
 from functools import lru_cache
 from importlib import import_module
-from pathlib import Path
-from typing import Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
-from danboorutools import logger
+from danboorutools import logger, settings
 from danboorutools.logical.sessions import Session
 from danboorutools.models.has_posts import FoundKnownPost, HasPosts
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 feeds: list[type[Feed]] = []
 
@@ -29,7 +30,7 @@ class Feed(HasPosts):  # pylint: disable=abstract-method
     @staticmethod
     @lru_cache
     def get_all_feeds() -> list[type[Feed]]:
-        feed_folder = Path(__file__).parent.parent / "logical" / "feeds"
+        feed_folder = settings.BASE_FOLDER / "danboorutools" / "logical" / "feeds"
         for _file in feed_folder.glob("*.py"):
             if "__" not in _file.stem:
                 import_module(f"danboorutools.logical.feeds.{_file.stem}")

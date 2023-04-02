@@ -3,10 +3,12 @@ from typing import Generic, TypeVar
 
 from peewee import DoesNotExist, Model, SqliteDatabase, TextField
 
+from danboorutools import settings
+
 ProgressValue = TypeVar("ProgressValue")
 
 
-_progress_database = SqliteDatabase("data/progress.sqlite")
+_progress_database = SqliteDatabase(settings.BASE_FOLDER / "data" / "progress.sqlite")
 
 
 class _ProgressModel(Model):

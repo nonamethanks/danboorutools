@@ -13,7 +13,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 
-from danboorutools import logger
+from danboorutools import logger, settings
 from danboorutools.exceptions import NoCookiesForDomainError
 from danboorutools.util.misc import load_cookies_for, save_cookies_for
 
@@ -35,9 +35,9 @@ class Browser(Chrome):
 
         super().__init__("/usr/bin/chromedriver", chrome_options=options)
 
-        self.cookie_dir = Path("cookies")
+        self.cookie_dir = settings.BASE_FOLDER / "cookies"
 
-        self.screenshot_dir = Path("screenshots")
+        self.screenshot_dir = settings.BASE_FOLDER / "screenshots"
         self.screenshot_dir.mkdir(exist_ok=True, parents=True)
 
         self.set_window_size(1920, 1080)

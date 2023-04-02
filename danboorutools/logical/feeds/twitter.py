@@ -1,6 +1,6 @@
 from collections.abc import Iterator
-from pathlib import Path
 
+from danboorutools import settings
 from danboorutools.logical.progress_tracker import ProgressTracker
 from danboorutools.logical.sessions.twitter import TwitterSession, TwitterTweetData
 from danboorutools.logical.urls.twitter import TwitterPostUrl
@@ -14,7 +14,7 @@ class TwitterFeed(FeedWithSeparateArtists):
     def _extract_artists(self) -> list[int]:
         following_list: list[int] = list(set(self.session.api.GetFriendIDs(total_count=None)))
 
-        with Path("data/twitter_follows_backup.txt").open("w+", encoding="utf-8") as backup_file:
+        with (settings.BASE_FOLDER / "data" / "twitter_follows_backup.txt").open("w+", encoding="utf-8") as backup_file:
             backup_file.write("\n".join(map(str, following_list)))  # in case I get banned, fuck twitter
 
         return following_list

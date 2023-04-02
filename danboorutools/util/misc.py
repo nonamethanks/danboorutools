@@ -3,12 +3,12 @@ from __future__ import annotations
 import pickle
 import random
 import re
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar, dataclass_transform
 
 from pydantic import BaseModel as BadBaseModel
 from pydantic import PrivateAttr, ValidationError
 
+from danboorutools import settings
 from danboorutools.exceptions import NoCookiesForDomainError
 
 if TYPE_CHECKING:
@@ -106,7 +106,7 @@ def in_ipython() -> bool:
         return True
 
 
-cookie_dir = Path("cookies")
+cookie_dir = settings.BASE_FOLDER / "cookies"
 
 
 def load_cookies_for(domain: str) -> list[dict[str, str]]:
