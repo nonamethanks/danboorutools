@@ -46,11 +46,11 @@ class SkebPostUrl(PostUrl, SkebUrl):
             for preview in previews:
                 parsed_preview = Url.parse(preview)
                 assert isinstance(parsed_preview, SkebImageUrl)
-                if not parsed_preview.image_uuid:  # noqa: SIM114
+                if not parsed_preview.image_uuid:
                     assets.append(preview)
-                elif parsed_preview.image_uuid != parsed_unwatermarked.image_uuid:  # noqa: SIM114
+                elif parsed_preview.image_uuid != parsed_unwatermarked.image_uuid:
                     assets.append(preview)
-                elif (match := re.search(r"fm=(\w+)", preview)) and match.groups()[0] in ["gif", "mp4"]:  # noqa: SIM114
+                elif (match := re.search(r"fm=(\w+)", preview)) and match.groups()[0] in ["gif", "mp4"]:
                     assets.append(preview)
                 elif "&txt=" not in preview:
                     assets.append(preview)

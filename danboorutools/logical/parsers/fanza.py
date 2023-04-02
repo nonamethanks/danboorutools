@@ -36,7 +36,7 @@ class DmmCoJpParser(UrlParser):
             return cls.parse(unquoted_url)  # type: ignore[return-value]
 
         # http://p-xtasy.dmm.co.jp/img/web/girls/635490047292404333.png
-        elif parsable_url.subdomain == "p-xtasy":  # noqa: SIM114
+        elif parsable_url.subdomain == "p-xtasy":
             raise UnparsableUrlError(parsable_url)
 
         elif parsable_url.hostname == "ad.games.dmm.co.jp":  # could have any html page

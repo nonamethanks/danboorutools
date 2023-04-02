@@ -65,10 +65,10 @@ class EhentaiOrgParser(UrlParser):
                                        image_type="hash_link")
 
             case _:
-                if parsable_url.raw_url == "https://exhentai.org/img/kokomade.jpg":  # noqa: SIM114
+                if parsable_url.raw_url == "https://exhentai.org/img/kokomade.jpg":
                     raise UnparsableUrlError(parsable_url)
                 # https://repo.e-hentai.org/bounty/fc/fcf12a1928e4d3b49bebe5280238e00de52027de-455288.jpg-thumb.jpg
-                elif parsable_url.subdomain in ["repo", "forums"]:  # noqa: SIM114
+                elif parsable_url.subdomain in ["repo", "forums"]:
                     raise UnparsableUrlError(parsable_url)
                 # http://g.e-hentai.org/tag/artist%3Ayatsuki
                 elif parsable_url.url_parts[0] in ["tag"]:
