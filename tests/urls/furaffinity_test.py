@@ -1,5 +1,5 @@
 from danboorutools.logical.urls.furaffinity import FuraffinityArtistImageUrl, FuraffinityArtistUrl, FuraffinityImageUrl, FuraffinityPostUrl
-from tests.urls import generate_parsing_suite
+from tests.urls import assert_artist_url, generate_parsing_suite
 
 urls = {
     FuraffinityArtistUrl: {
@@ -26,3 +26,13 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+
+assert_artist_url(
+    "https://www.furaffinity.net/user/bb00",
+    url_type=FuraffinityArtistUrl,
+    url_properties=dict(username="bb00"),
+    related=["https://twitter.com/BB00_Art"],
+    primary_names=[],
+    secondary_names=["bb00"],
+)

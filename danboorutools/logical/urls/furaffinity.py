@@ -16,6 +16,18 @@ class FuraffinityArtistUrl(ArtistUrl, FuraffinityUrl):
 
     normalize_template = "https://www.furaffinity.net/user/{username}"
 
+    @property
+    def primary_names(self) -> list[str]:
+        return []
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [self.username]
+
+    @property
+    def related(self) -> list[Url]:
+        return [Url.parse(el["href"]) for el in self.html.select(".user-contact-user-info a")]
+
 
 class FuraffinityImageUrl(PostAssetUrl, FuraffinityUrl):
     username: str | None
