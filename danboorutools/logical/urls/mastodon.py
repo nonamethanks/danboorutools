@@ -23,6 +23,13 @@ class MastodonPostUrl(PostUrl, MastodonUrl):
         else:
             return f"https://{kwargs['site']}/web/statuses/{kwargs['post_id']}"
 
+    @cached_property
+    def gallery(self) -> MastodonArtistUrl:
+        if self.username:
+            return MastodonArtistUrl.build(username=self.username, site=self.site)
+        else:
+            raise NotImplementedError(self)
+
 
 class MastodonArtistUrl(ArtistUrl, MastodonUrl):
     username: str
