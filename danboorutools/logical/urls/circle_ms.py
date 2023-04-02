@@ -15,6 +15,8 @@ class CircleMsCircleUrl(InfoUrl, CircleMsUrl):
     def is_deleted(self) -> bool:
         if "※検索キーワードを入力してください" in str(self.html):
             return True
+        elif "このサークルは見つかりません" in str(self.html):
+            return True
         elif "は非公開設定にしています。" in str(self.html):
             return True  # private, but p much same thing
         elif self.html.select_one(".profile-name"):
