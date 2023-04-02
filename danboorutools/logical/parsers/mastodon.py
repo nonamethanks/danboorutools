@@ -1,6 +1,7 @@
 from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls import mastodon as m
+from danboorutools.models.url import UselessUrl
 
 
 class MastodonParser(UrlParser):
@@ -40,7 +41,7 @@ class MastodonParser(UrlParser):
                 return None
 
     @staticmethod
-    def _match_everything_else(parsable_url: ParsableUrl) -> m.MastodonUrl | None:  # type: ignore[return]
+    def _match_everything_else(parsable_url: ParsableUrl) -> m.MastodonUrl | UselessUrl | None:  # type: ignore[return]
         match parsable_url.url_parts:
             # https://pawoo.net/@evazion/19451018
             # https://baraag.net/@curator/102270656480174153
@@ -102,6 +103,9 @@ class MastodonParser(UrlParser):
 
             case "interact", _:  # ???? https://baraag.net/interact/106315841367726753
                 raise UnparsableUrlError(parsable_url)
+
+            case "tags", *_:
+                return UselessUrl(parsed_url=parsable_url)
 
             case _:
                 return None
