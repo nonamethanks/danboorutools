@@ -30,9 +30,8 @@ class ProgressTracker(Generic[ProgressValue]):
 
         self._value_cache: ProgressValue | None = None
 
-    @_progress_database.connection_context()
     def _init_database(self) -> None:
-        with _progress_database:
+        with _progress_database.connection_context():
             _progress_database.create_tables([_ProgressModel])
 
     @property
