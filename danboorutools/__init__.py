@@ -12,7 +12,8 @@ load_dotenv()
 
 
 class _GlobalSettings:
-    BASE_FOLDER = Path(__file__).parent.parent
+    _ENV_BASE_FOLDER = os.environ.get("BASE_FOLDER")
+    BASE_FOLDER = Path(_ENV_BASE_FOLDER) if _ENV_BASE_FOLDER else Path(__file__).parent.parent
 
 
 settings = _GlobalSettings()
