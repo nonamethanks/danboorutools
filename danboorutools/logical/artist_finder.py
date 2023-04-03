@@ -230,6 +230,7 @@ class ArtistFinder:
         primary_names = [cls.sanitize_tag_name(name) for name in list(dict.fromkeys(primary_names))]
         secondary_names = [cls.sanitize_tag_name(name) for name in list(dict.fromkeys(secondary_names))
                            if cls.sanitize_tag_name(name) not in primary_names]
+        secondary_names.sort(key=lambda x: x.startswith("user_"))  # put bad pixiv qualifiers as last choiec
 
         attempts = []
 
