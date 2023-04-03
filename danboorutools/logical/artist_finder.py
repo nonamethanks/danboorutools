@@ -51,7 +51,7 @@ class ArtistFinder:
         else:
             logger.debug(f"Found artist url {artist_url} for source {source} for post {post}")
             result_from_archives = None
-            if artist_url.is_deleted:  # type: ignore[union-attr] # false positive
+            if artist_url.is_deleted:
                 # still check saucenao/ascii2d for more data
                 result_from_archives = self.search_for_artist_in_archives(post)
 
@@ -102,7 +102,7 @@ class ArtistFinder:
             return result
 
         logger.debug("No result from Ascii2d. Checking Saucenao...")
-        result = self.saucenao.find_gallery(post.file_url, original_url=post.source, original_post=post)  # type: ignore[assignment]
+        result = self.saucenao.find_gallery(post.file_url, original_url=post.source, original_post=post)
         if result:
             logger.debug(f"Extracted {result} for {post} from Saucenao")
             return result
