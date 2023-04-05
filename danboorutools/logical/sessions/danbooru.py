@@ -11,23 +11,14 @@ from requests.exceptions import ReadTimeout
 from danboorutools import logger
 from danboorutools.exceptions import DanbooruHTTPError
 from danboorutools.logical.sessions import Session
-from danboorutools.models.danbooru import (
-    DanbooruArtist,
-    DanbooruCommentVote,
-    DanbooruModel,
-    DanbooruPost,
-    DanbooruPostVersion,
-    DanbooruPostVote,
-    DanbooruTag,
-    DanbooruUser,
-)
+from danboorutools.models import danbooru as models
 from danboorutools.models.url import UnknownUrl, Url, UselessUrl
 from danboorutools.version import version
 
 if TYPE_CHECKING:
     from danboorutools.models.file import File
 
-GenericModel = TypeVar("GenericModel", bound=DanbooruModel)
+GenericModel = TypeVar("GenericModel", bound=models.DanbooruModel)
 
 
 class DanbooruApi(Session):
@@ -95,7 +86,7 @@ class DanbooruApi(Session):
         else:
             return {"success": True}
 
-    def posts(self, tags: list[str], page: int | str = 1) -> list[DanbooruPost]:
+    def posts(self, tags: list[str], page: int | str = 1) -> list[models.DanbooruPost]:
         if not any(t.startswith("limit:") for t in tags):
             tags += ["limit:200"]
 
@@ -105,10 +96,10 @@ class DanbooruApi(Session):
         }
 
         response = self.danbooru_request("GET", "posts.json", params=params)
-        return [DanbooruPost(post_data) for post_data in response]
+        return [models.DanbooruPost(post_data) for post_data in response]
 
-    def all_posts(self, tags: list[str]) -> list[DanbooruPost]:
-        posts: list[DanbooruPost] = []
+    def all_posts(self, tags: list[str]) -> list[models.DanbooruPost]:
+        posts: list[models.DanbooruPost] = []
         page: int | str = 1
         while True:
             logger.info(f"Collecting posts for the search {tags}: at page {page}, found: {len(posts)}")
@@ -120,10 +111,10 @@ class DanbooruApi(Session):
             lowest_id = min(found_posts, key=lambda post: post.id).id
             page = f"b{lowest_id}"
 
-    def users(self, **kwargs) -> list[DanbooruUser]:
+    def users(self, **kwargs) -> list[models.DanbooruUser]:
         params = kwargs_to_include(**kwargs)
         response = self.danbooru_request("GET", "users.json", params=params)
-        return [DanbooruUser(user_data) for user_data in response]
+        return [models.DanbooruUser(user_data) for user_data in response]
 
     def _generic_endpoint(self, model_type: type[GenericModel], **kwargs) -> list[GenericModel]:
         only_string = self.only_string_defaults.get(model_type.model_name)
@@ -131,20 +122,20 @@ class DanbooruApi(Session):
         response = self.danbooru_request("GET", f"{model_type.model_name}s.json", params=params)
         return [model_type(model_data) for model_data in response]
 
-    def artists(self, **kwargs) -> list[DanbooruArtist]:
-        return self._generic_endpoint(DanbooruArtist, **kwargs)
+    def artists(self, **kwargs) -> list[models.DanbooruArtist]:
+        return self._generic_endpoint(models.DanbooruArtist, **kwargs)
 
-    def comment_votes(self, **kwargs) -> list[DanbooruCommentVote]:
-        return self._generic_endpoint(DanbooruCommentVote, **kwargs)
+    def comment_votes(self, **kwargs) -> list[models.DanbooruCommentVote]:
+        return self._generic_endpoint(models.DanbooruCommentVote, **kwargs)
 
-    def post_versions(self, **kwargs) -> list[DanbooruPostVersion]:
-        return self._generic_endpoint(DanbooruPostVersion, **kwargs)
+    def post_versions(self, **kwargs) -> list[models.DanbooruPostVersion]:
+        return self._generic_endpoint(models.DanbooruPostVersion, **kwargs)
 
-    def post_votes(self, **kwargs) -> list[DanbooruPostVote]:
-        return self._generic_endpoint(DanbooruPostVote, **kwargs)
+    def post_votes(self, **kwargs) -> list[models.DanbooruPostVote]:
+        return self._generic_endpoint(models.DanbooruPostVote, **kwargs)
 
-    def tags(self, **kwargs) -> list[DanbooruTag]:
-        return self._generic_endpoint(DanbooruTag, **kwargs)
+    def tags(self, **kwargs) -> list[models.DanbooruTag]:
+        return self._generic_endpoint(models.DanbooruTag, **kwargs)
 
     def create_artist(self, name: str, other_names: list[str], urls: Sequence[Url | str]) -> None:
         url_string = self._generate_url_string_for_artist(urls)
@@ -160,7 +151,7 @@ class DanbooruApi(Session):
         request = self.danbooru_request("POST", "artists.json", json=data)
         assert isinstance(request, dict) and request["id"]
 
-    def update_artist_urls(self, artist: DanbooruArtist, urls: Sequence[Url | str]) -> None:
+    def update_artist_urls(self, artist: models.DanbooruArtist, urls: Sequence[Url | str]) -> None:
         url_string = self._generate_url_string_for_artist(urls, artist=artist)
 
         logger.info(f"Sending urls '{url_string}' to artist {artist}")
@@ -173,7 +164,7 @@ class DanbooruApi(Session):
         request = self.danbooru_request("PUT", f"{artist.model_path}.json", json=data)
         assert isinstance(request, dict) and request["success"] is True
 
-    def _generate_url_string_for_artist(self, urls: Sequence[Url | str], artist: DanbooruArtist | None = None) -> str:
+    def _generate_url_string_for_artist(self, urls: Sequence[Url | str], artist: models.DanbooruArtist | None = None) -> str:
         parsed_urls = [Url.parse(url) for url in urls]
         normalized_urls: list[str] = []
         for url in parsed_urls:
@@ -198,7 +189,7 @@ class DanbooruApi(Session):
 
         return " ".join(normalized_urls)
 
-    def update_post_tags(self, post: DanbooruPost, tags: list[str]) -> None:
+    def update_post_tags(self, post: models.DanbooruPost, tags: list[str]) -> None:
         """Update a post's tags."""
         tag_string = " ".join(tags)
         logger.info(f"Sending tags {tag_string} to post {post.url}")
@@ -212,7 +203,7 @@ class DanbooruApi(Session):
         assert isinstance(response, dict) and response["success"] is True
 
     def replace(self,
-                post: DanbooruPost,
+                post: models.DanbooruPost,
                 replacement_file: File | None = None,
                 replacement_url: Url | str | None = None,
                 final_source: Url | str | None = None,
