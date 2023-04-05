@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import hashlib
+import tempfile
 from functools import cached_property
 from pathlib import Path
 
 import filetype
+import imagehash
+import ring
+from PIL import Image
 
 from danboorutools.util.misc import natsort_array, random_string
 from danboorutools.util.system import run_external_command
@@ -16,11 +20,17 @@ class File:
             raise RuntimeError("Abstract class.")
         self.raw_path = raw_path
 
+    def __str__(self) -> str:
+        return f"File[{self.path.name}]"
+    __repr__ = __str__
+
     @classmethod
     def get_subclass_for(cls, path: Path) -> FileSubclass:
         match path.suffix.strip("."):
             case "rar" | "zip":
                 return ArchiveFile(raw_path=path)
+            case "jpg", "png":
+                return ImageFile(raw_path=path)
             case _:
                 return UnknownFile(raw_path=path)
 
@@ -59,7 +69,7 @@ class File:
     @cached_property
     def md5(self) -> str:
         """Return the md5 of this file."""
-        hash_md5 = hashlib.md5()
+        hash_md5 = hashlib.md5()  # noqa: S324
 
         with self.path.open("rb") as myf:
             for chunk in iter(lambda: myf.read(4096), b""):
@@ -70,9 +80,18 @@ class File:
     def delete(self) -> None:
         self.path.unlink()
 
-    def __str__(self) -> str:
-        return f"File[{self.path.name}]"
-    __repr__ = __str__
+    @classmethod
+    def from_dict(cls, /, **kwargs) -> File:
+        instance = File.known(kwargs.pop("path"))
+        if (md5 := kwargs.pop("md5", None)) is not None:
+            instance.md5 = md5
+        return instance
+
+    def to_dict(self) -> dict:
+        return {
+            "path": self.path.resolve(),
+            "md5": self.md5,
+        }
 
 
 class ArchiveFile(File):
@@ -81,13 +100,75 @@ class ArchiveFile(File):
         """Extract this archive."""
         source = str(self.path)
 
-        destination = Path("/tmp") / f"danboorutools_archive_extraction_{random_string(20)}"
+        destination = Path(tempfile.gettempdir()) / f"danboorutools_archive_extraction_{random_string(20)}"
         destination.mkdir(parents=True, exist_ok=True)
 
         run_external_command(f"aunpack {source} -X {destination}")
 
         subpaths = natsort_array(destination.rglob("*.*"))
         return [File.identify(subpath) for subpath in subpaths]
+
+
+class ImageFile(File):
+    @cached_property
+    def sizes(self) -> tuple[int, int]:
+        """Return the width and height of this file."""
+        with Image.open(self.path) as img:
+            return img.size
+
+    @cached_property
+    def width(self) -> int:
+        """Return the width of this file."""
+        return self.sizes[0]
+
+    @cached_property
+    def height(self) -> int:
+        """Return the height of this file."""
+        return self.sizes[1]
+
+    @classmethod
+    def from_dict(cls, /, **kwargs) -> File:
+        width, height = kwargs.pop("width", None), kwargs.pop("height", None)
+        instance: ImageFile = super().from_dict(**kwargs)  # type: ignore[assignment]
+        if width is not None:
+            instance.width = width
+        if height is not None:
+            instance.height = height
+        return instance
+
+    @cached_property
+    def short_similarity_hash(self) -> str:
+        """Return a short wavelet hash (256 char) for this image."""
+        return self._get_whash(16)
+
+    @cached_property
+    def long_similarity_hash(self) -> str:
+        """Return a long wavelet hash (16384 char) for this image."""
+        return self._get_whash(128)
+
+    @ring.lru()
+    def _get_whash(self, size: int) -> str:
+        with Image.open(self.path) as img:
+            string_hash = str(imagehash.whash(img, size))
+
+        return bin(int(string_hash, 16))[2:].zfill(size**2)
+
+    @ring.lru()
+    def hamming_distance(self, other_file: ImageFile) -> int:
+        own_hash = self.long_similarity_hash
+        other_hash = other_file.long_similarity_hash
+
+        return sum(c1 != c2 for c1, c2 in zip(own_hash, other_hash, strict=True))
+
+    def to_dict(self) -> dict:
+        return {
+            "path": self.path.resolve(),
+            "md5": self.md5,
+            "width": self.width,
+            "height": self.height,
+            "short_similarity_hash": self.short_similarity_hash,
+            "long_similarity_hash": self.long_similarity_hash,
+        }
 
 
 class UnknownFile(File):
