@@ -112,7 +112,7 @@ generate_parsing_suite(urls)
 """
 
 BASE_FOLDER = settings.BASE_FOLDER / "danboorutools"
-TESTS_FOLDER = BASE_FOLDER / "tests"/"urls"
+TESTS_FOLDER = settings.BASE_FOLDER / "tests" / "urls"
 PARSERS_FOLDER = BASE_FOLDER/"logical"/"parsers"
 URLS_FOLDER = BASE_FOLDER / "logical"/"urls"
 SESSION_FOLDER = BASE_FOLDER/"logical"/"sessions"
