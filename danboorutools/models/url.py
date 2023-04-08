@@ -4,6 +4,7 @@ from __future__ import annotations
 from functools import cached_property, lru_cache
 from typing import TYPE_CHECKING, Self, TypeVar, final  # , get_type_hints
 
+import ring
 from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
 
@@ -33,6 +34,10 @@ class Url(metaclass=PseudoDataclass):
 
     parsed_url: ParsableUrl
 
+    @ring.lru()
+    def __new__(cls, *args, **kwargs):  # noqa: ARG003 # pylint: disable=W0613
+        return super().__new__(cls)
+
     def __init__(self, /, parsed_url: ParsableUrl, **url_properties):
         self.parsed_url = parsed_url
         self.url_properties = url_properties
@@ -57,7 +62,7 @@ class Url(metaclass=PseudoDataclass):
     def parse(cls, url: str | Url) -> Url:
         if isinstance(url, Url):
             return url
-        return UrlParser.parse(url) or UnknownUrl(parsed_url=ParsableUrl(url))
+        return UrlParser.parse(url) or UnknownUrl(parsed_url=ParsableUrl(url))  # type: ignore[arg-type] #false positive
 
     @cached_property
     def normalized_url(self) -> str:
@@ -105,7 +110,7 @@ class Url(metaclass=PseudoDataclass):
 
         return __o.normalized_url.__repr__().lower() == self.normalized_url.__repr__().lower()
 
-    def __hash__(self) -> int:  # needed for Ward tests
+    def __hash__(self) -> int:  # needed for Ward tests and ring.lru
         return hash(self.__repr__().lower())  # lower() might not be completely true, but frankly the chance of collision is not realistic
 
     @cached_property
@@ -212,13 +217,10 @@ class InfoUrl(Url):
 class GalleryUrl(Url, HasPosts):  # pylint: disable=abstract-method
     """A gallery contains multiple posts."""
 
-    def _register_post(self,
-                       post: PostUrl,
-                       assets: Sequence[PostAssetUrl | str],
-                       created_at: datetime | str | int | None,
-                       score: int) -> None:
-        super()._register_post(post, assets, created_at, score)
-        post.gallery = self
+    if not TYPE_CHECKING:  # TODO: bad hack, rewrite this
+        def _register_post(self, *args, **kwargs) -> None:
+            super()._register_post(*args, **kwargs)
+            kwargs.pop("post").gallery = self
 
 
 class ArtistUrl(GalleryUrl, InfoUrl):  # pylint: disable=abstract-method

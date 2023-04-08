@@ -200,7 +200,7 @@ def _process_post(self: PixivArtistUrl | PixivFeed, post_object: PixivGroupedIll
 
     self._register_post(
         post=post,
-        assets=[Url.parse(url) for url in asset_urls],  # type: ignore[misc]
+        assets=[Url.parse(url) for url in asset_urls],
         created_at=post_object.upload_timestamp,
         score=score,
     )

@@ -129,7 +129,7 @@ class PximgNetParser(UrlParser):
                 return None
 
         post_id, page, unlisted = PixivImageUrl.parse_filename(parsable_url.stem)
-        instance = PixivImageUrl(parsed_url=parsable_url,  # type: ignore[assignment]
+        instance = PixivImageUrl(parsed_url=parsable_url,
                                  stacc=stacc,
                                  post_id=post_id,
                                  page=page,
