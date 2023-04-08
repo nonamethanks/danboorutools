@@ -129,7 +129,8 @@ def save_cookies_for(domain: str, cookies: list[dict[str, str]]) -> None:
 
 @dataclass_transform()
 class PseudoDataclass(type):
-    ...
+    def __hash__(cls) -> int:
+        return random.randint(1, int(1e10))
 
 
 def base36encode(number: int) -> str:
