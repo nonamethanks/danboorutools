@@ -45,11 +45,9 @@ def class_name_to_string(klass: type, separator: str = "_") -> str:
     return class_name[0].lower() + "".join(f"{separator}{char.lower()}" if char.isupper() else char for char in class_name[1:])
 
 
-all_urls_pattern = re.compile(
-    r'((?:\bhttp|https)(?::\/{2}[\w]+)(?:[\/|\.]?)(?:[^\s<>\uff08\uff09\u3011\u3000"\[\]\(\)]*))',
-    re.IGNORECASE | re.ASCII,
-)
-images_pattern = re.compile(r".*(jpg|jpeg|gif|png)$", re.IGNORECASE)
+DELIMITERS = r'\s<>\"\[\]\(\)、。〈〉《》「」『』【】〔〕〖〗〘〙〚〛）］｝｠｣'
+all_urls_pattern = re.compile(rf"((?:\bhttp|https)(?::\/{{2}}[\w]+)(?:[\/|\.]?)(?:[^{DELIMITERS}]*))", re.IGNORECASE | re.ASCII)
+files_pattern = re.compile(r".*(jpe?g|gif|png|webp|avif|mp4|mkv|webm|swf)$", re.IGNORECASE)
 
 
 def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list[str]:
@@ -61,7 +59,7 @@ def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list
 
     if not blacklist_images:
         return found
-    urls = [u for u in found if not images_pattern.search(u.strip())]
+    urls = [u for u in found if not files_pattern.search(u.strip())]
     return list(dict.fromkeys(urls))
 
 
