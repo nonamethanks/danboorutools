@@ -101,6 +101,12 @@ class DanbooruHTTPError(HTTPError):
                     "message": "You're doing that too fast",
                     "backtrace": [],
                 }
+            elif "Danbooru is down for maintenance" in response.text:
+                self.json_response = {
+                    "error": "Downbooru",
+                    "message": "Danbooru is down for maintenance",
+                    "backtrace": [],
+                }
             else:
                 raise NotImplementedError(response.text) from e
 
