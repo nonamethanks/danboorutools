@@ -1,6 +1,7 @@
 from functools import cached_property
 from typing import Literal
 
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.youtube import YoutubeChannelData, YoutubeSession
 from danboorutools.models.url import ArtistUrl, GalleryUrl, PostUrl, RedirectUrl, Url
 
@@ -20,7 +21,10 @@ class YoutubeUserUrl(ArtistUrl, YoutubeUrl):
 
     @property
     def primary_names(self) -> list[str]:
-        return [self.channel_data.channel_title]
+        try:
+            return [self.channel_data.channel_title]
+        except DeadUrlError:
+            return []
 
     @property
     def secondary_names(self) -> list[str]:
@@ -28,7 +32,10 @@ class YoutubeUserUrl(ArtistUrl, YoutubeUrl):
 
     @property
     def related(self) -> list[Url]:
-        return self.channel_data.related_urls
+        try:
+            return self.channel_data.related_urls
+        except DeadUrlError:
+            return []
 
 
 class YoutubeOldUserUrl(RedirectUrl, YoutubeUrl):
