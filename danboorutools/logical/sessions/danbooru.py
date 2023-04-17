@@ -9,7 +9,7 @@ from cloudscraper.exceptions import CloudflareChallengeError
 from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
-from danboorutools.exceptions import DanbooruHTTPError
+from danboorutools.exceptions import DanbooruHTTPError, RateLimitError
 from danboorutools.logical.sessions import Session
 from danboorutools.models import danbooru as models
 from danboorutools.models.url import UnknownUrl, Url, UselessUrl
@@ -172,7 +172,7 @@ class DanbooruApi(Session):
                 continue
             try:
                 normalized_urls.append(f"-{url.normalized_url}" if url.is_deleted else url.normalized_url)
-            except (ReadTimeout, CloudflareChallengeError):
+            except (ReadTimeout, CloudflareChallengeError, RateLimitError):
                 continue
 
         if artist:
@@ -182,7 +182,7 @@ class DanbooruApi(Session):
                     continue
                 try:
                     deleted = parsed.is_deleted if not isinstance(parsed, UnknownUrl) else (parsed.is_deleted or not url_data["is_active"])
-                except (ReadTimeout, CloudflareChallengeError):
+                except (ReadTimeout, CloudflareChallengeError, RateLimitError):
                     deleted = url_data["is_active"]
 
                 normalized_urls.append(f"-{parsed.normalized_url}" if deleted else parsed.normalized_url)
