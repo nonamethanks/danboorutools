@@ -58,6 +58,20 @@ class DanbooruModel(BaseModel):
         return f"{self.__class__.__name__}[{self.url}]"
     __repr__ = __str__
 
+    @classmethod
+    def id_from_url(cls, url: str) -> int:
+        if not cls.model_name:
+            raise NotImplementedError
+
+        match = re.search(rf"donmai\.us\/{cls.model_name}(s|\/show)\/(?P<id>\d+)", url)
+        try:
+            assert match
+            return int(match.groupdict()["id"])  # noqa: TRY300
+        except Exception as e:
+            e.add_note(f"Url: {url}")
+            e.add_note(f"Match: {match}")
+            raise
+
 
 class DanbooruPost(DanbooruModel):
     model_name = "post"
@@ -110,17 +124,6 @@ class DanbooruPost(DanbooruModel):
             replacement_url = replacement_url or self.source
         danbooru_api.replace(self, replacement_url=replacement_url, replacement_file=replacement_file,
                              final_source=final_source or replacement_url)
-
-    @staticmethod
-    def id_from_url(url: str) -> int:
-        match = re.search(r"donmai\.us\/post(s|\/show)\/(?P<id>\d+)", url)
-        try:
-            assert match
-            return int(match.groupdict()["id"])  # noqa: TRY300
-        except Exception as e:
-            e.add_note(f"Url: {url}")
-            e.add_note(f"Match: {match}")
-            raise
 
     @property
     def file(self) -> File:
@@ -237,4 +240,19 @@ class DanbooruTag(DanbooruModel):
         raise NotImplementedError  # cache?
 
 
+class DanbooruUserEvent(DanbooruModel):
+    model_name = "user_event"
+
+    category: str
+    user_session: DanbooruUserSession
+    user: DanbooruUser
+
+
+class DanbooruUserSession(DanbooruModel):
+    ip_addr: str
+    session_id: str
+    user_agent: str
+
+
 DanbooruArtist.update_forward_refs()
+DanbooruUserEvent.update_forward_refs()

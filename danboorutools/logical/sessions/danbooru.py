@@ -51,6 +51,7 @@ class DanbooruApi(Session):
         "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
         "post_vote": "id,created_at,score,is_deleted,user,post",
         "tag": "id,name,post_count,category,created_at,is_deprecated,wiki_page,artist",
+        "user_event": "id,created_at,category,user_session,user",
     }
 
     def __init__(self, *args,
@@ -136,6 +137,9 @@ class DanbooruApi(Session):
 
     def tags(self, **kwargs) -> list[models.DanbooruTag]:
         return self._generic_endpoint(models.DanbooruTag, **kwargs)
+
+    def user_events(self, **kwargs) -> list[models.DanbooruUserEvent]:
+        return self._generic_endpoint(models.DanbooruUserEvent, **kwargs)
 
     def create_artist(self, name: str, other_names: list[str], urls: Sequence[Url | str]) -> None:
         url_string = self._generate_url_string_for_artist(urls)

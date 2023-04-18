@@ -34,3 +34,9 @@ poetry run tag_paid_rewards_on_gelbooru {latest|all}
 ```
 poetry run create_artist_tags {tags to search}
 ```
+
+
+#### Post potential sockpuppets to a discord channel via webhook
+```
+poetry run sockpuppet_discord_monitor {test|production}
+```
