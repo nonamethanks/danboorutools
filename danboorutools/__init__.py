@@ -20,14 +20,21 @@ settings = _GlobalSettings()
 
 
 class Logger(_Logger):
-    def log_to_file(self, folder: str | Path | None = None, retention: str = "7 days") -> Path:
-        if isinstance(folder, str):
-            folder = Path(folder)
-        elif not folder:
-            caller_path = Path(inspect.stack()[1].filename)
-            folder = settings.BASE_FOLDER / "logs" / "scripts" / caller_path.stem
+    def log_to_file(self,
+                    folder: str | Path | None = None,
+                    filename: str | Path | None = None,
+                    retention: str = "7 days",
+                    **kwargs) -> Path:
 
-        file_handler = self.add(folder / "{time}.log", retention=retention, enqueue=True, level="TRACE")
+        if filename:
+            final_path = Path(filename)
+        else:
+            if not folder:
+                caller_path = Path(inspect.stack()[1].filename)
+                folder = settings.BASE_FOLDER / "logs" / "scripts" / caller_path.stem
+            final_path = Path(folder) / "{time}.log"
+
+        file_handler = self.add(final_path, retention=retention, enqueue=True, level="TRACE", **kwargs)
 
         return Path(self._core.handlers[file_handler]._sink._file.name)
 
