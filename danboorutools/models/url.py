@@ -243,18 +243,18 @@ class ArtistAlbumUrl(GalleryUrl, Url):
 class PostUrl(Url):
     """A post contains multiple assets."""
 
-    def _register_asset(self, asset: PostAssetUrl | str) -> None:
+    def _register_asset(self, asset: PostAssetUrl | str, is_deleted: bool = False) -> None:
         if "assets" not in self.__dict__:
             self.assets = []
 
         if isinstance(asset, str):
-            parsed_asset = Url.parse(asset)
-            assert isinstance(parsed_asset, PostAssetUrl), parsed_asset
-            asset = parsed_asset
+            asset = Url.parse(asset)
+            assert isinstance(asset, PostAssetUrl), asset
 
         if asset in self.assets:
             raise NotImplementedError(self, asset, self.assets)
 
+        asset.is_deleted = is_deleted
         asset.post = self  # pylint: disable=attribute-defined-outside-init # false positive
 
         self.assets.append(asset)
@@ -334,9 +334,6 @@ class PostAssetUrl(_AssetUrl, Url):
     def post(self) -> PostUrl:
         raise NotImplementedError(self, "hasn't implemented post extraction.")
 
-    @cached_property
-    def created_at(self) -> datetime | None:
-        return self.post.created_at
 
 
 class GalleryAssetUrl(_AssetUrl, Url):
