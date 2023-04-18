@@ -1,7 +1,6 @@
 import time
 from collections import Counter
 from collections.abc import Callable
-from pathlib import Path
 
 import click
 from line_profiler import LineProfiler

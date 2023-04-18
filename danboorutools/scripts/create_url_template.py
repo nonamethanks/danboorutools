@@ -135,7 +135,7 @@ def create_url_template(url: str, force: bool = False) -> None:
         class_name_base=classize(name_base),
         parser_name_base=classize(parsed.domain),
         module_name=name_base.replace("-", "_"),
-        domains_if_bad_chars=f'\n    domains = ["{parsed.domain}"]\n' if not parsed.domain.isalnum() else "",
+        domains_if_bad_chars=f'\n    domains = ["{parsed.domain}"]\n' if not name_base.isalnum() else "",
     ).strip() + "\n"
 
     formatted_extractor = EXTRACTOR_TEMPLATE.format(
