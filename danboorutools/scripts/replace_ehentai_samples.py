@@ -14,7 +14,7 @@ def main() -> None:
             logger.info("No galleries found!")
             return
 
-        sources: list[EHentaiPageUrl] = [post.source for post in posts]  # type: ignore[misc]
+        sources: list[EHentaiPageUrl] = [post.source for post in posts]
         assert all(isinstance(source, EHentaiPageUrl) for source in sources)
         gallery_ids = [source.gallery_id for source in sources]
         gallery_id_set = list(dict.fromkeys(gallery_ids))
@@ -52,7 +52,7 @@ def replace_from_gallery(ehentai_url: EHentaiGalleryUrl, search_tags_str: str) -
     click.confirm("Continue?", abort=True)
 
     if len(posts) > 5:
-        extracted_pages = ehentai_url.posts
+        extracted_pages = ehentai_url.extract_posts()
     else:
         extracted_pages: list[EHentaiPageUrl] = [post.source for post in posts]  # type: ignore[no-redef]
         for page in extracted_pages:
