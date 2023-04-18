@@ -96,7 +96,7 @@ class DanbooruApi(Session):
         }
 
         response = self.danbooru_request("GET", "posts.json", params=params)
-        return [models.DanbooruPost(post_data) for post_data in response]
+        return [models.DanbooruPost(**post_data) for post_data in response]
 
     def all_posts(self, tags: list[str]) -> list[models.DanbooruPost]:
         posts: list[models.DanbooruPost] = []
@@ -114,13 +114,13 @@ class DanbooruApi(Session):
     def users(self, **kwargs) -> list[models.DanbooruUser]:
         params = kwargs_to_include(**kwargs)
         response = self.danbooru_request("GET", "users.json", params=params)
-        return [models.DanbooruUser(user_data) for user_data in response]
+        return [models.DanbooruUser(**user_data) for user_data in response]
 
     def _generic_endpoint(self, model_type: type[GenericModel], **kwargs) -> list[GenericModel]:
         only_string = self.only_string_defaults.get(model_type.model_name)
         params = kwargs_to_include(**kwargs, only=only_string)
         response = self.danbooru_request("GET", f"{model_type.model_name}s.json", params=params)
-        return [model_type(model_data) for model_data in response]
+        return [model_type(**model_data) for model_data in response]
 
     def artists(self, **kwargs) -> list[models.DanbooruArtist]:
         return self._generic_endpoint(models.DanbooruArtist, **kwargs)
@@ -176,7 +176,7 @@ class DanbooruApi(Session):
                 continue
 
         if artist:
-            for url_data in artist.json_data["urls"]:
+            for url_data in artist._raw_data["urls"]:
                 parsed = Url.parse(url_data["url"])
                 if isinstance(parsed, UselessUrl):
                     continue
@@ -237,6 +237,10 @@ class DanbooruApi(Session):
 
         self.danbooru_request("POST", f"post_replacements?post_id={post.id}", files=data)
         logger.info(f"Replaced {post} with {replacement_url or replacement_file}")
+
+    def iqdb_search(self, url: str) -> list[models.DanbooruIqdbMatch]:
+        data = self.danbooru_request("GET", "iqdb_queries.json", params={"url": url})
+        return [models.DanbooruIqdbMatch(**match) for match in data]
 
 
 def kwargs_to_include(**kwargs) -> dict:

@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import re
-from typing import Self, get_type_hints
+from datetime import datetime
+from functools import cached_property
+from typing import ClassVar, Self
 
-from dateutil import parser as dt_parser
+from pydantic import validator
 
 from danboorutools.exceptions import NotAnUrlError
 from danboorutools.models.file import File
 from danboorutools.models.url import Url
+from danboorutools.util.misc import BaseModel
 
 CATEGORY_MAP = {
     0: "general",
@@ -18,45 +21,30 @@ CATEGORY_MAP = {
 }
 
 
-class DanbooruModel:
-    model_name: str
+class DanbooruModel(BaseModel):
+    id: int  # noqa: A003
+    created_at: datetime | None
+    updated_at: datetime | None
+    is_deleted: bool = False
 
-    def __init__(self, json_data: dict):
-        if self.__class__ == DanbooruModel:
-            raise RuntimeError("This class cannot be instantiated directly, and must be inherited.")
+    model_name: ClassVar[str | None] = None
 
-        from danboorutools.logical.sessions.danbooru import danbooru_api
-        self.api = danbooru_api
-        self.apply_json_data(json_data)
-
-    def apply_json_data(self, json_data: dict) -> None:
-        self.json_data = json_data
-        self.id: int = json_data["id"]
-
-        self.updated_at = dt_parser.parse(json_data["updated_at"]) if "updated_at" in json_data else None
-        self.created_at = dt_parser.parse(json_data["created_at"]) if "created_at" in json_data else self.updated_at
-        self.is_deleted: bool = json_data.get("is_deleted", False)
-
-        for property_name, property_class in get_type_hints(self.__class__).items():
-            if property_name in ["model_name"]:
-                continue
-            if (property_data := json_data.get(property_name)) is not None:
-                # if property_class.__origin__ == list:
-                #     property_subclass = property_class.__args__[0]
-                #     setattr(self, property_name, [property_subclass(prop) for prop in property_data])  # list[str]
-                # else:
-                setattr(self, property_name, property_class(property_data))
-            else:
-                setattr(self, property_name, None)
-
-        self.model_path = f"{self.model_name}s/{self.id}"
+    @property
+    def model_path(self) -> str:
+        try:
+            return f"{self.model_name}s/{self.id}"
+        except AttributeError as e:
+            raise NotImplementedError from e
 
     @property
     def url(self) -> str:
-        return f"https://danbooru.donmai.us/{self.model_path}"
+        if self.model_path:
+            return f"https://danbooru.donmai.us/{self.model_path}"
+        raise NotImplementedError
 
     def delete(self) -> None:
-        self.api.danbooru_request("DELETE", endpoint=self.model_path)
+        from danboorutools.logical.sessions.danbooru import danbooru_api
+        danbooru_api.danbooru_request("DELETE", endpoint=self.model_path)
 
     @classmethod
     def from_id(cls, model_id: int) -> Self:
@@ -64,15 +52,11 @@ class DanbooruModel:
         json_data = danbooru_api.danbooru_request("GET", f"{cls.model_name}s/{model_id}.json")
         assert isinstance(json_data, dict)
         assert json_data["id"] == model_id
-        return cls(json_data)
+        return cls(**json_data)
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}[{self.url}]"
     __repr__ = __str__
-
-    def refresh(self) -> None:
-        new_post = self.from_id(self.id)
-        self.apply_json_data(new_post.json_data)
 
 
 class DanbooruPost(DanbooruModel):
@@ -80,46 +64,76 @@ class DanbooruPost(DanbooruModel):
 
     score: int
     md5: str
+    file_ext: str
     file_url: str
+
+    tag_string: str
+    tag_string_character: str
+    tag_string_copyright: str
+    tag_string_artist: str
+    tag_string_meta: str
 
     @property
     def source(self) -> Url | str:
         try:
-            return Url.parse(self.json_data["source"])
+            return Url.parse(self._raw_data["source"])
         except NotAnUrlError:
-            return self.json_data["source"]
+            return self._raw_data["source"]
 
-    def apply_json_data(self, json_data: dict) -> None:
-        super().apply_json_data(json_data)
-        self.tags: list[str] = json_data["tag_string"].split()
-        self.character_tags: list[str] = json_data["tag_string_character"].split()
-        self.copyright_tags: list[str] = json_data["tag_string_copyright"].split()
-        self.artist_tags: list[str] = json_data["tag_string_artist"].split()
-        self.meta_tags: list[str] = json_data["tag_string_meta"].split()
+    @property
+    def tags(self) -> list[str]:
+        return self.tag_string.split()
+
+    @property
+    def character_tags(self) -> list[str]:
+        return self.tag_string_character.split()
+
+    @property
+    def copyright_tags(self) -> list[str]:
+        return self.tag_string_copyright.split()
+
+    @property
+    def artist_tags(self) -> list[str]:
+        return self.tag_string_artist.split()
+
+    @property
+    def meta_tags(self) -> list[str]:
+        return self.tag_string_meta.split()
 
     def replace(self,
                 replacement_url: Url | str | None = None,
                 replacement_file: File | None = None,
                 final_source: Url | None = None,
-                refresh: bool = False
                 ) -> None:
+        from danboorutools.logical.sessions.danbooru import danbooru_api
         if not replacement_file:
             replacement_url = replacement_url or self.source
-        self.api.replace(self, replacement_url=replacement_url, replacement_file=replacement_file,
-                         final_source=final_source or replacement_url)
-        if refresh:
-            self.refresh()
+        danbooru_api.replace(self, replacement_url=replacement_url, replacement_file=replacement_file,
+                             final_source=final_source or replacement_url)
 
     @staticmethod
     def id_from_url(url: str) -> int:
         match = re.search(r"donmai\.us\/post(s|\/show)\/(?P<id>\d+)", url)
         try:
             assert match
-            return int(match.groupdict()["id"])
+            return int(match.groupdict()["id"])  # noqa: TRY300
         except Exception as e:
             e.add_note(f"Url: {url}")
             e.add_note(f"Match: {match}")
             raise
+
+    @property
+    def file(self) -> File:
+        raise NotImplementedError
+
+    @property
+    def is_animated(self) -> bool:
+        return "animated" in self.tags or "video" in self.tags or self.file_ext == "swf"
+
+
+class DanbooruIqdbMatch(DanbooruModel):
+    post: DanbooruPost
+    score: float
 
 
 class DanbooruUser(DanbooruModel):
@@ -132,9 +146,6 @@ class DanbooruUser(DanbooruModel):
     note_update_count: int
     post_upload_count: int
     is_banned: bool
-
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}[{self.name}]"
 
 
 class DanbooruComment(DanbooruModel):
@@ -173,11 +184,6 @@ class DanbooruPostVersion(DanbooruModel):
     def url(self) -> str:
         return f"https://danbooru.donmai.us/post_versions?search[id]={self.id}"
 
-    def apply_json_data(self, json_data: dict) -> None:
-        super().apply_json_data(json_data)
-        self.obsolete_removed_tags: list[str] = json_data["obsolete_removed_tags"].split()
-        self.obsolete_added_tags: list[str] = json_data["obsolete_added_tags"].split()
-
 
 class DanbooruArtist(DanbooruModel):
     model_name = "artist"
@@ -190,7 +196,7 @@ class DanbooruArtist(DanbooruModel):
     @property
     def urls(self) -> list[Url]:
         urls = []
-        for url_data in self.json_data["urls"]:
+        for url_data in self._raw_data["urls"]:
             url = Url.parse(url_data["url"])
             # url.is_deleted = not url_data["is_active"]
             urls.append(url)
@@ -212,10 +218,23 @@ class DanbooruTag(DanbooruModel):
     name: str
     post_count: int
     category: int
-    artist: DanbooruArtist
     is_deprecated: bool
-    wiki_page: DanbooruWikiPage
 
     @property
     def category_name(self) -> str:
         return CATEGORY_MAP[self.category]
+
+    @property
+    def artist(self) -> DanbooruArtist:
+        if "artist" in self._raw_data:
+            return DanbooruArtist(**self._raw_data["artist"])
+        raise NotImplementedError  # cache?
+
+    @property
+    def wiki_page(self) -> DanbooruWikiPage:
+        if "wiki_page" in self._raw_data:
+            return DanbooruWikiPage(**self._raw_data["wiki_page"])
+        raise NotImplementedError  # cache?
+
+
+DanbooruArtist.update_forward_refs()
