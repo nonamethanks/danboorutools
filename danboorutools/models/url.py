@@ -4,7 +4,6 @@ from __future__ import annotations
 from functools import cached_property, lru_cache
 from typing import TYPE_CHECKING, Self, TypeVar, final  # , get_type_hints
 
-import ring
 from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
 
@@ -34,10 +33,6 @@ class Url(metaclass=PseudoDataclass):
 
     parsed_url: ParsableUrl
 
-    @ring.lru()
-    def __new__(cls, *args, **kwargs):  # noqa: ARG003 # pylint: disable=W0613
-        return super().__new__(cls)
-
     def __init__(self, /, parsed_url: ParsableUrl, **url_properties):
         self.parsed_url = parsed_url
         self.url_properties = url_properties
@@ -62,7 +57,7 @@ class Url(metaclass=PseudoDataclass):
     def parse(cls, url: str | Url) -> Url:
         if isinstance(url, Url):
             return url
-        return UrlParser.parse(url) or UnknownUrl(parsed_url=ParsableUrl(url))  # type: ignore[arg-type] #false positive
+        return UrlParser.parse(url) or UnknownUrl(parsed_url=ParsableUrl(url))
 
     @cached_property
     def normalized_url(self) -> str:
