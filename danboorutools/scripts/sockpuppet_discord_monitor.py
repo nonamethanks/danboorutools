@@ -101,10 +101,10 @@ class SockpuppetDetector:
 
         embed = DiscordEmbed(title=sock.name, url=sock.url)
 
-        embed.description = f"[Sock of {other_users[0].name}]"
-        embed.description += f"({self.dapi.base_url}/user_events?search[user_session][session_id]={session_id})"
-        if other_users[1:]:
-            embed.description += f" and at least {len(other_users[1:])} other users"
+        first_sock, *other_socks = other_users
+        embed.description = f"[Sock of {first_sock.name}"
+        embed.description += f" and at least {len(other_socks)} other users" if other_socks else ""
+        embed.description += f"]({self.dapi.base_url}/user_events?search[user_session][session_id]={session_id})"
 
         if any(banned_users := [user for user in other_users if user.is_banned]):
             embed.color = 15158332
