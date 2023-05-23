@@ -36,6 +36,21 @@ class FantiaFanclubUrl(ArtistUrl, FantiaUrl):
         else:
             raise NotImplementedError
 
+    @property
+    def related(self) -> list[Url]:
+        links = self.html.select_one(".fanclub-comment").parent.select("a")
+        return [self.parse(link["href"]) for link in links]
+
+    @property
+    def primary_names(self) -> list[str]:
+        nickname = self.html.select_one(".single-fanclub #nickname")["value"]
+        assert nickname
+        return [nickname]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return []
+
 
 class FantiaFanclubAssetUrl(GalleryAssetUrl, FantiaUrl):
     fanclub_id: int

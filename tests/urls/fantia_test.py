@@ -1,5 +1,5 @@
 from danboorutools.logical.urls.fantia import FantiaFanclubAssetUrl, FantiaFanclubUrl, FantiaImageUrl, FantiaPostUrl
-from tests.urls import generate_parsing_suite
+from tests.urls import assert_artist_url, generate_parsing_suite
 
 urls = {
     FantiaFanclubUrl: {
@@ -32,8 +32,18 @@ urls = {
     },
     FantiaFanclubAssetUrl: {
         "https://c.fantia.jp/uploads/fanclub/cover_image/319092/main_webp_40d41997-fa92-42fa-94d4-93bd9904db32.webp": "https://c.fantia.jp/uploads/fanclub/cover_image/319092/40d41997-fa92-42fa-94d4-93bd9904db32.jpg",
-    }
+    },
 }
 
 
 generate_parsing_suite(urls)
+
+
+assert_artist_url(
+    url="https://fantia.jp/fanclubs/483760",
+    url_type=FantiaFanclubUrl,
+    url_properties=dict(fanclub_id=483760),
+    related=["https://twitter.com/nirvana_ppp", "https://www.pixiv.net/en/users/9654202"],
+    primary_names=["enanthate"],
+    secondary_names=[],
+)

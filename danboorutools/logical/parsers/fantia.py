@@ -1,11 +1,15 @@
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.fantia import FantiaFanclubAssetUrl, FantiaFanclubUrl, FantiaImageUrl, FantiaPostUrl, FantiaUrl
+from danboorutools.models.url import UselessUrl
 
 
 class FantiaJpParser(UrlParser):
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> FantiaUrl | None:
+    def match_url(cls, parsable_url: ParsableUrl) -> FantiaUrl | UselessUrl | None:
+        if parsable_url.subdomain == "help":
+            return UselessUrl(parsable_url)
+
         match parsable_url.url_parts:
             # posts:
             # https://c.fantia.jp/uploads/post/file/1070093/main_16faf0b1-58d8-4aac-9e86-b243063eaaf1.jpeg (sample)
