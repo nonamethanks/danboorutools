@@ -17,6 +17,21 @@ class KoFiArtistUrl(ArtistUrl, KoFiUrl):
 
     normalize_template = "https://ko-fi.com/{username}"
 
+    @property
+    def related(self) -> list[Url]:
+        profile_box = self.html.select_one(".profile-page-tile")
+
+        links = [link["href"] for link in profile_box.select(".social-link a, .social-profile-link a")]
+        return [self.parse(link) for link in links]
+
+    @property
+    def primary_names(self) -> list[str]:
+        return [self.html.select_one(".kfds-text-limit-profilename-mobile span").text]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [self.username]
+
 
 class KoFiPostUrl(PostUrl, KoFiUrl):
     post_id: str

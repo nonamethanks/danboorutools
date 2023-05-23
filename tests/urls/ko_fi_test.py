@@ -1,5 +1,5 @@
 from danboorutools.logical.urls.ko_fi import KoFiArtistUrl, KoFiImageUrl, KoFiPostUrl, KofiShopPostUrl
-from tests.urls import generate_parsing_suite
+from tests.urls import assert_artist_url, generate_parsing_suite
 
 urls = {
     KoFiArtistUrl: {
@@ -23,3 +23,12 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+assert_artist_url(
+    url="https://ko-fi.com/ririko_riri",
+    url_type=KoFiArtistUrl,
+    url_properties=dict(username="ririko_riri"),
+    related=["https://ririkos-commissions.carrd.co/", "https://twitter.com/Ririko_Ri_Ri", "https://www.twitch.tv/Ririko_Riri"],
+    primary_names=["Riri 🌧️"],
+    secondary_names=["ririko_riri"],
+)
