@@ -9,6 +9,7 @@ from danboorutools.logical.urls import fanbox as f
 from danboorutools.logical.urls import pixiv as p
 from danboorutools.logical.urls import pixiv_comic as c
 from danboorutools.logical.urls import pixiv_sketch as s
+from danboorutools.models.url import UselessUrl
 
 img_subdomain_pattern = re.compile(r"^i(?:mg)?\d*$")
 
@@ -127,6 +128,9 @@ class PixivNetParser(UrlParser):
             case *_, "novel", "series", series_id:
                 return p.PixivNovelSeriesUrl(parsed_url=parsable_url,
                                              series_id=int(series_id))
+
+            case "dashboard", :
+                return UselessUrl(parsed_url=parsable_url)
 
             case _:
                 # https://www.pixiv.net/contest/neuralcloud
