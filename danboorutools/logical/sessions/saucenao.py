@@ -60,8 +60,9 @@ class SaucenaoSession(Session):
                     subresults.append(subresult)
                 continue
 
-            result_data = result["data"]
-            for external_url in result_data["ext_urls"]:
+            if not (external_urls := result["data"].get("ext_urls")):
+                continue
+            for external_url in external_urls:
                 match_url = Url.parse(external_url)
 
                 # the following is required to avoid getting the updated url for old pixiv urls, which would be expensive and useless
@@ -80,7 +81,7 @@ class SaucenaoSession(Session):
             return self.__merge_results(*subresults) if subresults else None  # pylint: disable=no-value-for-parameter
 
         if isinstance(match_url, PixivUrl):
-            saucenao_result = self.__parse_pixiv_result(result_data)
+            saucenao_result = self.__parse_pixiv_result(result["data"])
         else:
             raise NotImplementedError(match_url)
 
