@@ -19,17 +19,17 @@ create_url_template = "danboorutools.scripts.create_url_template:main"
 python = "^3.11"
 requests = "^2.31.0"
 python-dateutil = "^2.8.2"
-click = "^8.1.6"
+click = "^8.1.7"
 loguru = "^0.6.0"
 python-dotenv = "^0.21.1"
-selenium = "^4.10.0"
+selenium = "^4.12.0"
 pytz = "^2022.7.1"
 filetype = "^1.2.0"
 beautifulsoup4 = "^4.12.2"
 html5lib = "^1.1"
-ipython = "^8.14.0"
+ipython = "^8.15.0"
 setuptools = "^67.8.0"
-peewee = "^3.16.2"
+peewee = "^3.16.3"
 python-twitter = "^3.5"
 backoff = "^2.2.1"
 pykakasi = "^2.2.1"
@@ -43,19 +43,19 @@ deviantart = "^0.1.5"
 ring = "^0.10.1"
 pillow = "^9.5.0"
 imagehash = "^4.3.1"
-discord-webhook = "^1.2.0"
+discord-webhook = "^1.3.0"
 urllib3 = "<2.0.0"
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.31.0.2"
-pylint = "^2.17.4"
+pylint = "^2.17.5"
 types-python-dateutil = "^2.8.19.14"
-mypy = "^1.4.1"
-autopep8 = "^2.0.2"
+mypy = "^1.5.1"
+autopep8 = "^2.0.4"
 types-pkg-resources = "^0.1.3"
 types-pytz = "^2022.7.1.2"
 pyinstrument = "^4.5.1"
-line-profiler = "^4.0.3"
+line-profiler = "^4.1.1"
 ruff = "^0.0.254"
 
 [tool.poetry.group.test.dependencies]
@@ -91,59 +91,59 @@ warn_unused_ignore = true
 enable_incomplete_feature = "Unpack"
 
 [tool.ruff]
-line-length=140
+line-length = 140
 select = ["ALL"]
 ignore = [
-    "ANN002",   # Missing type annotation for *args
-    "ANN003",   # Missing type annotation for **kwargs
-    "ANN101",   # missing type annotation for self
-    "ANN102",   # missing type annotation for cls
-    "ANN204",   # missing return type for special methods
-    "D",        # docstrings
-    "EM101",    # Exception must not use a string literal, assign to variable first
-    "EM102",    # Exception must not use an f-string literal
-    "ERA001",   # found commented-out code
-    "FBT",      # flake8-boolean-trap
-    "G004",     # Logging statement uses f-string
-    "PLR2004",  # allow-magic-value-types
-    "PT",       # pytest style
-    "RET504",   # Unnecessary variable assignment before `return` statement
-    "RET505",   # Unnecessary `else` after `return` statement
-    "RET506",   # Unnecessary `else` after `raise` statement
-    "RUF001",   # allowed-confusables
-    "RUF003",   # Comment contains ambiguous unicode character
-    "S101",     # assert detected
-    "SIM105",   # Use `contextlib.suppress(KeyError)` instead of try-except-pass
-    "SIM114",   # Combine `if` branches using logical `or` operator
-    "SLF001",   # Private member accessed
-    "TRY003",   # Avoid specifying long messages outside the exception class
+    "ANN002",  # Missing type annotation for *args
+    "ANN003",  # Missing type annotation for **kwargs
+    "ANN101",  # missing type annotation for self
+    "ANN102",  # missing type annotation for cls
+    "ANN204",  # missing return type for special methods
+    "D",       # docstrings
+    "EM101",   # Exception must not use a string literal, assign to variable first
+    "EM102",   # Exception must not use an f-string literal
+    "ERA001",  # found commented-out code
+    "FBT",     # flake8-boolean-trap
+    "G004",    # Logging statement uses f-string
+    "PLR2004", # allow-magic-value-types
+    "PT",      # pytest style
+    "RET504",  # Unnecessary variable assignment before `return` statement
+    "RET505",  # Unnecessary `else` after `return` statement
+    "RET506",  # Unnecessary `else` after `raise` statement
+    "RUF001",  # allowed-confusables
+    "RUF003",  # Comment contains ambiguous unicode character
+    "S101",    # assert detected
+    "SIM105",  # Use `contextlib.suppress(KeyError)` instead of try-except-pass
+    "SIM114",  # Combine `if` branches using logical `or` operator
+    "SLF001",  # Private member accessed
+    "TRY003",  # Avoid specifying long messages outside the exception class
 ]
 
 [tool.ruff.per-file-ignores]
 "tests/*" = [
-    "C408",     # unnecessary dict/list/tuple call
-    "E501",     # max-line-length
-    "S101",     # use of assert
+    "C408", # unnecessary dict/list/tuple call
+    "E501", # max-line-length
+    "S101", # use of assert
 ]
 "danboorutools/logical/sessions/*" = [
-    "A003",     # shadowing builtin variables like id can't be helped for api responsese
-    "N815",     # camelCase properties from api responses
-    "TCH003",   # TYPE_CHECKING suggestions, interferes with pydantic
+    "A003",   # shadowing builtin variables like id can't be helped for api responsese
+    "N815",   # camelCase properties from api responses
+    "TCH003", # TYPE_CHECKING suggestions, interferes with pydantic
 ]
 
 "danboorutools/logical/parsers/*" = [
-    "E501",     # line too long
-    "PLR0911",  # too many returns
+    "E501",    # line too long
+    "PLR0911", # too many returns
 ]
 
 [tool.pycodestyle]
 max-line-length = 140
 
 [tool.pylint]
-disable=[
-    "assignment-from-no-return",  # pylint is too fucking retarded to understand when a function is just a fucking stub under a fucking type checking block
+disable = [
+    "assignment-from-no-return",    # pylint is too fucking retarded to understand when a function is just a fucking stub under a fucking type checking block
     "broad-except",
-    "import-outside-toplevel",   # there are legitimate cases and i'm experienced enough to know when not to do this
+    "import-outside-toplevel",      # there are legitimate cases and i'm experienced enough to know when not to do this
     "missing-class-docstring",
     "missing-function-docstring",
     "missing-module-docstring",
@@ -151,7 +151,7 @@ disable=[
     "no-else-continue",
     "no-else-raise",
     "no-else-return",
-    "no-member", # too many stupid false positives: https://github.com/PyCQA/pylint/issues/4693
+    "no-member",                    # too many stupid false positives: https://github.com/PyCQA/pylint/issues/4693
     "protected-access",
     "too-few-public-methods",
     "too-many-arguments",
@@ -163,17 +163,11 @@ disable=[
 ]
 
 [tool.pylint.FORMAT]
-ignore-long-lines= '^\s*(# )?"?<?https?:\/\/\S+>?'
-max-line-length=140
-good-names=[
-    "e",
-    "id"
-]
+ignore-long-lines = '^\s*(# )?"?<?https?:\/\/\S+>?'
+max-line-length = 140
+good-names = ["e", "id"]
 
 
 [tool.pylint."MESSAGES CONTROL"]
-enable="useless-suppression"
-extension-pkg-whitelist = [
-    "_testcapi",
-    "pydantic",
-]
+enable = "useless-suppression"
+extension-pkg-whitelist = ["_testcapi", "pydantic"]
