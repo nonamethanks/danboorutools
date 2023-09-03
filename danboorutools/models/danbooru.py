@@ -249,9 +249,21 @@ class DanbooruUserEvent(DanbooruModel):
 
 
 class DanbooruUserSession(DanbooruModel):
+    model_name = "user_session"
+
     ip_addr: str
     session_id: str
     user_agent: str
+
+
+class DanbooruBan(DanbooruModel):
+    model_name = "ban"
+
+    reason: str
+    duration: int
+
+    user: DanbooruUser
+    banner: DanbooruUser
 
 
 DanbooruArtist.update_forward_refs()

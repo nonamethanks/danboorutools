@@ -6,6 +6,7 @@ authors = ["nonamethanks <nonamethanks@nonamethanks.xyz>"]
 
 [tool.poetry.scripts]
 create_artist_tags = "danboorutools.scripts.create_artist_tags:main"
+rename_socks = "danboorutools.scripts.rename_socks:main"
 nuke_tag_edits = "danboorutools.scripts.nuke_tag_edits:main"
 nuke_votes = "danboorutools.scripts.nuke_votes:main"
 test_parsing = "danboorutools.scripts.test_parsing:main"

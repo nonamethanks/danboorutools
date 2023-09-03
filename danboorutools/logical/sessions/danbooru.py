@@ -47,6 +47,7 @@ class DanbooruApi(Session):
 
     only_string_defaults = {
         "artist": "id,created_at,name,other_names,is_deleted,is_banned,tag,urls",
+        "ban": "id,created_at,duration,reason,user,banner",
         "comment_vote": "id,created_at,score,is_deleted,user,comment",
         "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
         "post_vote": "id,created_at,score,is_deleted,user,post",
@@ -125,6 +126,9 @@ class DanbooruApi(Session):
 
     def artists(self, **kwargs) -> list[models.DanbooruArtist]:
         return self._generic_endpoint(models.DanbooruArtist, **kwargs)
+
+    def bans(self, **kwargs) -> list[models.DanbooruBan]:
+        return self._generic_endpoint(models.DanbooruBan, **kwargs)
 
     def comment_votes(self, **kwargs) -> list[models.DanbooruCommentVote]:
         return self._generic_endpoint(models.DanbooruCommentVote, **kwargs)
@@ -245,6 +249,13 @@ class DanbooruApi(Session):
     def iqdb_search(self, url: str) -> list[models.DanbooruIqdbMatch]:
         data = self.danbooru_request("GET", "iqdb_queries.json", params={"url": url})
         return [models.DanbooruIqdbMatch(**match) for match in data]
+
+    def rename_user(self, user_id: int, new_name: str) -> None:
+        data = {
+            "user_id": user_id,
+            "desired_name": new_name,
+        }
+        self.danbooru_request("POST", "user_name_change_requests", json=data)
 
 
 def kwargs_to_include(**kwargs) -> dict:
