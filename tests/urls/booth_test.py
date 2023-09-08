@@ -37,3 +37,12 @@ assert_artist_url(
     secondary_names=["synindx-73train"],
     related=["https://skeb.jp/@synindx_73train", "https://twitter.com/synindx_73train", "https://www.pixiv.net/en/users/13678408"],
 )
+
+assert_artist_url(  # private
+    "https://oriruriro.booth.pm/",
+    b.BoothArtistUrl,
+    url_properties=dict(username="oriruriro"),
+    primary_names=[],
+    secondary_names=["oriruriro"],
+    related=[],
+)

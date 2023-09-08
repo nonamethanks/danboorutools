@@ -39,6 +39,8 @@ class BoothArtistUrl(ArtistUrl, BoothUrl):
 
     @property
     def primary_names(self) -> list[str]:
+        if self.private:
+            return []
         return [self.html.select_one(".home-link-container__nickname a").text]
 
     @property
@@ -50,9 +52,15 @@ class BoothArtistUrl(ArtistUrl, BoothUrl):
 
     @property
     def related(self) -> list[Url]:
+        if self.private:
+            return []
         if not (url_els := self.html.select(".shop-contacts__link a")):
             raise NotImplementedError(self)
         return [Url.parse(el["href"]) for el in url_els if el["href"].startswith("http")]
+
+    @property
+    def private(self) -> bool:
+        return "Currently, this shop is private" in str(self.html)
 
 
 class BoothImageUrl(PostAssetUrl, BoothUrl):
