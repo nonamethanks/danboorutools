@@ -8,7 +8,7 @@ from danboorutools.logical.urls.toranoana import (
     ToranoanaOldCircleUrl,
     ToranoanaWebcomicPageUrl,
 )
-from tests.urls import assert_post_url, generate_parsing_suite
+from tests.urls import assert_artist_url, assert_post_url, generate_parsing_suite
 
 urls = {
     ToranoanaItemUrl: {
@@ -58,4 +58,13 @@ assert_post_url(
     url_type=ToranoanaItemUrl,
     url_properties=dict(item_id="040030823758", subdirs="tora_r/ec", subsite="ec"),
     gallery="https://ec.toranoana.jp/tora_r/ec/app/catalog/list?searchActorName=mignon",
+)
+
+assert_artist_url(
+    "https://ec.toranoana.jp/joshi_r/ec/cot/circle/2UPADB6Q8673dA6Td687/all/",
+    url_properties=dict(subsite="ec", subdirs="joshi_r/ec/cot", circle_id="2UPADB6Q8673dA6Td687"),
+    url_type=ToranoanaCircleUrl,
+    primary_names=[],
+    secondary_names=["ぎゃくさんかく"],
+    related=[],
 )

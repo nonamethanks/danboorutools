@@ -35,6 +35,23 @@ class ToranoanaCircleUrl(ArtistUrl, ToranoanaUrl):
 
     normalize_template = "https://{subsite}.toranoana.jp/{subdirs}/circle/{circle_id}/all/"
 
+    @property
+    def related(self) -> list[Url]:
+        return []
+
+    @property
+    def primary_names(self) -> list[str]:
+        return []
+
+    @property
+    def secondary_names(self) -> list[str]:
+        title = self.html.select_one("meta[property='og:title']")["content"]
+        name_match = re.search(r"▼\((.*)\)", title)
+        assert name_match, title
+        name, = name_match.groups()
+        assert name, title
+        return [name]
+
 
 class ToranoanaArtistUrl(ArtistUrl, ToranoanaUrl):
     artist_type: str
