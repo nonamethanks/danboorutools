@@ -16,6 +16,7 @@ from backoff import constant, on_exception
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from cloudscraper import CloudScraper as _CloudScraper
 from cloudscraper.exceptions import CloudflareChallengeError
+from fake_useragent import UserAgent
 from pyrate_limiter.limiter import Limiter, RequestRate
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
@@ -36,14 +37,14 @@ if TYPE_CHECKING:
 class Session(_CloudScraper):
     DISABLE_AUTOMATIC_CACHE = False
     DEFAULT_HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+        "User-Agent": UserAgent().chrome,
         "Cache-Control": "no-cache, no-store, no-transform",
     }
     DEFAULT_TIMEOUT = 5
     MAX_CALLS_PER_SECOND: int | float = 3
 
     @ring.lru()
-    def __new__(cls, *args, **kwargs):  # noqa: ARG003 # pylint: disable=W0613
+    def __new__(cls, *args, **kwargs):  # noqa: ARG003
         return super().__new__(cls)
 
     def __str__(self) -> str:  # needed for ring.lru()

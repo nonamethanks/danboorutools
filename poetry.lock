@@ -543,6 +543,18 @@ files = [
 tests = ["asttokens", "littleutils", "pytest", "rich"]
 
 [[package]]
+name = "fake-useragent"
+version = "1.2.1"
+description = "Up-to-date simple useragent faker with real world database"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "fake-useragent-1.2.1.tar.gz", hash = "sha256:b411f903331f695e3840ccadcf011f745a405764e97c588f2b8fde9e400a5446"},
+    {file = "fake_useragent-1.2.1-py3-none-any.whl", hash = "sha256:ad2b5414d19493d0789572f04200d4f656f84d20b205cc805233212957fe385d"},
+]
+
+[[package]]
 name = "filetype"
 version = "1.2.0"
 description = "Infer file type and MIME type of any file/buffer. No external dependencies."
@@ -2610,4 +2622,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "c8aa241b16b595e49f90f5663f5115c7dfac9f7a9afcbd5fe8f1269f5c33cab4"
+content-hash = "5a4b8ca9a5e23e96c3759f55037c8d8590ed9dff560d9a5618dd1511adda3cf3"
