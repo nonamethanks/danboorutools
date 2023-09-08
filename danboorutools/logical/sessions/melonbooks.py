@@ -14,12 +14,8 @@ if TYPE_CHECKING:
 class CypherAdapter(HTTPAdapter):
     """A TransportAdapter that enables weak cyphers."""
 
-    # Adapted from https://stackoverflow.com/a/46186957/11558993
-    CIPHERS = (
-        "ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+HIGH:"
-        "DH+HIGH:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+HIGH:RSA+3DES:!aNULL:"
-        "!eNULL:!MD5"
-    )
+    # Adapted from https://stackoverflow.com/a/63349178/7376511
+    CIPHERS = "ALL:@SECLEVEL=1"
 
     def init_poolmanager(self, *args, **kwargs) -> Any:  # noqa: ANN401
         """Initialize a urllib3 PoolManager."""
