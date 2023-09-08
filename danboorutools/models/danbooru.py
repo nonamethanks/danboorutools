@@ -5,8 +5,6 @@ from datetime import datetime
 from functools import cached_property
 from typing import ClassVar, Self
 
-from pydantic import validator
-
 from danboorutools.exceptions import NotAnUrlError
 from danboorutools.models.file import File
 from danboorutools.models.url import Url
@@ -24,15 +22,15 @@ CATEGORY_MAP = {
 class DanbooruModel(BaseModel):
     id: int  # noqa: A003
     created_at: datetime | None
-    updated_at: datetime | None
+    updated_at: datetime | None = None
     is_deleted: bool = False
 
-    model_name: ClassVar[str | None] = None
+    danbooru_model_name: ClassVar[str | None] = None
 
     @property
     def model_path(self) -> str:
         try:
-            return f"{self.model_name}s/{self.id}"
+            return f"{self.danbooru_model_name}s/{self.id}"
         except AttributeError as e:
             raise NotImplementedError from e
 
@@ -49,7 +47,7 @@ class DanbooruModel(BaseModel):
     @classmethod
     def from_id(cls, model_id: int) -> Self:
         from danboorutools.logical.sessions.danbooru import danbooru_api
-        json_data = danbooru_api.danbooru_request("GET", f"{cls.model_name}s/{model_id}.json")
+        json_data = danbooru_api.danbooru_request("GET", f"{cls.danbooru_model_name}s/{model_id}.json")
         assert isinstance(json_data, dict)
         assert json_data["id"] == model_id
         return cls(**json_data)
@@ -60,13 +58,13 @@ class DanbooruModel(BaseModel):
 
     @classmethod
     def id_from_url(cls, url: str) -> int:
-        if not cls.model_name:
+        if not cls.danbooru_model_name:
             raise NotImplementedError
 
-        match = re.search(rf"donmai\.us\/{cls.model_name}(s|\/show)\/(?P<id>\d+)", url)
+        match = re.search(rf"donmai\.us\/{cls.danbooru_model_name}(s|\/show)\/(?P<id>\d+)", url)
         try:
             assert match
-            return int(match.groupdict()["id"])  # noqa: TRY300
+            return int(match.groupdict()["id"])
         except Exception as e:
             e.add_note(f"Url: {url}")
             e.add_note(f"Match: {match}")
@@ -74,7 +72,7 @@ class DanbooruModel(BaseModel):
 
 
 class DanbooruPost(DanbooruModel):
-    model_name = "post"
+    danbooru_model_name = "post"
 
     score: int
     md5: str
@@ -140,7 +138,7 @@ class DanbooruIqdbMatch(DanbooruModel):
 
 
 class DanbooruUser(DanbooruModel):
-    model_name = "user"
+    danbooru_model_name = "user"
 
     name: str
     level: int
@@ -152,14 +150,14 @@ class DanbooruUser(DanbooruModel):
 
 
 class DanbooruComment(DanbooruModel):
-    model_name = "comment"
+    danbooru_model_name = "comment"
 
     user: DanbooruUser
     post: DanbooruPost
 
 
 class DanbooruPostVote(DanbooruModel):
-    model_name = "post_vote"
+    danbooru_model_name = "post_vote"
 
     post: DanbooruPost
     user: DanbooruUser
@@ -167,7 +165,7 @@ class DanbooruPostVote(DanbooruModel):
 
 
 class DanbooruCommentVote(DanbooruModel):
-    model_name = "comment_vote"
+    danbooru_model_name = "comment_vote"
 
     comment: DanbooruComment
     user: DanbooruUser
@@ -175,7 +173,7 @@ class DanbooruCommentVote(DanbooruModel):
 
 
 class DanbooruPostVersion(DanbooruModel):
-    model_name = "post_version"
+    danbooru_model_name = "post_version"
 
     updater: DanbooruUser
     post: DanbooruPost
@@ -189,7 +187,7 @@ class DanbooruPostVersion(DanbooruModel):
 
 
 class DanbooruArtist(DanbooruModel):
-    model_name = "artist"
+    danbooru_model_name = "artist"
 
     name: str
     is_banned: bool
@@ -207,7 +205,7 @@ class DanbooruArtist(DanbooruModel):
 
 
 class DanbooruWikiPage(DanbooruModel):
-    model_name = "wiki_page"
+    danbooru_model_name = "wiki_page"
 
     title: str
     body: str
@@ -216,7 +214,7 @@ class DanbooruWikiPage(DanbooruModel):
 
 
 class DanbooruTag(DanbooruModel):
-    model_name = "tag"
+    danbooru_model_name = "tag"
 
     name: str
     post_count: int
@@ -241,7 +239,7 @@ class DanbooruTag(DanbooruModel):
 
 
 class DanbooruUserEvent(DanbooruModel):
-    model_name = "user_event"
+    danbooru_model_name = "user_event"
 
     category: str
     user_session: DanbooruUserSession
@@ -249,7 +247,7 @@ class DanbooruUserEvent(DanbooruModel):
 
 
 class DanbooruUserSession(DanbooruModel):
-    model_name = "user_session"
+    danbooru_model_name = "user_session"
 
     ip_addr: str
     session_id: str
@@ -257,7 +255,7 @@ class DanbooruUserSession(DanbooruModel):
 
 
 class DanbooruBan(DanbooruModel):
-    model_name = "ban"
+    danbooru_model_name = "ban"
 
     reason: str
     duration: int

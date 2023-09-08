@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from pydantic import validator
+from pydantic import field_validator
 
 from danboorutools.logical.sessions import Session
 from danboorutools.util.misc import BaseModel
@@ -48,8 +48,9 @@ class FantiaPostData(BaseModel):
     thumb: dict
     post_contents: list[dict]
 
-    @validator("posted_at", pre=True)
-    def parse_created_at(cls, value: str) -> datetime:  # pylint: disable=no-self-argument # noqa: N805 # pydantic is retarded
+    @field_validator("posted_at", mode="before")
+    @classmethod
+    def parse_created_at(cls, value: str) -> datetime:
         return datetime_from_string(value)
 
     @property

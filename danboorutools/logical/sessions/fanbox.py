@@ -3,6 +3,8 @@ from __future__ import annotations
 import os
 from datetime import datetime
 
+from pydantic import ConfigDict
+
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
@@ -40,9 +42,7 @@ class FanboxArtistData(BaseModel):
     user: _UserData
     profileLinks: list[str]
     creatorId: str  # url username
-
-    class Config:
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
     @property
     def related_urls(self) -> list[Url]:

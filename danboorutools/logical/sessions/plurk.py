@@ -5,7 +5,7 @@ from datetime import datetime
 from functools import cached_property
 
 import ring
-from pydantic import validator
+from pydantic import field_validator
 from requests_oauthlib import OAuth1
 
 from danboorutools.logical.sessions import Session
@@ -66,8 +66,9 @@ class PlurkPostData(BaseModel):
 
     content_raw: str
 
-    @validator("posted", pre=True)
-    def parse_posted(cls, value: str) -> datetime:  # pylint: disable=no-self-argument # noqa: N805 # pydantic is retarded
+    @field_validator("posted", mode="before")
+    @classmethod
+    def parse_posted(cls, value: str) -> datetime:
         return datetime_from_string(value)
 
     @property

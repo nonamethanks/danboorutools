@@ -119,9 +119,10 @@ class DanbooruApi(Session):
         return [models.DanbooruUser(**user_data) for user_data in response]
 
     def _generic_endpoint(self, model_type: type[GenericModel], **kwargs) -> list[GenericModel]:
-        only_string = self.only_string_defaults.get(model_type.model_name)
+        assert model_type.danbooru_model_name
+        only_string = self.only_string_defaults.get(model_type.danbooru_model_name)
         params = kwargs_to_include(**kwargs, only=only_string)
-        response = self.danbooru_request("GET", f"{model_type.model_name}s.json", params=params)
+        response = self.danbooru_request("GET", f"{model_type.danbooru_model_name}s.json", params=params)
         return [model_type(**model_data) for model_data in response]
 
     def artists(self, **kwargs) -> list[models.DanbooruArtist]:

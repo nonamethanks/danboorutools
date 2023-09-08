@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import ring
 import twitter
-from pydantic import validator
+from pydantic import field_validator
 
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
@@ -103,8 +103,9 @@ class TwitterTweetData(BaseModel):
 
     user: TwitterUserData
 
-    @validator("created_at", pre=True)
-    def parse_created_at(cls, value: str) -> datetime:  # pylint: disable=no-self-argument # noqa: N805 # pydantic is retarded
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def parse_created_at(cls, value: str) -> datetime:
         return datetime_from_string(value)
 
     @property

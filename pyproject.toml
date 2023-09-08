@@ -21,31 +21,32 @@ python = "^3.11"
 requests = "^2.31.0"
 python-dateutil = "^2.8.2"
 click = "^8.1.7"
-loguru = "^0.6.0"
-python-dotenv = "^0.21.1"
+loguru = "^0.7.1"
+python-dotenv = "^1.0.0"
 selenium = "^4.12.0"
-pytz = "^2022.7.1"
+pytz = "^2023.3.post1"
 filetype = "^1.2.0"
 beautifulsoup4 = "^4.12.2"
 html5lib = "^1.1"
 ipython = "^8.15.0"
-setuptools = "^67.8.0"
+setuptools = "^68.2.0"
 peewee = "^3.16.3"
 python-twitter = "^3.5"
 backoff = "^2.2.1"
 pykakasi = "^2.2.1"
 unidecode = "^1.3.6"
-pydantic = "^1.10.12"
+pydantic = "^2.3.0"
 mastodon-py = "^1.8.1"
 cloudscraper = "^1.2.71"
-pyrate-limiter = "^2.10.0"
+pyrate-limiter = "<3.0.0"
 requests-oauthlib = "^1.3.1"
 deviantart = "^0.1.5"
 ring = "^0.10.1"
-pillow = "^9.5.0"
+pillow = "^10.0.0"
 imagehash = "^4.3.1"
 discord-webhook = "^1.3.0"
-urllib3 = "<2.0.0"
+urllib3 = "^2.0.4"
+bump-pydantic = "^0.6.1"
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.31.0.2"
@@ -54,10 +55,10 @@ types-python-dateutil = "^2.8.19.14"
 mypy = "^1.5.1"
 autopep8 = "^2.0.4"
 types-pkg-resources = "^0.1.3"
-types-pytz = "^2022.7.1.2"
-pyinstrument = "^4.5.1"
+types-pytz = "^2023.3.0.1"
+pyinstrument = "^4.5.3"
 line-profiler = "^4.1.1"
-ruff = "^0.0.254"
+ruff = "^0.0.287"
 
 [tool.poetry.group.test.dependencies]
 ward = "^0.67.2b0"
@@ -88,10 +89,10 @@ no_pretty = true
 show_column_numbers = true
 show_error_codes = true
 strict_equality = true
-warn_unused_ignore = true
 enable_incomplete_feature = "Unpack"
 
 [tool.ruff]
+target-version = "py311"
 line-length = 140
 select = ["ALL"]
 ignore = [

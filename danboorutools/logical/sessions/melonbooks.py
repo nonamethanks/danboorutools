@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from requests.adapters import HTTPAdapter
-from urllib3.util.ssl_ import DEFAULT_CIPHERS, create_urllib3_context
+from urllib3.util.ssl_ import create_urllib3_context
 
 from danboorutools.logical.sessions import Session
 
@@ -15,7 +15,11 @@ class CypherAdapter(HTTPAdapter):
     """A TransportAdapter that enables weak cyphers."""
 
     # Adapted from https://stackoverflow.com/a/46186957/11558993
-    CIPHERS = DEFAULT_CIPHERS + "HIGH:!DH:!aNULL"
+    CIPHERS = (
+        "ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+HIGH:"
+        "DH+HIGH:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+HIGH:RSA+3DES:!aNULL:"
+        "!eNULL:!MD5"
+    )
 
     def init_poolmanager(self, *args, **kwargs) -> Any:  # noqa: ANN401
         """Initialize a urllib3 PoolManager."""
