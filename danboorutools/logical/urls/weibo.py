@@ -53,15 +53,6 @@ class WeiboArtistUrl(ArtistUrl, WeiboUrl):
         )
 
     @property
-    def is_deleted(self) -> bool:
-        try:
-            _ = self.artist_data
-        except DeadUrlError:
-            return True
-        else:
-            return False
-
-    @property
     def primary_names(self) -> list[str]:
         names = []
         if self.screen_name:

@@ -82,15 +82,6 @@ class MastodonWebIdUrl(InfoUrl, MastodonUrl):
     def secondary_names(self) -> list[str]:
         return self.artist_url.secondary_names
 
-    @property
-    def is_deleted(self) -> bool:
-        try:
-            _ = self.artist_data
-        except DeadUrlError:
-            return True
-        else:
-            return False
-
 
 class MastodonOldImageUrl(RedirectUrl, MastodonUrl):
     filename: str
