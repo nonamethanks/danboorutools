@@ -38,6 +38,15 @@ assert_artist_url(
     related=["https://skeb.jp/@synindx_73train", "https://twitter.com/synindx_73train", "https://www.pixiv.net/en/users/13678408"],
 )
 
+assert_artist_url(  # another type of links
+    "https://harawatamgmg.booth.pm/",
+    b.BoothArtistUrl,
+    url_properties=dict(username="harawatamgmg"),
+    primary_names=["wata"],
+    secondary_names=["harawatamgmg"],
+    related=["https://www.pixiv.net/users/1337738"],
+)
+
 assert_artist_url(  # private
     "https://oriruriro.booth.pm/",
     b.BoothArtistUrl,

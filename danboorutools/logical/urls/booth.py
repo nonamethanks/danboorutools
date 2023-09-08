@@ -54,7 +54,7 @@ class BoothArtistUrl(ArtistUrl, BoothUrl):
     def related(self) -> list[Url]:
         if self.private:
             return []
-        if not (url_els := self.html.select(".shop-contacts__link a")):
+        if not (url_els := self.html.select(".shop-contacts__link a, a:has(> .shop__text--link)")):
             raise NotImplementedError(self)
         return [Url.parse(el["href"]) for el in url_els if el["href"].startswith("http")]
 
