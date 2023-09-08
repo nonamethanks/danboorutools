@@ -73,12 +73,17 @@ class PixivArtistData(BaseModel):
     user_name: str
     user_account: str
     fanbox_details: dict[str, str] | None
-    social: dict[str, dict[str, str]]
+    social: dict[str, dict[str, str]] | list
     user_webpage: str | None
 
     @property
     def related_urls(self) -> list[Url]:
-        urls = [Url.parse(url_dict["url"]) for url_dict in self.social.values()]
+        if isinstance(self.social, list):
+            urls = []
+            if self.social:
+                raise NotImplementedError(self.social)  # I assume it can only be a list if it's empty, otherwise they changed something
+        else:
+            urls = [Url.parse(url_dict["url"]) for url_dict in self.social.values()]
 
         if self.fanbox_details:
             urls += [FanboxArtistUrl.build(username=self.fanbox_details["creator_id"])]
