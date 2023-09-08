@@ -1,7 +1,5 @@
 {
     "python.linting.flake8Enabled": false,
-    "python.linting.mypyEnabled": true,
-    "python.linting.pylintEnabled": true,
     "terminal.integrated.profiles.linux": {
         "tools shell": {
             "overrideName": true,
@@ -35,6 +33,12 @@
     },
     "ruff.importStrategy": "fromEnvironment",
     "python.analysis.logLevel": "Trace",
-    "python.linting.pylintCategorySeverity.convention": "Warning",
-    "python.linting.pylintCategorySeverity.refactor": "Warning",
+    "ruff.args": [
+        "--config=${workspaceFolder}/pyproject.toml"
+    ],
+    "pylint.severity": {
+        "convention": "Warning",
+        "refactor": "Warning",
+        "info": "Warning"
+    },
 }
