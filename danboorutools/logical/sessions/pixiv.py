@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
 
@@ -72,7 +72,7 @@ class PixivArtistData(BaseModel):
     user_id: int
     user_name: str
     user_account: str
-    fanbox_details: dict[str, str] | None
+    fanbox_details: dict[str, str | Literal[False]] | None   # cover_image_url can be false
     social: dict[str, dict[str, str]] | list
     user_webpage: str | None
 
