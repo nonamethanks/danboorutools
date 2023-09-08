@@ -1,3 +1,4 @@
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.weibo import WeiboSession, WeiboUserData
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
@@ -52,11 +53,20 @@ class WeiboArtistUrl(ArtistUrl, WeiboUrl):
         )
 
     @property
+    def is_deleted(self) -> bool:
+        try:
+            _ = self.artist_data
+        except DeadUrlError:
+            return True
+        else:
+            return False
+
+    @property
     def primary_names(self) -> list[str]:
         names = []
         if self.screen_name:
             names += [self.screen_name]
-        if self.artist_data.screen_name:
+        if not self.is_deleted and self.artist_data.screen_name:
             names += [self.artist_data.screen_name]
         return list(set(names))
 
@@ -65,12 +75,14 @@ class WeiboArtistUrl(ArtistUrl, WeiboUrl):
         names = []
         if self.username:
             names += [self.username]
-        if self.artist_data.domain and not self.artist_data.domain.isnumeric():
+        if not self.is_deleted and self.artist_data.domain and not self.artist_data.domain.isnumeric():
             names += [self.artist_data.domain]
         return list(set(names))
 
     @property
     def related(self) -> list[Url]:
+        if self.is_deleted:
+            return []
         return self.artist_data.related_urls
 
 

@@ -53,8 +53,8 @@ class HTTPError(Exception):
     def __init__(self, response: requests.Response | None = None, status_code: int | None = None, original_url: str | None = None) -> None:
         if response is not None:
             self.response = response
-            self.original_url = response.request.url
-            self.status_code = self.response.status_code
+            self.original_url = original_url or response.request.url
+            self.status_code = status_code or self.response.status_code
         elif status_code is not None and original_url is not None:
             self.response = None
             self.status_code = status_code
@@ -86,6 +86,12 @@ class EHEntaiRateLimitError(HTTPError):
     @property
     def message(self) -> str:
         return f"The request to {self.original_url} failed because of too many downloads."
+
+
+class NotLoggedInError(HTTPError):
+    @property
+    def message(self) -> str:
+        return f"The request to {self.original_url} failed because we are not logged in."
 
 
 class DanbooruHTTPError(HTTPError):

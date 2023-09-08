@@ -86,3 +86,13 @@ assert_artist_url(
     secondary_names=["chengziyou666"],
     related=["https://www.pixiv.net/en/users/12972879"],
 )
+
+assert_artist_url(
+    "https://weibo.com/u/271222260",
+    url_type=WeiboArtistUrl,
+    url_properties=dict(artist_short_id=271222260),
+    primary_names=[],
+    secondary_names=[],
+    related=[],
+    is_deleted=True,
+)
