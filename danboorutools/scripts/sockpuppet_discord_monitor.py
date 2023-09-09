@@ -93,6 +93,9 @@ class SockpuppetDetector:
             other_users_map = {event.user.id: event.user for event in other_events}
             other_users = [name for _id, name in sorted(other_users_map.items(), key=lambda x: x[0])]
 
+            if all(ban["reason"].lower().startswith("shared account") for user in other_users for ban in user._raw_data["bans"]):
+                continue
+
             if SOCK_AUTOBAN:
                 for user in other_users:
                     if any(ban["reason"].startswith(SOCK_AUTOBAN) for ban in user._raw_data["bans"]):
