@@ -114,7 +114,9 @@ class AmazonComParser(UrlParser):
                 return None
 
 
-class AmznToParser(UrlParser):
+class AmazonShortener(UrlParser):
+    domains = ["amzn.to", "amzn.asia"]
+
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> AmazonShortenerUrl | None:
         match parsable_url.url_parts:
