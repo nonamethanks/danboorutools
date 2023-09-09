@@ -172,7 +172,7 @@ class SockpuppetDetector:
 
             if changed:
                 new_response = webhook_to_send.edit()
-                assert new_response.status_code == 200, new_response.json()
+                assert new_response.status_code in [200, 404], new_response.json()
             if changed_count > 1:
                 time.sleep(2)
 
