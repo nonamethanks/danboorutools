@@ -18,3 +18,12 @@ assert_info_url(
     secondary_names=["kazahana__h"],
     related=["https://twitter.com/kazahana__h"],
 )
+
+assert_info_url(
+    "https://odaibako.net/u/mitumituami_",
+    url_type=OdaibakoUrl,
+    url_properties=dict(username="mitumituami_"),
+    primary_names=["三ツ三ツ編ミ 🔞のお題箱"],
+    secondary_names=["mitumituami_"],
+    related=["https://twitter.com/mitumituami_"],
+)

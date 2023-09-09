@@ -8,10 +8,9 @@ class OdaibakoUrl(InfoUrl):
 
     @property
     def primary_names(self) -> list[str]:
-        artist_box = self.html.select("div.justify-center:not(.adsense_double_rectangle)")
-        if len(artist_box) != 1:
-            raise NotImplementedError(self)
-        return [artist_box[0].select_one("h1").text.strip()]
+        artist_box = self.html.select("div.justify-center:not(.adsense_double_rectangle) h1.font-bold")
+        assert len(artist_box) == 1, self
+        return [artist_box[0].text.strip()]
 
     @property
     def secondary_names(self) -> list[str]:
@@ -19,4 +18,5 @@ class OdaibakoUrl(InfoUrl):
 
     @property
     def related(self) -> list[Url]:
-        return [Url.parse(el["href"]) for el in self.html.select("div.justify-center:not(.adsense_double_rectangle) a")]
+        selector = "div.justify-center:not(.adsense_double_rectangle) a:not([href^='/accounts/login'])"
+        return [Url.parse(el["href"]) for el in self.html.select(selector)]

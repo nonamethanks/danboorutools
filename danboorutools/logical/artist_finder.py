@@ -46,7 +46,7 @@ class ArtistFinder:
             logger.debug(f"{source} for post {post} is deleted.")
             result_from_archives = self.search_for_artist_in_archives(post)
             if not result_from_archives:
-                logger.error(f"Couldn't extract an artist for post {post}.")  # noqa: TRY400
+                logger.error(f"Couldn't extract an artist for post {post}.")
                 self.skipped_posts.value = [*self.skipped_posts.value, post.id]
                 return False
         else:
@@ -84,6 +84,8 @@ class ArtistFinder:
                 primary_names += url_with_names.primary_names
             except ReadTimeout:
                 continue
+            except Exception as e:
+                raise NotImplementedError(url_with_names) from e
             try:
                 secondary_names += [name for name in url_with_names.secondary_names if name not in primary_names]
             except ReadTimeout:
@@ -270,6 +272,7 @@ class ArtistFinder:
     @classmethod
     def sanitize_tag_name(cls, potential_tag: str) -> str:
         potential_tag = potential_tag.split("@")[0]  # japanese artists love this shit too much
+        potential_tag = potential_tag.split("🔞")[0]
 
         if not re.match("^[\x00-\x7F]+$", potential_tag):
             potential_tag = cls.romanize_tag_name(potential_tag)
