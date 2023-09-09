@@ -38,7 +38,7 @@ class SockpuppetDetector:
         self.max_webhook_backchecking = 20
 
         if SOCK_AUTOBAN:
-            logger.info(f"Will autoban any user whose previous ban reason started with '{SOCK_AUTOBAN}'")
+            logger.info(f"<r>Will autoban any user whose previous ban reason started with '{SOCK_AUTOBAN}'</r>")
 
     def detect_and_post(self) -> None:
         latest_signups = self.get_latest_signups()
