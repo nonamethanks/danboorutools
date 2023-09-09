@@ -16,6 +16,7 @@ urls = {
         "https://www.youtube.com/c/kurasawakyosyo": "https://www.youtube.com/c/kurasawakyosyo",
         "https://www.youtube.com/user/speedosausage": "https://www.youtube.com/user/speedosausage",
         "https://www.youtube.com/c/LegendsofRuneterraKR/community": "https://www.youtube.com/c/LegendsofRuneterraKR",
+        "https://consent.youtube.com/m?continue=https%3A%2F%2Fwww.youtube.com%2Fc%2Fchirosam%3Fcbrd%3D1&gl=DE&m=0&pc=yt&cm=4&hl=en&src=1": "https://www.youtube.com/c/chirosam",
     },
     yt.YoutubeVideoUrl: {
         "http://www.youtube.com/watch?v=qi6EePWYZlQ\u0026fmt=18": "https://www.youtube.com/watch?v=qi6EePWYZlQ",

@@ -73,6 +73,9 @@ class YoutubeComParser(UrlParser):
             case "redirect", :
                 return cls.parse(parsable_url.query["q"])
 
+            case "m", if parsable_url.subdomain == "consent":
+                return cls.parse(parsable_url.query["continue"])
+
             case reserved, *_ if reserved in cls.RESERVED_NAMES and parsable_url.subdomain in ["www", ""]:
                 return UselessUrl(parsed_url=parsable_url)
 
