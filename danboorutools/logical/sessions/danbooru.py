@@ -52,8 +52,9 @@ class DanbooruApi(Session):
         "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
         "post_vote": "id,created_at,score,is_deleted,user,post",
         "tag": "id,name,post_count,category,created_at,is_deprecated,wiki_page,artist",
-        "user_event": "id,created_at,category,user_session,user",
+        "user": "id,name,created_at,level,level_string,post_update_count,note_update_count,post_upload_count,is_banned,is_deleted,bans",
     }
+    only_string_defaults["user_event"] = f"id,created_at,category,user_session,user[{only_string_defaults['user']}]"
 
     def __init__(self, *args,
                  domain: Literal["testbooru", "danbooru"] = "testbooru",
@@ -113,11 +114,6 @@ class DanbooruApi(Session):
             lowest_id = min(found_posts, key=lambda post: post.id).id
             page = f"b{lowest_id}"
 
-    def users(self, **kwargs) -> list[models.DanbooruUser]:
-        params = kwargs_to_include(**kwargs)
-        response = self.danbooru_request("GET", "users.json", params=params)
-        return [models.DanbooruUser(**user_data) for user_data in response]
-
     def _generic_endpoint(self, model_type: type[GenericModel], **kwargs) -> list[GenericModel]:
         assert model_type.danbooru_model_name
         only_string = self.only_string_defaults.get(model_type.danbooru_model_name)
@@ -142,6 +138,9 @@ class DanbooruApi(Session):
 
     def tags(self, **kwargs) -> list[models.DanbooruTag]:
         return self._generic_endpoint(models.DanbooruTag, **kwargs)
+
+    def users(self, **kwargs) -> list[models.DanbooruUser]:
+        return self._generic_endpoint(models.DanbooruUser, **kwargs)
 
     def user_events(self, **kwargs) -> list[models.DanbooruUserEvent]:
         return self._generic_endpoint(models.DanbooruUserEvent, **kwargs)
@@ -257,6 +256,14 @@ class DanbooruApi(Session):
             "desired_name": new_name,
         }
         self.danbooru_request("POST", "user_name_change_requests", json=data)
+
+    def ban_user(self, user_id: int, reason: str) -> None:
+        data = {
+            "user_id": user_id,
+            "duration": "P100Y",
+            "reason": reason,
+        }
+        self.danbooru_request("POST", "bans", json=data)
 
 
 def kwargs_to_include(**kwargs) -> dict:

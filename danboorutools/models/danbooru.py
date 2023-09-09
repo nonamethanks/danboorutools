@@ -264,5 +264,5 @@ class DanbooruBan(DanbooruModel):
     banner: DanbooruUser
 
 
-DanbooruArtist.update_forward_refs()
-DanbooruUserEvent.update_forward_refs()
+DanbooruArtist.model_rebuild(force=True)
+DanbooruUserEvent.model_rebuild(force=True)

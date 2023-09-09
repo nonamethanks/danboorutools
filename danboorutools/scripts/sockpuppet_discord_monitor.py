@@ -1,17 +1,23 @@
 from __future__ import annotations
 
+import datetime
 import os
 import time
 from typing import Literal
 
 import click
 from discord_webhook import DiscordEmbed, DiscordWebhook
+from pytz import UTC
 
 from danboorutools import logger
 from danboorutools.logical.progress_tracker import ProgressTracker
 from danboorutools.logical.sessions.danbooru import DanbooruApi, danbooru_api
 from danboorutools.models.danbooru import DanbooruUser, DanbooruUserEvent
 from danboorutools.util.misc import BaseModel
+
+SOCK_AUTOBAN = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTORENAME_MESSAGE"].strip()
+if SOCK_AUTOBAN and "sockpuppet of user #" not in SOCK_AUTOBAN.lower():
+    raise NotImplementedError("Message must be like 'Sockpuppet of user #'")
 
 
 class SockpuppetDetector:
@@ -30,6 +36,9 @@ class SockpuppetDetector:
         self.old_hooks = ProgressTracker[list[dict]]("SOCKPUPPET_DETECTOR_POSTED_HOOKS", [])
 
         self.max_webhook_backchecking = 20
+
+        if SOCK_AUTOBAN:
+            logger.info(f"Will autoban any user whose previous ban reason started with '{SOCK_AUTOBAN}'")
 
     def detect_and_post(self) -> None:
         latest_signups = self.get_latest_signups()
@@ -83,6 +92,17 @@ class SockpuppetDetector:
 
             other_users_map = {event.user.id: event.user for event in other_events}
             other_users = [name for _id, name in sorted(other_users_map.items(), key=lambda x: x[0])]
+
+            if SOCK_AUTOBAN:
+                for user in other_users:
+                    if any(ban["reason"].startswith(SOCK_AUTOBAN) for ban in user._raw_data["bans"]):
+                        user_to_ban = signup.user
+                        assert user_to_ban.created_at
+                        assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
+                        logger.info(f"<r>BANNING USER {user_to_ban}</r>")
+                        danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN)
+                        danbooru_api.rename_user(user_to_ban.id, new_name=user_to_ban.id)
+                        break
 
             found.append({
                 "sock": signup.user,
@@ -152,7 +172,7 @@ class SockpuppetDetector:
 
             if changed:
                 new_response = webhook_to_send.edit()
-                assert new_response.status_code == 200
+                assert new_response.status_code == 200, new_response.json()
             if changed_count > 1:
                 time.sleep(2)
 
