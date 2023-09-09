@@ -3,10 +3,10 @@ from __future__ import annotations
 import json
 import re
 from typing import TYPE_CHECKING
-from urllib.parse import parse_qs
 
 import ring
 
+from danboorutools.exceptions import NotLoggedInError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
@@ -19,7 +19,7 @@ JSON_DATA_PATTERN = re.compile(r"ytInitialData = ({.*?});")
 
 class YoutubeSession(Session):
     def request(self, *args, **kwargs) -> Response:
-        kwargs["cookies"] = kwargs.get("cookies", {}) | {"CONSENT": "YES+cb.20211212-16-p1.en+FX+793"}
+        kwargs["cookies"] = kwargs.get("cookies", {}) | {"SOCS": "CAESEwgDEgk0ODE3Nzk3MjQaAmVuIAEaBgiA_LyaBg"}
         return super().request(*args, **kwargs)
 
     @ring.lru()
@@ -27,7 +27,9 @@ class YoutubeSession(Session):
         request = self.get(f"{artist_url}/about")
         json_data = JSON_DATA_PATTERN.search(request.text)
         if not json_data:
-            raise NotImplementedError
+            if "Before you continue to YouTube" in request.text:
+                raise NotLoggedInError(request)
+            raise NotImplementedError(artist_url)
         return YoutubeChannelData(**json.loads(json_data.groups()[0]))
 
 
@@ -65,7 +67,8 @@ class YoutubeChannelData(BaseModel):
         if not about_tab["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].endswith("/about"):
             raise NotImplementedError(about_tab)
 
-        links = []
+        old_links = []
+        new_links = []
         for section_content in about_tab["content"]["sectionListRenderer"]["contents"]:
             for item_section in section_content["itemSectionRenderer"]["contents"]:
                 try:
@@ -73,8 +76,19 @@ class YoutubeChannelData(BaseModel):
                 except KeyError:
                     pass
                 else:
-                    links += link_sections
+                    old_links += link_sections
 
-        urls += [link["navigationEndpoint"]["urlEndpoint"]["url"] for link in links]
+                try:
+                    link_sections = item_section["channelAboutFullMetadataRenderer"]["links"]
+                except KeyError:
+                    pass
+                else:
+                    new_links += link_sections
+
+        urls += [link["navigationEndpoint"]["urlEndpoint"]["url"] for link in old_links]
+        urls += [
+            link["channelExternalLinkViewModel"]["link"]["commandRuns"][0]["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["url"]  # pylint: disable=line-too-long  # noqa: E501
+            for link in new_links  # youtube devs you fucking monkeys what the fuck are you doing
+        ]
 
         return [Url.parse(u) for u in list(dict.fromkeys(urls))]

@@ -57,7 +57,7 @@ assert_artist_url(
     "https://www.youtube.com/@niku_kai29",
     url_type=yt.YoutubeUserUrl,
     url_properties=dict(username="niku_kai29"),
-    primary_names=["エヴァンゲリオン斬り(肉斬り包丁)"],
+    primary_names=["おにくちゃん(肉斬り包丁)"],
     secondary_names=["niku_kai29"],
     related=["https://twitter.com/niku_kai29", "https://seiga.nicovideo.jp/user/illust/59309002",
              "https://www.pixiv.net/en/users/61603554"],
