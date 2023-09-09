@@ -81,7 +81,10 @@ class SaucenaoSession(Session):
             return self.__merge_results(*subresults) if subresults else None  # pylint: disable=no-value-for-parameter
 
         if isinstance(match_url, PixivUrl):
-            saucenao_result = self.__parse_pixiv_result(result["data"])
+            try:
+                saucenao_result = self.__parse_pixiv_result(result["data"])
+            except KeyError as e:
+                raise NotImplementedError(result["data"]) from e
         else:
             raise NotImplementedError(match_url)
 
@@ -97,7 +100,7 @@ class SaucenaoSession(Session):
 
     def __parse_pixiv_result(self, saucenao_result: dict) -> SaucenaoArtistResult:
         pixiv_id = saucenao_result["member_id"]
-        stacc = saucenao_result["member_login_name"]
+        stacc = saucenao_result.get("member_login_name") or saucenao_result.get("member_name")
         extra_urls = [PixivStaccUrl.build(stacc=stacc)] if stacc else []
         secondary_names = [stacc, f"pixiv {pixiv_id}"] if stacc else [f"pixiv {pixiv_id}"]
 
