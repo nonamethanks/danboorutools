@@ -15,8 +15,8 @@ from danboorutools.logical.sessions.danbooru import DanbooruApi, danbooru_api
 from danboorutools.models.danbooru import DanbooruUser, DanbooruUserEvent
 from danboorutools.util.misc import BaseModel
 
-SOCK_AUTOBAN = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTORENAME_MESSAGE"].strip()
-if SOCK_AUTOBAN and "sockpuppet of user #" not in SOCK_AUTOBAN.lower():
+SOCK_AUTOBAN_MESSAGE = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTORENAME_MESSAGE"].strip()
+if SOCK_AUTOBAN_MESSAGE and "sockpuppet of user #" not in SOCK_AUTOBAN_MESSAGE.lower():
     raise NotImplementedError("Message must be like 'Sockpuppet of user #'")
 
 
@@ -37,8 +37,8 @@ class SockpuppetDetector:
 
         self.max_webhook_backchecking = 20
 
-        if SOCK_AUTOBAN:
-            logger.info(f"<r>Will autoban any user whose previous ban reason started with '{SOCK_AUTOBAN}'</r>")
+        if SOCK_AUTOBAN_MESSAGE:
+            logger.info(f"<r>Will autoban any user whose previous ban reason started with '{SOCK_AUTOBAN_MESSAGE}'</r>")
 
     def detect_and_post(self) -> None:
         latest_signups = self.get_latest_signups()
@@ -93,20 +93,21 @@ class SockpuppetDetector:
             other_users_map = {event.user.id: event.user for event in other_events}
             other_users = [name for _id, name in sorted(other_users_map.items(), key=lambda x: x[0])]
 
-            if all(ban["reason"].lower().startswith("shared account") for user in other_users for ban in user._raw_data["bans"]):
-                continue
+            previous_ban_reasons: list[str] = [ban["reason"] for user in other_users for ban in user._raw_data["bans"]]
+            if previous_ban_reasons:
+                shared_account_reasons = ["shared account", "shared account."]
+                if all(r.lower() in shared_account_reasons for r in previous_ban_reasons):
+                    continue
 
-            if SOCK_AUTOBAN:
-                for user in other_users:
-                    if any(ban["reason"].startswith(SOCK_AUTOBAN) for ban in user._raw_data["bans"]):
-                        user_to_ban = signup.user
-                        assert user_to_ban.level <= 20
-                        assert user_to_ban.created_at
-                        assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
-                        logger.info(f"<r>BANNING USER {user_to_ban}</r>")
-                        danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN)
-                        danbooru_api.rename_user(user_to_ban.id, new_name=user_to_ban.id)
-                        break
+                if SOCK_AUTOBAN_MESSAGE and any(ban_r.lower().startswith(SOCK_AUTOBAN_MESSAGE.lower()) for ban_r in previous_ban_reasons):
+                    user_to_ban = signup.user
+                    assert user_to_ban.level <= 20
+                    assert user_to_ban.created_at
+                    assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
+                    logger.info(f"<r>BANNING USER {user_to_ban}</r>")
+                    danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN_MESSAGE)
+                    danbooru_api.rename_user(user_to_ban.id, new_name=user_to_ban.id)
+                    break
 
             found.append({
                 "sock": signup.user,
