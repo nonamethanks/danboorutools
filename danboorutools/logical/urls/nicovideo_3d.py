@@ -12,8 +12,8 @@ class Nicovideo3dPostUrl(PostUrl, Nicovideo3dUrl):
 
 
 class Nicovideo3dArtistUrl(ArtistUrl, Nicovideo3dUrl):
-    username: str | None = None  # TODO: this is a redirect
     user_id: int | None
+    username: str | None = None  # TODO: this is a redirect
 
     @classmethod
     def normalize(cls, **kwargs) -> str | None:

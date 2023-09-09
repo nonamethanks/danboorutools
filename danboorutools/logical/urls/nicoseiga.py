@@ -57,7 +57,7 @@ class NicoSeigaArtistUrl(ArtistUrl, NicoSeigaUrl):
 
     @cached_property
     def artist_data(self) -> NicoSeigaArtistData:
-        return self.session.nicoseiga_artist_data(self.user_id)
+        return self.session.nicovideo_artist_data(self.user_id)
 
 
 class NicoSeigaImageUrl(PostAssetUrl, NicoSeigaUrl):

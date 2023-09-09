@@ -9,7 +9,7 @@ from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 
 class NicovideoSession(Session):
-    def nicoseiga_artist_data(self, user_id: int) -> NicoSeigaArtistData:
+    def nicovideo_artist_data(self, user_id: int) -> NicoSeigaArtistData:
         url = f"https://nvapi.nicovideo.jp/v1/users/{user_id}"
         headers = {"X-Frontend-Id": "3"}
         response = self.get_json(url, headers=headers)["data"]["user"]
@@ -30,7 +30,13 @@ class NicoSeigaArtistData(BaseModel):
 
     @property
     def related_urls(self) -> list[Url]:
-        return [Url.parse(u) for u in extract_urls_from_string(self.description)]
+        from danboorutools.logical.urls.nicovideo import NicovideoCommunityUrl
+
+        return [
+            parsed_url
+            for parsed_url in map(Url.parse, extract_urls_from_string(self.description))
+            if not isinstance(parsed_url, NicovideoCommunityUrl)
+        ]
 
 
 class NicoSeigaPostData(BaseModel):
