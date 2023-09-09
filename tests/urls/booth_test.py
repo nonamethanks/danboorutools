@@ -47,6 +47,15 @@ assert_artist_url(  # another type of links
     related=["https://www.pixiv.net/users/1337738"],
 )
 
+assert_artist_url(  # another type of name element
+    "https://awayukidouhu.booth.pm/",
+    b.BoothArtistUrl,
+    url_properties=dict(username="awayukidouhu"),
+    primary_names=["BAR 泡雪豆腐"],
+    secondary_names=["awayukidouhu"],
+    related=["https://www.pixiv.net/users/1772501", "https://twitter.com/kinugoshispark"],
+)
+
 assert_artist_url(  # private
     "https://oriruriro.booth.pm/",
     b.BoothArtistUrl,

@@ -41,7 +41,8 @@ class BoothArtistUrl(ArtistUrl, BoothUrl):
     def primary_names(self) -> list[str]:
         if self.private:
             return []
-        return [self.html.select_one(".home-link-container__nickname a").text]
+        name_el = self.html.select_one(".home-link-container__nickname a") or self.html.select_one(".shop-name-label.display_title")
+        return [name_el.text]
 
     @property
     def secondary_names(self) -> list[str]:
