@@ -95,8 +95,8 @@ class SockpuppetDetector:
 
             previous_ban_reasons: list[str] = [ban["reason"] for user in other_users for ban in user._raw_data["bans"]]
             if previous_ban_reasons:
-                shared_account_reasons = ["shared account", "shared account."]
-                if all(r.lower() in shared_account_reasons for r in previous_ban_reasons):
+                shared_account_reasons = ["shared account", "publicly shared account"]
+                if all(r.lower().strip().strip(".") in shared_account_reasons for r in previous_ban_reasons):
                     continue
 
                 if SOCK_AUTOBAN_MESSAGE and any(ban_r.lower().startswith(SOCK_AUTOBAN_MESSAGE.lower()) for ban_r in previous_ban_reasons):
