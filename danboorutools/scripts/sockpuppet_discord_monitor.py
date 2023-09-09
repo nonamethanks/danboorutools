@@ -97,6 +97,7 @@ class SockpuppetDetector:
                 for user in other_users:
                     if any(ban["reason"].startswith(SOCK_AUTOBAN) for ban in user._raw_data["bans"]):
                         user_to_ban = signup.user
+                        assert user_to_ban.level <= 20
                         assert user_to_ban.created_at
                         assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
                         logger.info(f"<r>BANNING USER {user_to_ban}</r>")
