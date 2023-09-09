@@ -102,6 +102,7 @@ ignore = [
     "ANN101",  # missing type annotation for self
     "ANN102",  # missing type annotation for cls
     "ANN204",  # missing return type for special methods
+    "BLE001",  # catch Exception
     "D",       # docstrings
     "EM101",   # Exception must not use a string literal, assign to variable first
     "EM102",   # Exception must not use an f-string literal
