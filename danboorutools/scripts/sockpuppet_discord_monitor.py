@@ -107,7 +107,6 @@ class SockpuppetDetector:
                     logger.info(f"<r>BANNING USER {user_to_ban}</r>")
                     danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN_MESSAGE)
                     danbooru_api.rename_user(user_to_ban.id, new_name=user_to_ban.id)
-                    break
 
             found.append({
                 "sock": signup.user,
