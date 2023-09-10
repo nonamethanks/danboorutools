@@ -18,7 +18,7 @@ global_counter = Counter(print_progress=True)
 
 @click.command()
 @click.argument("mode", type=click.Choice(["all", "latest"]))
-def main(mode: Literal["all"] | Literal["latest"]) -> None:
+def main(mode: Literal["all", "latest"]) -> None:
     tag_paid_rewards_on_gelbooru(mode)
 
 

@@ -181,6 +181,8 @@ class DanbooruPostVersion(DanbooruModel):
     added_tags: list[str]
     removed_tags: list[str]
 
+    created_at: datetime | None = None
+
     @property
     def url(self) -> str:
         return f"https://danbooru.donmai.us/post_versions?search[id]={self.id}"
