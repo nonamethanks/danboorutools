@@ -35,13 +35,18 @@ class UrlParser:
 
     @classmethod
     @lru_cache
-    def parse(cls, url: str) -> Url | None:
+    def parse(cls, url: str) -> Url:
         cls.setup_subclasses()
         try:
-            return cls._parse(url)
+            parsed = cls._parse(url)
         except Exception as e:
             e.add_note(f"Failure on: {url}")
             raise
+        if parsed:
+            return parsed
+
+        from danboorutools.models.url import UnknownUrl
+        return UnknownUrl(parsed_url=ParsableUrl(url))
 
     @staticmethod
     def _parse(url: str) -> Url | None:
@@ -72,6 +77,7 @@ class UnsupportedParser(UrlParser):
     domains = [
         "amebaownd.com",
         "coocan.jp",
+        "itch.io",
         "mbsp.jp",
         "nobody.jp",
         "pixnet.net",

@@ -2,20 +2,21 @@ import re
 
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.deviantart import DeviantArtArtistUrl, DeviantArtImageUrl, DeviantArtPostUrl, DeviantArtUrl
+from danboorutools.models.url import Url
 
 
 class DeviantartComParser(UrlParser):
     title_and_deviation_pattern = re.compile(r"^(?P<title>[\w+-]+)-(?P<deviation_id>\d+)(?:#\w+)?$")
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> DeviantArtUrl | None:
+    def match_url(cls, parsable_url: ParsableUrl) -> Url | None:
         if parsable_url.subdomain in ["", "www"]:
             return cls._match_username_in_path(parsable_url)
         else:
             return cls._match_username_in_subdomain(parsable_url)
 
     @classmethod
-    def _match_username_in_path(cls, parsable_url: ParsableUrl) -> DeviantArtUrl | None:
+    def _match_username_in_path(cls, parsable_url: ParsableUrl) -> Url | None:
         match parsable_url.url_parts:
             # https://www.deviantart.com/noizave/art/test-post-please-ignore-685436408
             # https://www.deviantart.com/bellhenge/art/788000274
@@ -51,6 +52,11 @@ class DeviantartComParser(UrlParser):
                                           deviation_id=int(deviation_id),
                                           username=username,
                                           title=title_and_deviation)
+
+            # https://www.deviantart.com/users/outgoing?https://vk.com/neo_kitty_art
+            case "users", "outgoing":
+                new_url = parsable_url.url_data["query"]
+                return cls.parse(new_url)
 
             # https://www.deviantart.com/noizave
             # https://deviantart.com/noizave
