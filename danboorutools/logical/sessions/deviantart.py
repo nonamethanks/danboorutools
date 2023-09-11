@@ -11,7 +11,7 @@ import ring
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.twitter import TwitterArtistUrl
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel
+from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 data_pattern = re.compile(r"window.__INITIAL_STATE__ = JSON.parse\(\"(.*)\"\);")
 
@@ -94,12 +94,17 @@ class DeviantartUserData(BaseModel):
             website = self.website if self.website.startswith("http") else f"https://{self.website}"
             urls += [Url.parse(website)]
 
-        if self.textContent["html"]["markup"]:
-            data = json.loads(self.textContent["html"]["markup"])
-            for entity in data["entityMap"].values():
-                if entity["type"] != "LINK":
-                    raise NotImplementedError(entity)
-                urls += [Url.parse(entity["data"]["url"])]
+        if description := self.textContent["html"]:
+            if description["type"] == "writer":
+                urls += [Url.parse(u) for u in extract_urls_from_string(description["markup"])]
+            elif description["type"] == "draft":
+                data = json.loads(description["markup"])
+                for entity in data["entityMap"].values():
+                    if entity["type"] != "LINK":
+                        raise NotImplementedError(entity)
+                    urls += [Url.parse(entity["data"]["url"])]
+            else:
+                raise NotImplementedError(description)
 
         return list(dict.fromkeys(urls))
 
