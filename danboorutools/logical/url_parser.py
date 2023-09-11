@@ -85,6 +85,7 @@ class UnsupportedParser(UrlParser):
         "webnode.jp",
         "wixsite.com",
         "whitesnow.jp",
+        "wordpress.com",
     ]
 
     @classmethod
