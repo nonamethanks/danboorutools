@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 def random_string(length: int) -> str:
     """Generate a random string of N length."""
-    return "".join(random.choice("0123456789ABCDEF") for i in range(length))
+    return "".join(random.choice("0123456789ABCDEF") for i in range(length))  # noqa: S311
 
 
 def tryint(string: str) -> str | int:
@@ -110,7 +110,7 @@ cookie_dir = settings.BASE_FOLDER / "cookies"
 def load_cookies_for(domain: str) -> list[dict[str, str]]:
     filename = cookie_dir / f"cookies-{domain}.pkl"
     try:
-        cookies: list[dict] = pickle.load(filename.open("rb"))
+        cookies: list[dict] = pickle.load(filename.open("rb"))  # noqa: S301
     except FileNotFoundError as e:
         raise NoCookiesForDomainError(domain) from e
     for cookie in cookies:
@@ -130,7 +130,7 @@ def save_cookies_for(domain: str, cookies: list[dict[str, str]]) -> None:
 @dataclass_transform()
 class PseudoDataclass(type):
     def __hash__(cls) -> int:
-        return random.randint(1, int(1e10))
+        return random.randint(1, int(1e10))  # noqa: S311
 
 
 def base36encode(number: int) -> str:
