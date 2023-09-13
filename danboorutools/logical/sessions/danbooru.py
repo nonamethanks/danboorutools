@@ -52,7 +52,7 @@ class DanbooruApi(Session):
         "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
         "post_vote": "id,created_at,score,is_deleted,user,post",
         "tag": "id,name,post_count,category,created_at,is_deprecated,wiki_page,artist",
-        "user": "id,name,created_at,level,level_string,post_update_count,note_update_count,post_upload_count,is_banned,is_deleted,bans",
+        "user": "id,name,created_at,level,level_string,post_update_count,note_update_count,post_upload_count,is_banned,is_deleted,bans,last_ip_addr",
     }
     only_string_defaults["user_event"] = f"id,created_at,category,user_session,user[{only_string_defaults['user']}]"
 
@@ -257,13 +257,15 @@ class DanbooruApi(Session):
         }
         self.danbooru_request("POST", "user_name_change_requests", json=data)
 
-    def ban_user(self, user_id: int, reason: str) -> None:
+    def ban_user(self, user_id: int, reason: str) -> dict:
         data = {
             "user_id": user_id,
             "duration": "P100Y",
             "reason": reason,
         }
-        self.danbooru_request("POST", "bans", json=data)
+        response = self.danbooru_request("POST", "bans", json=data)
+        assert isinstance(response, dict)
+        return response
 
 
 def kwargs_to_include(**kwargs) -> dict:
