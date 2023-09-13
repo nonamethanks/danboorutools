@@ -83,6 +83,7 @@ class SockpuppetDetector:
         found = []
 
         for signup in signups:
+            assert signup.user._raw_data["last_ip_addr"]  # for some reason it was returning empty
             if signup.user.is_banned:
                 continue
 
@@ -98,6 +99,9 @@ class SockpuppetDetector:
             other_users = [name for _id, name in sorted(other_users_map.items(), key=lambda x: x[0])]
 
             if SOCK_AUTOBAN_RANGE and self._check_for_sock(signup, other_users):
+                for signup in signups:
+                    if signup.user.id in [user.id for user in other_users]:
+                        signup.user.is_banned = True
                 continue
 
             previous_ban_reasons: list[str] = [ban["reason"] for user in other_users for ban in user._raw_data["bans"]]
