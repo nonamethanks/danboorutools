@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 import os
+import re
 import time
 from typing import Literal
 
@@ -18,6 +19,7 @@ from danboorutools.util.misc import BaseModel
 SOCK_AUTOBAN_MESSAGE = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTORENAME_MESSAGE"].strip()
 if SOCK_AUTOBAN_MESSAGE and "sockpuppet of user #" not in SOCK_AUTOBAN_MESSAGE.lower():
     raise NotImplementedError("Message must be like 'Sockpuppet of user #'")
+SOCK_AUTOBAN_RANGE = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTOBAN_RANGE"].strip()
 
 
 class SockpuppetDetector:
@@ -39,6 +41,8 @@ class SockpuppetDetector:
 
         if SOCK_AUTOBAN_MESSAGE:
             logger.info(f"<r>Will autoban any user whose previous ban reason started with '{SOCK_AUTOBAN_MESSAGE}'</r>")
+        if SOCK_AUTOBAN_RANGE:
+            logger.info(f"<r>Will autoban any user with certain names and IP range matching '{SOCK_AUTOBAN_RANGE}'</r>")
 
     def detect_and_post(self) -> None:
         latest_signups = self.get_latest_signups()
@@ -92,6 +96,9 @@ class SockpuppetDetector:
 
             other_users_map = {event.user.id: event.user for event in other_events}
             other_users = [name for _id, name in sorted(other_users_map.items(), key=lambda x: x[0])]
+
+            if SOCK_AUTOBAN_RANGE and self._check_for_sock(signup, other_users):
+                continue
 
             previous_ban_reasons: list[str] = [ban["reason"] for user in other_users for ban in user._raw_data["bans"]]
             if previous_ban_reasons:
@@ -181,6 +188,47 @@ class SockpuppetDetector:
                 time.sleep(2)
 
         logger.info(f"Updated {changed_count} messages.")
+
+    def _check_for_sock(self, signup: DanbooruUserEvent, other_users: list[DanbooruUser]) -> bool:
+        patterns = [
+            r"^f_?[a4]_?g_?s\d*$",
+            r"^f_?\w_?g_?g_?o_?t_?s?\d*$",
+            r"^n_?[i1]_?g_?g_?[e3]_?r_?s?\d*$",
+        ]
+
+        if not any(re.match(pattern, signup.user.name, flags=re.IGNORECASE) for pattern in patterns):
+            return False
+
+        logger.info(f"User {signup.user} matches name regex")
+
+        ip_prefix = SOCK_AUTOBAN_RANGE.split(".")[0] + "."
+        last_ip_addr = signup.user._raw_data["last_ip_addr"]
+        if not last_ip_addr.startswith(ip_prefix):
+            return False
+
+        logger.info(f"User {signup.user} matches ip prefix {ip_prefix}")
+
+        ip_addr_data = danbooru_api.danbooru_request("GET", f"ip_addresses/{last_ip_addr}.json")
+        if ip_addr_data["network"] != SOCK_AUTOBAN_RANGE:
+            return False
+
+        logger.info(f"User {signup.user} matches ip range {SOCK_AUTOBAN_RANGE}")
+
+        user_to_ban = signup.user
+        assert user_to_ban.level <= 20
+        assert user_to_ban.created_at
+        assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
+        logger.info(f"<r>BANNING USER {user_to_ban}</r>")
+        danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN_MESSAGE)
+        danbooru_api.rename_user(user_to_ban.id, new_name=user_to_ban.id)
+
+        for other_user in other_users:
+            assert other_user.level <= 20
+            logger.info(f"<r>BANNING USER {other_user}</r>")
+            danbooru_api.ban_user(other_user.id, reason=SOCK_AUTOBAN_MESSAGE)
+            danbooru_api.rename_user(other_user.id, new_name=other_user.id)
+
+        return True
 
 
 class HookEmbed(BaseModel):
