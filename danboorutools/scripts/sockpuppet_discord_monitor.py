@@ -19,7 +19,8 @@ from danboorutools.util.misc import BaseModel
 SOCK_AUTOBAN_MESSAGE = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTORENAME_MESSAGE"].strip()
 if SOCK_AUTOBAN_MESSAGE and "sockpuppet of user #" not in SOCK_AUTOBAN_MESSAGE.lower():
     raise NotImplementedError("Message must be like 'Sockpuppet of user #'")
-SOCK_AUTOBAN_RANGE = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTOBAN_RANGE"].strip()
+SOCK_AUTOBAN_CARRIER = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTOBAN_CARRIER"].strip()
+SOCK_AUTOBAN_IP_PREFIX = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTOBAN_IP_PREFIX"].strip()
 
 
 class SockpuppetDetector:
@@ -41,8 +42,9 @@ class SockpuppetDetector:
 
         if SOCK_AUTOBAN_MESSAGE:
             logger.info(f"<r>Will autoban any user whose previous ban reason started with '{SOCK_AUTOBAN_MESSAGE}'</r>")
-        if SOCK_AUTOBAN_RANGE:
-            logger.info(f"<r>Will autoban any user with certain names and IP range matching '{SOCK_AUTOBAN_RANGE}'</r>")
+        if SOCK_AUTOBAN_CARRIER and SOCK_AUTOBAN_IP_PREFIX:
+            logger.info(f"<r>Will autoban any user with certain names and carrier == '{SOCK_AUTOBAN_CARRIER}' "
+                        f"and IP starting with {SOCK_AUTOBAN_IP_PREFIX}</r>")
 
     def detect_and_post(self) -> None:
         latest_signups = self.get_latest_signups()
@@ -98,8 +100,8 @@ class SockpuppetDetector:
             other_users_map = {event.user.id: event.user for event in other_events}
             other_users = [name for _id, name in sorted(other_users_map.items(), key=lambda x: x[0])]
 
-            if SOCK_AUTOBAN_RANGE and self._check_for_sock(signup, other_users):
-                for signup in signups:
+            if SOCK_AUTOBAN_CARRIER and SOCK_AUTOBAN_IP_PREFIX and self._check_for_sock(signup, other_users):
+                for signup in signups:  # noqa: PLW2901 # be silent machine, I know what I'm doing
                     if signup.user.id in [user.id for user in other_users]:
                         signup.user.is_banned = True
                 continue
@@ -205,18 +207,17 @@ class SockpuppetDetector:
 
         logger.info(f"User {signup.user} matches name regex")
 
-        ip_prefix = SOCK_AUTOBAN_RANGE.split(".")[0] + "."
         last_ip_addr = signup.user._raw_data["last_ip_addr"]
-        if not last_ip_addr.startswith(ip_prefix):
+        if not last_ip_addr.startswith(SOCK_AUTOBAN_IP_PREFIX):
             return False
 
-        logger.info(f"User {signup.user} matches ip prefix {ip_prefix}")
+        logger.info(f"User {signup.user} matches ip prefix {SOCK_AUTOBAN_IP_PREFIX}.")
 
         ip_addr_data = danbooru_api.danbooru_request("GET", f"ip_addresses/{last_ip_addr}.json")
-        if ip_addr_data["network"] != SOCK_AUTOBAN_RANGE:
+        if ip_addr_data["carrier"].lower() != SOCK_AUTOBAN_CARRIER.lower():
             return False
 
-        logger.info(f"User {signup.user} matches ip range {SOCK_AUTOBAN_RANGE}")
+        logger.info(f"User {signup.user} matches carrier {SOCK_AUTOBAN_CARRIER}")
 
         user_to_ban = signup.user
         assert user_to_ban.level <= 20
