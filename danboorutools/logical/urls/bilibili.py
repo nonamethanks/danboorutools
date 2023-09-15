@@ -1,10 +1,11 @@
 from typing import Literal
 
+from danboorutools.logical.sessions.bilibili import BilibiliSession, BilibiliUserData
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
 class BilibiliUrl(Url):
-    pass
+    session = BilibiliSession()
 
 
 class BilibiliVideoPostUrl(PostUrl, BilibiliUrl):
@@ -36,6 +37,22 @@ class BilibiliArtistUrl(ArtistUrl, BilibiliUrl):
     user_id: int
 
     normalize_template = "https://space.bilibili.com/{user_id}"
+
+    @property
+    def artist_data(self) -> BilibiliUserData:
+        return self.session.user_data(user_id=self.user_id)
+
+    @property
+    def primary_names(self) -> list[str]:
+        return [self.artist_data.name]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [f"bilibili {self.user_id}"]
+
+    @property
+    def related(self) -> list[Url]:
+        return []
 
 
 class BilibiliImageUrl(PostAssetUrl, BilibiliUrl):

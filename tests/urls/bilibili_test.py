@@ -1,5 +1,5 @@
 from danboorutools.logical.urls import bilibili as b
-from tests.urls import generate_parsing_suite
+from tests.urls import assert_artist_url, generate_parsing_suite
 
 urls = {
     b.BilibiliImageUrl: {
@@ -49,3 +49,14 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+
+assert_artist_url(
+    "https://space.bilibili.com/1919593",
+    url_type=b.BilibiliArtistUrl,
+    url_properties=dict(user_id=1919593),
+    primary_names=["嘉露香叶"],
+    secondary_names=["bilibili 1919593"],
+    related=[],
+
+)
