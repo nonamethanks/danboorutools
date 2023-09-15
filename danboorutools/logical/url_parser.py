@@ -82,6 +82,7 @@ class UnsupportedParser(UrlParser):
         "nobody.jp",
         "pixnet.net",
         "ribbon.to",
+        "starfree.jp",
         "webnode.jp",
         "wixsite.com",
         "whitesnow.jp",
