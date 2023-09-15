@@ -114,12 +114,16 @@ class SockpuppetDetector:
 
                 if SOCK_AUTOBAN_MESSAGE and any(ban_r.lower().startswith(SOCK_AUTOBAN_MESSAGE.lower()) for ban_r in previous_ban_reasons):
                     user_to_ban = signup.user
-                    assert user_to_ban.level <= 20
-                    assert user_to_ban.created_at
-                    assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
-                    logger.info(f"<r>BANNING USER {user_to_ban}</r>")
-                    danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN_MESSAGE)
-                    danbooru_api.rename_user(user_to_ban.id, new_name=user_to_ban.id)
+                    if not user_to_ban.is_banned:
+                        assert user_to_ban.level <= 20
+                        assert user_to_ban.created_at
+                        assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
+                        logger.info(f"<r>BANNING USER {user_to_ban}</r>")
+                        danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN_MESSAGE)
+
+                    if user_to_ban.name != str(user_to_ban.id):
+                        logger.info(f"<r>RENAMING USER {user_to_ban} {user_to_ban.name} -> '{user_to_ban.id}' </r>")
+                        danbooru_api.rename_user(user_to_ban.id, new_name=user_to_ban.id)
 
             found.append({
                 "sock": signup.user,
@@ -225,13 +229,18 @@ class SockpuppetDetector:
         assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
         logger.info(f"<r>BANNING USER {user_to_ban}</r>")
         danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN_MESSAGE)
-        danbooru_api.rename_user(user_to_ban.id, new_name=user_to_ban.id)
+        if user_to_ban.name != str(user_to_ban.id):
+            logger.info(f"<r>RENAMING USER {user_to_ban} {user_to_ban.name} -> '{user_to_ban.id}' </r>")
+            danbooru_api.rename_user(user_to_ban.id, new_name=user_to_ban.id)
 
         for other_user in other_users:
             assert other_user.level <= 20
-            logger.info(f"<r>BANNING USER {other_user}</r>")
-            danbooru_api.ban_user(other_user.id, reason=SOCK_AUTOBAN_MESSAGE)
-            danbooru_api.rename_user(other_user.id, new_name=other_user.id)
+            if not other_user.is_banned:
+                logger.info(f"<r>BANNING USER {other_user}</r>")
+                danbooru_api.ban_user(other_user.id, reason=SOCK_AUTOBAN_MESSAGE)
+            if other_user.name != str(other_user.id):
+                logger.info(f"<r>RENAMING USER {other_user} {other_user.name} -> '{other_user.id}' </r>")
+                danbooru_api.rename_user(other_user.id, new_name=other_user.id)
 
         return True
 
