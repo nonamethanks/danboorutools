@@ -1,15 +1,18 @@
-from danboorutools.logical.sessions.reddit import RedditSession
 from danboorutools.models.url import ArtistUrl, Url
 
 
 class RedditUrl(Url):
-    session = RedditSession()
+    pass
 
 
 class RedditUserUrl(ArtistUrl, RedditUrl):
     username: str
 
     normalize_template = "https://www.reddit.com/user/{username}"
+
+    @property
+    def is_deleted(self) -> bool:
+        return "Sorry, nobody on Reddit goes by that name" in str(self.html)
 
     @property
     def primary_names(self) -> list[str]:
@@ -21,7 +24,10 @@ class RedditUserUrl(ArtistUrl, RedditUrl):
 
     @property
     def related(self) -> list[Url]:
-        return self.session.get_social_links(self.username)
+        if self.is_deleted:
+            return []
+        return [Url.parse(link["href"])
+                for link in self.html.select("[noun='social_link'] a")]
 
 
 class RedditPostUrl(ArtistUrl, RedditUrl):

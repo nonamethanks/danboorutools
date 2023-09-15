@@ -16,7 +16,7 @@ urls = {
         "https://www.reddit.com/gallery/ttyccp": "https://www.reddit.com/comments/ttyccp",
         "https://www.reddit.com/ttyccp": "https://www.reddit.com/comments/ttyccp",
         "http://www.reddit.com/r/Kappa/comments/34d761/shirt_idea_for_alex_myers_sponsorship/cqu5yc3": "https://www.reddit.com/r/Kappa/comments/34d761/shirt_idea_for_alex_myers_sponsorship/cqu5yc3",
-    }
+    },
 }
 
 
@@ -29,4 +29,14 @@ assert_info_url(
     related=["https://twitter.com/imsleepyzen", "https://www.instagram.com/imsleepyzen"],
     primary_names=["imsleepyzen"],
     secondary_names=[],
+)
+
+assert_info_url(
+    "https://www.reddit.com/user/AkioAsaku",
+    url_type=RedditUserUrl,
+    url_properties=dict(username="AkioAsaku"),
+    primary_names=["AkioAsaku"],
+    secondary_names=[],
+    related=[],
+    is_deleted=True,
 )
