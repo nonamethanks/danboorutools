@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
-from functools import cached_property
 from typing import ClassVar, Self
 
 from danboorutools.exceptions import NotAnUrlError
@@ -152,8 +151,10 @@ class DanbooruUser(DanbooruModel):
 class DanbooruComment(DanbooruModel):
     danbooru_model_name = "comment"
 
-    user: DanbooruUser
-    post: DanbooruPost
+    user: DanbooruUser | None = None
+    user_id: int | None = None
+    post: DanbooruPost | None = None
+    post_id: int | None = None
 
 
 class DanbooruPostVote(DanbooruModel):
@@ -264,6 +265,16 @@ class DanbooruBan(DanbooruModel):
 
     user: DanbooruUser
     banner: DanbooruUser
+
+
+class DanbooruFeedback(DanbooruModel):
+    danbooru_model_name = "user_feedback"
+
+    body: str
+    category: str
+
+    user: DanbooruUser
+    creator: DanbooruUser
 
 
 DanbooruArtist.model_rebuild(force=True)
