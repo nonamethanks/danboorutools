@@ -52,7 +52,7 @@ class DanbooruApi(Session):
         "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
         "post_vote": "id,created_at,score,is_deleted,user,post",
         "tag": "id,name,post_count,category,created_at,is_deprecated,wiki_page,artist",
-        "user": "id,name,created_at,level,level_string,post_update_count,note_update_count,post_upload_count,is_banned,is_deleted,bans,last_ip_addr",
+        "user": "id,name,created_at,level,level_string,post_update_count,note_update_count,post_upload_count,is_banned,is_deleted,bans,last_ip_addr",  # noqa: E501
         "user_feedback": "id,category,body,user,creator,created_at,updated_at,is_deleted",
     }
     only_string_defaults["user_event"] = f"id,created_at,category,user_session,user[{only_string_defaults['user']}]"

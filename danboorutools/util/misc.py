@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 def random_string(length: int) -> str:
     """Generate a random string of N length."""
-    return "".join(random.choice("0123456789ABCDEF") for i in range(length))  # noqa: S311
+    return "".join(random.choice("0123456789ABCDEF") for i in range(length))
 
 
 def tryint(string: str) -> str | int:
@@ -70,13 +70,12 @@ class BaseModel(BadBaseModel):
         try:
             super().__init__(**data)
         except ValidationError as e:
-            debug_method = print if in_ipython() else e.add_note  # https://github.com/ipython/ipython/issues/13849
             try:
                 values = value_from_validation_error(data, e)
             except KeyError:
-                debug_method(f"Failed to validate:\n {data}\n")  # type: ignore[operator]
+                e.add_note(f"Failed to validate the following input:\n>\t{data}\n")
             else:
-                debug_method(f"\n{data}\nFailed to validate:\n{values}\n")  # type: ignore[operator]
+                e.add_note(f"\n>\t{data}\nFailed to validate the following input:\n>\t{values}\n")
             raise
         else:
             self._raw_data = data
@@ -93,15 +92,6 @@ def value_from_validation_error(data: dict, exception: ValidationError) -> dict:
             value = value[field]
         values[".".join([str(location) for location in loc])] = value
     return values
-
-
-def in_ipython() -> bool:
-    try:
-        get_ipython().__class__.__name__  # type: ignore[name-defined]
-    except NameError:
-        return False
-    else:
-        return True
 
 
 cookie_dir = settings.BASE_FOLDER / "cookies"
@@ -130,7 +120,7 @@ def save_cookies_for(domain: str, cookies: list[dict[str, str]]) -> None:
 @dataclass_transform()
 class PseudoDataclass(type):
     def __hash__(cls) -> int:
-        return random.randint(1, int(1e10))  # noqa: S311
+        return random.randint(1, int(1e10))
 
 
 def base36encode(number: int) -> str:

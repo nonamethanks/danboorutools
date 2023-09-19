@@ -8,7 +8,7 @@ from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_incl
 @test("Test the parsing of kwargs", tags=["parsing"])
 def test_kwargs_parsing() -> None:
     kwargs = {
-        "id": 508240
+        "id": 508240,
     }
     assert kwargs_to_include(**kwargs) == {"search[id]": 508240}
 
@@ -22,13 +22,13 @@ def test_kwargs_nested_parsing() -> None:
             "e": "f",
             "g": {
                 "h": "i",
-                "j": "k"
-            }
+                "j": "k",
+            },
         },
         "page": 1,
         "order": "id",
         "limit": 20,
-        "only": "1,2,3"
+        "only": "1,2,3",
     }
 
     expected = {
@@ -40,7 +40,7 @@ def test_kwargs_nested_parsing() -> None:
         "search[order]": "id",
         "limit": 20,
         "page": 1,
-        "only": "1,2,3"
+        "only": "1,2,3",
     }
 
     assert kwargs_to_include(**kwargs) == expected
@@ -56,7 +56,7 @@ def test_users() -> None:
     assert users[users.index(user) - 1].id - 1 == user.id
 
 
-@test("Test the post_votes.json endpoint", tags=["danbooru", "danbooru_posts"])
+@test("Test the post_votes.json endpoint", tags=["danbooru", "danbooru_posts", "danbooru_votes"])
 def test_post_votes() -> None:
     post_votes = danbooru_api.post_votes(limit=100)
     assert len(post_votes) == 100
@@ -66,7 +66,7 @@ def test_post_votes() -> None:
     assert post_votes[post_votes.index(post_vote) - 1].id - 1 == post_vote.id
 
 
-@test("Test the comment_votes.json endpoint", tags=["danbooru", "danbooru_comments"])
+@test("Test the comment_votes.json endpoint", tags=["danbooru", "danbooru_comments", "danbooru_votes"])
 def test_comment_votes() -> None:
     comment_votes = danbooru_api.comment_votes(limit=100)
     assert len(comment_votes) == 100

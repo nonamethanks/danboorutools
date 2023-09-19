@@ -117,6 +117,7 @@ ignore = [
     "RUF003",  # Comment contains ambiguous unicode character
     "RUF012",  # Mutable class attributes should be annotated with `typing.ClassVar`
     "S101",    # assert detected
+    "S311",    # Standard pseudo-random generators are not suitable for cryptographic purposes # I don't fucking care
     "SIM105",  # Use `contextlib.suppress(KeyError)` instead of try-except-pass
     "SIM114",  # Combine `if` branches using logical `or` operator
     "SLF001",  # Private member accessed
@@ -150,6 +151,7 @@ disable = [
     "assignment-from-no-return",    # pylint is too fucking retarded to understand when a function is just a fucking stub under a fucking type checking block
     "broad-except",
     "import-outside-toplevel",      # there are legitimate cases and i'm experienced enough to know when not to do this
+    "line-too-long",                # already covered by ruff
     "missing-class-docstring",
     "missing-function-docstring",
     "missing-module-docstring",
