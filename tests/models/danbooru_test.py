@@ -43,3 +43,13 @@ def post_from_id_test() -> None:
 
 def test_post(post: DanbooruPost) -> None:
     assert post.id == 1
+
+    assert post.md5 == "d34e4cf0a437a5d65f8e82b7bcd02606"
+    assert post.file_url == "https://cdn.donmai.us/original/d3/4e/d34e4cf0a437a5d65f8e82b7bcd02606.jpg"
+
+    assert post.media_asset.image_height == 650
+    assert post.media_asset.image_width == 459
+
+    assert post.media_asset.file_ext == "jpg"
+
+    assert post.media_asset.pixel_hash == "9c877dd5674d7fa251ce2de0c956fd36"

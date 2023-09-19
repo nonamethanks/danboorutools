@@ -70,19 +70,46 @@ class DanbooruModel(BaseModel):
             raise
 
 
+class DanbooruMediaAsset(DanbooruModel):
+    danbooru_model_name = "media_asset"
+
+    md5: str
+    pixel_hash: str
+
+    file_ext: str
+    image_height: int
+    image_width: int
+    file_size: int
+
+    duration: int | None
+
+    variants: list[dict]
+
+
 class DanbooruPost(DanbooruModel):
     danbooru_model_name = "post"
 
     score: int
-    md5: str
-    file_ext: str
-    file_url: str
 
     tag_string: str
     tag_string_character: str
     tag_string_copyright: str
     tag_string_artist: str
     tag_string_meta: str
+
+    media_asset: DanbooruMediaAsset
+
+    @property
+    def md5(self) -> str:
+        return self.media_asset.md5
+
+    @property
+    def file_ext(self) -> str:
+        return self.media_asset.file_ext
+
+    @property
+    def file_url(self) -> str:
+        return next(filter(lambda x: x["type"] == "original", self.media_asset.variants))["url"]
 
     @property
     def source(self) -> Url | str:
