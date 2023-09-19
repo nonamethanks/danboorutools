@@ -95,6 +95,8 @@ class SockpuppetDetector:
             )
 
             if not (other_events := [e for e in events if e.user.name != signup.user.name]):
+                if SOCK_AUTOBAN_CARRIER and SOCK_AUTOBAN_IP_PREFIX:
+                    self._check_for_sock(signup, [])
                 continue
 
             other_users_map = {event.user.id: event.user for event in other_events}
