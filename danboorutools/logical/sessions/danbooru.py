@@ -49,6 +49,7 @@ class DanbooruApi(Session):
         "artist": "id,created_at,name,other_names,is_deleted,is_banned,tag,urls",
         "ban": "id,created_at,duration,reason,user,banner",
         "comment_vote": "id,created_at,score,is_deleted,user,comment",
+        "media_asset": "id,created_at,md5,file_ext,file_size,image_width,image_height,duration,pixel_hash,variants,post",
         "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
         "post_vote": "id,created_at,score,is_deleted,user,post",
         "tag": "id,name,post_count,category,created_at,is_deprecated,wiki_page,artist",
@@ -133,6 +134,9 @@ class DanbooruApi(Session):
 
     def feedbacks(self, **kwargs) -> list[models.DanbooruFeedback]:
         return self._generic_endpoint(models.DanbooruFeedback, **kwargs)
+
+    def media_assets(self, **kwargs) -> list[models.DanbooruMediaAsset]:
+        return self._generic_endpoint(models.DanbooruMediaAsset, **kwargs)
 
     def post_versions(self, **kwargs) -> list[models.DanbooruPostVersion]:
         return self._generic_endpoint(models.DanbooruPostVersion, **kwargs)
