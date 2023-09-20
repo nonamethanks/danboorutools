@@ -81,7 +81,7 @@ class DanbooruMediaAsset(DanbooruModel):
     image_width: int
     file_size: int
 
-    duration: int | None
+    duration: float | None
 
     variants: list[dict]
 
