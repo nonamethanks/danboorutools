@@ -113,6 +113,12 @@ class DanbooruHTTPError(HTTPError):
                     "message": "Danbooru is down for maintenance",
                     "backtrace": [],
                 }
+            elif "<center><h1>502 Bad Gateway</h1></center>" in response.text and "<center>cloudflare</center>" in response.text:
+                self.json_response = {
+                    "error": "BadGatewayError",
+                    "message": "Cloudflare might be having issues",
+                    "backtrace": ["502 Bad Gateway"],
+                }
             else:
                 raise NotImplementedError(response.text) from e
 
