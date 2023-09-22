@@ -123,7 +123,7 @@ class DanbooruHTTPError(HTTPError):
                 raise NotImplementedError(response.text) from e
 
         try:
-            self.error_type = response.json()["error"]
+            self.error_type = self.json_response["error"]
         except KeyError as e:
             raise NotImplementedError(response.json()) from e
         self.error_message = response.json()["message"]
