@@ -206,6 +206,7 @@ class SockpuppetDetector:
             r"^f_?[a4]_?g_?s\d*$",
             r"^f_?\w_?g_?g_?o_?t_?s?\d*$",
             r"^n_?[i1]_?g_?g_?[e3]_?r_?s?\d*$",
+            r"^(homosexuality|lgbt|yuri|h_?word)_?disease$",
         ]
 
         if not any(re.match(pattern, signup.user.name, flags=re.IGNORECASE) for pattern in patterns):
