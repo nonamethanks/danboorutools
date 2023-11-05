@@ -100,10 +100,11 @@ class SaucenaoSession(Session):
 
     def __parse_pixiv_result(self, saucenao_result: dict) -> SaucenaoArtistResult:
         pixiv_id = saucenao_result["member_id"]
-        stacc = saucenao_result.get("member_login_name") or saucenao_result.get("member_name")
-        extra_urls = [PixivStaccUrl.build(stacc=stacc)] if stacc else []
+        stacc = saucenao_result.get("member_login_name")
+
         secondary_names = [stacc, f"pixiv {pixiv_id}"] if stacc else [f"pixiv {pixiv_id}"]
 
+        extra_urls = [PixivStaccUrl.build(stacc=stacc)] if stacc else []
         pixiv_artist_url = PixivArtistUrl.build(user_id=pixiv_id)
 
         return SaucenaoArtistResult(
