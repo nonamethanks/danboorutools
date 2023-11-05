@@ -1,7 +1,5 @@
 # ruff: noqa: E501
 
-from pathlib import Path
-
 import click
 
 from danboorutools import logger, settings

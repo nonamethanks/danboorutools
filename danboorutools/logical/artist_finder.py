@@ -50,6 +50,7 @@ class ArtistFinder:
                 self.skipped_posts.value = [*self.skipped_posts.value, post.id]
                 return False
         else:
+            assert artist_url
             logger.debug(f"Found artist url {artist_url} for source {source} for post {post}")
             result_from_archives = None
             if artist_url.is_deleted:
