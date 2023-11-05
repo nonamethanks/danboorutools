@@ -1,5 +1,4 @@
 {
-    "python.linting.flake8Enabled": false,
     "terminal.integrated.profiles.linux": {
         "tools shell": {
             "overrideName": true,
@@ -33,7 +32,7 @@
     },
     "ruff.importStrategy": "fromEnvironment",
     "python.analysis.logLevel": "Trace",
-    "ruff.args": [
+    "ruff.lint.args": [
         "--config=${workspaceFolder}/pyproject.toml"
     ],
     "pylint.severity": {
