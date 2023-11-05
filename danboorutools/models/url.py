@@ -8,7 +8,7 @@ from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
 
 # from typeguard import check_type
-from danboorutools.exceptions import DeadUrlError
+from danboorutools.exceptions import DeadUrlError, UnknownUrlError
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.url_parser import UrlParser
@@ -144,6 +144,8 @@ class Url(metaclass=PseudoDataclass):
                 return self.post.artist
         elif isinstance(self, RedirectUrl):
             return self.resolved.artist
+        elif isinstance(self, UnknownUrl):
+            raise UnknownUrlError(self)
         else:
             raise NotImplementedError(self, type(self))
 

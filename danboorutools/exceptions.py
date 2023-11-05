@@ -16,6 +16,8 @@ class UnknownUrlError(Exception):
         if parser:
             message += f" (parser: {parser.__name__})"
         message += "."
+
+        self.url = url
         super().__init__(message)
 
 
