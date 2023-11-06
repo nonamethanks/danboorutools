@@ -93,7 +93,7 @@ class EHEntaiRateLimitError(HTTPError):
 class NotLoggedInError(HTTPError):
     @property
     def message(self) -> str:
-        return f"The request to {self.original_url} failed because we are not logged in."
+        return f"The request to {self.original_url} failed with status code {self.status_code}, probably because we are not logged in."
 
 
 class DanbooruHTTPError(HTTPError):

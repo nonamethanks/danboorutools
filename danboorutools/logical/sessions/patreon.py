@@ -8,6 +8,7 @@ from typing import Literal
 
 from bs4 import BeautifulSoup
 
+from danboorutools.exceptions import NotLoggedInError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
@@ -20,7 +21,7 @@ class PatreonSession(Session):
         request = self.get(url)
         json_data = JSON_DATA_PATTERN.search(request.text)
         if not json_data:
-            raise NotImplementedError(url)
+            raise NotLoggedInError(request)
         parsed_data = json.loads(json_data.groups()[0])
         return PatreonArtistData(**parsed_data["campaign"])
 
