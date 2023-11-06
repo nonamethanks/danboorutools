@@ -29,11 +29,11 @@ class ParsableUrl:
             url_query = None
 
         try:
-            [scheme, _, hostname, *url_parts] = url_without_query.split("/")
+            [schema, _, hostname, *url_parts] = url_without_query.split("/")
         except ValueError as e:
             raise NotAnUrlError(self.raw_url) from e
 
-        if scheme not in ("http:", "https:"):
+        if schema not in ("http:", "https:"):
             raise NotAnUrlError(self.raw_url)
 
         hostname = hostname.split(":")[0]
@@ -45,7 +45,7 @@ class ParsableUrl:
 
         url_parts = list(filter(bool, url_parts))  # faster than list comprehension
         return {
-            "scheme": scheme,
+            "schema": schema,
             "url_parts": url_parts,
             "hostname": hostname,
             "query": url_query,
@@ -81,7 +81,7 @@ class ParsableUrl:
 
     @property
     def path(self) -> str:
-        return self.raw_url.removeprefix(f"{self.scheme}//{self.hostname}")
+        return self.raw_url.removeprefix(f"{self.schema}//{self.hostname}")
 
     @cached_property
     def query(self) -> dict[str, str]:
@@ -111,8 +111,8 @@ class ParsableUrl:
             return ""
 
     @property
-    def scheme(self) -> str:
-        return self.url_data["scheme"]
+    def schema(self) -> str:
+        return self.url_data["schema"]
 
     @property
     def is_base_url(self) -> bool:
@@ -126,7 +126,7 @@ class ParsableUrl:
         return hash(self.__str__())
 
     def without(self, *parts: str) -> ParsableUrl:
-        string = f"{self.scheme}//{self.hostname}/" + "/".join(u for u in self.url_parts if u not in parts)
+        string = f"{self.schema}//{self.hostname}/" + "/".join(u for u in self.url_parts if u not in parts)
 
         if self.query:
             string += "?" + "&".join(f"{k}={v}" for k, v in self.query.items())
