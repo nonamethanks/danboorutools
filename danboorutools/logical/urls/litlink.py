@@ -19,4 +19,4 @@ class LitlinkUrl(InfoUrl):
         if not links:
             raise NotImplementedError(self)
 
-        return [Url.parse(el["href"]) for el in links]
+        return [Url.parse(el["href"]) for el in links if not el["href"].startswith("mailto:")]
