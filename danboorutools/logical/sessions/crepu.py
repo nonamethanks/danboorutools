@@ -34,7 +34,6 @@ class CrepuArtistData(BaseModel):
         return [
             Url.parse(url)
                  for url in [
-                    self.user_circle_name,
                     self.user_twitter_url,
                     self.user_instagram_url,
                     self.user_pixiv_url,
