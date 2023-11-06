@@ -155,6 +155,8 @@ class ArtistFinder:
             e.add_note(f"While crawling url {first_url}...")
             raise
 
+        assert all(isinstance(u, Url) for u in related_urls), f"{first_url} returned a string instead of an url for .related. Uh oh!"
+
         for related_url in related_urls:
             if related_url in scanned_urls:
                 continue

@@ -129,13 +129,15 @@ def bulk_parse(test_set: list[str], resume: bool, log_urls: bool = False) -> Non
     logger.info("Done.")
 
     if log_urls:
-        results.sort(key=lambda x: (x.__class__.__name__, x.parsed_url.path))
+        results.sort(key=lambda x: (x.__class__.__name__, len(x.parsed_url.url_parts), x.parsed_url.path))
 
         logger.info("")
         logger.info("#### PARSING RESULTS ####")
         logger.info("")
+
+        padding = len(max(results, key=lambda x: len(x.__class__.__name__)).__class__.__name__) + 5
         for result in results:
-            logger.info(result)
+            logger.info(f"{result.__class__.__name__:<{padding}}" + result.parsed_url.raw_url.replace("http:", "https:"))
         logger.info("#######################")
         logger.info("")
 

@@ -20,7 +20,7 @@ PARSER_TEMPLATE = """
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.{module_name} import {class_name_base}ArtistUrl, {class_name_base}ImageUrl, {class_name_base}PostUrl, {class_name_base}Url
 
-class {class_name_base}Parser(UrlParser):{domains_if_bad_chars}
+class {parser_name_base}Parser(UrlParser):{domains_if_bad_chars}
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> {class_name_base}Url | None:
         match parsable_url.url_parts:
@@ -94,10 +94,11 @@ class {class_name_base}ArtistData(BaseModel):
 
 TESTS_TEMPLATE = """
 from danboorutools.logical.urls.{module_name} import {class_name_base}ArtistUrl, {class_name_base}ImageUrl, {class_name_base}PostUrl
-from tests.urls import generate_parsing_suite
+from tests.urls import assert_artist_url, generate_parsing_suite
 
 urls = {{
     {class_name_base}ArtistUrl: {{
+        "{original_url}": "{original_url}",
     }},
     {class_name_base}PostUrl: {{
     }},
@@ -107,6 +108,15 @@ urls = {{
 
 
 generate_parsing_suite(urls)
+
+assert_artist_url(
+    url="{original_url}",
+    url_type={class_name_base}ArtistUrl,
+    url_properties=dict(username=),
+    primary_names=[],
+    secondary_names=[],
+    related=[],
+)
 """
 
 BASE_FOLDER = settings.BASE_FOLDER / "danboorutools"
@@ -149,6 +159,7 @@ def create_url_template(url: str, force: bool = False) -> None:
     formatted_tests = TESTS_TEMPLATE.format(
         class_name_base=classize(name_base),
         module_name=name_base.replace("-", "_"),
+        original_url=url,
     ).strip() + "\n"
 
     if not parser_filename.is_file() or force:
