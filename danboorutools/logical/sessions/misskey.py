@@ -5,10 +5,8 @@ from typing import TYPE_CHECKING
 import ring
 
 from danboorutools.logical.sessions import Session
-from danboorutools.util.misc import BaseModel
-
-if TYPE_CHECKING:
-    from danboorutools.models.url import Url
+from danboorutools.models.url import Url
+from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 
 class MisskeySession(Session):
@@ -35,10 +33,12 @@ class MisskeyUserData(BaseModel):
 
     @property
     def related_urls(self) -> list[Url]:
+        urls = []
+
         if self.url:
             raise NotImplementedError(self.url, self.uri, self.description)
         if self.uri:
             raise NotImplementedError(self.url, self.uri, self.description)
         if self.description:
-            raise NotImplementedError(self.url, self.uri, self.description)
-        return []
+            urls += [Url.parse(u) for u in extract_urls_from_string(self.description)]
+        return urls
