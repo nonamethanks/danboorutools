@@ -79,6 +79,10 @@ class ParsableUrl:
     def url_parts(self) -> list[str]:
         return self.url_data["url_parts"]
 
+    @property
+    def path(self) -> str:
+        return self.raw_url.removeprefix(f"{self.scheme}//{self.hostname}")
+
     @cached_property
     def query(self) -> dict[str, str]:
         if not (query := self.url_data["query"]):

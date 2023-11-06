@@ -25,7 +25,11 @@ def main(times: int = 0, resume: bool = False, unparsed: bool = False, update: b
         update_urls()
         return
 
-    test_set = prepare_test_set(times)
+    if domain:
+        domain = Url.parse(domain).parsed_url.domain
+        logger.info(f"Parsing for domain {domain}")
+
+    test_set = prepare_test_set(times, domain)
 
     if unparsed:
         print_unparsed(test_set)
@@ -33,7 +37,7 @@ def main(times: int = 0, resume: bool = False, unparsed: bool = False, update: b
     else:
         logger.info(f"Testing URL parsing {len(test_set)} times.")
 
-        bulk_parse(test_set, resume, domain=domain)
+        bulk_parse(test_set, resume, log_urls=domain is not None)
 
 def update_urls() -> None:
     from google.cloud import bigquery
@@ -71,7 +75,7 @@ def print_unparsed(test_set: list[str]) -> None:
         logger.info(f"{index + 1:2d}: {domain} ({number})")
 
 
-def prepare_test_set(times: int) -> list[str]:
+def prepare_test_set(times: int, domain: str | None) -> list[str]:
     logger.info("Loading data...")
     logger.info("Loading artist urls...")
     with (settings.BASE_FOLDER / "data" / "artist_urls.txt").open(encoding="utf-8") as myf:
@@ -82,6 +86,9 @@ def prepare_test_set(times: int) -> list[str]:
         test_set += [line.strip().strip('"') for line in myf if line.strip()]
     logger.info("Sources loaded.")
 
+    if domain:
+        test_set = [t for t in test_set if domain in t]
+
     if times:
         test_set = test_set[:times]
     return test_set
@@ -89,13 +96,10 @@ def prepare_test_set(times: int) -> list[str]:
     # TODO: daily bot that validates all new urls and sends me an email with the bad ones
 
 
-def bulk_parse(test_set: list[str], resume: bool, domain: str | None = None) -> None:
+def bulk_parse(test_set: list[str], resume: bool, log_urls: bool = False) -> None:
     profiler = LineProfiler()
     parse_wrapper = prepare_profiler(profiler)
     start = time.time()
-
-    if domain:
-        domain = Url.parse(domain).parsed_url.domain
 
     last_fail = ProgressTracker("PARSING_BENCHMARK_LAST_FAIL", 0)
     if not resume:
@@ -103,25 +107,39 @@ def bulk_parse(test_set: list[str], resume: bool, domain: str | None = None) -> 
     elif last_fail.value > 0:
         logger.info(f"Resuming from {last_fail.value - 20:_}.")
 
+    results: list[Url] = []
     for index, url_string in enumerate(test_set):
-        if domain and domain not in url_string:
-            continue
         if resume and index < last_fail.value - 20:  # little wiggle room for deleting invalid sources from the files
             continue
         if index % 100_000 == 0:
             logger.info(f"At url {index:_}, {int(time.time() - start)}s elapsed.")
             last_fail.value = index
         try:
-            parse_wrapper(url_string)
+            results.append(parse_wrapper(url_string))
         except (Exception, KeyboardInterrupt) as e:
             e.add_note(f"At url {index:_} of {len(test_set):_}.")
             last_fail.value = index
             raise
 
-    profiler.print_stats()
+    # profiler.print_stats()
 
     with log_file.open("a+", encoding="utf-8") as log_file_obj:
         profiler.print_stats(stream=log_file_obj)
+
+    logger.info("Done.")
+
+    if log_urls:
+        results.sort(key=lambda x: (x.__class__.__name__, x.parsed_url.path))
+
+        logger.info("")
+        logger.info("#### PARSING RESULTS ####")
+        logger.info("")
+        for result in results:
+            logger.info(result)
+        logger.info("#######################")
+        logger.info("")
+
+    logger.info(f"Results available at {log_file}.")
 
     del last_fail.value
 
