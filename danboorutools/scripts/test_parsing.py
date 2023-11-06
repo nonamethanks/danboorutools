@@ -1,6 +1,7 @@
 import time
 from collections import Counter
 from collections.abc import Callable
+from pathlib import Path
 
 import click
 from line_profiler import LineProfiler
@@ -15,9 +16,15 @@ log_file = logger.log_to_file()
 
 @click.command()
 @click.option("--times", type=int, default=0)
+@click.option("--domain", type=str, default=None)
 @click.option("--resume", is_flag=True, default=False)
 @click.option("--unparsed", is_flag=True, default=False)
-def main(times: int = 0, resume: bool = False, unparsed: bool = False) -> None:
+@click.option("--update", is_flag=True, default=False)
+def main(times: int = 0, resume: bool = False, unparsed: bool = False, update: bool = False, domain: str | None = None) -> None:
+    if update:
+        update_urls()
+        return
+
     test_set = prepare_test_set(times)
 
     if unparsed:
@@ -26,8 +33,29 @@ def main(times: int = 0, resume: bool = False, unparsed: bool = False) -> None:
     else:
         logger.info(f"Testing URL parsing {len(test_set)} times.")
 
-        do_benchmark(test_set, resume)
+        bulk_parse(test_set, resume, domain=domain)
 
+def update_urls() -> None:
+    from google.cloud import bigquery
+
+    client = bigquery.Client()
+
+    # Perform a query.
+    artist_query = "SELECT url FROM `danbooru1.danbooru_public.artist_urls` "
+    logger.info("Fetching artist urls.")
+    artist_urls: list[str] = list(dict.fromkeys(row.url for row in client.query(artist_query).result()))
+    logger.info(f"Found {len(artist_urls)} artist urls.")
+    Path(settings.BASE_FOLDER / "data" / "artist_urls.txt").write_text("\n".join(artist_urls), encoding="utf-8")
+
+    source_query = "SELECT source FROM `danbooru1.danbooru_public.posts` where source like 'http%'"
+    logger.info("Fetching source urls.")
+    source_urls: list[str] = [row.source for row in client.query(source_query).result()]
+    source_urls = list(dict.fromkeys(s for s in source_urls if s.startswith(("http://", "https://"))))
+    logger.info(f"Found {len(source_urls)} source urls.")
+    Path(settings.BASE_FOLDER / "data" / "sources.txt").write_text(
+        "\n".join(source_urls),
+        encoding="utf-8",
+    )
 
 def print_unparsed(test_set: list[str]) -> None:
     unparsed_domains = []
@@ -47,8 +75,6 @@ def prepare_test_set(times: int) -> list[str]:
     logger.info("Loading data...")
     logger.info("Loading artist urls...")
     with (settings.BASE_FOLDER / "data" / "artist_urls.txt").open(encoding="utf-8") as myf:
-        # TODO: add script to update this and the below from bq
-        # https://github.com/danbooru/danbooru/issues/5440 this needs to be fixed first
         test_set = [line.strip().strip('"') for line in myf if line.strip()]
     logger.info("Artist urls loaded.")
     logger.info("Loading sources...")
@@ -63,10 +89,13 @@ def prepare_test_set(times: int) -> list[str]:
     # TODO: daily bot that validates all new urls and sends me an email with the bad ones
 
 
-def do_benchmark(test_set: list[str], resume: bool) -> None:
+def bulk_parse(test_set: list[str], resume: bool, domain: str | None = None) -> None:
     profiler = LineProfiler()
     parse_wrapper = prepare_profiler(profiler)
     start = time.time()
+
+    if domain:
+        domain = Url.parse(domain).parsed_url.domain
 
     last_fail = ProgressTracker("PARSING_BENCHMARK_LAST_FAIL", 0)
     if not resume:
@@ -75,6 +104,8 @@ def do_benchmark(test_set: list[str], resume: bool) -> None:
         logger.info(f"Resuming from {last_fail.value - 20:_}.")
 
     for index, url_string in enumerate(test_set):
+        if domain and domain not in url_string:
+            continue
         if resume and index < last_fail.value - 20:  # little wiggle room for deleting invalid sources from the files
             continue
         if index % 100_000 == 0:
