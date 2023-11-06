@@ -37,5 +37,5 @@ assert_artist_url(
     url_properties=dict(username="himetyanart"),
     primary_names=["Hime-Tyan Art"],
     secondary_names=["himetyanart"],
-    related=["https://www.instagram.com/tyanka6", "https://twitter.com/Antyan87884404"],
+    related=["https://www.instagram.com/tyanka6", "https://twitter.com/Antyan87884404", "https://www.youtube.com/channel/UC2XXjmV5QdgkT4iJlkk-1ew"],
 )

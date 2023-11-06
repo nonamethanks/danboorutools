@@ -8,22 +8,21 @@ from typing import Literal
 
 from bs4 import BeautifulSoup
 
-from danboorutools.exceptions import NotLoggedInError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
-JSON_DATA_PATTERN = re.compile(r"bootstrap, ({.*?)\);\s", re.DOTALL)
-
+#JSON_DATA_PATTERN = re.compile(r"bootstrap, ({.*?)\);\s", re.DOTALL)
+JSON_DATA_PATTERN = re.compile(r"<script id=\"__NEXT_DATA__\" type=\"application/json\">({\"props\".*?})</script>")
 
 class PatreonSession(Session):
     def artist_data(self, url: str) -> PatreonArtistData:
         request = self.get(url)
-        json_data = JSON_DATA_PATTERN.search(request.text)
-        if not json_data:
-            raise NotLoggedInError(request)
+        assert (json_data := JSON_DATA_PATTERN.search(request.text)), url
         parsed_data = json.loads(json_data.groups()[0])
-        return PatreonArtistData(**parsed_data["campaign"])
+        # return PatreonArtistData(**parsed_data["campaign"])
+        return PatreonArtistData(**parsed_data["props"]["pageProps"]["bootstrapEnvelope"]["bootstrap"]["campaign"])
+
 
     @property
     def cookies_from_env(self) -> dict:
