@@ -128,8 +128,9 @@ class DanbooruHTTPError(HTTPError):
             self.error_type = self.json_response["error"]
         except KeyError as e:
             raise NotImplementedError(response.json()) from e
-        self.error_message = response.json()["message"]
-        self.backtrace = response.json()["backtrace"]
+
+        self.error_message = self.json_response["message"]
+        self.backtrace = self.json_response["backtrace"]
         super().__init__(response, *args, **kwargs)
 
     @property
