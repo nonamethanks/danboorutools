@@ -245,7 +245,11 @@ class Ascii2dSession(Session):
 
             if isinstance(original_url, PostUrl):
                 if original_url.normalized_url in [url.normalized_url for url in result.posts]:
-                    result._data["found_urls"] += [p.artist for p in result.posts]
+                    for post in result.posts:
+                        try:
+                            result._data["found_urls"] += [post.artist]
+                        except DeadUrlError:
+                            continue
                     return result
                 continue
             raise NotImplementedError(original_url)
