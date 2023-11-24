@@ -170,7 +170,7 @@ class SkebArtistData(BaseModel):
         if self.enty_id:
             raise NotImplementedError(self.enty_id)
 
-        if self.fanbox_id:
+        if self.fanbox_id and self.fanbox_id != "www":  # https://skeb.jp/@lenkenji21 lmao
             urls += [FanboxArtistUrl.build(username=self.fanbox_id)]
 
         if self.fantia_id:
