@@ -94,7 +94,7 @@ class PatreonArtistData(BaseModel):
         for included in self.included:
             if included["type"].startswith("reward"):
                 continue
-            if included["type"] in ("user", "post_aggregation", "goal"):
+            if included["type"] in ("user", "post_aggregation", "goal", "free_trial_configuration"):
                 continue
             if included["type"] == "social-connection":
                 urls += [included["attributes"]["external_profile_url"]]
