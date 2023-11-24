@@ -37,6 +37,18 @@ class FanzaDoujinAuthorUrl(ArtistUrl, FanzaUrl):
     # article=maker -> circle. gotta be careful to extract the correct author
     normalize_template = "https://www.dmm.co.jp/{subsubsite}/doujin/-/list/=/article=maker/id={user_id}/"
 
+    @property
+    def related(self) -> list[Url]:
+        return []
+
+    @property
+    def primary_names(self) -> list[str]:
+        return []
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return []
+
 
 class FanzaDlsoftWorkUrl(PostUrl, FanzaUrl):
     work_id: str
