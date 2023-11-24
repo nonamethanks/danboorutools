@@ -68,10 +68,17 @@ class TwitterSession(Session):
         if not data_response.ok:
             raise NotImplementedError(data_response.status_code, data_response.json())
 
-        data = data_response.json()
-        user_data = data["data"]["user"]
-        if not user_data:
+        data = self._try_json_response(data_response)["data"]
+        if not data:
             raise DeadUrlError(data_response)
+
+        try:
+            if not (user_data := data["user"]):
+                raise DeadUrlError(data_response)
+        except KeyError:
+            # motherfucking cunt
+            print(data)  # noqa: T201
+            raise
 
         old_user_data = user_data["result"]["legacy"]
         return TwitterUserData(**old_user_data | {"id": user_data["result"]["rest_id"]})
