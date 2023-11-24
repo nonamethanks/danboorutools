@@ -44,6 +44,7 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
             urls = []
 
         from danboorutools.logical.urls.skeb import SkebArtistUrl
+
         skeb = SkebArtistUrl.build(username=self.username)
         if not skeb.is_deleted:
             urls += [skeb]
@@ -56,7 +57,7 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
 
     @property
     def artist_data(self) -> TwitterUserData:
-        return self.session.user_data(username=self.username)
+        return self.session.user_data(user_name=self.username)
 
 
 class TwitterIntentUrl(InfoUrl, TwitterUrl):

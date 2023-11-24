@@ -1,74 +1,80 @@
 from __future__ import annotations
 
+import json
 import os
-from datetime import datetime
-from functools import cached_property
-from typing import TYPE_CHECKING
-
-import ring
-import twitter
-from pydantic import field_validator
 
 from danboorutools.exceptions import DeadUrlError
+
+# from datetime import datetime
+# from typing import TYPE_CHECKING
+# from pydantic import field_validator
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
-from danboorutools.util.time import datetime_from_string
 
-if TYPE_CHECKING:
-    from danboorutools.logical.urls.twitter import TwitterAssetUrl
+# from danboorutools.util.time import datetime_from_string
+
+# if TYPE_CHECKING:
+#    from danboorutools.logical.urls.twitter import TwitterAssetUrl
 
 SUSPENSION_MSG = "@{screen_name}'s account is temporarily unavailable because it violates the Twitter Media Policy. Learn more."
 
 
 class TwitterSession(Session):
+    BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"  # noqa: S105
+    CSRF_TOKEN = os.environ["TWITTER_CSRF"]
+    AUTH_TOKEN = os.environ["TWITTER_AUTH"]
 
-    @cached_property
-    def api(self) -> twitter.Api:
-        consumer_key = os.environ["TWITTER_CONSUMER_KEY"]
-        consumer_secret = os.environ["TWITTER_CONSUMER_SECRET"]
-        access_token = os.environ["TWITTER_ACCESS_TOKEN"]
-        access_token_secret = os.environ["TWITTER_ACCESS_TOKEN_SECRET"]
+    def user_data(self, user_name: str | None = None, user_id: int | None = None) -> TwitterUserData:
+        if user_name:
+            endpoint = "G3KGOASz96M-Qu0nwmGXNg/UserByScreenName"
+            variables = f'{{"screen_name":"{user_name}","withSafetyModeUserFields":true}}'
+        elif user_id:
+            endpoint = "QdS5LJDl99iL_KUzckdfNQ/UserByRestId"
+            variables = f'{{"userId":"{user_id}","withSafetyModeUserFields":true}}'
+        else:
+            raise ValueError
 
-        api = twitter.Api(
-            consumer_key,
-            consumer_secret,
-            access_token,
-            access_token_secret,
-            sleep_on_rate_limit=True,
-            tweet_mode="extended",
-        )
-        api._session = self
-        return api
-
-    @ring.lru()
-    def user_data(self, username: str | None = None, user_id: int | None = None) -> TwitterUserData:
-        assert username or user_id
-        try:
-            return TwitterUserData(**self.api.GetUser(screen_name=username, user_id=user_id, return_json=True, include_entities=True))
-        except twitter.error.TwitterError as e:
-            if "User not found." in str(e) or "User has been suspended." in str(e):
-                original_url = f"https://twitter.com/{username}" if username else f"https://twitter.com/intent/user?user_id={user_id}"
-                raise DeadUrlError(status_code=404, original_url=original_url) from e
-            raise
-
-    @ring.lru()
-    def get_user_tweets(self, user_id: int, max_id: int, since_id: int) -> list[TwitterTweetData]:
-        url = f"{self.api.base_url}/statuses/user_timeline.json"
-
-        parameters = {
-            "user_id": user_id,
-            "since_id": since_id or None,
-            "max_id": max_id or None,
-            "count": 200,
-            "include_rts": False,
-            "trim_user": False,
-            "exclude_replies": False,
+        headers = {
+            "authorization": f"Bearer {self.BEARER_TOKEN}",
+            "cookie": f"lang=en; auth_token={self.AUTH_TOKEN}; ct0={self.CSRF_TOKEN}; ",
+            "x-csrf-token": self.CSRF_TOKEN,
         }
 
-        resp = self.api._RequestUrl(url, "GET", data=parameters)
-        data = self.api._ParseAndCheckTwitter(resp.content.decode("utf-8"))
-        return [TwitterTweetData(**tweet) for tweet in data]
+        features = {
+            "hidden_profile_likes_enabled": True,
+            "hidden_profile_subscriptions_enabled": True,
+            "responsive_web_graphql_exclude_directive_enabled": True,
+            "verified_phone_label_enabled": False,
+            "subscriptions_verification_info_is_identity_verified_enabled": True,
+            "subscriptions_verification_info_verified_since_enabled": True,
+            "highlights_tweets_tab_ui_enabled": True,
+            "creator_subscriptions_tweet_preview_api_enabled": True,
+            "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
+            "responsive_web_graphql_timeline_navigation_enabled": True,
+        }
+
+        params = {
+            "variables": variables,
+            "features": json.dumps(features, separators=(",", ":")),
+            "fieldToggles": '{"withAuxiliaryUserLabels":false}',
+        }
+
+        data_response = self.get(
+            f"https://twitter.com/i/api/graphql/{endpoint}",
+            params=params,
+            headers=headers,
+        )
+        if not data_response.ok:
+            raise NotImplementedError(data_response.status_code, data_response.json())
+
+        data = data_response.json()
+        user_data = data["data"]["user"]
+        if not user_data:
+            raise DeadUrlError(data_response)
+
+        old_user_data = user_data["result"]["legacy"]
+        return TwitterUserData(**old_user_data | {"id": user_data["result"]["rest_id"]})
 
 
 class TwitterUserData(BaseModel):
@@ -95,44 +101,45 @@ class TwitterUserData(BaseModel):
         return related
 
 
-class TwitterTweetData(BaseModel):
-    id: int
-    created_at: datetime
-    favorite_count: int
-    extended_entities: dict[str, list[dict]] | None
+# class TwitterTweetData(BaseModel):
+#     id: int
+#     created_at: datetime
+#     favorite_count: int
+#     extended_entities: dict[str, list[dict]] | None
 
-    user: TwitterUserData
+#     user: TwitterUserData
 
-    @field_validator("created_at", mode="before")
-    @classmethod
-    def parse_created_at(cls, value: str) -> datetime:
-        return datetime_from_string(value)
+#     @field_validator("created_at", mode="before")
+#     @classmethod
+#     def parse_created_at(cls, value: str) -> datetime:
+#         return datetime_from_string(value)
 
-    @property
-    def asset_urls(self) -> list[TwitterAssetUrl]:
-        from danboorutools.logical.urls.twitter import TwitterAssetUrl
-        if not self.extended_entities:
-            return []
+#     @property
+#     def asset_urls(self) -> list[TwitterAssetUrl]:
+#         from danboorutools.logical.urls.twitter import TwitterAssetUrl
 
-        assets = []
-        for item in self.extended_entities["media"]:
-            if item["type"] == "photo":
-                asset_str = item["media_url"] + ":orig"
-            elif item["type"] == "animated_gif":
-                variants = item["video_info"]["variants"]
-                if len(variants) == 1:
-                    asset_str = variants[0]["url"]
-                else:
-                    raise NotImplementedError(variants)
-            elif item["type"] == "video":
-                variants = item["video_info"]["variants"]
-                sorted_variants = sorted(variants, key=lambda k: k.get("bitrate", 0))
-                asset_str = sorted_variants[-1]["url"]
-            else:
-                raise NotImplementedError(item)
+#         if not self.extended_entities:
+#             return []
 
-            parsed = Url.parse(asset_str)
-            assert isinstance(parsed, TwitterAssetUrl)
-            assets.append(parsed)
+#         assets = []
+#         for item in self.extended_entities["media"]:
+#             if item["type"] == "photo":
+#                 asset_str = item["media_url"] + ":orig"
+#             elif item["type"] == "animated_gif":
+#                 variants = item["video_info"]["variants"]
+#                 if len(variants) == 1:
+#                     asset_str = variants[0]["url"]
+#                 else:
+#                     raise NotImplementedError(variants)
+#             elif item["type"] == "video":
+#                 variants = item["video_info"]["variants"]
+#                 sorted_variants = sorted(variants, key=lambda k: k.get("bitrate", 0))
+#                 asset_str = sorted_variants[-1]["url"]
+#             else:
+#                 raise NotImplementedError(item)
 
-        return assets
+#             parsed = Url.parse(asset_str)
+#             assert isinstance(parsed, TwitterAssetUrl)
+#             assets.append(parsed)
+
+#         return assets
