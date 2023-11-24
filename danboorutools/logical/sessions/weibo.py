@@ -22,12 +22,13 @@ class WeiboSession(Session):
         kwargs["cookies"] = kwargs.get("cookies", {}) | cookies
         return super().request(*args, **kwargs)
 
-    def user_data(self,
-                  short_id: int | None = None,
-                  long_id: int | None = None,
-                  username: str | None = None,
-                  screen_name: str | None = None,
-                  ) -> WeiboUserData:
+    def user_data(
+        self,
+        short_id: int | None = None,
+        long_id: int | None = None,
+        username: str | None = None,
+        screen_name: str | None = None,
+    ) -> WeiboUserData:
         if short_id:
             data_url = f"https://weibo.com/ajax/profile/info?uid={short_id}"
         elif long_id or username:
@@ -43,7 +44,7 @@ class WeiboSession(Session):
             raise NotImplementedError(response, data_url, response.content)
 
         try:
-            data = response.json()
+            data = response.json()  # type: dict
         except JSONDecodeError as e:
             if "weibo.com/signup/signup.php" in response.url:
                 raise NotLoggedInError(response, original_url=data_url) from e
