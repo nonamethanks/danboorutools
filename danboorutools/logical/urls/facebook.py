@@ -37,6 +37,12 @@ class FacebookOldPageUrl(RedirectUrl, FacebookUrl):
     normalize_template = "https://www.facebook.com/pages/category/{category}/{old_id}"
 
 
+class FacebookOldPeopleUrl(RedirectUrl, FacebookUrl):
+    people_id: str
+
+    normalize_template = "https://www.facebook.com/profile.php?id={people_id}"
+
+
 class FacebookPeopleUrl(ArtistUrl, FacebookUrl):
     people_name: str
     people_id: str

@@ -84,8 +84,10 @@ class FacebookComParser(UrlParser):
             # https://www.facebook.com/bladencreator/about/
             # https://www.facebook.com/SuperMechaChampionsGlobal/photos/
             case username, subdir if subdir in cls.RESERVED_NAMES:
-                return fb.FacebookUserUrl(parsed_url=parsable_url,
-                                          username=username)
+                return fb.FacebookUserUrl(parsed_url=parsable_url, username=username)
+
+            case "profile.php", :
+                return fb.FacebookOldPeopleUrl(parsed_url=parsable_url, people_id=parsable_url.query["id"])
 
             # https://www.facebook.com/KittyRaymson/
             case username, if username not in cls.RESERVED_NAMES:
