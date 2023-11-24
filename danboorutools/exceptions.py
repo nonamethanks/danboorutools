@@ -96,6 +96,14 @@ class NotLoggedInError(HTTPError):
         return f"The request to {self.original_url} failed with status code {self.status_code}, probably because we are not logged in."
 
 
+class JsonNotFoundError(HTTPError):
+    """An expected json wasn't found in the html."""
+
+    @property
+    def message(self) -> str:
+        return f"Pattern not found in url {self.original_url}."
+
+
 class DanbooruHTTPError(HTTPError):
     """A danbooru HTTP error."""
 

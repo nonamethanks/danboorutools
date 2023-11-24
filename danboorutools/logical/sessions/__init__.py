@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import tempfile
 import time
@@ -17,11 +18,12 @@ from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from cloudscraper import CloudScraper as _CloudScraper
 from cloudscraper.exceptions import CloudflareChallengeError
 from fake_useragent import UserAgent
-from pyrate_limiter.limiter import Limiter, RequestRate
+from pyrate_limiter.limiter import Limiter
+from pyrate_limiter.request_rate import RequestRate
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from danboorutools import logger
-from danboorutools.exceptions import DeadUrlError, DownloadError, HTTPError, RateLimitError
+from danboorutools.exceptions import DeadUrlError, DownloadError, HTTPError, JsonNotFoundError, RateLimitError
 from danboorutools.logical.browser import Browser
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.file import File, FileSubclass
@@ -75,7 +77,9 @@ class Session(_CloudScraper):
         return Browser()
 
     def request(self, method: str, *args, skip_cache: bool | None = None, **kwargs) -> Response:
-        if skip_cache is True or (skip_cache is None and self.DISABLE_AUTOMATIC_CACHE) or method.lower() not in ["get", "head"]:
+        if skip_cache is True \
+                or (skip_cache is None and self.DISABLE_AUTOMATIC_CACHE)\
+                or (method.lower() not in ["get", "head"] and skip_cache is not False):
             # always cache every request by default, but discard the cache if a subsequent call is made that does not want a cached version
             # in theory cache access is slower, but who cares, the limiter will always be the request itself anyway
             self._cached_request.delete(method, *args, **kwargs)
@@ -166,6 +170,23 @@ class Session(_CloudScraper):
                 raise HTTPError(response) from e
             else:
                 raise
+
+    def extract_json_from_html(self, url: str, *args, pattern: str, selector: str | None = None, **kwargs) -> dict:
+        response = self.get(url, *args, **kwargs)
+        html = self._response_as_html(response)
+
+        if not (elements := html.select(selector or "script")):
+            raise ValueError(f"No element with selector {selector or 'script'} found in page.")
+
+        for script in elements:
+            if (match := re.search(pattern, script.decode_contents())):
+                break
+        else:
+            raise JsonNotFoundError(response)
+
+        parsable_json = match.groups()[0]
+        parsed_json = json.loads(parsable_json)
+        return parsed_json
 
     def unscramble(self, url: str) -> str:
         resp = self.head(url, allow_redirects=True)

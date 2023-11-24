@@ -1,28 +1,31 @@
 from __future__ import annotations
 
-import json
 import os
-import re
 from datetime import datetime
 from typing import Literal
 
+import ring
 from bs4 import BeautifulSoup
 
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
-#JSON_DATA_PATTERN = re.compile(r"bootstrap, ({.*?)\);\s", re.DOTALL)
-JSON_DATA_PATTERN = re.compile(r"<script id=\"__NEXT_DATA__\" type=\"application/json\">({\"props\".*?})</script>")
+# JSON_DATA_PATTERN = re.compile(r"bootstrap, ({.*?)\);\s", re.DOTALL)
+
 
 class PatreonSession(Session):
+    @ring.lru()
     def artist_data(self, url: str) -> PatreonArtistData:
-        request = self.get(url)
-        assert (json_data := JSON_DATA_PATTERN.search(request.text)), url
-        parsed_data = json.loads(json_data.groups()[0])
+        json_pattern = r"({\"props\".*})"
+        parsed_data = self.extract_json_from_html(
+            url,
+            pattern=json_pattern,
+            selector="script#__NEXT_DATA__",
+        )
+
         # return PatreonArtistData(**parsed_data["campaign"])
         return PatreonArtistData(**parsed_data["props"]["pageProps"]["bootstrapEnvelope"]["bootstrap"]["campaign"])
-
 
     @property
     def cookies_from_env(self) -> dict:
@@ -121,9 +124,9 @@ class PatreonCampaignPostData(BaseModel):
 
         assets = []
         for entity in entities:
-            entity_data = [included_json for included_json in included
-                           if included_json["id"].isnumeric()
-                           and int(entity["id"]) == int(included_json["id"])][0]
+            entity_data, = (included_json for included_json in included
+                            if included_json["id"].isnumeric()
+                            and int(entity["id"]) == int(included_json["id"]))
 
             attribute = entity_data["attributes"]
             if "image_urls" in attribute:

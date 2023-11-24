@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 from functools import cached_property
 
 import deviantart
@@ -13,19 +12,14 @@ from danboorutools.logical.urls.twitter import TwitterArtistUrl
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
-data_pattern = re.compile(r"window.__INITIAL_STATE__ = JSON.parse\(\"(.*)\"\);")
-
 
 class DeviantartSession(Session):
+    @ring.lru()
     def user_data(self, username: str) -> DeviantartUserData:
-        html = self.get_html(f"https://www.deviantart.com/{username}")
-        script = next(el.string for el in html.select("script") if el.string and "window.__INITIAL_STATE__ = JSON.parse" in el.string)
-        match = data_pattern.search(script)
-        if not match:
-            raise NotImplementedError(username)
-
-        parsable_json = match.groups()[0].encode("utf-8").decode("unicode_escape")
-        parsed_json = json.loads(parsable_json)
+        parsed_json = self.extract_json_from_html(
+            f"https://www.deviantart.com/{username}",
+            pattern=r"window.__INITIAL_STATE__ = JSON.parse\(\"(.*)\"\);",
+        )
 
         about_data, = (module for module in parsed_json["modules"].values() if module["type"] == "about")
 
