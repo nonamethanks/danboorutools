@@ -25,7 +25,7 @@
         "-workbench.action.terminal.paste"
     ],
     "[python]": {
-        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.autopep8",
         "editor.codeActionsOnSave": {
             "source.organizeImports": true,
         },
