@@ -16,7 +16,7 @@ img_subdomain_pattern = re.compile(r"^i(?:mg)?\d*$")
 
 class PixivNetParser(UrlParser):
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> p.PixivUrl | s.PixivSketchUrl | c.PixivComicUrl | f.FanboxUrl | None:
+    def match_url(cls, parsable_url: ParsableUrl) -> p.PixivUrl | s.PixivSketchUrl | c.PixivComicUrl | f.FanboxUrl | UselessUrl | None:
         if img_subdomain_pattern.match(parsable_url.subdomain):
             return cls._match_i_subdomain(parsable_url)
         if parsable_url.url_parts[0] == "fanbox":
@@ -45,7 +45,7 @@ class PixivNetParser(UrlParser):
             return None
 
     @staticmethod
-    def _match_no_subdomain(parsable_url: ParsableUrl) -> p.PixivUrl | None:
+    def _match_no_subdomain(parsable_url: ParsableUrl) -> p.PixivUrl | UselessUrl | None:
         match parsable_url.url_parts:
             # https://www.pixiv.net/en/artworks/46324488
             # https://www.pixiv.net/artworks/46324488
@@ -131,6 +131,10 @@ class PixivNetParser(UrlParser):
 
             case "dashboard", :
                 return UselessUrl(parsed_url=parsable_url)
+
+            # http://pixiv.net/manage/illusts/
+            case "manage", *_:
+                return UselessUrl(parsable_url)
 
             case _:
                 # https://www.pixiv.net/contest/neuralcloud
