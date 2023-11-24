@@ -8,6 +8,7 @@ import ring
 from pydantic import field_validator
 from requests_oauthlib import OAuth1
 
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, base36encode, extract_urls_from_string
@@ -28,6 +29,8 @@ class PlurkSession(Session):
     def user_data(self, username: str) -> PlurkArtistData:
         response = self.post("https://www.plurk.com/APP/Profile/getPublicProfile", json={"user_id": username}, auth=self.oauth)
         response_data = self._try_json_response(response)
+        if response_data.get("error_text") == "User not found":
+            raise DeadUrlError(response)
         return PlurkArtistData(**response_data["user_info"])
 
     @ring.lru()
