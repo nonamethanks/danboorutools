@@ -123,9 +123,10 @@ class Ascii2dArtistResult:
 
             data["found_urls"].append(second_url)
             if site in ["pixiv", "fanbox", "ニジエ", "tinami", "ニコニコ静画", "fantia"]:
-                assert isinstance(second_url,
-                                  (PixivArtistUrl, FanboxArtistUrl, NijieArtistUrl,
-                                   TinamiArtistUrl, NicoSeigaArtistUrl, FantiaFanclubUrl))
+                assert isinstance(
+                    second_url,
+                    (PixivArtistUrl, FanboxArtistUrl, NijieArtistUrl, TinamiArtistUrl, NicoSeigaArtistUrl, FantiaFanclubUrl),
+                )
                 data["primary_names"].append(artist_name)
             elif site == "twitter":
                 assert isinstance(second_url, TwitterIntentUrl)
@@ -212,7 +213,11 @@ class Ascii2dSession(Session):
         response = self.get_html(ascii2d_url)
 
         html_results = response.select(".item-box")
-        assert html_results, url
+        if not html_results:
+            if "ごく最近、このURLからのダウンロードに失敗しています。少し時間を置いてください。" in str(response):
+                return []
+            else:
+                raise NotImplementedError(f"Page layout might have changed: {ascii2d_url}")
 
         results: list[Ascii2dArtistResult] = []
         for result_html in html_results:
