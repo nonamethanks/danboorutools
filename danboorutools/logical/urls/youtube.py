@@ -22,7 +22,7 @@ class YoutubeUserUrl(ArtistUrl, YoutubeUrl):
     @property
     def primary_names(self) -> list[str]:
         try:
-            return [self.channel_data.channel_title]
+            return [self.channel_data.title]
         except DeadUrlError:
             return []
 
@@ -57,7 +57,7 @@ class YoutubeChannelUrl(RedirectUrl, YoutubeUrl):
 
     @cached_property
     def resolved(self) -> Url:
-        return self.parse(self.channel_data.user_data.vanityChannelUrl)
+        return self.channel_data.vanity_url
 
     @property
     def channel_data(self) -> YoutubeChannelData:
