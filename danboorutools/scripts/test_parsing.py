@@ -39,6 +39,7 @@ def main(times: int = 0, resume: bool = False, unparsed: bool = False, update: b
 
         bulk_parse(test_set, resume, log_urls=domain is not None)
 
+
 def update_urls() -> None:
     from google.cloud import bigquery
 
@@ -60,6 +61,7 @@ def update_urls() -> None:
         "\n".join(source_urls),
         encoding="utf-8",
     )
+
 
 def print_unparsed(test_set: list[str]) -> None:
     unparsed_domains = []
@@ -129,7 +131,7 @@ def bulk_parse(test_set: list[str], resume: bool, log_urls: bool = False) -> Non
     logger.info("Done.")
 
     if log_urls:
-        results.sort(key=lambda x: (x.__class__.__name__, len(x.parsed_url.url_parts), x.parsed_url.path))
+        results.sort(key=lambda x: (x.__class__.__name__, x.parsed_url.subdomain, len(x.parsed_url.url_parts), x.parsed_url.path))
 
         logger.info("")
         logger.info("#### PARSING RESULTS ####")

@@ -154,7 +154,8 @@ class Session(_CloudScraper):
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", XMLParsedAsHTMLWarning)
-            return BeautifulSoup(response.text, "html5lib")
+            # not .text because pages like https://soundcloud.com/user-798138171 don't get parsed correctly at the json part
+            return BeautifulSoup(response.content.decode("utf-8"), "html5lib")
 
     def get_json(self, *args, **kwargs) -> dict:
         response = self.get(*args, **kwargs)
