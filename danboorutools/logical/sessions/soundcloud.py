@@ -13,4 +13,4 @@ class SoundcloudSession(Session):
 
 class SoundcloudArtistData(BaseModel):
     username: str
-    description: str
+    description: str | None
