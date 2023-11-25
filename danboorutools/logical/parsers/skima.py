@@ -43,5 +43,10 @@ class SkimaJpParser(UrlParser):
                 return SkimaArtistUrl(parsed_url=parsable_url,
                                       user_id=int(slug.removeprefix("id")))
 
+            # https://skima.jp/u/id13356/まで
+            case "u", slug, _ if slug.startswith("id"):
+                return SkimaArtistUrl(parsed_url=parsable_url,
+                                      user_id=int(slug.removeprefix("id")))
+
             case _:
                 return None

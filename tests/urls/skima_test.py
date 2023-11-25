@@ -6,6 +6,7 @@ urls = {
         "https://skima.jp/profile?id=244678": "https://skima.jp/profile?id=244678",
         "http://skima.jp/u/id21469/": "https://skima.jp/profile?id=21469",
         "https://skima.jp/profile/commissions?id=32742": "https://skima.jp/profile?id=32742",
+        "https://skima.jp/u/id13356/まで": "https://skima.jp/profile?id=13356",
     },
     SkimaItemUrl: {
         "http://skima.jp/item/detail/?item_id=4661/": "https://skima.jp/item/detail?item_id=4661",
