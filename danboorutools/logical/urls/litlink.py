@@ -7,7 +7,11 @@ class LitlinkUrl(InfoUrl):
 
     @property
     def primary_names(self) -> list[str]:
-        return [self.html.select_one(".profile-basic-head__name").text]
+        if self.is_deleted:
+            return []
+        name_el = self.html.select_one(".profile-basic-head__name")
+        assert name_el, self
+        return [name_el.text]
 
     @property
     def secondary_names(self) -> list[str]:
@@ -15,8 +19,15 @@ class LitlinkUrl(InfoUrl):
 
     @property
     def related(self) -> list[Url]:
-        links = self.html.select(".creator-detail-links__col > a")
-        if not links:
+        if self.is_deleted:
+            return []
+        link_els = self.html.select(".creator-detail-links__col > a")
+        if not link_els:
             raise NotImplementedError(self)
 
-        return [Url.parse(el["href"]) for el in links if not el["href"].startswith("mailto:")]
+        links = [link_el["href"] for link_el in link_els if not link_el["href"].startswith("mailto:")]  # type: ignore[arg-type,union-attr]
+        return [Url.parse(link) for link in set(links)]  # type: ignore[arg-type,union-attr]
+
+    @property
+    def is_deleted(self) -> bool:
+        return "ページが見つかりませんでした" in self.html.text
