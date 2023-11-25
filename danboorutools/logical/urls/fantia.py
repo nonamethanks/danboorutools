@@ -39,7 +39,7 @@ class FantiaFanclubUrl(ArtistUrl, FantiaUrl):
     @property
     def related(self) -> list[Url]:
         links = self.html.select_one(".fanclub-comment").parent.select("a")
-        return [self.parse(link["href"]) for link in links]
+        return [self.parse(link["href"].strip()) for link in links]
 
     @property
     def primary_names(self) -> list[str]:
