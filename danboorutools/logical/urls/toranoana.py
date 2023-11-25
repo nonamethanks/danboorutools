@@ -45,12 +45,9 @@ class ToranoanaCircleUrl(ArtistUrl, ToranoanaUrl):
 
     @property
     def secondary_names(self) -> list[str]:
-        title = self.html.select_one("meta[property='og:title']")["content"]
-        name_match = re.search(r"▼\((.*)\)", title)
-        assert name_match, title
-        name, = name_match.groups()
-        assert name, title
-        return [name]
+        title = self.html.select_one("meta[property='og:title']")
+        assert title
+        return [title["content"]]
 
 
 class ToranoanaArtistUrl(ArtistUrl, ToranoanaUrl):

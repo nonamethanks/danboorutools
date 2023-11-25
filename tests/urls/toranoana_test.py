@@ -65,6 +65,6 @@ assert_artist_url(
     url_properties=dict(subsite="ec", subdirs="joshi_r/ec/cot", circle_id="2UPADB6Q8673dA6Td687"),
     url_type=ToranoanaCircleUrl,
     primary_names=[],
-    secondary_names=["ぎゃくさんかく"],
+    secondary_names=["▼(ぎゃくさんかく)"],
     related=[],
 )
