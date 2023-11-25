@@ -13,6 +13,7 @@ from danboorutools.logical.urls.booth import BoothArtistUrl
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.fantia import FantiaFanclubUrl
 from danboorutools.logical.urls.pixiv import PixivArtistUrl
+from danboorutools.logical.urls.skima import SkimaArtistUrl
 from danboorutools.logical.urls.twitter import TwitterArtistUrl, TwitterIntentUrl
 from danboorutools.logical.urls.youtube import YoutubeChannelUrl
 from danboorutools.models.url import Url
@@ -187,7 +188,8 @@ class SkebArtistData(BaseModel):
             urls += [PixivArtistUrl.build(user_id=self.pixiv_id)]
 
         if self.skima_id:
-            raise NotImplementedError(self.skima_id)
+            # urls += [SkimaArtistUrl.build(user_id=self.skima_id)]
+            pass  # impossible to tell if it's a gallery id or an artist id
 
         if self.twitter_uid:
             urls += [TwitterIntentUrl.build(intent_id=self.twitter_uid)]
