@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import re
 from typing import TYPE_CHECKING
 
 import ring
@@ -21,11 +23,9 @@ class YoutubeSession(Session):
     def channel_data(self, artist_url: str) -> YoutubeChannelData:
         starting_json = self.extract_json_from_html(f"{artist_url}/about", pattern=r"ytInitialData = ({.*?});")
 
-        shifted_json = starting_json["header"]["c4TabbedHeaderRenderer"]["headerLinks"]["channelHeaderLinksViewModel"]["more"]
-        shifted_json = shifted_json["commandRuns"][0]["onTap"]["innertubeCommand"]["showEngagementPanelEndpoint"]["engagementPanel"]
-        shifted_json = shifted_json["engagementPanelSectionListRenderer"]["content"]["sectionListRenderer"]["contents"][0]
-        shifted_json = shifted_json["itemSectionRenderer"]["contents"][0]["continuationItemRenderer"]["continuationEndpoint"]
-        continuation_token = shifted_json["continuationCommand"]["token"]
+        result = re.findall(r'continuationCommand":{"token":"(.*?)","request":"CONTINUATION_REQUEST_TYPE_BROWSE"',
+                            json.dumps(starting_json, separators=(",", ":")))
+        continuation_token = result[0]
 
         data = {
             "context": {
