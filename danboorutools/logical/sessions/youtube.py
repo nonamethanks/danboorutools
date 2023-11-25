@@ -52,7 +52,7 @@ class YoutubeSession(Session):
         about_data = json_data["onResponseReceivedEndpoints"][0]["appendContinuationItemsAction"]["continuationItems"][0]
         about_data = about_data["aboutChannelRenderer"]["metadata"]["aboutChannelViewModel"]
 
-        return YoutubeChannelData(**channel_metadata | {"links": about_data["links"]})
+        return YoutubeChannelData(**channel_metadata | {"links": about_data.get("links", [])})
 
 
 class YoutubeChannelData(BaseModel):

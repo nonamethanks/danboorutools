@@ -28,7 +28,7 @@ class YoutubeUserUrl(ArtistUrl, YoutubeUrl):
 
     @property
     def secondary_names(self) -> list[str]:
-        return [self.username]
+        return [self.username] if not self.username.startswith("user-") else []
 
     @property
     def related(self) -> list[Url]:

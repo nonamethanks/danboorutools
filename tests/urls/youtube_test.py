@@ -62,3 +62,19 @@ assert_artist_url(
     related=["https://twitter.com/niku_kai29", "https://seiga.nicovideo.jp/user/illust/59309002",
              "https://www.pixiv.net/en/users/61603554"],
 )
+
+assert_redirect_url(
+    "https://www.youtube.com/channel/UClcMRpGblRVpQs06Rv7tylA",
+    url_type=yt.YoutubeChannelUrl,
+    url_properties=dict(channel_id="UClcMRpGblRVpQs06Rv7tylA"),
+    redirects_to="https://www.youtube.com/@user-zb6db2qg1v",
+)
+
+assert_artist_url(
+    "https://www.youtube.com/@user-zb6db2qg1v",
+    url_type=yt.YoutubeUserUrl,
+    url_properties=dict(username="user-zb6db2qg1v"),
+    primary_names=["のんのん"],
+    secondary_names=[],
+    related=[],
+)
