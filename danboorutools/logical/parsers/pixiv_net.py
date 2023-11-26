@@ -136,6 +136,10 @@ class PixivNetParser(UrlParser):
             case "manage", *_:
                 return UselessUrl(parsable_url)
 
+            case id_slug, if id_slug.startswith("#id="):
+                return p.PixivArtistUrl(parsed_url=parsable_url,
+                                        user_id=int(id_slug.removeprefix("#id=")))
+
             case _:
                 # https://www.pixiv.net/contest/neuralcloud
                 # http://www.pixiv.net/tags.php?tag=%E5%88%86%E5%89%B2%E9%9C%8A%E5%A4%A2
@@ -302,6 +306,7 @@ class PixivNetParser(UrlParser):
             "https://www.pixiv.net/user/13569921/series/81967",
             "https://www.pixiv.net/en/users/9202877",
             "https://www.pixiv.net/en/users/76567/novels",
+            "http://pixiv.net/#id=675581",
 
             "https://www.pixiv.net/member.php?id=339253",
             "http://www.pixiv.net/novel/member.php?id=76567",
