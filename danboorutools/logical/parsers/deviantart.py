@@ -109,7 +109,7 @@ class DeviantartNetParser(UrlParser):
 
 
 class DaportfolioComParser(UrlParser):
-    domains = ["daportfolio.com", "artworkfolio.com"]
+    domains = ("daportfolio.com", "artworkfolio.com")
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> DeviantArtArtistUrl | None:

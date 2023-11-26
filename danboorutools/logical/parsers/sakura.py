@@ -5,7 +5,7 @@ from danboorutools.logical.urls.sakura import SakuraBlogUrl, SakuraUrl
 
 
 class SakuraNeJpParser(UrlParser):
-    domains = ["sakura.ne.jp", "x0.com"]
+    domains = ("sakura.ne.jp", "x0.com")
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> SakuraUrl | None:

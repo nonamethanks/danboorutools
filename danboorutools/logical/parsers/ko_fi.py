@@ -4,7 +4,7 @@ from danboorutools.models.url import UselessUrl
 
 
 class KoFiParser(UrlParser):
-    domains = ["ko-fi.com"]
+    domains = ("ko-fi.com", )
 
     reserved_usernames = ("manage", "messages", "my-supporters", "settings", "explore", "memberships",
                           "shop", "Discord", "streamalerts", "account", "discount", "access", "cdn", "s")

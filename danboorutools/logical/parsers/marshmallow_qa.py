@@ -5,7 +5,7 @@ from danboorutools.logical.urls.marshmallow_qa import MarshmallowQaUrl
 class MarshmallowParser(UrlParser):
     RESERVED_NAMES = ("about", "messages", "broadcasts", "me", "setting", "terms", "help", "users")
 
-    domains = ["marshmallow-qa.com"]
+    domains = ("marshmallow-qa.com", )
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> MarshmallowQaUrl | None:  # type: ignore[return]

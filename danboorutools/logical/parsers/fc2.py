@@ -8,7 +8,7 @@ from danboorutools.models.url import UnsupportedUrl
 
 
 class Fc2Parser(UrlParser):
-    domains = ["fc2.com", "fc2blog.net", "fc2blog.us", "2nt.com"]
+    domains = ("fc2.com", "fc2blog.net", "fc2blog.us", "2nt.com")
     UNPARSED_SUBSITES = (
         "bbs1",
         "bbs10",            # http://bbs10.fc2.com//bbs/img/_184700/184628/full/184628_1307192498.jpg

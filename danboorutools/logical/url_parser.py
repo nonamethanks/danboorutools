@@ -14,9 +14,26 @@ if TYPE_CHECKING:
 
 parsers: dict[str, type[UrlParser]] = {}
 
+UNSUPPORTED_DOMAINS = (
+    "amebaownd.com",
+    "artmug.kr",  # not worth it, looks like a terrible site to implement
+    "coocan.jp",
+    "itch.io",
+    "mbsp.jp",
+    "nobody.jp",
+    "pixnet.net",
+    "ribbon.to",
+    "starfree.jp",
+    "webclap.com",
+    "webnode.jp",
+    "wixsite.com",
+    "whitesnow.jp",
+    "wordpress.com",
+)
+
 
 class UrlParser:
-    domains: list[str] = []
+    domains: tuple[str, ...] = ()
 
     @staticmethod
     @lru_cache
@@ -27,7 +44,7 @@ class UrlParser:
 
     def __init_subclass__(cls) -> None:
         if not cls.domains:
-            cls.domains = [class_name_to_string(cls, separator=".").removesuffix(".parser")]
+            cls.domains = (class_name_to_string(cls, separator=".").removesuffix(".parser"), )
         for domain in cls.domains:
             if domain in parsers:
                 raise NotImplementedError(domain, (cls, parsers[domain]))
@@ -74,21 +91,7 @@ class UrlParser:
 
 
 class UnsupportedParser(UrlParser):
-    domains = [
-        "amebaownd.com",
-        "coocan.jp",
-        "itch.io",
-        "mbsp.jp",
-        "nobody.jp",
-        "pixnet.net",
-        "ribbon.to",
-        "starfree.jp",
-        "webclap.com",
-        "webnode.jp",
-        "wixsite.com",
-        "whitesnow.jp",
-        "wordpress.com",
-    ]
+    domains = UNSUPPORTED_DOMAINS
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> UnsupportedUrl | None:

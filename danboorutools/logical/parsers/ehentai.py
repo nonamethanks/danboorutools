@@ -5,7 +5,7 @@ from danboorutools.logical.urls.ehentai import EHentaiGalleryUrl, EHentaiImageUr
 
 class EhentaiOrgParser(UrlParser):
 
-    domains = ["e-hentai.org", "exhentai.org"]
+    domains = ("e-hentai.org", "exhentai.org")
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> EHentaiUrl | None:

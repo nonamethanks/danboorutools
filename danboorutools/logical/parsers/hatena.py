@@ -16,7 +16,7 @@ from danboorutools.models.url import UselessUrl
 
 
 class HatenaParser(UrlParser):
-    domains = ["hatena.ne.jp", "hatena.com", "hatenadiary.org", "hatenablog.com"]
+    domains = ("hatena.ne.jp", "hatena.com", "hatenadiary.org", "hatenablog.com")
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> HatenaUrl | UselessUrl | None:

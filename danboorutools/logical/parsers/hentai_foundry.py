@@ -9,7 +9,7 @@ from danboorutools.logical.urls.hentai_foundry import (
 
 
 class HentaiFoundryComParser(UrlParser):
-    domains = ["hentai-foundry.com"]
+    domains = ("hentai-foundry.com", )
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> HentaiFoundryUrl | None:  # type: ignore[return]

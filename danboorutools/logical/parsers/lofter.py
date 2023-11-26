@@ -37,7 +37,7 @@ class LofterComParser(UrlParser):
 
 
 class Lf127NetParser(UrlParser):
-    domains = ["lf127.net", "127.net"]
+    domains = ("lf127.net", "127.net")
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> LofterImageUrl | None:

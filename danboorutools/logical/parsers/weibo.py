@@ -5,7 +5,7 @@ from danboorutools.logical.urls.weibo import WeiboArtistUrl, WeiboImageUrl, Weib
 
 class WeiboComParser(UrlParser):
     RESERVED_USERNAMES = ["u", "n", "p", "profile", "status", "detail"]
-    domains = ["weibo.com", "weibo.cn"]
+    domains = ("weibo.com", "weibo.cn")
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> WeiboUrl | None:  # type: ignore[return]

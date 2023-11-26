@@ -5,10 +5,10 @@ from danboorutools.models.url import UselessUrl
 
 
 class MastodonParser(UrlParser):
-    domains = ["pawoo.net", "baraag.net", "mstdn.jp"]
+    domains = ("pawoo.net", "baraag.net", "mstdn.jp")
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> m.MastodonUrl | None:
+    def match_url(cls, parsable_url: ParsableUrl) -> m.MastodonUrl | UselessUrl | None:
         if parsable_url.url_parts[0] in ["media_attachments", "system", "media"]:
             return cls._match_asset(parsable_url)
         else:

@@ -4,7 +4,7 @@ from danboorutools.logical.urls.tinami import TinamiArtistUrl, TinamiComicUrl, T
 
 
 class TinamiComParser(UrlParser):
-    domains = ["tinami.com", "tinami.jp"]
+    domains = ("tinami.com", "tinami.jp")
     test_cases = {
         TinamiArtistUrl: [
             "http://www.tinami.com/creator/profile/1624",

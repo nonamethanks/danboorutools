@@ -4,7 +4,7 @@ from danboorutools.logical.urls import bilibili as b
 
 
 class BilibiliComParser(UrlParser):
-    domains = ["bilibili.com", "bilibili.tv"]
+    domains = ("bilibili.com", "bilibili.tv")
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> b.BilibiliUrl | None:

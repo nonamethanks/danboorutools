@@ -11,7 +11,7 @@ from danboorutools.models.url import UselessUrl
 
 
 class ClipStudioParser(UrlParser):
-    domains = ["clip-studio.com"]
+    domains = ("clip-studio.com", )
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> ClipStudioUrl | UselessUrl | None:  # type: ignore[return]

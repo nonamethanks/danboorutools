@@ -51,7 +51,7 @@ class AmazonawsComParser(UrlParser):
 
 
 class AmazonComParser(UrlParser):
-    domains = ["amazon.com", "amazon.jp"]
+    domains = ("amazon.com", "amazon.jp")
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> AmazonUrl | UselessUrl | None:  # type: ignore[return]
@@ -115,7 +115,7 @@ class AmazonComParser(UrlParser):
 
 
 class AmazonShortener(UrlParser):
-    domains = ["amzn.to", "amzn.asia"]
+    domains = ("amzn.to", "amzn.asia")
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> AmazonShortenerUrl | None:
