@@ -89,7 +89,7 @@ def prepare_test_set(times: int, domain: str | None) -> list[str]:
     logger.info("Sources loaded.")
 
     if domain:
-        test_set = [t for t in test_set if domain in t]
+        test_set = [t for t in test_set if f".{domain}" in t or f"//{domain}" in t]
 
     if times:
         test_set = test_set[:times]
