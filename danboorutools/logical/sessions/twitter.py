@@ -17,7 +17,7 @@ from danboorutools.util.misc import BaseModel
 # if TYPE_CHECKING:
 #    from danboorutools.logical.urls.twitter import TwitterAssetUrl
 
-SUSPENSION_MSG = "@{screen_name}'s account is temporarily unavailable because it violates the Twitter Media Policy. Learn more."
+# SUSPENSION_MSG = "@{screen_name}'s account is temporarily unavailable because it violates the Twitter Media Policy. Learn more."
 
 
 class TwitterSession(Session):
@@ -79,7 +79,13 @@ class TwitterSession(Session):
             print(data)  # noqa: T201
             raise
 
-        old_user_data = user_data["result"]["legacy"]
+        try:
+            old_user_data = user_data["result"]["legacy"]
+        except KeyError as e:
+            if user_data["result"]["message"] == "User is suspended":
+                raise DeadUrlError(original_url=graphql_url, status_code=200) from e
+            raise
+
         return TwitterUserData(**old_user_data | {"id": user_data["result"]["rest_id"]})
 
 

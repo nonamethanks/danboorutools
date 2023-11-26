@@ -91,3 +91,13 @@ assert_info_url(
     related=[],
     is_deleted=True,
 )
+
+assert_artist_url(
+    "https://twitter.com/free_tweet_13",
+    url_type=tw.TwitterArtistUrl,
+    url_properties=dict(username="free_tweet_13"),
+    primary_names=[],
+    secondary_names=["free_tweet_13"],
+    related=[],
+    is_deleted=True,
+)
