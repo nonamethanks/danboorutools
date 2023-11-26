@@ -9,7 +9,7 @@ import time
 import warnings
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 from urllib.parse import urlencode
 
 import ring
@@ -172,7 +172,13 @@ class Session(_CloudScraper):
             else:
                 raise
 
-    def extract_json_from_html(self, url: str, *args, pattern: str, selector: str | None = None, **kwargs) -> dict:
+    def extract_json_from_html(self,
+                               url: str,
+                               *args,
+                               pattern: str,
+                               selector: str | None = None,
+                               post_process: Callable[[str], str] | None = None,
+                               **kwargs) -> dict:
         response = self.get(url, *args, **kwargs)
         html = self._response_as_html(response)
 
@@ -186,7 +192,12 @@ class Session(_CloudScraper):
             raise JsonNotFoundError(response)
 
         parsable_json = match.groups()[0]
-        parsed_json = json.loads(parsable_json)
+        if post_process:
+            parsable_json = post_process(parsable_json)
+        try:
+            parsed_json = json.loads(parsable_json)
+        except json.decoder.JSONDecodeError as e:
+            raise NotImplementedError(parsable_json) from e
         return parsed_json
 
     def unscramble(self, url: str) -> str:

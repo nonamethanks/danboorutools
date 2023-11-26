@@ -18,7 +18,8 @@ class DeviantartSession(Session):
     def user_data(self, username: str) -> DeviantartUserData:
         parsed_json = self.extract_json_from_html(
             f"https://www.deviantart.com/{username}",
-            pattern=r"window.__INITIAL_STATE__ = JSON.parse\(\"(.*)\"\);",
+            pattern=r'window.__INITIAL_STATE__ = JSON.parse\("(.*)"\);',
+            post_process=lambda x: x.encode("utf-8").decode("unicode_escape"),
         )
 
         about_data, = (module for module in parsed_json["modules"].values() if module["type"] == "about")
