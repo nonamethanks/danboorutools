@@ -10,9 +10,14 @@ class KakuyomuJpParser(UrlParser):
             # https://kakuyomu.jp/users/i_s/works/
             case "users", username, *_:
                 return KakuyomuArtistUrl(parsed_url=parsable_url,
-                                                  username=username)
+                                         username=username)
             # https://kakuyomu.jp/works/1177354054883348735
             case "works", work_id:
+                return KakuyomuPostUrl(parsed_url=parsable_url,
+                                       post_id=int(work_id))
+
+            # https://kakuyomu.jp/my/works/16816927860914502743
+            case "my", "works", work_id:
                 return KakuyomuPostUrl(parsed_url=parsable_url,
                                        post_id=int(work_id))
 

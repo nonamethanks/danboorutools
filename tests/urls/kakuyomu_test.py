@@ -7,6 +7,7 @@ urls = {
     },
     KakuyomuPostUrl: {
         "https://kakuyomu.jp/works/4852201425154874772": "https://kakuyomu.jp/works/4852201425154874772",
+        "https://kakuyomu.jp/my/works/16816927860914502743": "https://kakuyomu.jp/works/16816927860914502743",
     },
 }
 
