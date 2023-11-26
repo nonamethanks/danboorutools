@@ -21,8 +21,8 @@ class PatreonPostUrl(PostUrl, PatreonUrl):
 
 
 class PatreonArtistUrl(ArtistUrl, PatreonUrl):
-    user_id: int | None = None
     username: str | None
+    user_id: int | None = None
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
@@ -47,7 +47,7 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
 
     @property
     def secondary_names(self) -> list[str]:
-        return [self.artist_data.username]
+        return [self.artist_data.username] if self.artist_data.username else []
 
 
 class PatreonImageUrl(PostAssetUrl, PatreonUrl):

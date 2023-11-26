@@ -82,15 +82,20 @@ class ArtistFinder:
         primary_names, secondary_names = [], []
         for url_with_names in [url for url in found_artist_urls if isinstance(url, InfoUrl)]:
             try:
-                primary_names += url_with_names.primary_names
+                url_primary_names = url_with_names.primary_names
             except ReadTimeout:
                 continue
             except Exception as e:
                 raise NotImplementedError(url_with_names) from e
             try:
-                secondary_names += [name for name in url_with_names.secondary_names if name not in primary_names]
+                url_secondary_names = url_with_names.secondary_names
             except ReadTimeout:
                 continue
+
+            # ensure no stray None made its way here
+            assert all(url_primary_names) and all(url_secondary_names), (url_with_names, url_primary_names, url_secondary_names)
+            primary_names += url_primary_names
+            secondary_names += [name for name in url_secondary_names if name not in primary_names]
 
         if result_from_archives:
             primary_names = result_from_archives.primary_names + primary_names
