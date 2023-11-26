@@ -114,7 +114,9 @@ class SaucenaoSession(Session):
         )
 
     def __parse_danbooru_result(self, saucenao_result: dict[str, dict], source_from_danbooru: Url) -> SaucenaoArtistResult | None:
-        source_from_saucenao = Url.parse(saucenao_result["data"]["source"].removesuffix(" (deleted)"))  # bruh
+        if (_source := saucenao_result["data"]["source"].removesuffix(" (deleted)")).startswith("file://"):  # bruh
+            return None
+        source_from_saucenao = Url.parse(_source)
 
         if isinstance(source_from_danbooru, PostAssetUrl):
             source_from_danbooru = source_from_danbooru.post
