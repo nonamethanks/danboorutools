@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
 
-from danboorutools.exceptions import DeadUrlError
+from danboorutools import logger
+from danboorutools.exceptions import DeadUrlError, HTTPError
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.amazon import AmazonItemUrl
 from danboorutools.logical.urls.dlsite import DlsiteUrl, DlsiteWorkUrl
@@ -210,11 +211,18 @@ class Ascii2dSession(Session):
     def _reverse_search_url(self, url: str) -> list[Ascii2dArtistResult]:
         # can't use /color/md5 because sometimes the result is not cached and requires a cloudflare-protected POST
         ascii2d_url = f"https://ascii2d.net/search/url/{url}"
-        response = self.get_html(ascii2d_url)
+        try:
+            response = self.get_html(ascii2d_url)
+        except HTTPError as e:
+            if e.status_code == 502:
+                logger.error("ASCII2D is having issues. Skipping check.")
+                return []
+            raise
 
         html_results = response.select(".item-box")
         if not html_results:
             if "ごく最近、このURLからのダウンロードに失敗しています。少し時間を置いてください。" in str(response):
+                logger.error("ASCII2D is having issues. Skipping check.")
                 return []
             else:
                 raise NotImplementedError(f"Page layout might have changed: {ascii2d_url}")
