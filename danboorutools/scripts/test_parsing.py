@@ -13,6 +13,9 @@ from danboorutools.models.url import Url
 
 log_file = logger.log_to_file()
 
+ARTIST_URLS_FILE = Path(settings.BASE_FOLDER / "data" / "artist_urls.txt")
+SOURCE_URLS_FILE = Path(settings.BASE_FOLDER / "data" / "sources.txt")
+
 
 @click.command()
 @click.option("--times", type=int, default=0)
@@ -45,27 +48,28 @@ def update_urls() -> None:
 
     client = bigquery.Client()
 
-    # Perform a query.
-    artist_query = "SELECT url FROM `danbooru1.danbooru_public.artist_urls` "
+    artist_query = "SELECT artist_id, url FROM `danbooru1.danbooru_public.artist_urls` "
     logger.info("Fetching artist urls.")
-    artist_urls: list[str] = list(dict.fromkeys(row.url for row in client.query(artist_query).result()))
+    artist_urls = tuple((f"https://danbooru.donmai.us/artists/{row.artist_id}", row.url) for row in client.query(artist_query).result())
     logger.info(f"Found {len(artist_urls)} artist urls.")
-    Path(settings.BASE_FOLDER / "data" / "artist_urls.txt").write_text("\n".join(artist_urls), encoding="utf-8")
+    ARTIST_URLS_FILE.write_text("\n".join(",".join(map(str, a)) for a in artist_urls), encoding="utf-8")
 
-    source_query = "SELECT source FROM `danbooru1.danbooru_public.posts` where source like 'http%'"
+    source_query = "SELECT id, source FROM `danbooru1.danbooru_public.posts` where source like 'http%'"
     logger.info("Fetching source urls.")
-    source_urls: list[str] = [row.source for row in client.query(source_query).result()]
-    source_urls = list(dict.fromkeys(s for s in source_urls if s.startswith(("http://", "https://"))))
+    source_urls: list[tuple[str, str]] = []
+    for index, row in enumerate(client.query(source_query).result()):
+        if index % 200_000 == 0:
+            logger.info(f"At {index:_}")
+        if not row.source.startswith(("http://", "https://")):
+            continue
+        source_urls += [(f"https://danbooru.donmai.us/posts/{row.id}", row.source)]
     logger.info(f"Found {len(source_urls)} source urls.")
-    Path(settings.BASE_FOLDER / "data" / "sources.txt").write_text(
-        "\n".join(source_urls),
-        encoding="utf-8",
-    )
+    SOURCE_URLS_FILE.write_text("\n".join(",".join(map(str, s)) for s in source_urls), encoding="utf-8")
 
 
-def print_unparsed(test_set: list[str]) -> None:
+def print_unparsed(test_set: list[list[str]]) -> None:
     unparsed_domains = []
-    for index, url_string in enumerate(test_set):
+    for index, (_resource_url, url_string) in enumerate(test_set):
         if index % 200_000 == 0:
             logger.info(f"Computing url {index:_} of {len(test_set):_}...")
         parsed_url = ParsableUrl(url_string)
@@ -77,28 +81,28 @@ def print_unparsed(test_set: list[str]) -> None:
         logger.info(f"{index + 1:2d}: {domain} ({number})")
 
 
-def prepare_test_set(times: int, domain: str | None) -> list[str]:
+def prepare_test_set(times: int, domain: str | None) -> list[list[str]]:
     logger.info("Loading data...")
-    logger.info("Loading artist urls...")
-    with (settings.BASE_FOLDER / "data" / "artist_urls.txt").open(encoding="utf-8") as myf:
-        test_set = [line.strip().strip('"') for line in myf if line.strip()]
-    logger.info("Artist urls loaded.")
+    with ARTIST_URLS_FILE.open(encoding="utf-8") as myf:
+        test_set = [line.strip().strip('"').split(",") for line in myf if line.strip()]
     logger.info("Loading sources...")
-    with (settings.BASE_FOLDER / "data" / "sources.txt").open(encoding="utf-8") as myf:
-        test_set += [line.strip().strip('"') for line in myf if line.strip()]
+    with SOURCE_URLS_FILE.open(encoding="utf-8") as myf:
+        test_set += [line.strip().strip('"').split(",") for line in myf if line.strip()]
     logger.info("Sources loaded.")
 
     if domain:
-        test_set = [t for t in test_set if f".{domain}" in t or f"//{domain}" in t]
+        test_set = [t for t in test_set if f".{domain}" in t[1] or f"//{domain}" in t[1]]
 
     if times:
         test_set = test_set[:times]
+
+    logger.info(f"{len(test_set)} total urls loaded.")
     return test_set
 
     # TODO: daily bot that validates all new urls and sends me an email with the bad ones
 
 
-def bulk_parse(test_set: list[str], resume: bool, log_urls: bool = False) -> None:
+def bulk_parse(test_set: list[list[str]], resume: bool, log_urls: bool = False) -> None:
     profiler = LineProfiler()
     parse_wrapper = prepare_profiler(profiler)
     start = time.time()
@@ -109,17 +113,17 @@ def bulk_parse(test_set: list[str], resume: bool, log_urls: bool = False) -> Non
     elif last_fail.value > 0:
         logger.info(f"Resuming from {last_fail.value - 20:_}.")
 
-    results: list[Url] = []
-    for index, url_string in enumerate(test_set):
+    results: list[tuple[str, Url]] = []
+    for index, (resource_url, url_string) in enumerate(test_set):
         if resume and index < last_fail.value - 20:  # little wiggle room for deleting invalid sources from the files
             continue
         if index % 100_000 == 0:
             logger.info(f"At url {index:_}, {int(time.time() - start)}s elapsed.")
             last_fail.value = index
         try:
-            results.append(parse_wrapper(url_string))
+            results.append((resource_url, parse_wrapper(url_string)))
         except (Exception, KeyboardInterrupt) as e:
-            e.add_note(f"At url {index:_} of {len(test_set):_}.")
+            e.add_note(f"At url {index:_} of {len(test_set):_}, found on {resource_url}.")
             last_fail.value = index
             raise
 
@@ -131,15 +135,20 @@ def bulk_parse(test_set: list[str], resume: bool, log_urls: bool = False) -> Non
     logger.info("Done.")
 
     if log_urls:
-        results.sort(key=lambda x: (x.__class__.__name__, x.parsed_url.subdomain, len(x.parsed_url.url_parts), x.parsed_url.path))
+        results.sort(key=lambda x: (x[1].__class__.__name__,
+                                    x[1].parsed_url.subdomain,
+                                    len(x[1].parsed_url.url_parts),
+                                    x[1].parsed_url.path))
 
         logger.info("")
         logger.info("#### PARSING RESULTS ####")
         logger.info("")
 
-        padding = len(max(results, key=lambda x: len(x.__class__.__name__)).__class__.__name__) + 5
-        for result in results:
-            logger.info(f"{result.__class__.__name__:<{padding}}" + result.parsed_url.raw_url.replace("http:", "https:"))
+        padding = len(max(results, key=lambda x: len(x[1].__class__.__name__))[1].__class__.__name__) + 5
+        for resource_url, url in results:
+            logger.info(
+                f"{url.__class__.__name__:<{padding}}" + url.parsed_url.raw_url.replace("http:", "https:") + f" - {resource_url}",
+            )
         logger.info("#######################")
         logger.info("")
 
