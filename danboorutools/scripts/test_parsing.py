@@ -9,7 +9,7 @@ from line_profiler import LineProfiler
 from danboorutools import logger, settings
 from danboorutools.logical.progress_tracker import ProgressTracker
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser, parsers
-from danboorutools.models.url import Url
+from danboorutools.models.url import UnknownUrl, UnsupportedUrl, Url, UselessUrl
 
 log_file = logger.log_to_file()
 
@@ -135,7 +135,8 @@ def bulk_parse(test_set: list[list[str]], resume: bool, log_urls: bool = False) 
     logger.info("Done.")
 
     if log_urls:
-        results.sort(key=lambda x: (x[1].__class__.__name__,
+        results.sort(key=lambda x: (isinstance(x[1], (UnknownUrl | UnsupportedUrl | UselessUrl)),
+                                    x[1].__class__.__name__,
                                     x[1].parsed_url.subdomain,
                                     len(x[1].parsed_url.url_parts),
                                     x[1].parsed_url.path))
