@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, Url
+from danboorutools.models.url import ArtistUrl, DeadDomainUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, Url
 
 
 class HatenaUrl(Url):
@@ -62,12 +62,10 @@ class HatenaProfileUrl(InfoUrl, HatenaUrl):
         return [u for u in dict.fromkeys(map(Url.parse, urls)) if u != self]
 
 
-class HatenaUgomemoUrl(InfoUrl, HatenaUrl):
+class HatenaUgomemoUrl(DeadDomainUrl, InfoUrl, HatenaUrl):
     user_id: str
 
     normalize_template = "https://ugomemo.hatena.ne.jp/{user_id}/"
-
-    is_deleted = True
 
 
 class HatenaBlogUrl(ArtistUrl, HatenaUrl):

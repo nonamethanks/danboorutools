@@ -22,7 +22,8 @@ assert_artist_url(
     "https://bcy.net/u/2825982",
     url_type=BcyArtistUrl,
     url_properties=dict(user_id=2825982),
-    primary_names=["Leo_Thasario"],
+    primary_names=[],
     secondary_names=[],
     related=[],
+    is_deleted=True,
 )

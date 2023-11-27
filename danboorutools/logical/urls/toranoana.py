@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from urllib.parse import urljoin
 
-from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, PostAssetUrl, PostUrl, Url
+from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, DeadDomainUrl, PostAssetUrl, PostUrl, Url
 
 
 class ToranoanaUrl(Url):
@@ -59,15 +59,11 @@ class ToranoanaArtistUrl(ArtistUrl, ToranoanaUrl):
     normalize_template = "https://{subsite}.toranoana.jp/{subdirs}/app/catalog/list?{artist_type}={artist_name}"
 
 
-class ToranoanaOldAuthorUrl(ArtistUrl, ToranoanaUrl):
-    is_deleted = True
-
+class ToranoanaOldAuthorUrl(DeadDomainUrl, ArtistUrl, ToranoanaUrl):
     normalizable = False
 
 
-class ToranoanaOldCircleUrl(ArtistUrl, ToranoanaUrl):
-    is_deleted = True
-
+class ToranoanaOldCircleUrl(DeadDomainUrl, ArtistUrl, ToranoanaUrl):
     normalizable = False
 
 

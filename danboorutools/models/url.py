@@ -371,3 +371,12 @@ class RedirectUrl(Url):
             return self.resolved.is_deleted
         except DeadUrlError:
             return True
+
+
+########################################################################
+
+class DeadDomainUrl(Url):
+    """An url from a dead site or subsite."""
+    @cached_property
+    def is_deleted(self) -> bool:
+        return True

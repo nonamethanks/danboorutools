@@ -1,5 +1,6 @@
-from danboorutools.models.url import ArtistUrl, PostUrl, Url
-from danboorutools.util.misc import extract_urls_from_string
+from danboorutools.models.url import ArtistUrl, DeadDomainUrl, PostUrl, Url
+
+# from danboorutools.util.misc import extract_urls_from_string
 
 
 class BcyUrl(Url):
@@ -13,7 +14,8 @@ class BcyArtistUrl(ArtistUrl, BcyUrl):
 
     @property
     def primary_names(self) -> list[str]:
-        return [self.html.select_one(".user-info .user-info-name").text]
+        # return [self.html.select_one(".user-info .user-info-name").text]
+        return []
 
     @property
     def secondary_names(self) -> list[str]:
@@ -21,8 +23,9 @@ class BcyArtistUrl(ArtistUrl, BcyUrl):
 
     @property
     def related(self) -> list[Url]:
-        description = self.html.select_one(".user-info .user-info-self-intro").text
-        return [Url.parse(u) for u in extract_urls_from_string(description)]
+        # description = self.html.select_one(".user-info .user-info-self-intro").text
+        # return [Url.parse(u) for u in extract_urls_from_string(description)]
+        return []
 
 
 class BcyPostUrl(PostUrl, BcyUrl):
@@ -31,11 +34,9 @@ class BcyPostUrl(PostUrl, BcyUrl):
     normalize_template = "https://bcy.net/item/detail/{post_id}"
 
 
-class OldBcyPostUrl(PostUrl, BcyUrl):
+class OldBcyPostUrl(DeadDomainUrl, PostUrl, BcyUrl):
     first_id: int
     second_id: int | None
-
-    is_deleted = True
 
     @classmethod
     def normalize(cls, **kwargs) -> str | None:

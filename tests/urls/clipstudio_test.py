@@ -4,7 +4,7 @@ from danboorutools.logical.urls.clipstudio import (
     ClipStudioProfileUrl,
     ClipStudioUserSearchUrl,
 )
-from tests.urls import generate_parsing_suite
+from tests.urls import assert_info_url, generate_parsing_suite
 
 urls = {
     ClipStudioAssetPostUrl: {
@@ -25,3 +25,13 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+assert_info_url(
+    "http://fuujin.sees.clip-studio.com",
+    url_type=ClipStudioBlogUrl,
+    url_properties=dict(blog_name="fuujin"),
+    primary_names=[],
+    secondary_names=["fuujin"],
+    related=[],
+    is_deleted=True,
+)

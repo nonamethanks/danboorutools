@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from danboorutools.models.url import ArtistUrl, InfoUrl, PostUrl, Url
+from danboorutools.exceptions import DeadUrlError
+from danboorutools.models.url import ArtistUrl, DeadDomainUrl, InfoUrl, PostUrl, Url
 
 
 class ClipStudioUrl(Url):
@@ -64,20 +65,18 @@ class ClipStudioProfileUrl(InfoUrl, ClipStudioUrl):
         return [Url.parse(u["href"]) for u in urls]
 
 
-class ClipStudioBlogUrl(InfoUrl, ClipStudioUrl):
+class ClipStudioBlogUrl(DeadDomainUrl, InfoUrl, ClipStudioUrl):
     blog_name: str
 
     normalize_template = "http://{blog_name}.sees.clip-studio.com/site/"
 
-    is_deleted = True
+    @property
+    def primary_names(self) -> list[str]:
+        return []
 
     @property
     def secondary_names(self) -> list[str]:
         return [self.blog_name]
-
-    @property
-    def primary_names(self) -> list[str]:
-        return []
 
     @property
     def related(self) -> list[Url]:
