@@ -70,7 +70,7 @@ class MixiAlbumUrl(ArtistAlbumUrl, MixiUrl):
 
     @property
     def gallery(self) -> MixiProfileUrl:
-        return MixiProfileUrl.build(owner_id=self.owner_id)
+        return MixiProfileUrl.build(profile_id=self.owner_id)
 
 
 class MixiPhotoUrl(PostUrl, MixiUrl):
@@ -81,7 +81,7 @@ class MixiPhotoUrl(PostUrl, MixiUrl):
 
     @property
     def gallery(self) -> MixiProfileUrl:
-        return MixiProfileUrl.build(owner_id=self.owner_id)
+        return MixiProfileUrl.build(profile_id=self.owner_id)
 
 
 class MixiApplicationUrl(PostUrl, MixiUrl):
@@ -92,7 +92,7 @@ class MixiApplicationUrl(PostUrl, MixiUrl):
 
     @property
     def gallery(self) -> MixiProfileUrl:
-        return MixiProfileUrl.build(owner_id=self.owner_id)
+        return MixiProfileUrl.build(profile_id=self.owner_id)
 
 
 class MixiDiaryUrl(PostUrl, MixiUrl):
@@ -103,4 +103,4 @@ class MixiDiaryUrl(PostUrl, MixiUrl):
 
     @property
     def gallery(self) -> MixiProfileUrl:
-        return MixiProfileUrl.build(owner_id=self.owner_id)
+        return MixiProfileUrl.build(profile_id=self.owner_id)
