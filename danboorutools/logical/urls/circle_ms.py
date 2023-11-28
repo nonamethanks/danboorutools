@@ -22,7 +22,7 @@ class CircleMsCircleUrl(InfoUrl, CircleMsUrl):
         elif self.html.select_one(".profile-name"):
             return False
         else:
-            raise NotImplementedError(self)
+            raise NotImplementedError(f"Couldn't check state of {self}, cookie might be out of date.")
 
     @property
     def primary_names(self) -> list[str]:
