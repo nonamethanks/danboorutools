@@ -12,7 +12,11 @@ class XfolioArtistUrl(ArtistUrl, XfolioUrl):
 
     @property
     def related(self) -> list[Url]:
-        header_urls = [a["href"] for a in self.html.select_one(".header--portfolio__wrapper").select("a")]
+        header_el = self.html.select_one(".header--portfolio__wrapper")
+        assert header_el
+        header_links_els = header_el.select("a")
+        assert header_links_els
+        header_urls = [a["href"] for a in header_links_els]
 
         button_urls = [a["href"] for a in self.html.select("a.button")]
 
