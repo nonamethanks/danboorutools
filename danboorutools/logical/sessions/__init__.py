@@ -155,7 +155,7 @@ class Session(_CloudScraper):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", XMLParsedAsHTMLWarning)
             # not .text because pages like https://soundcloud.com/user-798138171 don't get parsed correctly at the json part
-            return BeautifulSoup(response.content, "html5lib")
+            return BeautifulSoup(response.content.decode("utf-8"), "html5lib")
 
     def get_json(self, *args, **kwargs) -> dict:
         response = self.get(*args, **kwargs)
@@ -218,17 +218,18 @@ class Session(_CloudScraper):
         while True:
             raise NotImplementedError(self)
 
-    def save_cookies(self, *cookies: str) -> None:
+    def save_cookies(self, *cookies: str, domain: str | None = None) -> None:
         if not cookies:
             raise ValueError("At least one cookie must be saved.")
-        to_save = [
-            {
+        to_save = []
+        for cookie_name in cookies:
+            saved_cookie = self.cookies.get(cookie_name, domain=domain)
+            to_save.append({
                 "name": cookie_name,
-                "value": self.cookies[cookie_name],
-            }
-            for cookie_name in cookies
-        ]
-        logger.debug(f"Saving cookies: {', '.join(c['name'] for c in to_save)}.")
+                "value": saved_cookie,
+                "domain": domain if domain else "",
+            })
+        logger.debug(f"Saving cookies: {', '.join(c['name'] + '=' + c['value'] for c in to_save)}.")
         save_cookies_for(self.session_domain, cookies=to_save)
 
     def load_cookies(self) -> None:
