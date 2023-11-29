@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from typing import TYPE_CHECKING
+from urllib.parse import urljoin
 
 import ring
 
@@ -25,18 +26,26 @@ class YoutubeSession(Session):
 
         result = re.findall(r'continuationCommand":{"token":"(.*?)","request":"CONTINUATION_REQUEST_TYPE_BROWSE"',
                             json.dumps(starting_json, separators=(",", ":")))
-        continuation_token = result[0]
+        continuation_token: str = result[-1]
 
         data = {
             "context": {
                 "client": {
                     "clientName": "WEB",
                     "clientVersion": "2.20231121.08.00",
-                    "originalUrl": f"{artist_url}/featured",
+                    "originalUrl": f"{artist_url}/about",
+                },
+                "adSignalsInfo": {
+                    "params": [],
                 },
             },
             "continuation": continuation_token,
         }
+
+        for key in ["dt", "flash", "frm", "bc", "bih", "biw", "brdim", "vis", "wgl", "ca_type",
+                    "u_tz", "u_his", "u_h", "u_w", "u_ah", "u_aw", "u_cd"]:
+            data["context"]["adSignalsInfo"]["params"].append({"key": key, "value": ""})  # type: ignore[index]
+
         resp = self.post(
             "https://www.youtube.com/youtubei/v1/browse",
             params={

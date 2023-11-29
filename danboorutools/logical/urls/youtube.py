@@ -22,7 +22,7 @@ class YoutubeUserUrl(ArtistUrl, YoutubeUrl):
     @property
     def primary_names(self) -> list[str]:
         try:
-            return [self.channel_data.title]
+            return [self.channel_data.title.strip()]
         except DeadUrlError:
             return []
 

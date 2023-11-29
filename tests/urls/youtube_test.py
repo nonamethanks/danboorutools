@@ -78,3 +78,28 @@ assert_artist_url(
     secondary_names=[],
     related=[],
 )
+
+assert_redirect_url(
+    "https://www.youtube.com/channel/UC8U8Tv6xSPwV8Mout7ZIZ8A/about",
+    url_type=yt.YoutubeChannelUrl,
+    url_properties=dict(channel_id="UC8U8Tv6xSPwV8Mout7ZIZ8A"),
+    redirects_to="https://www.youtube.com/@TheBrothresGreen2022Wonder",
+)
+
+assert_artist_url(
+    "https://www.youtube.com/@TheBrothresGreen2022Wonder",
+    url_type=yt.YoutubeUserUrl,
+    url_properties=dict(username="TheBrothresGreen2022Wonder"),
+    primary_names=["The BrothresGreen!"],
+    secondary_names=["TheBrothresGreen2022Wonder"],
+    related=[
+        "https://instagram.com/brothres_green",
+        "https://deviantart.com/diamondgreenanimat0",
+        "https://facebook.com/DiamondGreen_Art-2255991581322759/?modal=admin_todo_tour",
+        "https://www.derpibooru.org/profiles/Brothresgreen_",
+        "https://furaffinity.net/user/brothresgreen",
+        "https://twitter.com/irene_coreas",
+        "https://tiktok.com/@green_brothres",
+    ],
+
+)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from urllib.parse import urljoin
 
 from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
@@ -71,7 +72,10 @@ class YoutubeComParser(UrlParser):
 
             # https://www.youtube.com/redirect?event=channel_description&redir_token=QUFFLUhqbmhHUm1HcUowbk8wUEJVZWJpWmRfck5yRUhWUXxBQ3Jtc0tuankwTXo2TTRYMFJNdDNwbnpUZ193Vk45b3FCVGxMcDNva1Rzby1wT1J1YUZpdTFRN0RvallTN0xwYUxYQXNWS1dvNU5wRExpZ0FBT2xxUTlUOGJ4TFNpcGptQ2xoVHpaUmtWTVI2WWhlNFhSZ1hEVQ&q=https%3A%2F%2Fwww.pixiv.net%2Fusers%2F37422
             case "redirect", :
-                return cls.parse(parsable_url.query["q"])
+                query_url = parsable_url.query["q"]
+                if not query_url.startswith("http"):
+                    query_url = f"https://{query_url}"
+                return cls.parse(query_url)
 
             case "m", if parsable_url.subdomain == "consent":
                 return cls.parse(parsable_url.query["continue"])
