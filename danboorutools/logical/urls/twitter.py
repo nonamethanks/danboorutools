@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.twitter import TwitterSession, TwitterUserData
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
@@ -49,6 +51,9 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
         if not skeb.is_deleted:
             urls += [skeb]
 
+        intent_url = TwitterIntentUrl.build(intent_id=self.artist_data.id)
+        intent_url.artist_data = self.artist_data
+
         return list(dict.fromkeys(urls))
 
     @property
@@ -87,7 +92,7 @@ class TwitterIntentUrl(InfoUrl, TwitterUrl):
             return [f"twitter {self.intent_id}"]
         return self.user_url.secondary_names
 
-    @property
+    @cached_property
     def artist_data(self) -> TwitterUserData:
         return self.session.user_data(user_id=self.intent_id)
 
