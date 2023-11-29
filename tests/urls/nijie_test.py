@@ -1,5 +1,5 @@
 from danboorutools.logical.urls.nijie import NijieArtistUrl, NijieImageUrl, NijiePostUrl
-from tests.urls import generate_parsing_suite
+from tests.urls import assert_artist_url, generate_parsing_suite
 
 urls = {
     NijieArtistUrl: {
@@ -7,7 +7,6 @@ urls = {
         "https://nijie.info/members_illust.php?id=236014": "https://nijie.info/members.php?id=236014",
     },
     NijieImageUrl: {
-
         "https://pic01.nijie.info/nijie_picture/diff/main/218856_0_236014_20170620101329.png": "https://pic01.nijie.info/nijie_picture/diff/main/218856_0_236014_20170620101329.png",
         "https://pic01.nijie.info/nijie_picture/diff/main/218856_1_236014_20170620101330.png": "https://pic01.nijie.info/nijie_picture/diff/main/218856_1_236014_20170620101330.png",
         "https://pic05.nijie.info/nijie_picture/diff/main/559053_20180604023346_1.png": "https://pic05.nijie.info/nijie_picture/diff/main/559053_20180604023346_1.png",
@@ -40,3 +39,16 @@ urls = {
 
 
 generate_parsing_suite(urls)
+
+assert_artist_url(
+    "https://nijie.info/members.php?id=1149787",
+    url_type=NijieArtistUrl,
+    url_properties=dict(user_id=1149787),
+    primary_names=["れく/れとまクロ：仕事求ム！"],
+    secondary_names=["nijie_1149787"],
+    related=["https://ci-en.dlsite.com/creator/1049",
+             "https://skeb.jp/@rexpace",
+             "https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/id=76572/",
+             "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG16604.html",
+             "http://twitter.com/rexpace"],
+)

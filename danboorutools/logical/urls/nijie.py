@@ -43,6 +43,7 @@ class NijiePostUrl(PostUrl, NijieUrl):
             raise NotImplementedError(self)
 
         assert main_image, self
+        assert other_images_container
         other_images = other_images_container.select("img.mozamoza.ngtag")
 
         return [urljoin("https://", img["src"]) for img in [main_image, *other_images]]
@@ -52,6 +53,22 @@ class NijieArtistUrl(ArtistUrl, NijieUrl):
     user_id: int
 
     normalize_template = "https://nijie.info/members.php?id={user_id}"
+
+    @property
+    def primary_names(self) -> list[str]:
+        name_el = self.html.select_one("#main-left .name")
+        assert name_el
+        return [name_el.text]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return [f"nijie_{self.user_id}"]
+
+    @property
+    def related(self) -> list[Url]:
+        url_els = self.html.select("#main-center-none #prof a")
+        assert url_els
+        return list(map(Url.parse, [u.text for u in url_els]))
 
 
 class NijieImageUrl(PostAssetUrl, NijieUrl):

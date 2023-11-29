@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import ring
 
+from danboorutools import logger
 from danboorutools.exceptions import NoCookiesForDomainError
 from danboorutools.logical.sessions import Session
 
@@ -21,8 +22,6 @@ class NijieSession(Session):
 
         resp = self.get(*args, **kwargs)
         html = self._response_as_html(resp)
-        if not html.find("a", string="プロフ設定"):
-            raise NotImplementedError("Not logged in.")
 
         return html
 
@@ -32,33 +31,47 @@ class NijieSession(Session):
 
     @ring.lru()
     def login(self) -> None:
-        login_url = "https://nijie.info/login.php"
         try:
             self.load_cookies()
-            did_login = False
         except NoCookiesForDomainError:
-            email = os.environ["NIJIE_EMAIL"]
-            password = os.environ["NIJIE_PASSWORD"]
+            response = self._do_login()
+        else:
+            response = self.get("https://nijie.info/members_update.php", skip_cache=True)
+            if self._check_login(response):
+                return
+            response = self._do_login()
 
-            data = {
-                "email": email,
-                "password": password,
-                "url": login_url,
-                "save": "on",
-                "ticket": "",
-            }
-            self.post(
-                "https://nijie.info/login_int.php",
-                data=data,
-                headers={"Referer": login_url},
-            )
-            did_login = True
+        if not self._check_login(response, save_cookies=True):
+            raise NotImplementedError(response.text)
 
-        response = self.get(login_url, skip_cache=True)
+    def _check_login(self, response: Response, save_cookies: bool = False) -> bool:
         html = self._response_as_html(response)
         if html.find("a", string="プロフ設定"):
-            if did_login:
-                self.save_cookies("nijie_tok", "NIJIEIJIEID")
-            return
+            if save_cookies:
+                self.save_cookies("nijie_tok", "NIJIEIJIEID", domain=".nijie.info")
+            logger.debug("Confirmed logged in to nijie.")
+            return True
+        return False
 
-        raise NotImplementedError(response)
+    def _do_login(self) -> Response:
+        logger.info("Logging into nijie.")
+        login_url = "https://nijie.info/age_jump.php?url="
+        resp = self.get(login_url, skip_cache=True)
+        html = self._response_as_html(resp)
+
+        login_token_el = html.select_one("form[action='/login_int.php'] [name='url']")
+        assert login_token_el
+        login_token = login_token_el["value"]
+
+        data = {
+            "email": os.environ["NIJIE_EMAIL"],
+            "password": os.environ["NIJIE_PASSWORD"],
+            "url": login_token,
+            "ticket": "",
+        }
+        response = self.post(
+            "https://nijie.info/login_int.php",
+            data=data,
+            headers={"Referer": "https://nijie.info/login.php"},
+        )
+        return response
