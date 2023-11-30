@@ -151,6 +151,8 @@ def bulk_parse(test_set: list[list[str]], resume: bool, log_urls: bool = False) 
                 f"{url.__class__.__name__:<{padding}}" + url.parsed_url.raw_url.replace("http:", "https:") + f" - {resource_url}",
             )
         logger.info("#######################")
+        logger.info(f"Total: {len(results)} urls.")
+        logger.info("#######################")
         logger.info("")
 
     logger.info(f"Results available at {log_file}.")
