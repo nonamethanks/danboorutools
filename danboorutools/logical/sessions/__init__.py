@@ -9,7 +9,7 @@ import time
 import warnings
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 import ring
@@ -23,7 +23,7 @@ from pyrate_limiter.request_rate import RequestRate
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from danboorutools import logger
-from danboorutools.exceptions import DeadUrlError, DownloadError, HTTPError, JsonNotFoundError, RateLimitError
+from danboorutools.exceptions import CloudFrontError, DeadUrlError, DownloadError, HTTPError, JsonNotFoundError, RateLimitError
 from danboorutools.logical.browser import Browser
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.file import File, FileSubclass
@@ -31,6 +31,8 @@ from danboorutools.util.misc import load_cookies_for, random_string, save_cookie
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from requests import Response
 
     from danboorutools.models.url import Url
@@ -117,6 +119,8 @@ class Session(_CloudScraper):
             raise DeadUrlError(response)
         if response.status_code == 429:
             raise RateLimitError(response)
+        if response.status_code == 403 and "The Amazon CloudFront distribution is configured to block" in response.text:
+            raise CloudFrontError(response)
         return response
 
     def download_file(self, url: str | Url, *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:

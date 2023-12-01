@@ -82,6 +82,14 @@ class RateLimitError(HTTPError):
     """Got 429."""
 
 
+class CloudFrontError(HTTPError):
+    """Got 403 with cloudfront."""
+
+    @property
+    def message(self) -> str:
+        return f"The request to {self.original_url} failed because this IP is being blocked by CloudFront. Consider setting a proxy."
+
+
 class EHEntaiRateLimitError(HTTPError):
     """E-Hentai is ratelimiting."""
 

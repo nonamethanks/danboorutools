@@ -73,7 +73,7 @@ class DlsiteImageUrl(PostAssetUrl, DlsiteUrl):
 
 class DlsiteKeywordSearch(RedirectUrl, DlsiteUrl):
     keyword: str
-    normalize_template = "https://www.dlsite.com/{subsite}/fsr/=/keyword_creater/\"{keyword}\""
+    normalize_template = 'https://www.dlsite.com/{subsite}/fsr/=/keyword_creater/"{keyword}"'
 
     @cached_property
     def resolved(self) -> Url:
