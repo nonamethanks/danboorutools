@@ -87,6 +87,7 @@ class Session(_CloudScraper):
 
     @ring.lru()
     @on_exception(constant, RateLimitError, max_tries=1, interval=30)
+    @on_exception(constant, ConnectionResetError, max_tries=3, interval=3)
     def _cached_request(self, http_method: str, url: str | Url, *args, **kwargs) -> Response:
         if not isinstance(url, str):
             url = url.normalized_url
@@ -154,8 +155,12 @@ class Session(_CloudScraper):
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", XMLParsedAsHTMLWarning)
+            try:
+                decoded_content = response.content.decode("ISO-8859-1")
+            except UnicodeDecodeError:
+                decoded_content = response.content.decode("ISO-8859-1")
             # not .text because pages like https://soundcloud.com/user-798138171 don't get parsed correctly at the json part
-            return BeautifulSoup(response.content.decode("utf-8"), "html5lib")
+            return BeautifulSoup(decoded_content, "html5lib")
 
     def get_json(self, *args, **kwargs) -> dict:
         response = self.get(*args, **kwargs)
