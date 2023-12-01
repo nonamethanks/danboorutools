@@ -53,6 +53,9 @@ class WeiboSession(Session):
         if data.get("msg") == "该用户不存在(20003)":  # user does not exist
             raise DeadUrlError(response)
 
+        if data.get("url") == "https://weibo.com/login.php":
+            raise NotLoggedInError(response=response)
+
         return WeiboUserData(**data["data"]["user"])
 
 
