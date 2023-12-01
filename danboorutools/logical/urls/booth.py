@@ -5,19 +5,6 @@ class BoothUrl(Url):
     pass
 
 
-class BoothItemUrl(PostUrl, BoothUrl):
-    username: str | None
-    item_id: int
-
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        item_id: int = kwargs["item_id"]
-        if username := kwargs.get("username"):
-            return f"https://{username}.booth.pm/items/{item_id}"
-        else:
-            return f"https://booth.pm/items/{item_id}"
-
-
 class BoothItemListUrl(ArtistAlbumUrl, BoothUrl):
 
     username: str
@@ -62,6 +49,26 @@ class BoothArtistUrl(ArtistUrl, BoothUrl):
     @property
     def private(self) -> bool:
         return "Currently, this shop is private" in str(self.html)
+
+
+class BoothItemUrl(PostUrl, BoothUrl):
+    username: str | None
+    item_id: int
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        item_id: int = kwargs["item_id"]
+        if username := kwargs.get("username"):
+            return f"https://{username}.booth.pm/items/{item_id}"
+        else:
+            return f"https://booth.pm/items/{item_id}"
+
+    @property
+    def gallery(self) -> BoothArtistUrl:
+        if self.username:
+            return BoothArtistUrl.build(username=self.username)
+
+        raise NotImplementedError(self)
 
 
 class BoothImageUrl(PostAssetUrl, BoothUrl):
