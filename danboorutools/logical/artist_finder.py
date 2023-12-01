@@ -15,6 +15,7 @@ from danboorutools.logical.sessions.ascii2d import Ascii2dArtistResult, Ascii2dS
 from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.logical.sessions.saucenao import SaucenaoArtistResult, SaucenaoSession
 from danboorutools.logical.urls.instagram import InstagramUrl
+from danboorutools.logical.urls.twitch import TwitchVideoUrl
 from danboorutools.logical.urls.youtube import YoutubePlaylistUrl, YoutubeVideoUrl
 from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, RedirectUrl, UnknownUrl, UnsupportedUrl, Url, UselessUrl
 
@@ -188,7 +189,11 @@ class ArtistFinder:
                 continue
 
             if isinstance(related_url, YoutubeVideoUrl | YoutubePlaylistUrl):
-                logger.debug(f"Skipping {related_url} because it has a high chance of being a random video")
+                logger.debug(f"Skipping {related_url} because it has a high chance of being a random video.")
+                continue
+
+            if isinstance(related_url, TwitchVideoUrl):
+                logger.debug(f"Skipping {related_url} because artist extraction is not feasible.")
                 continue
 
             if isinstance(related_url, UnsupportedUrl):
