@@ -1,17 +1,22 @@
-from ward import test
+import pytest
 
-from danboorutools.models.url import Url
+from danboorutools.logical.urls.pixiv_comic import PixivComicStoryUrl, PixivComicWorkUrl
+from tests.helpers.parsing import generate_parsing_test
 
 urls = {
-    "https://comic.pixiv.net/viewer/stories/107927": "https://comic.pixiv.net/viewer/stories/107927",
-    "https://comic.pixiv.net/works/8683": "https://comic.pixiv.net/works/8683",
+    PixivComicStoryUrl: {
+        "https://comic.pixiv.net/viewer/stories/107927": "https://comic.pixiv.net/viewer/stories/107927",
+    },
+    PixivComicWorkUrl: {
+        "https://comic.pixiv.net/works/8683": "https://comic.pixiv.net/works/8683",
+    },
 }
 
 
-for original_string, normalized_string in urls.items():
-    parsed_url = Url.parse(original_string)
-    domain = parsed_url.parsed_url.domain
-
-    @test(f"Normalizing {domain}: {original_string}", tags=["parsing", "normalization", domain])
-    def _(_parsed_url=parsed_url, _normalized_string=normalized_string) -> None:
-        assert _parsed_url.normalized_url == _normalized_string
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
+)
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)

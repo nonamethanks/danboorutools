@@ -99,10 +99,10 @@ cookie_dir = settings.BASE_FOLDER / "cookies"
 
 def load_cookies_for(domain: str) -> list[dict[str, str]]:
     filename = cookie_dir / f"cookies-{domain}.pkl"
-    try:
-        cookies: list[dict] = pickle.load(filename.open("rb"))  # noqa: S301
-    except FileNotFoundError as e:
-        raise NoCookiesForDomainError(domain) from e
+    if not filename.is_file():
+        raise NoCookiesForDomainError(domain)
+
+    cookies: list[dict] = pickle.load(filename.open("rb"))  # noqa: S301
     for cookie in cookies:
         if "expiry" in cookie:
             cookie["expires"] = cookie["expiry"]

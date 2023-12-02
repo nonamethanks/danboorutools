@@ -1,34 +1,8 @@
+import pytest
+
 from danboorutools.logical.urls.ehentai import EHentaiGalleryUrl, EHentaiImageUrl, EHentaiPageUrl
-from tests.urls import assert_gallery_url, assert_post_url, assert_url, generate_parsing_suite
-
-assert_gallery_url(
-    url_type=EHentaiGalleryUrl,
-    url="https://e-hentai.org/g/182146/4f5c26749f",
-    post_count=83,
-    url_properties=dict(gallery_id=182146, gallery_token="4f5c26749f"),
-    posts=["https://e-hentai.org/s/b6518716a0/182146-4"],
-)
-
-
-assert_post_url(
-    url_type=EHentaiPageUrl,
-    url="https://e-hentai.org/s/b6518716a0/182146-4",
-    asset_count=1,
-    score=104,
-    created_at="2009-12-07 20:25:00",
-    url_properties=dict(gallery_id=182146, page_number=4, page_token="b6518716a0"),
-    assets=[r"fullimg\.php\?gid=182146&page=4&key="],
-    md5s=["5b2a4f60565048d8edd16c65d293cbd1"],
-)
-
-
-assert_url(
-    url_type=EHentaiPageUrl,
-    url="https://e-hentai.org/s/8053bb2877/204042-15",
-    url_properties=dict(gallery_id=204042, page_number=15, page_token="8053bb2877"),
-    is_deleted=True
-)
-
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_gallery_test, generate_post_test
 
 urls = {
     EHentaiGalleryUrl: {
@@ -54,4 +28,43 @@ urls = {
     },
 }
 
-generate_parsing_suite(urls)
+
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
+)
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
+
+
+def test_gallery_url_1():
+    generate_gallery_test(
+        url_type=EHentaiGalleryUrl,
+        url_string="https://e-hentai.org/g/182146/4f5c26749f",
+        post_count=83,
+        url_properties=dict(gallery_id=182146, gallery_token="4f5c26749f"),  # noqa: S106
+        posts=["https://e-hentai.org/s/b6518716a0/182146-4"],
+    )
+
+
+def test_post_url_1():
+    generate_post_test(
+        url_type=EHentaiPageUrl,
+        url_string="https://e-hentai.org/s/b6518716a0/182146-4",
+        asset_count=1,
+        score=104,
+        created_at="2009-12-07 20:25:00",
+        url_properties=dict(gallery_id=182146, page_number=4, page_token="b6518716a0"),  # noqa: S106
+        assets=[r"fullimg\.php\?gid=182146&page=4&key="],
+        md5s=["5b2a4f60565048d8edd16c65d293cbd1"],
+    )
+
+
+def test_post_url_2():
+    generate_post_test(
+        url_type=EHentaiPageUrl,
+        url_string="https://e-hentai.org/s/8053bb2877/204042-15",
+        url_properties=dict(gallery_id=204042, page_number=15, page_token="8053bb2877"),  # noqa: S106
+        is_deleted=True,
+    )

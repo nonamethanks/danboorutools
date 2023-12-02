@@ -77,10 +77,8 @@ class InterceptHandler(logging.Handler):
         logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
 
-modules_to_incercept = [
-    "backoff",
-]
-
-for module in modules_to_incercept:
-    module_logger = logging.getLogger(module)
-    module_logger.handlers = [InterceptHandler()]
+# stop spam
+backoff_logger = logging.getLogger("backoff")
+backoff_logger.handlers = [InterceptHandler()]
+logging.getLogger("urllib3").setLevel(logging.INFO)
+logging.getLogger("pyrate_limiter").setLevel(logging.INFO)

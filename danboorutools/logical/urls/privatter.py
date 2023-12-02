@@ -35,7 +35,9 @@ class PrivatterPostUrl(PostUrl, PrivatterUrl):
 
     @cached_property
     def gallery(self) -> PrivatterArtistUrl:
-        username = self.html.select_one("#right .panel-default a.panel-title").text.strip()
+        username_el = self.html.select_one("#right .panel-default a.panel-title")
+        assert username_el
+        username = username_el.text.strip()
         if not username.startswith("@"):
             raise NotImplementedError(self, username)
         return PrivatterArtistUrl.build(username=username.removeprefix("@"))

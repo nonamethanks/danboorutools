@@ -4,12 +4,6 @@ from danboorutools.logical.urls.foundation import FoundationImageUrl
 
 
 class CloudfrontNetParser(UrlParser):
-    test_cases = {
-        FoundationImageUrl: [
-            "https://d2ybmb80bbm9ts.cloudfront.net/zd/BD/QmXiCEoBLcpfvpEwAEanLXe3Tjr5ykYJFzCVfpzDDQzdBD/nft_q4.mp4",
-        ],
-    }
-
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> FoundationImageUrl | None:
         if parsable_url.subdomain == "d2ybmb80bbm9ts":

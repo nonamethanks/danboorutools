@@ -1,5 +1,7 @@
+import pytest
+
 from danboorutools.logical.urls.arca_live import ArcaLiveArtistUrl, ArcaLiveImageUrl, ArcaLivePostUrl
-from tests.urls import generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
 
 urls = {
     ArcaLivePostUrl: {
@@ -16,8 +18,14 @@ urls = {
         "https://ac.namu.la/20221211sac/5ea7fbca5e49ec16beb099fc6fc991690d37552e599b1de8462533908346241e.png": "https://ac.namu.la/20221211sac/5ea7fbca5e49ec16beb099fc6fc991690d37552e599b1de8462533908346241e.png?type=orig",
         "https://ac-o.namu.la/20221211sac/7f73beefc4f18a2f986bc4c6821caba706e27f4c94cb828fc16e2af1253402d9.gif?type=orig": "https://ac-o.namu.la/20221211sac/7f73beefc4f18a2f986bc4c6821caba706e27f4c94cb828fc16e2af1253402d9.gif?type=orig",
         "https://ac.namu.la/20221211sac/7f73beefc4f18a2f986bc4c6821caba706e27f4c94cb828fc16e2af1253402d9.mp4": "https://ac.namu.la/20221211sac/7f73beefc4f18a2f986bc4c6821caba706e27f4c94cb828fc16e2af1253402d9.gif?type=orig",
-    }
+    },
 }
 
 
-generate_parsing_suite(urls)
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
+)
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)

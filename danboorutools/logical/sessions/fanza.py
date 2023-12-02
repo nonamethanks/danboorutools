@@ -8,10 +8,23 @@ from danboorutools.util.misc import BaseModel
 if TYPE_CHECKING:
     from requests import Response
 
+import os
+
 
 class FanzaSession(Session):
     def request(self, *args, **kwargs) -> Response:
-        kwargs["cookies"] = kwargs.get("cookies", {}) | {"age_check_done": "1"}
+        cookies = {
+            "age_check_done": "1",
+            "INT_SESID": os.environ["DMM_INT_SESID_COOKIE"],
+            "INT_SESID_SECURE": os.environ["DMM_INT_SESID_COOKIE"],
+            "secid": os.environ["DMM_SECID_COOKIE"],
+            "login_secure_id": os.environ["DMM_SECID_COOKIE"],
+            "login_session_id":  os.environ["DMM_LOGIN_SESSION_ID_COOKIE"],
+            "ckcy_remedied_check": "ktkrt_argt",
+            "check_done_login": "true",
+            "i3_opnd": os.environ["DMM_I3_OPND_COOKIE"],
+        }
+        kwargs["cookies"] = kwargs.get("cookies", {}) | cookies
         return super().request(*args, **kwargs)
 
     def book_data(self, book_id: str) -> FanzaBookData:

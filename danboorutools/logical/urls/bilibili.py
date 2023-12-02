@@ -60,4 +60,4 @@ class BilibiliImageUrl(PostAssetUrl, BilibiliUrl):
 
     @property
     def full_size(self) -> str:
-        return self.parsed_url.url_without_query
+        return self.parsed_url.url_without_query.split("@")[0]

@@ -1,5 +1,8 @@
+import pytest
+
 from danboorutools.logical.urls import nicovideo as nv
-from tests.urls import assert_artist_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_artist_test
 
 urls = {
     nv.NicovideoVideoUrl: {
@@ -36,15 +39,21 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-
-assert_artist_url(
-    "https://www.nicovideo.jp/user/4636455",
-    url_type=nv.NicovideoArtistUrl,
-    url_properties=dict(user_id=4636455),
-    primary_names=["絹ごし"],
-    secondary_names=["nicovideo 4636455"],
-    related=["https://seiga.nicovideo.jp/user/illust/4636455",
-             "https://com.nicovideo.jp/community/co3689158", "https://www.pixiv.net/en/users/1772501"],
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
+
+
+def test_artist_url_1():
+    generate_artist_test(
+        url_string="https://www.nicovideo.jp/user/4636455",
+        url_type=nv.NicovideoArtistUrl,
+        url_properties=dict(user_id=4636455),
+        primary_names=["絹ごし"],
+        secondary_names=["nicovideo 4636455"],
+        related=["https://seiga.nicovideo.jp/user/illust/4636455", "https://www.pixiv.net/en/users/1772501"],
+    )

@@ -1,17 +1,20 @@
+import pytest
+
 from danboorutools.logical.urls import bilibili as b
-from tests.urls import assert_artist_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_artist_test
 
 urls = {
     b.BilibiliImageUrl: {
-        "https://i0.hdslb.com/bfs/new_dyn/675526fd8baa2f75d7ea0e7ea957bc0811742550.jpg@1036w.webp": "https://i0.hdslb.com/bfs/new_dyn/675526fd8baa2f75d7ea0e7ea957bc0811742550.jpg@1036w.webp",
-        "https://i0.hdslb.com/bfs/new_dyn/716a9733fc804d11d823cfacb7a3c78b11742550.jpg@208w_208h_1e_1c.webp": "https://i0.hdslb.com/bfs/new_dyn/716a9733fc804d11d823cfacb7a3c78b11742550.jpg@208w_208h_1e_1c.webp",
+        "https://i0.hdslb.com/bfs/new_dyn/675526fd8baa2f75d7ea0e7ea957bc0811742550.jpg@1036w.webp": "https://i0.hdslb.com/bfs/new_dyn/675526fd8baa2f75d7ea0e7ea957bc0811742550.jpg",
+        "https://i0.hdslb.com/bfs/new_dyn/716a9733fc804d11d823cfacb7a3c78b11742550.jpg@208w_208h_1e_1c.webp": "https://i0.hdslb.com/bfs/new_dyn/716a9733fc804d11d823cfacb7a3c78b11742550.jpg",
 
-        "https://i0.hdslb.com/bfs/album/37f77871d417c76a08a9467527e9670810c4c442.gif@1036w.webp": "https://i0.hdslb.com/bfs/album/37f77871d417c76a08a9467527e9670810c4c442.gif@1036w.webp",
+        "https://i0.hdslb.com/bfs/album/37f77871d417c76a08a9467527e9670810c4c442.gif@1036w.webp": "https://i0.hdslb.com/bfs/album/37f77871d417c76a08a9467527e9670810c4c442.gif",
         "https://i0.hdslb.com/bfs/album/37f77871d417c76a08a9467527e9670810c4c442.gif": "https://i0.hdslb.com/bfs/album/37f77871d417c76a08a9467527e9670810c4c442.gif",
-        "https://i0.hdslb.com/bfs/article/48e75b3871fa5ed62b4e3a16bf60f52f96b1b3b1.jpg@942w_1334h_progressive.webp": "https://i0.hdslb.com/bfs/article/48e75b3871fa5ed62b4e3a16bf60f52f96b1b3b1.jpg@942w_1334h_progressive.webp",
+        "https://i0.hdslb.com/bfs/article/48e75b3871fa5ed62b4e3a16bf60f52f96b1b3b1.jpg@942w_1334h_progressive.webp": "https://i0.hdslb.com/bfs/article/48e75b3871fa5ed62b4e3a16bf60f52f96b1b3b1.jpg",
 
-        # "https://i0.hdslb.com/bfs/activity-plat/static/2cf2b9af5d3c5781d611d6e36f405144/E738vcDvd3.png": None,
-        # "http://i1.hdslb.com/bfs/archive/89bfa8427528a5e45eff457d4af3a59a9d3f54e0.jpg": None,
+        # "https://i0.hdslb.com/bfs/activity-plat/static/2cf2b9af5d3c5781d611d6e36f405144/E738vcDvd3.png": "",
+        # "http://i1.hdslb.com/bfs/archive/89bfa8427528a5e45eff457d4af3a59a9d3f54e0.jpg": "",
     },
     b.BilibiliPostUrl: {
         "https://m.bilibili.com/dynamic/612214375070704555": "https://t.bilibili.com/612214375070704555",
@@ -48,15 +51,22 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-
-assert_artist_url(
-    "https://space.bilibili.com/1919593",
-    url_type=b.BilibiliArtistUrl,
-    url_properties=dict(user_id=1919593),
-    primary_names=["嘉露香叶"],
-    secondary_names=["bilibili 1919593"],
-    related=[],
-
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
+
+
+def test_artist_url_1():
+    generate_artist_test(
+        url_string="https://space.bilibili.com/1919593",
+        url_type=b.BilibiliArtistUrl,
+        url_properties=dict(user_id=1919593),
+        primary_names=["嘉露香叶"],
+        secondary_names=["bilibili 1919593"],
+        related=[],
+
+    )

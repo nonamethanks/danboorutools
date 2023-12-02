@@ -1,3 +1,5 @@
+import re
+
 from danboorutools.models.url import ArtistUrl, Url
 
 
@@ -29,7 +31,13 @@ class XfolioArtistUrl(ArtistUrl, XfolioUrl):
 
     @property
     def primary_names(self) -> list[str]:
-        return []  # too complex to split the blog title from the actual nmae
+        meta_description_el = self.html.select_one("meta[property='og:description']")
+        assert meta_description_el
+        content = meta_description_el["content"]
+        match = re.search(r"/creator:([\S]*)", content)   # pyright: ignore[reportGeneralTypeIssues]
+        assert match
+        name = match.groups()[0]
+        return [name.strip()]
 
     @property
     def secondary_names(self) -> list[str]:

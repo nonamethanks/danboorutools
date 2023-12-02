@@ -3,11 +3,6 @@ from danboorutools.logical.urls.pixiv import PixivMeUrl
 
 
 class PixivMeParser(UrlParser):
-    test_cases = {
-        PixivMeUrl: [
-            "http://www.pixiv.me/noizave",
-        ],
-    }
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> PixivMeUrl | None:

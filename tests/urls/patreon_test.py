@@ -1,5 +1,8 @@
+import pytest
+
 from danboorutools.logical.urls.patreon import PatreonArtistUrl, PatreonImageUrl, PatreonPostUrl
-from tests.urls import assert_artist_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_artist_test
 
 urls = {
     PatreonArtistUrl: {
@@ -29,13 +32,23 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-assert_artist_url(
-    "https://www.patreon.com/himetyanart",
-    url_type=PatreonArtistUrl,
-    url_properties=dict(username="himetyanart"),
-    primary_names=["Hime-Tyan Art"],
-    secondary_names=["himetyanart"],
-    related=["https://www.instagram.com/tyanka6", "https://twitter.com/Antyan87884404", "https://www.youtube.com/channel/UC2XXjmV5QdgkT4iJlkk-1ew"],
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
+
+
+@pytest.mark.weird_html_parsing
+def test_artist_url_1():
+    generate_artist_test(
+        url_string="https://www.patreon.com/himetyanart",
+        url_type=PatreonArtistUrl,
+        url_properties=dict(username="himetyanart"),
+        primary_names=["Hime-Tyan Art"],
+        secondary_names=["himetyanart"],
+        related=["https://www.instagram.com/tyanka6", "https://twitter.com/Antyan87884404",
+                 "https://www.youtube.com/channel/UC2XXjmV5QdgkT4iJlkk-1ew"],
+    )

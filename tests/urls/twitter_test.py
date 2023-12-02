@@ -1,6 +1,9 @@
+import pytest
+
 from danboorutools.logical.urls import twitter as tw
 from danboorutools.models.url import UselessUrl
-from tests.urls import assert_artist_url, assert_info_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_artist_test, generate_info_test
 
 urls = {
     tw.TwitterShortenerUrl: {
@@ -55,49 +58,63 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-assert_artist_url(
-    "https://twitter.com/ninomaeinanis",
-    url_type=tw.TwitterArtistUrl,
-    url_properties=dict(username="ninomaeinanis"),
-    primary_names=["Ninomae Ina'nis 🐙holoEN"],
-    secondary_names=["ninomaeinanis", "twitter 1283650008835743744"],
-    related=[
-        "https://twitter.com/i/events/1390449082599018496",
-        "https://twitter.com/intent/user?user_id=1283650008835743744",
-        "https://www.youtube.com/channel/UCMwGHR0BTZuLsmjY_NT5Pwg",
-    ],
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
-assert_artist_url(
-    "https://twitter.com/soyso_su40",
-    url_type=tw.TwitterArtistUrl,
-    url_properties=dict(username="soyso_su40"),
-    primary_names=["きのこのこのこ🍄"],
-    secondary_names=["soyso_su40", "twitter 2945315071"],
-    related=[
-        "https://skeb.jp/@soyso_su40",
-        "https://twitter.com/intent/user?user_id=2945315071",
-    ],
-)
 
-assert_info_url(
-    "https://twitter.com/intent/user?user_id=354759129",
-    url_type=tw.TwitterIntentUrl,
-    url_properties=dict(intent_id=354759129),
-    primary_names=[],
-    secondary_names=["twitter 354759129"],
-    related=[],
-    is_deleted=True,
-)
+def test_artist_url_1():
+    generate_artist_test(
+        url_string="https://twitter.com/ninomaeinanis",
+        url_type=tw.TwitterArtistUrl,
+        url_properties=dict(username="ninomaeinanis"),
+        primary_names=["Ninomae Ina'nis 🐙holoEN"],
+        secondary_names=["ninomaeinanis", "twitter 1283650008835743744"],
+        related=[
+            "https://twitter.com/i/events/1390449082599018496",
+            "https://twitter.com/intent/user?user_id=1283650008835743744",
+            "https://www.youtube.com/channel/UCMwGHR0BTZuLsmjY_NT5Pwg",
+        ],
+    )
 
-assert_artist_url(
-    "https://twitter.com/free_tweet_13",
-    url_type=tw.TwitterArtistUrl,
-    url_properties=dict(username="free_tweet_13"),
-    primary_names=[],
-    secondary_names=["free_tweet_13"],
-    related=[],
-    is_deleted=True,
-)
+
+def test_artist_url_2():
+    generate_artist_test(
+        url_string="https://twitter.com/soyso_su40",
+        url_type=tw.TwitterArtistUrl,
+        url_properties=dict(username="soyso_su40"),
+        primary_names=["きのこのこのこ🍄"],
+        secondary_names=["soyso_su40", "twitter 2945315071"],
+        related=[
+            "https://skeb.jp/@soyso_su40",
+            "https://twitter.com/intent/user?user_id=2945315071",
+        ],
+    )
+
+
+def test_artist_url_3():
+    generate_artist_test(
+        url_string="https://twitter.com/free_tweet_13",
+        url_type=tw.TwitterArtistUrl,
+        url_properties=dict(username="free_tweet_13"),
+        primary_names=[],
+        secondary_names=["free_tweet_13"],
+        related=[],
+        is_deleted=True,
+    )
+
+
+def test_info_url_3():
+    generate_info_test(
+        url_string="https://twitter.com/intent/user?user_id=354759129",
+        url_type=tw.TwitterIntentUrl,
+        url_properties=dict(intent_id=354759129),
+        primary_names=[],
+        secondary_names=["twitter 354759129"],
+        related=[],
+        is_deleted=True,
+    )

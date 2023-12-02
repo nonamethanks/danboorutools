@@ -1,5 +1,7 @@
+import pytest
+
 from danboorutools.logical.urls import newgrounds as ns
-from tests.urls import generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
 
 urls = {
     ns.NewgroundsArtistUrl: {
@@ -31,7 +33,14 @@ urls = {
         "https://uploads.ungrounded.net/alternate/1801000/1801343_alternate_165104.1080p.mp4?1639666238": "https://uploads.ungrounded.net/alternate/1801000/1801343_alternate_165104.mp4",
         "https://uploads.ungrounded.net/alternate/1801000/1801343_alternate_165104.720p.mp4?1639666238": "https://uploads.ungrounded.net/alternate/1801000/1801343_alternate_165104.mp4",
         "https://uploads.ungrounded.net/alternate/1801000/1801343_alternate_165104.360p.mp4?1639666238": "https://uploads.ungrounded.net/alternate/1801000/1801343_alternate_165104.mp4",
-    }
+    },
 }
 
-generate_parsing_suite(urls)
+
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
+)
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)

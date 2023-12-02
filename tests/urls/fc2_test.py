@@ -1,5 +1,8 @@
+import pytest
+
 from danboorutools.logical.urls import fc2
-from tests.urls import assert_artist_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_artist_test
 
 urls = {
     fc2.Fc2BlogUrl: {
@@ -76,50 +79,65 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-
-assert_artist_url(
-    "http://mogu08.blog104.fc2.com/",
-    url_type=fc2.Fc2BlogUrl,
-    url_properties=dict(username="mogu08", domain="fc2.com", subsite="blog"),
-    related=[],
-    primary_names=["あきらめmo。"],
-    secondary_names=["mogu08"],
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
-assert_artist_url(
-    "http://laindell.blog.2nt.com/",
-    url_type=fc2.Fc2BlogUrl,
-    url_properties=dict(username="laindell", domain="2nt.com", subsite="blog"),
-    related=[],
-    primary_names=["れいんでる"],
-    secondary_names=["laindell"],
-)
 
-assert_artist_url(
-    "http://kudanya.blog42.fc2.com/",
-    url_type=fc2.Fc2BlogUrl,
-    url_properties=dict(username="kudanya", domain="fc2.com", subsite="blog"),
-    related=[],
-    primary_names=["くだんや"],
-    secondary_names=["kudanya"],
-)
+def test_artist_url_1():
+    generate_artist_test(
+        url_string="http://mogu08.blog104.fc2.com/",
+        url_type=fc2.Fc2BlogUrl,
+        url_properties=dict(username="mogu08", domain="fc2.com", subsite="blog"),
+        related=[],
+        primary_names=["あきらめmo。"],
+        secondary_names=["mogu08"],
+    )
 
-assert_artist_url(
-    "http://cocy.blog57.fc2.com/",
-    url_type=fc2.Fc2BlogUrl,
-    url_properties=dict(username="cocy", domain="fc2.com", subsite="blog"),
-    related=[],
-    primary_names=["寝起きふう"],
-    secondary_names=["cocy"],
-)
 
-assert_artist_url(
-    "http://xxxmixberry.web.fc2.com/",
-    url_type=fc2.Fc2BlogUrl,
-    url_properties=dict(username="xxxmixberry", domain="fc2.com", subsite="web"),
-    related=[],
-    primary_names=["millefeuille"],
-    secondary_names=["xxxmixberry"],
-)
+def test_artist_url_2():
+    generate_artist_test(
+        url_string="http://laindell.blog.2nt.com/",
+        url_type=fc2.Fc2BlogUrl,
+        url_properties=dict(username="laindell", domain="2nt.com", subsite="blog"),
+        related=[],
+        primary_names=["れいんでる"],
+        secondary_names=["laindell"],
+    )
+
+
+def test_artist_url_3():
+    generate_artist_test(
+        url_string="http://kudanya.blog42.fc2.com/",
+        url_type=fc2.Fc2BlogUrl,
+        url_properties=dict(username="kudanya", domain="fc2.com", subsite="blog"),
+        related=[],
+        primary_names=["くだんや"],
+        secondary_names=["kudanya"],
+    )
+
+
+def test_artist_url_4():
+    generate_artist_test(
+        url_string="http://cocy.blog57.fc2.com/",
+        url_type=fc2.Fc2BlogUrl,
+        url_properties=dict(username="cocy", domain="fc2.com", subsite="blog"),
+        related=[],
+        primary_names=["寝起きふう"],
+        secondary_names=["cocy"],
+    )
+
+
+def test_artist_url_5():
+    generate_artist_test(
+        url_string="http://xxxmixberry.web.fc2.com/",
+        url_type=fc2.Fc2BlogUrl,
+        url_properties=dict(username="xxxmixberry", domain="fc2.com", subsite="web"),
+        related=[],
+        primary_names=["millefeuille"],
+        secondary_names=["xxxmixberry"],
+    )

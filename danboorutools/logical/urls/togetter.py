@@ -23,6 +23,10 @@ class TogetterArtistUrl(ArtistUrl, TogetterUrl):
     def primary_names(self) -> list[str]:
         return []
 
+    @property
+    def is_deleted(self) -> bool:
+        return self.session.get(self.normalized_url).url == "https://min.togetter.com/"
+
 
 class TogetterPostUrl(PostUrl, TogetterUrl):
     post_id: str
@@ -31,7 +35,9 @@ class TogetterPostUrl(PostUrl, TogetterUrl):
 
     @property
     def gallery(self) -> TogetterArtistUrl:
-        url = Url.parse(self.html.select_one(".info_box .authour_link")["href"])
+        gallery_link_el = self.html.select_one(".info_box .authour_link")
+        assert gallery_link_el
+        url = Url.parse(gallery_link_el["href"])
         if not isinstance(url, TogetterArtistUrl):
             raise NotImplementedError(self, url)
         return url

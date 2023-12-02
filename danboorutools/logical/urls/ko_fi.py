@@ -19,18 +19,27 @@ class KoFiArtistUrl(ArtistUrl, KoFiUrl):
 
     @property
     def related(self) -> list[Url]:
-        profile_box = self.html.select_one(".profile-page-tile")
+        if self.is_deleted:
+            return []
+        links = self.html.select(".profile-page-tile .social-link a, .social-profile-link a")
 
-        links = [link["href"] for link in profile_box.select(".social-link a, .social-profile-link a")]
+        links = [link["href"] for link in links]
         return [self.parse(link) for link in links]
 
     @property
     def primary_names(self) -> list[str]:
-        return [self.html.select_one(".kfds-text-limit-profilename-mobile span").text]
+        if self.is_deleted:
+            return []
+        assert (name_el := self.html.select_one(".kfds-text-limit-profilename-mobile span"))
+        return [name_el.text]
 
     @property
     def secondary_names(self) -> list[str]:
         return [self.username]
+
+    @property
+    def is_deleted(self) -> bool:
+        return self.session.get(self.normalized_url).url == "https://ko-fi.com/art?=redirect"
 
 
 class KoFiPostUrl(PostUrl, KoFiUrl):

@@ -51,8 +51,13 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
         if not skeb.is_deleted:
             urls += [skeb]
 
-        intent_url = TwitterIntentUrl.build(intent_id=self.artist_data.id)
-        intent_url.artist_data = self.artist_data
+        try:
+            intent_url = TwitterIntentUrl.build(intent_id=self.artist_data.id)
+        except DeadUrlError:
+            pass
+        else:
+            intent_url.artist_data = self.artist_data
+            urls += [intent_url]
 
         return list(dict.fromkeys(urls))
 

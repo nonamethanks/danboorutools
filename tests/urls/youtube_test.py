@@ -1,7 +1,10 @@
+import pytest
+
 from danboorutools.logical.urls import youtube as yt
 from danboorutools.logical.urls.pixiv import PixivArtistUrl
 from danboorutools.models.url import UselessUrl
-from tests.urls import assert_artist_url, assert_redirect_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_artist_test, generate_redirect_test
 
 urls = {
     yt.YoutubeUserUrl: {
@@ -42,64 +45,80 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-
-assert_redirect_url(
-    "https://www.youtube.com/channel/UC6iCJQVd1TBBMvL2G9ML-Zg",
-    url_type=yt.YoutubeChannelUrl,
-    url_properties=dict(channel_id="UC6iCJQVd1TBBMvL2G9ML-Zg"),
-    redirects_to="https://www.youtube.com/@niku_kai29",
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-assert_artist_url(
-    "https://www.youtube.com/@niku_kai29",
-    url_type=yt.YoutubeUserUrl,
-    url_properties=dict(username="niku_kai29"),
-    primary_names=["おにくちゃん(肉斬り包丁)"],
-    secondary_names=["niku_kai29"],
-    related=["https://twitter.com/niku_kai29", "https://seiga.nicovideo.jp/user/illust/59309002",
-             "https://www.pixiv.net/en/users/61603554"],
-)
+def test_artist_url_1():
+    generate_artist_test(
+        url_string="https://www.youtube.com/@niku_kai29",
+        url_type=yt.YoutubeUserUrl,
+        url_properties=dict(username="niku_kai29"),
+        primary_names=["おにくちゃん(肉斬り包丁)"],
+        secondary_names=["niku_kai29"],
+        related=["https://twitter.com/niku_kai29", "https://seiga.nicovideo.jp/user/illust/59309002",
+                 "https://www.pixiv.net/en/users/61603554"],
+    )
 
-assert_redirect_url(
-    "https://www.youtube.com/channel/UClcMRpGblRVpQs06Rv7tylA",
-    url_type=yt.YoutubeChannelUrl,
-    url_properties=dict(channel_id="UClcMRpGblRVpQs06Rv7tylA"),
-    redirects_to="https://www.youtube.com/@user-zb6db2qg1v",
-)
 
-assert_artist_url(
-    "https://www.youtube.com/@user-zb6db2qg1v",
-    url_type=yt.YoutubeUserUrl,
-    url_properties=dict(username="user-zb6db2qg1v"),
-    primary_names=["のんのん"],
-    secondary_names=[],
-    related=[],
-)
+def test_artist_url_2():
+    generate_artist_test(
+        url_string="https://www.youtube.com/@user-zb6db2qg1v",
+        url_type=yt.YoutubeUserUrl,
+        url_properties=dict(username="user-zb6db2qg1v"),
+        primary_names=["のんのん"],
+        secondary_names=[],
+        related=[],
+    )
 
-assert_redirect_url(
-    "https://www.youtube.com/channel/UC8U8Tv6xSPwV8Mout7ZIZ8A/about",
-    url_type=yt.YoutubeChannelUrl,
-    url_properties=dict(channel_id="UC8U8Tv6xSPwV8Mout7ZIZ8A"),
-    redirects_to="https://www.youtube.com/@TheBrothresGreen2022Wonder",
-)
 
-assert_artist_url(
-    "https://www.youtube.com/@TheBrothresGreen2022Wonder",
-    url_type=yt.YoutubeUserUrl,
-    url_properties=dict(username="TheBrothresGreen2022Wonder"),
-    primary_names=["The BrothresGreen!"],
-    secondary_names=["TheBrothresGreen2022Wonder"],
-    related=[
-        "https://instagram.com/brothres_green",
-        "https://deviantart.com/diamondgreenanimat0",
-        "https://facebook.com/DiamondGreen_Art-2255991581322759/?modal=admin_todo_tour",
-        "https://www.derpibooru.org/profiles/Brothresgreen_",
-        "https://furaffinity.net/user/brothresgreen",
-        "https://twitter.com/irene_coreas",
-        "https://tiktok.com/@green_brothres",
-    ],
+def test_artist_url_3():
+    generate_artist_test(
+        url_string="https://www.youtube.com/@TheBrothresGreen2022Wonder",
+        url_type=yt.YoutubeUserUrl,
+        url_properties=dict(username="TheBrothresGreen2022Wonder"),
+        primary_names=["The BrothresGreen!"],
+        secondary_names=["TheBrothresGreen2022Wonder"],
+        related=[
+            "https://instagram.com/brothres_green",
+            "https://deviantart.com/diamondgreenanimat0",
+            "https://facebook.com/DiamondGreen_Art-2255991581322759/?modal=admin_todo_tour",
+            "https://www.derpibooru.org/profiles/Brothresgreen_",
+            "https://furaffinity.net/user/brothresgreen",
+            "https://twitter.com/irene_coreas",
+            "https://tiktok.com/@green_brothres",
+        ],
 
-)
+    )
+
+
+def test_redirect_url_1():
+    generate_redirect_test(
+        url_string="https://www.youtube.com/channel/UC6iCJQVd1TBBMvL2G9ML-Zg",
+        url_type=yt.YoutubeChannelUrl,
+        url_properties=dict(channel_id="UC6iCJQVd1TBBMvL2G9ML-Zg"),
+        redirects_to="https://www.youtube.com/@niku_kai29",
+    )
+
+
+def test_redirect_url_2():
+    generate_redirect_test(
+        url_string="https://www.youtube.com/channel/UClcMRpGblRVpQs06Rv7tylA",
+        url_type=yt.YoutubeChannelUrl,
+        url_properties=dict(channel_id="UClcMRpGblRVpQs06Rv7tylA"),
+        redirects_to="https://www.youtube.com/@user-zb6db2qg1v",
+    )
+
+
+def test_redirect_url_3():
+    generate_redirect_test(
+        url_string="https://www.youtube.com/channel/UC8U8Tv6xSPwV8Mout7ZIZ8A/about",
+        url_type=yt.YoutubeChannelUrl,
+        url_properties=dict(channel_id="UC8U8Tv6xSPwV8Mout7ZIZ8A"),
+        redirects_to="https://www.youtube.com/@TheBrothresGreen2022Wonder",
+    )

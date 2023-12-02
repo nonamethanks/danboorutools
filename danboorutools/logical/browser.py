@@ -5,19 +5,21 @@ import datetime
 import os
 import random
 import time
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pytz import UTC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
 from danboorutools import logger, settings
 from danboorutools.exceptions import NoCookiesForDomainError
 from danboorutools.util.misc import load_cookies_for, save_cookies_for
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from selenium.webdriver.remote.webelement import WebElement
 
     from danboorutools.models.url import Url
@@ -33,7 +35,9 @@ class Browser(Chrome):
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--single-process")
 
-        super().__init__("/usr/bin/chromedriver", chrome_options=options)
+        service = Service("/usr/bin/chromedriver")
+
+        super().__init__(service=service, options=options)
 
         self.cookie_dir = settings.BASE_FOLDER / "cookies"
 

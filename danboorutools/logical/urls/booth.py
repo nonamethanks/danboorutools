@@ -1,3 +1,5 @@
+import re
+
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
@@ -29,6 +31,7 @@ class BoothArtistUrl(ArtistUrl, BoothUrl):
         if self.private:
             return []
         name_el = self.html.select_one(".home-link-container__nickname a") or self.html.select_one(".shop-name-label.display_title")
+        assert name_el
         return [name_el.text]
 
     @property
@@ -74,15 +77,17 @@ class BoothItemUrl(PostUrl, BoothUrl):
 class BoothImageUrl(PostAssetUrl, BoothUrl):
     item_id: int
 
-    @property
-    def full_size(self) -> str:
-        return self.parsed_url.raw_url.replace("_base_resized", "")
+    # @property
+    # def full_size(self) -> str:
+    #     # technically wrong, could be jpg -> png
+    #     return re.sub(r"c\/\d+x\d+\/", "", self.parsed_url.url_without_query.replace("_base_resized", ""))
 
 
 class BoothProfileImageUrl(PostAssetUrl, BoothUrl):
     user_id: int | None
     # user_uuid: str | None
 
-    @property
-    def full_size(self) -> str:
-        return self.parsed_url.url_without_query.replace("_base_resized", "")
+    # @property
+    # def full_size(self) -> str:
+    #     # technically wrong, could be jpg -> png
+    #     return re.sub(r"c\/\d+x\d+", "", self.parsed_url.url_without_query.replace("_base_resized", ""))

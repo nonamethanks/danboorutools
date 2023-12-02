@@ -1,5 +1,8 @@
+import pytest
+
 from danboorutools.logical.urls import fanza as fz
-from tests.urls import assert_post_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_post_test
 
 urls = {
     fz.FanzaDoujinAuthorUrl: {
@@ -7,7 +10,7 @@ urls = {
         "http://www.dmm.co.jp/digital/doujin/-/list/=/article=maker/id=27726/": "https://www.dmm.co.jp/digital/doujin/-/list/=/article=maker/id=27726/",
         "http://www.dmm.co.jp/mono/doujin/-/list/=/article=maker/id=20225/": "https://www.dmm.co.jp/mono/doujin/-/list/=/article=maker/id=20225/",
         "http://www.dmm.co.jp/digital/doujin/-/list/=/article=maker/id=26019/sort=date": "https://www.dmm.co.jp/digital/doujin/-/list/=/article=maker/id=26019/",
-        "http://www.dmm.co.jp/en/dc/doujin/-/list/=/article=maker/id=29820/": "https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/id=29820/"
+        "http://www.dmm.co.jp/en/dc/doujin/-/list/=/article=maker/id=29820/": "https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/id=29820/",
     },
     fz.FanzaDoujinWorkUrl: {
         "https://al.dmm.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_218503%2F&af_id=conoco-002": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_218503/",
@@ -69,18 +72,19 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-assert_post_url(
-    "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_218503/",
-    url_type=fz.FanzaDoujinWorkUrl,
-    url_properties=dict(work_id="d_218503", subsubsite="dc"),
-    gallery="https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/id=70980/",
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
-assert_post_url(
-    "https://book.dmm.co.jp/product/4102975/b064bcmcm01996/?utm_medium=dmm_affiliate&utm_source=conoco-990&utm_campaign=affiliate_api",
-    url_type=fz.FanzaBookWorkUrl,
-    url_properties=dict(series_id=4102975, work_id="b064bcmcm01996"),
-    gallery="https://book.dmm.co.jp/list/?author=238988",
-)
+
+def test_post_url_2():
+    generate_post_test(
+        url_string="https://book.dmm.co.jp/product/4102975/b064bcmcm01996/?utm_medium=dmm_affiliate&utm_source=conoco-990&utm_campaign=affiliate_api",
+        url_type=fz.FanzaBookWorkUrl,
+        url_properties=dict(series_id=4102975, work_id="b064bcmcm01996"),
+        gallery="https://book.dmm.co.jp/list/?author=238988",
+    )

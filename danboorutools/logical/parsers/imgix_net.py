@@ -6,28 +6,6 @@ from danboorutools.logical.urls.skeb import SkebImageUrl
 
 
 class ImgixNetParser(UrlParser):
-    test_cases = {
-        AniftyImageUrl: [
-            "https://anifty.imgix.net/creation/0x961d09077b4a9f7a27f6b7ee78cb4c26f0e72c18/20d5ce5b5163a71258e1d0ee152a0347bf40c7da.png?w=660&h=660&fit=crop&crop=focalpoint&fp-x=0.76&fp-y=0.5&fp-z=1&auto=compress",
-            "https://anifty.imgix.net/creation/0x961d09077b4a9f7a27f6b7ee78cb4c26f0e72c18/48b1409838cf7271413480b8533372844b9f2437.png?w=3840&q=undefined&auto=compress",
-        ],
-        FoundationImageUrl: [
-            "https://f8n-ipfs-production.imgix.net/QmX4MotNAAj9Rcyew43KdgGDxU1QtXemMHoUTNacMLLSjQ/nft.png",
-            "https://f8n-ipfs-production.imgix.net/QmX4MotNAAj9Rcyew43KdgGDxU1QtXemMHoUTNacMLLSjQ/nft.png?q=80&auto=format%2Ccompress&cs=srgb&max-w=1680&max-h=1680",
-            "https://f8n-production-collection-assets.imgix.net/0x3B3ee1931Dc30C1957379FAc9aba94D1C48a5405/128711/QmcBfbeCMSxqYB3L1owPAxFencFx3jLzCPFx6xUBxgSCkH/nft.png",
-            "https://f8n-production-collection-assets.imgix.net/0x18e7E64a51bF26e9DcC167C28a52E4c85781d52E/17/nft.png",
-        ],
-        SkebImageUrl: [
-            "https://skeb.imgix.net/requests/199886_0?bg=%23fff&auto=format&w=800&s=5a6a908ab964fcdfc4713fad179fe715",
-            "https://skeb.imgix.net/requests/73290_0?bg=%23fff&auto=format&txtfont=bold&txtshad=70&txtclr=BFFFFFFF&txtalign=middle%2Ccenter&txtsize=150&txt=SAMPLE&w=800&s=4843435cff85d623b1f657209d131526",
-            "https://skeb.imgix.net/requests/53269_1?bg=%23fff&fm=png&dl=53269.png&w=1.0&h=1.0&s=44588ea9c41881049e392adb1df21cce",
-            "https://skeb.imgix.net/uploads/origins/04d62c2f-e396-46f9-903a-3ca8bd69fc7c?bg=%23fff&auto=format&w=800&s=966c5d0389c3b94dc36ac970f812bef4",
-            "https://si.imgix.net/17e73ecf/uploads/origins/5097b1e1-18ce-418e-82f0-e7e2cdab1cea?bg=%23fff&auto=format&txtfont=bold&txtshad=70&txtclr=BFFFFFFF&txtalign=middle%2Ccenter&txtsize=150&txt=SAMPLE&fm=mp4&w=800&s=701f0e4a2c63865fe7e295b6c66b543b",
-            "https://si.imgix.net/4aeeffe6/uploads/origins/23123cfd-9b03-40f6-a8ae-7d74f9118c6f?bg=%23fff&auto=format&txtfont=bold&txtshad=70&txtclr=BFFFFFFF&txtalign=middle%2Ccenter&txtsize=150&txt=SAMPLE&fm=mp4&w=800&s=1ac2bf12b04e3c12b65038e953fa5009",
-            "https://si.imgix.net/06b2de18/uploads/origins/38a00949-a726-45c8-82b3-9aec4e8255ba?bg=%23fff&auto=format&txtfont=bold&txtshad=70&txtclr=BFFFFFFF&txtalign=middle%2Ccenter&txtsize=150&txt=SAMPLE&fm=mp4&w=800&s=1bbe6796bb3a379732f4255c629f1ac0",
-        ],
-    }
-
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> AniftyImageUrl | FoundationImageUrl | SkebImageUrl | None:
         if parsable_url.subdomain == "anifty":

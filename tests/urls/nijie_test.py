@@ -1,5 +1,8 @@
+import pytest
+
 from danboorutools.logical.urls.nijie import NijieArtistUrl, NijieImageUrl, NijiePostUrl
-from tests.urls import assert_artist_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_artist_test
 
 urls = {
     NijieArtistUrl: {
@@ -38,17 +41,25 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-assert_artist_url(
-    "https://nijie.info/members.php?id=1149787",
-    url_type=NijieArtistUrl,
-    url_properties=dict(user_id=1149787),
-    primary_names=["れく/れとまクロ：仕事求ム！"],
-    secondary_names=["nijie_1149787"],
-    related=["https://ci-en.dlsite.com/creator/1049",
-             "https://skeb.jp/@rexpace",
-             "https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/id=76572/",
-             "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG16604.html",
-             "http://twitter.com/rexpace"],
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
+
+
+def test_artist_url_1():
+    generate_artist_test(
+        url_string="https://nijie.info/members.php?id=1149787",
+        url_type=NijieArtistUrl,
+        url_properties=dict(user_id=1149787),
+        primary_names=["れく/れとまクロ：仕事求ム！"],
+        secondary_names=["nijie_1149787"],
+        related=["https://ci-en.dlsite.com/creator/1049",
+                 "https://skeb.jp/@rexpace",
+                 "https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/id=76572/",
+                 "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG16604.html",
+                 "http://twitter.com/rexpace"],
+    )

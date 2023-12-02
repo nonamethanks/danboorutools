@@ -1,7 +1,3 @@
-import re
-
-from jinja2 import is_undefined
-
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 

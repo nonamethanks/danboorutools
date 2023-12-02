@@ -1,5 +1,8 @@
+import pytest
+
 from danboorutools.logical.urls.reddit import RedditPostUrl, RedditUserUrl
-from tests.urls import assert_info_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_info_test
 
 urls = {
     RedditUserUrl: {
@@ -20,23 +23,33 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-assert_info_url(
-    "https://www.reddit.com/user/imsleepyzen",
-    url_properties=dict(username="imsleepyzen"),
-    url_type=RedditUserUrl,
-    related=["https://twitter.com/imsleepyzen", "https://www.instagram.com/imsleepyzen"],
-    primary_names=["imsleepyzen"],
-    secondary_names=[],
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
-assert_info_url(
-    "https://www.reddit.com/user/AkioAsaku",
-    url_type=RedditUserUrl,
-    url_properties=dict(username="AkioAsaku"),
-    primary_names=["AkioAsaku"],
-    secondary_names=[],
-    related=[],
-    is_deleted=True,
-)
+
+def test_info_url_1():
+    generate_info_test(
+        url_string="https://www.reddit.com/user/imsleepyzen",
+        url_properties=dict(username="imsleepyzen"),
+        url_type=RedditUserUrl,
+        related=["https://twitter.com/imsleepyzen", "https://www.instagram.com/imsleepyzen"],
+        primary_names=["imsleepyzen"],
+        secondary_names=[],
+    )
+
+
+def test_info_url_2():
+    generate_info_test(
+        url_string="https://www.reddit.com/user/AkioAsaku",
+        url_type=RedditUserUrl,
+        url_properties=dict(username="AkioAsaku"),
+        primary_names=["AkioAsaku"],
+        secondary_names=[],
+        related=[],
+        is_deleted=True,
+    )

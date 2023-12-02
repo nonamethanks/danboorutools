@@ -4,15 +4,6 @@ from danboorutools.logical.urls.anifty import AniftyArtistImageUrl, AniftyImageU
 
 
 class GoogleapisComParser(UrlParser):
-    test_cases = {
-        AniftyImageUrl: [
-            "https://storage.googleapis.com/anifty-media/creation/0x961d09077b4a9f7a27f6b7ee78cb4c26f0e72c18/20d5ce5b5163a71258e1d0ee152a0347bf40c7da.png",
-        ],
-        AniftyArtistImageUrl: [
-            "https://storage.googleapis.com/anifty-media/profile/0x961d09077b4a9f7a27f6b7ee78cb4c26f0e72c18/a6d2c366a3e876ddbf04fc269b63124be18af424.png",
-        ],
-    }
-
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> AniftyUrl | None:
         if parsable_url.url_parts[0] == "anifty-media":

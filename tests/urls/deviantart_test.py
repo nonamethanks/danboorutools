@@ -1,5 +1,8 @@
+import pytest
+
 from danboorutools.logical.urls.deviantart import DeviantArtArtistUrl, DeviantArtImageUrl, DeviantArtPostUrl
-from tests.urls import assert_artist_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_artist_test
 
 urls = {
     DeviantArtPostUrl: {
@@ -15,8 +18,6 @@ urls = {
 
     },
     DeviantArtImageUrl: {
-
-
         "http://www.deviantart.com/download/135944599/Touhou___Suwako_Moriya_Colored_by_Turtle_Chibi.png": "",
         "https://www.deviantart.com/download/549677536/countdown_to_midnight_by_kawacy-d939hwg.jpg?token=92090cd3910d52089b566661e8c2f749755ed5f8&ts=1438535525": "",
 
@@ -49,19 +50,29 @@ urls = {
     },
 }
 
-generate_parsing_suite(urls)
 
-assert_artist_url(
-    "https://www.deviantart.com/oneori",
-    url_type=DeviantArtArtistUrl,
-    url_properties=dict(username="oneori"),
-    primary_names=["oneori"],
-    secondary_names=[],
-    related=[
-        "https://www.facebook.com/KittyRaymson/",
-        "https://www.instagram.com/o_neo_ri",
-        "https://www.youtube.com/channel/UCqiIF06TpxsxuIEuRSNsajw",
-        "https://twitter.com/o_Neo_ri",
-        "https://vk.com/neo_kitty_art",
-    ],
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
+
+
+@pytest.mark.weird_html_parsing
+def test_artist_url_1():
+    generate_artist_test(
+        url_string="https://www.deviantart.com/oneori",
+        url_type=DeviantArtArtistUrl,
+        url_properties=dict(username="oneori"),
+        primary_names=["oneori"],
+        secondary_names=[],
+        related=[
+            "https://www.facebook.com/KittyRaymson/",
+            "https://www.instagram.com/o_neo_ri",
+            "https://www.youtube.com/channel/UCqiIF06TpxsxuIEuRSNsajw",
+            "https://twitter.com/o_Neo_ri",
+            "https://vk.com/neo_kitty_art",
+        ],
+    )

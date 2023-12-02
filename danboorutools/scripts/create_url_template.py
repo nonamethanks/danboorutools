@@ -93,8 +93,10 @@ class {class_name_base}ArtistData(BaseModel):
 """
 
 TESTS_TEMPLATE = """
+import pytest
+
 from danboorutools.logical.urls.{module_name} import {class_name_base}ArtistUrl, {class_name_base}ImageUrl, {class_name_base}PostUrl
-from tests.urls import assert_artist_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
 
 urls = {{
     {class_name_base}ArtistUrl: {{
@@ -107,16 +109,13 @@ urls = {{
 }}
 
 
-generate_parsing_suite(urls)
-
-assert_artist_url(
-    url="{original_url}",
-    url_type={class_name_base}ArtistUrl,
-    url_properties=dict(username=),
-    primary_names=[],
-    secondary_names=[],
-    related=[],
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 """
 
 BASE_FOLDER = settings.BASE_FOLDER / "danboorutools"

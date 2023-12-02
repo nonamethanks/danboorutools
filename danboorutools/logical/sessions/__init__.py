@@ -160,10 +160,10 @@ class Session(_CloudScraper):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", XMLParsedAsHTMLWarning)
             try:
-                decoded_content = response.content.decode("ISO-8859-1")
+                # not .text by default because pages like https://soundcloud.com/user-798138171 don't get parsed correctly at the json part
+                decoded_content = response.content.decode("utf-8")
             except UnicodeDecodeError:
-                decoded_content = response.content.decode("ISO-8859-1")
-            # not .text because pages like https://soundcloud.com/user-798138171 don't get parsed correctly at the json part
+                decoded_content = response.text
             return BeautifulSoup(decoded_content, "html5lib")
 
     def get_json(self, *args, **kwargs) -> dict:

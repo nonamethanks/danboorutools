@@ -5,31 +5,6 @@ from danboorutools.logical.urls.tinami import TinamiArtistUrl, TinamiComicUrl, T
 
 class TinamiComParser(UrlParser):
     domains = ("tinami.com", "tinami.jp")
-    test_cases = {
-        TinamiArtistUrl: [
-            "http://www.tinami.com/creator/profile/1624",
-            "https://www.tinami.com/search/list?prof_id=1624",
-
-
-            "http://www.tinami.com/profile/1182",  # (creator: http://www.tinami.com/creator/profile/1624)
-            "http://www.tinami.jp/p/1182",
-        ],
-        TinamiImageUrl: [
-            "https://img.tinami.com/illust/img/287/497c8a9dc60e6.jpg",
-            "https://img.tinami.com/illust2/img/419/5013fde3406b9.jpg",  # (page: https://www.tinami.com/view/461459)
-            "https://img.tinami.com/illust2/L/452/622f7aa336bf3.gif",  # (thumbnail)",
-            "https://img.tinami.com/comic/naomao/naomao_001_01.jpg",  # (page: http://www.tinami.com/comic/naomao/1)
-            "https://img.tinami.com/comic/naomao/naomao_002_01.jpg",  # (page: http://www.tinami.com/comic/naomao/2)
-            "https://img.tinami.com/comic/naomao/naomao_topillust.gif",
-        ],
-        TinamiPostUrl: [
-            "https://www.tinami.com/view/461459",
-            "https://www.tinami.com/view/tweet/card/461459",
-        ],
-        TinamiComicUrl: [
-            "http://www.tinami.com/comic/naomao/2",
-        ],
-    }
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> TinamiUrl | None:  # type: ignore[return]

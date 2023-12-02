@@ -1,5 +1,8 @@
+import pytest
+
 from danboorutools.logical.urls import naver as n
-from tests.urls import assert_artist_url, assert_redirect_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_artist_test, generate_redirect_test
 
 urls = {
     n.NaverBlogArtistUrl: {
@@ -66,36 +69,48 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-assert_artist_url(
-    url="https://blog.naver.com/evildice/",
-    url_type=n.NaverBlogArtistUrl,
-    url_properties=dict(username="evildice"),
-    primary_names=["콜드림"],
-    secondary_names=["evildice"],
-    related=[],
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-assert_redirect_url(
-    "https://cafe.naver.com/ca-fe/cafes/27807122/members/wuEFQlBuDP4vM30IcO5Maw",
-    url_type=n.NaverCafeArtistWithIdUrl,
-    url_properties=dict(user_id=27807122),
-    redirects_to="https://cafe.naver.com/brushonacademy/",
-)
-
-assert_redirect_url(
-    "https://post.naver.com/my.nhn?memberNo=9055207",
-    url_type=n.NaverPostArtistWithIdUrl,
-    url_properties=dict(user_id=9055207),
-    redirects_to="https://post.naver.com/parang9494",
-)
+def test_artist_url_1():
+    generate_artist_test(
+        url_string="https://blog.naver.com/evildice/",
+        url_type=n.NaverBlogArtistUrl,
+        url_properties=dict(username="evildice"),
+        primary_names=["콜드림"],
+        secondary_names=["evildice"],
+        related=[],
+    )
 
 
-assert_redirect_url(
-    "https://cafe.naver.com/ca-fe/cafes/29767250/articles/388",
-    url_type=n.NaverCafePostWithArtistIdUrl,
-    url_properties=dict(user_id=29767250, post_id=388),
-    redirects_to="https://cafe.naver.com/nexonmoe/388",
-)
+def test_redirect_url_1():
+    generate_redirect_test(
+        url_string="https://cafe.naver.com/ca-fe/cafes/27807122/members/wuEFQlBuDP4vM30IcO5Maw",
+        url_type=n.NaverCafeArtistWithIdUrl,
+        url_properties=dict(user_id=27807122),
+        redirects_to="https://cafe.naver.com/brushonacademy/",
+    )
+
+
+def test_redirect_url_2():
+    generate_redirect_test(
+        url_string="https://post.naver.com/my.nhn?memberNo=9055207",
+        url_type=n.NaverPostArtistWithIdUrl,
+        url_properties=dict(user_id=9055207),
+        redirects_to="https://post.naver.com/parang9494",
+    )
+
+
+def test_redirect_url_3():
+    generate_redirect_test(
+        url_string="https://cafe.naver.com/ca-fe/cafes/29767250/articles/388",
+        url_type=n.NaverCafePostWithArtistIdUrl,
+        url_properties=dict(user_id=29767250, post_id=388),
+        redirects_to="https://cafe.naver.com/nexonmoe/388",
+    )

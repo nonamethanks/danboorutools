@@ -1,3 +1,5 @@
+import pytest
+
 from danboorutools.logical.urls.toranoana import (
     ToranoanaArtistUrl,
     ToranoanaCircleUrl,
@@ -8,7 +10,8 @@ from danboorutools.logical.urls.toranoana import (
     ToranoanaOldCircleUrl,
     ToranoanaWebcomicPageUrl,
 )
-from tests.urls import assert_artist_url, assert_post_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_artist_test, generate_post_test
 
 urls = {
     ToranoanaItemUrl: {
@@ -50,21 +53,30 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-
-assert_post_url(
-    "https://ec.toranoana.jp/tora_r/ec/item/040030823758/",
-    url_type=ToranoanaItemUrl,
-    url_properties=dict(item_id="040030823758", subdirs="tora_r/ec", subsite="ec"),
-    gallery="https://ec.toranoana.jp/tora_r/ec/app/catalog/list?searchActorName=mignon",
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
-assert_artist_url(
-    "https://ec.toranoana.jp/joshi_r/ec/cot/circle/2UPADB6Q8673dA6Td687/all/",
-    url_properties=dict(subsite="ec", subdirs="joshi_r/ec/cot", circle_id="2UPADB6Q8673dA6Td687"),
-    url_type=ToranoanaCircleUrl,
-    primary_names=[],
-    secondary_names=["▼(ぎゃくさんかく)"],
-    related=[],
-)
+
+def test_artist_url_1():
+    generate_artist_test(
+        url_string="https://ec.toranoana.jp/joshi_r/ec/cot/circle/2UPADB6Q8673dA6Td687/all/",
+        url_properties=dict(subsite="ec", subdirs="joshi_r/ec/cot", circle_id="2UPADB6Q8673dA6Td687"),
+        url_type=ToranoanaCircleUrl,
+        primary_names=[],
+        secondary_names=["▼(ぎゃくさんかく)"],
+        related=[],
+    )
+
+
+def test_post_url_1():
+    generate_post_test(
+        url_string="https://ec.toranoana.jp/tora_r/ec/item/040030823758/",
+        url_type=ToranoanaItemUrl,
+        url_properties=dict(item_id="040030823758", subdirs="tora_r/ec", subsite="ec"),
+        gallery="https://ec.toranoana.jp/tora_r/ec/app/catalog/list?searchActorName=mignon",
+    )

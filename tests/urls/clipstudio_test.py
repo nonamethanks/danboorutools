@@ -1,10 +1,13 @@
+import pytest
+
 from danboorutools.logical.urls.clipstudio import (
     ClipStudioAssetPostUrl,
     ClipStudioBlogUrl,
     ClipStudioProfileUrl,
     ClipStudioUserSearchUrl,
 )
-from tests.urls import assert_info_url, generate_parsing_suite
+from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import generate_info_test
 
 urls = {
     ClipStudioAssetPostUrl: {
@@ -24,14 +27,22 @@ urls = {
 }
 
 
-generate_parsing_suite(urls)
-
-assert_info_url(
-    "http://fuujin.sees.clip-studio.com",
-    url_type=ClipStudioBlogUrl,
-    url_properties=dict(blog_name="fuujin"),
-    primary_names=[],
-    secondary_names=["fuujin"],
-    related=[],
-    is_deleted=True,
+@pytest.mark.parametrize(
+    "raw_url, normalized_url, expected_class",
+    [(raw_url, normalized_url, expected_class) for expected_class, url_groups in urls.items()
+     for raw_url, normalized_url in url_groups.items()],
 )
+def test_parsing(raw_url, normalized_url, expected_class) -> None:
+    generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
+
+
+def test_info_url_1():
+    generate_info_test(
+        url_string="http://fuujin.sees.clip-studio.com",
+        url_type=ClipStudioBlogUrl,
+        url_properties=dict(blog_name="fuujin"),
+        primary_names=[],
+        secondary_names=["fuujin"],
+        related=[],
+        is_deleted=True,
+    )

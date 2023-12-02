@@ -18,17 +18,6 @@ class FanzaDoujinWorkUrl(PostUrl, FanzaUrl):
 
     normalize_template = "https://www.dmm.co.jp/{subsubsite}/doujin/-/detail/=/cid={work_id}/"
 
-    @cached_property
-    def gallery(self) -> FanzaDoujinAuthorUrl:
-        if self.subsubsite == "dc":
-            url = self.html.select_one(".circleName__txt")["href"]
-        else:
-            raise NotImplementedError(self)
-
-        parsed = Url.parse(urljoin("https://www.dmm.co.jp/", url))
-        assert isinstance(parsed, FanzaDoujinAuthorUrl), (self, parsed)
-        return parsed
-
 
 class FanzaDoujinAuthorUrl(ArtistUrl, FanzaUrl):
     user_id: int

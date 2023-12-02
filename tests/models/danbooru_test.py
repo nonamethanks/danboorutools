@@ -1,22 +1,24 @@
-from ward import test
+import pytest
 
 from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.models.danbooru import DanbooruPost, DanbooruUser
 
 
-@test("Test fetching an user using danbooru", tags=["danbooru_api", "danbooru_users"])
-def user_test() -> None:
+@pytest.mark.danbooru
+@pytest.mark.scraping
+def test_user_test() -> None:
     user, = danbooru_api.users(id=508240)
-    test_admin_user(user)
+    admin_user_t(user)
 
 
-@test("Test fetching an user using DanbooruUser", tags=["danbooru", "danbooru_users"])
-def user_from_id_test() -> None:
+@pytest.mark.danbooru
+@pytest.mark.scraping
+def test_user_from_id_test() -> None:
     user = DanbooruUser.from_id(508240)
-    test_admin_user(user)
+    admin_user_t(user)
 
 
-def test_admin_user(user: DanbooruUser) -> None:
+def admin_user_t(user: DanbooruUser) -> None:
     assert user.id == 508240
     assert user.name == "nonamethanks"
     assert user.is_banned is False
@@ -29,19 +31,21 @@ def test_admin_user(user: DanbooruUser) -> None:
     assert user.level_string == "Admin"
 
 
-@test("Test fetching a post using danbooru_api", tags=["danbooru", "danbooru_posts"])
+@pytest.mark.danbooru
+@pytest.mark.scraping
 def post_test() -> None:
     post, = danbooru_api.posts(tags=["id:1"])
-    test_post(post)
+    post_t(post)
 
 
-@test("Test fetching a post using DanbooruPost", tags=["danbooru", "danbooru_posts"])
+@pytest.mark.danbooru
+@pytest.mark.scraping
 def post_from_id_test() -> None:
     post = DanbooruPost.from_id(1)
-    test_post(post)
+    post_t(post)
 
 
-def test_post(post: DanbooruPost) -> None:
+def post_t(post: DanbooruPost) -> None:
     assert post.id == 1
 
     assert post.md5 == "d34e4cf0a437a5d65f8e82b7bcd02606"

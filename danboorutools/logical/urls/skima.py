@@ -15,7 +15,9 @@ class SkimaArtistUrl(ArtistUrl, SkimaUrl):
 
     @property
     def primary_names(self) -> list[str]:
-        return [self.html.select_one("#profile-header h1.username").text]
+        username_el = self.html.select_one(".profile-header__details h1.username")
+        assert username_el
+        return [username_el.text.strip()]
 
     @property
     def secondary_names(self) -> list[str]:
@@ -23,9 +25,10 @@ class SkimaArtistUrl(ArtistUrl, SkimaUrl):
 
     @property
     def related(self) -> list[Url]:
-        body = self.html.select_one(".panel-body")
+        body_el = self.html.select_one(".panel-body")
+        assert body_el
 
-        return [Url.parse(u) for u in extract_urls_from_string(body.text)]
+        return [Url.parse(u) for u in extract_urls_from_string(body_el.text)]
 
 
 class SkimaItemUrl(PostUrl, SkimaUrl):
