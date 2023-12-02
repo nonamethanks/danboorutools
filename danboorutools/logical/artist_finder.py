@@ -284,8 +284,7 @@ class ArtistFinder:
 
     @classmethod
     def sanitize_tag_name(cls, potential_tag: str) -> str:
-        potential_tag = potential_tag.split("@")[0]  # japanese artists love this shit too much
-        potential_tag = potential_tag.split("🔞")[0]
+        potential_tag = re.split(r"[@＠🔞]", potential_tag)[0]  # japanese artists love this shit too much
 
         if not re.match("^[\x00-\x7F]+$", potential_tag):
             potential_tag = cls.romanize_tag_name(potential_tag)

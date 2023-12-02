@@ -5,12 +5,21 @@ from danboorutools.models.url import Url
 
 
 @pytest.mark.parsing
-def test_artist_name_translation() -> None:
+@pytest.mark.artist_finder
+def test_artist_name_translation_1() -> None:
     name = "蜘蛛の糸"
     assert ArtistFinder.sanitize_tag_name(name) == "kumo_no_ito"
 
 
+@pytest.mark.parsing
+@pytest.mark.artist_finder
+def test_artist_name_translation_2() -> None:
+    name = "せいかん＠C103 2日目東タ09b"
+    assert ArtistFinder.sanitize_tag_name(name) == "seikan"
+
+
 @pytest.mark.scraping
+@pytest.mark.artist_finder
 def test_artist_url_extraction() -> None:
     url = Url.parse("https://www.pixiv.net/en/users/25687133")
 
