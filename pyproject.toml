@@ -212,4 +212,5 @@ markers = [
     "post",
     "info",
     "redirect",
+    "artist_finder",
 ]

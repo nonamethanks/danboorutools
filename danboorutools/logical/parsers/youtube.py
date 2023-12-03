@@ -24,7 +24,8 @@ class YoutubeComParser(UrlParser):
                                           video_id=parsable_url.query["v"])
 
             # https://www.youtube.com/shorts/gPSQPvxmGPA
-            case "shorts", video_id:
+            # https://www.youtube.com/embed/uXwKWvezA-A
+            case ("shorts" | "embed"), video_id:
                 return yt.YoutubeVideoUrl(parsed_url=parsable_url,
                                           video_id=video_id)
 
