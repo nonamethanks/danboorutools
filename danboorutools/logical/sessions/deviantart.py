@@ -99,7 +99,10 @@ class DeviantartUserData(BaseModel):
                         continue
                     if entity["type"] != "LINK":
                         raise NotImplementedError(entity)
-                    urls += [Url.parse(entity["data"]["url"])]
+                    entity_url = entity["data"]["url"]  # type: str
+                    if not entity_url.startswith("http"):
+                        entity_url = f"https://{entity_url}"
+                    urls += [Url.parse(entity_url)]
             else:
                 raise NotImplementedError(description)
 
