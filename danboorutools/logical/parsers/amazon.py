@@ -42,7 +42,7 @@ class AmazonawsComParser(UrlParser):
 
 
 class AmazonComParser(UrlParser):
-    domains = ("amazon.com", "amazon.jp")
+    domains = ("amazon.com", "amazon.jp", "amazon.co.jp")
 
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> AmazonUrl | UselessUrl | None:  # type: ignore[return]
@@ -50,6 +50,8 @@ class AmazonComParser(UrlParser):
             case "hz", "wishlist", "ls", _wishlist_id:
                 return UselessUrl(parsed_url=parsable_url)
             case "gp", "registry", "wishlist", _wishlist_id:
+                return UselessUrl(parsed_url=parsable_url)
+            case "registry", "wishlist", _wishlist_id:
                 return UselessUrl(parsed_url=parsable_url)
 
             case _ if parsable_url.subdomain not in ["www", ""]:
