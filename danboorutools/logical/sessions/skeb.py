@@ -13,7 +13,6 @@ from danboorutools.logical.urls.booth import BoothArtistUrl
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.fantia import FantiaFanclubUrl
 from danboorutools.logical.urls.pixiv import PixivArtistUrl
-from danboorutools.logical.urls.skima import SkimaArtistUrl
 from danboorutools.logical.urls.twitter import TwitterArtistUrl, TwitterIntentUrl
 from danboorutools.logical.urls.youtube import YoutubeChannelUrl
 from danboorutools.models.url import Url

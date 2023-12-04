@@ -61,5 +61,6 @@ def test_artist_url_1():
                  "https://skeb.jp/@rexpace",
                  "https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/id=76572/",
                  "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG16604.html",
-                 "http://twitter.com/rexpace"],
+                 "http://twitter.com/rexpace",
+                 "https://t.co/Lf7P5sOLdV"],
     )

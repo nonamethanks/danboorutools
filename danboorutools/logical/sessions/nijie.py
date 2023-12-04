@@ -31,6 +31,7 @@ class NijieSession(Session):
 
     @ring.lru()
     def login(self) -> None:
+        self._cached_request.storage.backend.clear()
         try:
             self.load_cookies()
         except NoCookiesForDomainError:
