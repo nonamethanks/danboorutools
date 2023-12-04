@@ -54,6 +54,8 @@ urls = {
         "https://www.tumblr.com/blog/view/artofelaineho/187614935612": "https://artofelaineho.tumblr.com/post/187614935612",
         "https://merryweather-media.tumblr.com/post/665688699379564544/blue-eyes-white-dragon": "https://merryweather-media.tumblr.com/post/665688699379564544",
         "https://www.tumblr.com/dashboard/blog/kohirasan/136686983240": "https://kohirasan.tumblr.com/post/136686983240",
+        "https://www.google.com/amp/s/making-my-fate.tumblr.com/post/180917720120/a-really-fun-commission-of-bitch-puddin-i-got/amp": "https://making-my-fate.tumblr.com/post/180917720120",
+        "https://www.google.com/url?sa=i&url=https://centipedekun.tumblr.com/post/135798615368/the-return-of-black-haired-kaneki-in-tokyo-ghoul&psig=AOvVaw2X_GOq7hCJtlRCKugkd2Ag&ust=1632529106337000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCOC6p4irlvMCFQAAAAAdAAAAABAD": "https://centipedekun.tumblr.com/post/135798615368",
     },
 }
 
