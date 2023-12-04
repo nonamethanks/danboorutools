@@ -40,8 +40,9 @@ class DanbooruModel(BaseModel):
         raise NotImplementedError
 
     def delete(self) -> None:
-        from danboorutools.logical.sessions.danbooru import danbooru_api
-        danbooru_api.danbooru_request("DELETE", endpoint=self.model_path)
+        from danboorutools.logical.sessions.danbooru import DanbooruApi
+        admin_api = DanbooruApi(domain="danbooru", mode="main")
+        admin_api.danbooru_request("DELETE", endpoint=self.model_path + ".json")
 
     @classmethod
     def from_id(cls, model_id: int) -> Self:

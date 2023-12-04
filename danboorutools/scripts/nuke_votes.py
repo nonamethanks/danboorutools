@@ -1,9 +1,12 @@
+import time
 from typing import TYPE_CHECKING
 
 import click
 
 from danboorutools import logger
-from danboorutools.logical.sessions.danbooru import danbooru_api
+from danboorutools.logical.sessions.danbooru import DanbooruApi
+
+danbooru_api = DanbooruApi(domain="danbooru", mode="main")
 
 if TYPE_CHECKING:
     from danboorutools.models.danbooru import DanbooruCommentVote, DanbooruPostVote
@@ -27,7 +30,7 @@ def main(mode: str, user_ids: list[int]) -> None:
 
 
 def nuke_votes(model: str, user_id: int) -> None:
-    logger.info(f"Nuking {model} votes for user {user_id}...")
+    logger.info(f"Nuking {model} votes for user https://danbooru.donmai.us/users/{user_id}...")
     count = 1
     while True:
         method = getattr(danbooru_api, f"{model}_votes")
@@ -39,4 +42,5 @@ def nuke_votes(model: str, user_id: int) -> None:
             assert vote.user.id == user_id  # sanity check
             logger.info(f"Nuking {model} vote for {model} {getattr(vote, model).url}. At vote {count}...")
             vote.delete()
+            time.sleep(0.3)
             count += 1

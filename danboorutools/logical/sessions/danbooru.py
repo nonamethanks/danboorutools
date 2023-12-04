@@ -86,7 +86,7 @@ class DanbooruApi(Session):
         if not response.ok:
             raise DanbooruHTTPError(response)
 
-        if endpoint.endswith(".json") and method != "PUT":
+        if endpoint.endswith(".json") and method not in ["PUT", "DELETE"]:
             return self._try_json_response(response)
         else:
             return {"success": True}
