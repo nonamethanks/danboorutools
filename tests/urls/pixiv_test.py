@@ -61,6 +61,8 @@ urls = {
 
         "https://www.pixiv.net/member.php?id=339253": "https://www.pixiv.net/en/users/339253",
         "http://www.pixiv.net/novel/member.php?id=76567": "https://www.pixiv.net/en/users/76567",
+
+        "http://www.pixiv.net/mypage.php#id=12202887": "https://www.pixiv.net/en/users/12202887",
     },
     p.PixivPostUrl: {
         "https://www.pixiv.net/en/artworks/46324488": "https://www.pixiv.net/en/artworks/46324488",

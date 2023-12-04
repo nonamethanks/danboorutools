@@ -140,6 +140,12 @@ class PixivNetParser(UrlParser):
                 return p.PixivArtistUrl(parsed_url=parsable_url,
                                         user_id=int(id_slug.removeprefix("#id=")))
 
+            # http://www.pixiv.net/mypage.php#id=12202887
+            case mypage, if mypage.startswith("mypage.php"):
+                pixiv_id = int(mypage.removeprefix("mypage.php#id="))
+                return p.PixivArtistUrl(parsed_url=parsable_url,
+                                        user_id=int(pixiv_id))
+
             case _:
                 # https://www.pixiv.net/contest/neuralcloud
                 # http://www.pixiv.net/tags.php?tag=%E5%88%86%E5%89%B2%E9%9C%8A%E5%A4%A2
