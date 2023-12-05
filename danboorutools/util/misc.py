@@ -45,7 +45,7 @@ def class_name_to_string(klass: type, separator: str = "_") -> str:
     return class_name[0].lower() + "".join(f"{separator}{char.lower()}" if char.isupper() else char for char in class_name[1:])
 
 
-DELIMITERS = r'\s<>\"\[\]\(\)\|｜、。〈〉《》「」『』【】〔〕〖〗〘〙〚〛）］｝｠｣　…'
+DELIMITERS = r'\s<>\"\[\]\(\)\|｜、，。〈〉《》「」『』【】〔〕〖〗〘〙〚〛）］｝｠｣　…'
 all_urls_pattern = re.compile(rf"((?:\bhttp|https)(?::\/{{2}}[\w]+)(?:[\/|\.]?)(?:[^{DELIMITERS}]*))", re.IGNORECASE | re.ASCII)
 files_pattern = re.compile(r".*(jpe?g|gif|png|webp|avif|mp4|mkv|webm|swf)$", re.IGNORECASE)
 

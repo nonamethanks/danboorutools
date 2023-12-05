@@ -24,8 +24,12 @@ class PatreonSession(Session):
             selector="script#__NEXT_DATA__",
         )
 
-        # return PatreonArtistData(**parsed_data["campaign"])
-        return PatreonArtistData(**parsed_data["props"]["pageProps"]["bootstrapEnvelope"]["bootstrap"]["campaign"])
+        user_data = parsed_data["props"]["pageProps"]["bootstrapEnvelope"]["bootstrap"]
+
+        try:
+            return PatreonArtistData(**user_data["campaign"])
+        except KeyError as e:
+            raise NotImplementedError(user_data) from e
 
     @property
     def cookies_from_env(self) -> dict:
