@@ -14,6 +14,7 @@ from danboorutools.logical.progress_tracker import ProgressTracker
 from danboorutools.logical.sessions.ascii2d import Ascii2dArtistResult, Ascii2dSession
 from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.logical.sessions.saucenao import SaucenaoArtistResult, SaucenaoSession
+from danboorutools.logical.urls.google_drive import GoogleDriveFileUrl
 from danboorutools.logical.urls.instagram import InstagramUrl
 from danboorutools.logical.urls.twitch import TwitchVideoUrl
 from danboorutools.logical.urls.youtube import YoutubePlaylistUrl, YoutubeVideoUrl
@@ -190,6 +191,10 @@ class ArtistFinder:
 
             if isinstance(related_url, YoutubeVideoUrl | YoutubePlaylistUrl):
                 logger.debug(f"Skipping {related_url} because it has a high chance of being a random video.")
+                continue
+
+            if isinstance(related_url, GoogleDriveFileUrl):
+                logger.debug(f"Skipping {related_url} because it has a high chance of being a random file.")
                 continue
 
             if isinstance(related_url, TwitchVideoUrl):
