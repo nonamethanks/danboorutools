@@ -89,7 +89,8 @@ class Session(_CloudScraper):
 
     @ring.lru()
     @on_exception(constant, RateLimitError, max_tries=2, interval=30, jitter=None)
-    @on_exception(constant, ConnectionResetError, max_tries=3, interval=3, jitter=None)
+    @on_exception(constant, RequestsConnectionError, max_tries=3, interval=5, jitter=None)
+    # @on_exception(constant, ConnectionResetError, max_tries=3, interval=3, jitter=None)
     def _cached_request(self, http_method: str, url: str | Url, *args, **kwargs) -> Response:
         if not isinstance(url, str):
             url = url.normalized_url
@@ -108,7 +109,7 @@ class Session(_CloudScraper):
         try:
             with self.limiter.ratelimit(url_domain, delay=True):
                 response = super().request(http_method, url, *args, **kwargs)
-        except RequestsConnectionError as e:
+        except ConnectionError as e:
             e.add_note(f"Method: {http_method}; url: {url}")
             raise
         except CloudflareChallengeError:

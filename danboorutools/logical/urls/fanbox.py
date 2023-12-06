@@ -27,15 +27,21 @@ class FanboxArtistUrl(ArtistUrl, FanboxUrl):
 
     @property
     def related(self) -> list[Url]:
+        if self.is_deleted:
+            return []
         return self.artist_data.related_urls
 
     @property
     def primary_names(self) -> list[str]:
+        if self.is_deleted:
+            return []
         return [self.artist_data.user.name]
 
     @property
     def secondary_names(self) -> list[str]:
-        return [self.artist_data.creatorId]
+        if self.is_deleted:
+            return [self.username]
+        return list({self.artist_data.creatorId, self.username})
 
 
 class FanboxOldPostUrl(RedirectUrl, FanboxUrl):
