@@ -9,14 +9,14 @@ from danboorutools.logical.urls import fanbox as f
 from danboorutools.logical.urls import pixiv as p
 from danboorutools.logical.urls import pixiv_comic as c
 from danboorutools.logical.urls import pixiv_sketch as s
-from danboorutools.models.url import UselessUrl
+from danboorutools.models.url import Url, UselessUrl
 
 img_subdomain_pattern = re.compile(r"^i(?:mg)?\d*$")
 
 
 class PixivNetParser(UrlParser):
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> p.PixivUrl | s.PixivSketchUrl | c.PixivComicUrl | f.FanboxUrl | UselessUrl | None:
+    def match_url(cls, parsable_url: ParsableUrl) -> Url | None:
         if img_subdomain_pattern.match(parsable_url.subdomain):
             return cls._match_i_subdomain(parsable_url)
         if parsable_url.url_parts[0] == "fanbox":
@@ -44,8 +44,8 @@ class PixivNetParser(UrlParser):
         else:
             return None
 
-    @staticmethod
-    def _match_no_subdomain(parsable_url: ParsableUrl) -> p.PixivUrl | UselessUrl | None:
+    @classmethod
+    def _match_no_subdomain(cls, parsable_url: ParsableUrl) -> Url | None:
         match parsable_url.url_parts:
             # https://www.pixiv.net/en/artworks/46324488
             # https://www.pixiv.net/artworks/46324488
@@ -129,7 +129,7 @@ class PixivNetParser(UrlParser):
                 return p.PixivNovelSeriesUrl(parsed_url=parsable_url,
                                              series_id=int(series_id))
 
-            case "dashboard", :
+            case "dashboard", *_:
                 return UselessUrl(parsed_url=parsable_url)
 
             # http://pixiv.net/manage/illusts/
@@ -145,6 +145,9 @@ class PixivNetParser(UrlParser):
                 pixiv_id = int(mypage.removeprefix("mypage.php#id="))
                 return p.PixivArtistUrl(parsed_url=parsable_url,
                                         user_id=int(pixiv_id))
+
+            case "en", if (return_url := parsable_url.query.get("return_to")):
+                return cls.parse("https://www.pixiv.net/" + return_url.strip("/"))
 
             case _:
                 # https://www.pixiv.net/contest/neuralcloud
