@@ -26,6 +26,8 @@ class LitLinkArtistData(BaseModel):
         for profile_link in self.profileLinks:
             match profile_link["profileLinkType"]:
                 case "button":
+                    if profile_link["buttonLink"]["urlType"] == "email":
+                        continue
                     urls += [profile_link["buttonLink"]["url"]]
                 case "margin_block":
                     pass
