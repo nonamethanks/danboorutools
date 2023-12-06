@@ -40,12 +40,13 @@ def test_info_url_1():
             "https://www.amazon.jp/hz/wishlist/ls/1O5XMOZHKWBE8?ref_=wl_share",
             "https://www.pixiv.net/users/374228",
             "https://www.youtube.com/channel/UCtKqZDgqH9QnxJYeF0GDReQ",
-            "https://www.youtube.com/channel/UCtKqZDgqH9QnxJYeF0GDReQ",
             "https://www.youtube.com/results?search_query=隼人ろっくch&sp=EgIIBA==",
             "https://xfolio.jp/portfolio/hayato69",
-            "https://xfolio.jp/portfolio/hayato69/free/33407",
-            "https://xfolio.jp/portfolio/hayato69/free/39674",
-            "https://youtube.com/playlist?list=PLcw27-K4pcr23t305PlCpIYvulr0m2Agu",
+            "https://www.youtube.com/playlist?list=PLcw27-K4pcr23t305PlCpIYvulr0m2Agu",
+            "https://www.youtube.com/playlist?list=PLcw27-K4pcr0ThmoFSJ2kXyaT-bqP2CF_",
+            "https://www.youtube.com/watch?v=Gen3viUSk24",
+            "https://www.youtube.com/watch?v=N_FvhpFcFnw",
+            "https://www.youtube.com/watch?v=NNXNkZdwTL4",
         ],
     )
 
