@@ -342,4 +342,4 @@ class ArtistFinder:
     @classmethod
     def is_url_worth_implementing(cls, url: UnknownUrl) -> bool:
         url_results = danbooru_api.artists(url_matches=f"*{url.parsed_url.domain}*", limit=100)
-        return len(url_results) > 20
+        return len(url_results) > 40
