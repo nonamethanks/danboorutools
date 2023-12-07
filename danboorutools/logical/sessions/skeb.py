@@ -12,6 +12,7 @@ from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.booth import BoothArtistUrl
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.fantia import FantiaFanclubUrl
+from danboorutools.logical.urls.patreon import PatreonArtistUrl
 from danboorutools.logical.urls.pixiv import PixivArtistUrl
 from danboorutools.logical.urls.twitter import TwitterArtistUrl, TwitterIntentUrl
 from danboorutools.logical.urls.youtube import YoutubeChannelUrl
@@ -148,7 +149,7 @@ class SkebArtistData(BaseModel):
     fanza_id: int | None
     # foriio: bool  # seems this is only true if `url` is set to xfolio.jp?
     nijie_id: int | None
-    patreon_id: int | None
+    patreon_id: str | None
     pixiv_id: int | None
     skima_id: int | None
     twitter_uid: int
@@ -181,7 +182,7 @@ class SkebArtistData(BaseModel):
             raise NotImplementedError(self.fanza_id)
 
         if self.patreon_id:
-            raise NotImplementedError(self.patreon_id)
+            urls += [PatreonArtistUrl.build(username=self.patreon_id)]
 
         if self.pixiv_id:
             urls += [PixivArtistUrl.build(user_id=self.pixiv_id)]
