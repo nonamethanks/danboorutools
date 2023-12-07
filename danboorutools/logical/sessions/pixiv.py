@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 DELETION_MESSAGES = [
     "User has left pixiv or the user ID does not exist.",
     "The creator has limited who can view this content",
+    "Profile not found",
 ]
 
 
