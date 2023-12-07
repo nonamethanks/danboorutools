@@ -57,7 +57,7 @@ class Url(metaclass=PseudoDataclass):
     def parse(cls, url: str | Url) -> Url:
         if isinstance(url, Url):
             return url
-        return UrlParser.parse(url) or UnknownUrl(parsed_url=ParsableUrl(url))
+        return UrlParser.parse(url)
 
     @cached_property
     def normalized_url(self) -> str:
@@ -105,7 +105,7 @@ class Url(metaclass=PseudoDataclass):
 
         return __o.normalized_url.__repr__().lower() == self.normalized_url.__repr__().lower()
 
-    def __hash__(self) -> int:  # needed for Ward tests and ring.lru
+    def __hash__(self) -> int:  # needed for ring.lru
         return hash(self.__repr__().lower())  # lower() might not be completely true, but frankly the chance of collision is not realistic
 
     @cached_property
@@ -245,7 +245,7 @@ class PostUrl(Url):
             self.assets = []
 
         if isinstance(asset, str):
-            asset = Url.parse(asset)
+            asset = Url.parse(asset)  # pyright: ignore[reportGeneralTypeIssues]
             assert isinstance(asset, PostAssetUrl), asset
 
         if asset in self.assets:
