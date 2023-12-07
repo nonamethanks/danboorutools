@@ -9,15 +9,6 @@ class TwitterUrl(Url):
     session = TwitterSession()
 
 
-class TwitterPostUrl(PostUrl, TwitterUrl):
-    post_id: int
-    username: str
-
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        return f"https://twitter.com/{kwargs['username']}/status/{kwargs['post_id']}"
-
-
 class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     username: str
 
@@ -68,6 +59,19 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     @property
     def artist_data(self) -> TwitterUserData:
         return self.session.user_data(user_name=self.username)
+
+
+class TwitterPostUrl(PostUrl, TwitterUrl):
+    post_id: int
+    username: str
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str | None:
+        return f"https://twitter.com/{kwargs['username']}/status/{kwargs['post_id']}"
+
+    @property
+    def gallery(self) -> TwitterArtistUrl:
+        return TwitterArtistUrl.build(username=self.username)
 
 
 class TwitterIntentUrl(InfoUrl, TwitterUrl):
