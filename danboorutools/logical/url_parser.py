@@ -18,6 +18,7 @@ UNSUPPORTED_DOMAINS = (
     "amebaownd.com",
     "artmug.kr",  # not worth it, looks like a terrible site to implement
     "coocan.jp",
+    "discord.gg",  # way too much of a pain in the ass
     "kakao.com",  # korean chat app?
     "itch.io",
     "mbsp.jp",
