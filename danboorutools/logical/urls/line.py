@@ -53,3 +53,13 @@ class LinePostUrl(PostUrl, LineUrl):
 class LineMangaAuthorUrl(ArtistUrl, LineUrl):
     author_id: int
     normalize_template = "https://manga.line.me/indies/author/detail?author_id={author_id}"
+
+
+class LineMusicArtistUrl(ArtistUrl, LineUrl):
+    artist_id: str
+    normalize_template = "https://music.line.me/webapp/artist/{artist_id}"
+
+
+class LineMusicAlbumUrl(PostUrl, LineUrl):
+    album_id: str
+    normalize_template = "https://music.line.me/webapp/album/{album_id}"
