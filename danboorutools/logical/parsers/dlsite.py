@@ -5,6 +5,7 @@ from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.dlsite import DlsiteAuthorUrl, DlsiteImageUrl, DlsiteKeywordSearch, DlsiteUrl, DlsiteWorkUrl
 from danboorutools.logical.urls.dlsite_cien import DlsiteCienArticleUrl, DlsiteCienCreatorUrl, DlsiteCienProfileUrl, DlsiteCienUrl
+from danboorutools.models.url import UselessUrl
 
 
 class DlsiteComParser(UrlParser):
@@ -18,7 +19,7 @@ class DlsiteComParser(UrlParser):
     KEYWORD_MAKER_NAME_PATTERN = re.compile(r"((?:AJ|RG)\d+)$")
 
     @classmethod
-    def match_url(cls, parsable_url: ParsableUrl) -> DlsiteUrl | DlsiteCienUrl | None:
+    def match_url(cls, parsable_url: ParsableUrl) -> DlsiteUrl | DlsiteCienUrl | UselessUrl | None:
         if parsable_url.subdomain == "ci-en":
             return cls._match_cien(parsable_url)
         elif parsable_url.subdomain in cls.CIRCLE_SUBSITES:
@@ -27,7 +28,7 @@ class DlsiteComParser(UrlParser):
             return cls._match_main(parsable_url, *parsable_url.url_parts)
 
     @classmethod
-    def _match_main(cls, parsable_url: ParsableUrl, *url_parts: str) -> DlsiteUrl | None:  # type: ignore[return]
+    def _match_main(cls, parsable_url: ParsableUrl, *url_parts: str) -> DlsiteUrl | UselessUrl | None:  # type: ignore[return]
         subsite = url_parts[0].removesuffix("-touch")
         subsite = cls.SUBSITE_ALIASES.get(subsite, subsite)
 
@@ -157,7 +158,11 @@ class DlsiteComParser(UrlParser):
                 return cls.parse(unquoted_url)  # type: ignore[return-value]
 
             case *_, "error.html":
-                raise UnparsableUrlError(parsable_url)
+                return UselessUrl(parsed_url=parsable_url)
+
+            # https://www.dlsite.com/home/fsr/=/language/jp/keyword/%E5%B9%BD%E9%96%89%E3%82%AB%E3%82%BF%E3%83%AB%E3%82%B7%E3%82%B9/age_category%5B0%5D/general/order%5B0%5D/trend/per_page/30/from/fs.header
+            case "home", "fsr", "=", "language", _, "keyword", *_:
+                return UselessUrl(parsed_url=parsable_url)
 
             case _:
                 return None
