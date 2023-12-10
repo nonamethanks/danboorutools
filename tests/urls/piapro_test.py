@@ -3,7 +3,7 @@ import pytest
 from danboorutools.logical.urls.piapro import PiaproArtistUrl, PiaproPostUrl
 from danboorutools.logical.urls.tumblr import TumblrArtistUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     PiaproArtistUrl: {
@@ -30,24 +30,20 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://piapro.jp/woki_woki_chi",
-        url_type=PiaproArtistUrl,
-        url_properties=dict(username="woki_woki_chi"),
-        primary_names=[],
-        secondary_names=["woki_woki_chi"],
-        related=[],
-        is_deleted=True,
-    )
+class TestPiaproArtistUrl1(_TestArtistUrl):
+    url_string = "https://piapro.jp/woki_woki_chi"
+    url_type = PiaproArtistUrl
+    url_properties = dict(username="woki_woki_chi")
+    primary_names = []
+    secondary_names = ["woki_woki_chi"]
+    related = []
+    is_deleted = True
 
 
-def test_artist_url_2():
-    generate_artist_test(
-        url_string="https://piapro.jp/saisaiya",
-        url_type=PiaproArtistUrl,
-        url_properties=dict(username="saisaiya"),
-        primary_names=["やさい"],
-        secondary_names=["saisaiya"],
-        related=["https://twitter.com/saisaiya"],
-    )
+class TestPiaproArtistUrl2(_TestArtistUrl):
+    url_string = "https://piapro.jp/saisaiya"
+    url_type = PiaproArtistUrl
+    url_properties = dict(username="saisaiya")
+    primary_names = ["やさい"]
+    secondary_names = ["saisaiya"]
+    related = ["https://twitter.com/saisaiya"]

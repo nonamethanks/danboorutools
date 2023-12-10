@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.soundcloud import SoundcloudArtistRedirectUrl, SoundcloudArtistUrl, SoundcloudPostSetUrl, SoundcloudPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test, generate_redirect_test
+from tests.helpers.scraping import _TestArtistUrl, _TestRedirectUrl
 
 urls = {
     SoundcloudArtistUrl: {
@@ -32,22 +32,17 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-@pytest.mark.weird_html_parsing
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://soundcloud.com/user-798138171",
-        url_type=SoundcloudArtistUrl,
-        url_properties=dict(username="user-798138171"),
-        primary_names=["とりざき"],
-        secondary_names=[],
-        related=[],
-    )
+class TestSoundcloudArtistUrl(_TestArtistUrl):
+    url_string = "https://soundcloud.com/user-798138171"
+    url_type = SoundcloudArtistUrl
+    url_properties = dict(username="user-798138171")
+    primary_names = ["とりざき"]
+    secondary_names = []
+    related = []
 
 
-def test_redirect_url_1():
-    generate_redirect_test(
-        url_string="https://on.soundcloud.com/U6Ah3",
-        url_type=SoundcloudArtistRedirectUrl,
-        url_properties=dict(redirect_id="U6Ah3"),
-        redirects_to="https://soundcloud.com/saruky",
-    )
+class TestSoundcloudArtistRedirectUrl(_TestRedirectUrl):
+    url_string = "https://on.soundcloud.com/U6Ah3"
+    url_type = SoundcloudArtistRedirectUrl
+    url_properties = dict(redirect_id="U6Ah3")
+    redirects_to = "https://soundcloud.com/saruky"

@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls import booth as b
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     b.BoothArtistUrl: {
@@ -46,45 +46,38 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://synindx-73train.booth.pm",
-        url_type=b.BoothArtistUrl,
-        url_properties=dict(username="synindx-73train"),
-        primary_names=["とりでぽっぽ"],
-        secondary_names=["synindx-73train"],
-        related=["https://skeb.jp/@synindx_73train", "https://twitter.com/synindx_73train", "https://www.pixiv.net/en/users/13678408"],
-    )
+class TestBoothArtistUrl1(_TestArtistUrl):
+    url_string = "https://synindx-73train.booth.pm"
+    url_type = b.BoothArtistUrl
+    url_properties = dict(username="synindx-73train")
+    primary_names = ["とりでぽっぽ"]
+    secondary_names = ["synindx-73train"]
+    related = ["https://skeb.jp/@synindx_73train", "https://twitter.com/synindx_73train", "https://www.pixiv.net/en/users/13678408"]
 
 
-def test_artist_url_2():  # another type of links
-    generate_artist_test(
-        url_string="https://harawatamgmg.booth.pm/",
-        url_type=b.BoothArtistUrl,
-        url_properties=dict(username="harawatamgmg"),
-        primary_names=["wata"],
-        secondary_names=["harawatamgmg"],
-        related=["https://www.pixiv.net/users/1337738"],
-    )
+class TestBoothArtistUrl2(_TestArtistUrl):
+    url_string = "https://harawatamgmg.booth.pm/"
+    url_type = b.BoothArtistUrl
+    url_properties = dict(username="harawatamgmg")
+    primary_names = ["wata"]
+    secondary_names = ["harawatamgmg"]
+    related = ["https://www.pixiv.net/users/1337738"]
 
 
-def test_artist_url_3():  # another type of name element
-    generate_artist_test(
-        url_string="https://awayukidouhu.booth.pm/",
-        url_type=b.BoothArtistUrl,
-        url_properties=dict(username="awayukidouhu"),
-        primary_names=["BAR 泡雪豆腐"],
-        secondary_names=["awayukidouhu"],
-        related=["https://www.pixiv.net/users/1772501", "https://twitter.com/kinugoshispark"],
-    )
+class TestBoothArtistUrl3(_TestArtistUrl):   # another type of name element
+    url_string = "https://awayukidouhu.booth.pm/"
+    url_type = b.BoothArtistUrl
+    url_properties = dict(username="awayukidouhu")
+    primary_names = ["BAR 泡雪豆腐"]
+    secondary_names = ["awayukidouhu"]
+    related = ["https://www.pixiv.net/users/1772501",
+               "https://twitter.com/kinugoshispark"]
 
 
-def test_artist_url_4():  # private
-    generate_artist_test(
-        url_string="https://oriruriro.booth.pm/",
-        url_type=b.BoothArtistUrl,
-        url_properties=dict(username="oriruriro"),
-        primary_names=[],
-        secondary_names=["oriruriro"],
-        related=[],
-    )
+class TestBoothArtistUrl4(_TestArtistUrl):   # another type of name element # private
+    url_string = "https://oriruriro.booth.pm/"
+    url_type = b.BoothArtistUrl
+    url_properties = dict(username="oriruriro")
+    primary_names = []
+    secondary_names = ["oriruriro"]
+    related = []

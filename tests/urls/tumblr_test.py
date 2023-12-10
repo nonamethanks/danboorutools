@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     TumblrArtistUrl: {
@@ -69,12 +69,10 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://www.tumblr.com/kaedech",
-        url_type=TumblrArtistUrl,
-        url_properties=dict(blog_name="kaedech"),
-        primary_names=["絵置き場"],
-        secondary_names=["kaedech"],
-        related=[],
-    )
+class TestTumblrArtistUrl(_TestArtistUrl):
+    url_string = "https://www.tumblr.com/kaedech"
+    url_type = TumblrArtistUrl
+    url_properties = dict(blog_name="kaedech")
+    primary_names = ["絵置き場"]
+    secondary_names = ["kaedech"]
+    related = []

@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls import nicovideo as nv
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     nv.NicovideoVideoUrl: {
@@ -48,12 +48,10 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://www.nicovideo.jp/user/4636455",
-        url_type=nv.NicovideoArtistUrl,
-        url_properties=dict(user_id=4636455),
-        primary_names=["絹ごし"],
-        secondary_names=["nicovideo 4636455"],
-        related=["https://seiga.nicovideo.jp/user/illust/4636455", "https://www.pixiv.net/en/users/1772501"],
-    )
+class TestNicovideoArtistUrl(_TestArtistUrl):
+    url_string = "https://www.nicovideo.jp/user/4636455"
+    url_type = nv.NicovideoArtistUrl
+    url_properties = dict(user_id=4636455)
+    primary_names = ["絹ごし"]
+    secondary_names = ["nicovideo 4636455"]
+    related = ["https://seiga.nicovideo.jp/user/illust/4636455", "https://www.pixiv.net/en/users/1772501"]

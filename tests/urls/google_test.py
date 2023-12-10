@@ -6,7 +6,7 @@ from danboorutools.logical.urls import google_photos as gph
 from danboorutools.logical.urls import google_plus as gpl
 from danboorutools.logical.urls import google_sites as gs
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test, generate_info_test, generate_post_test
+from tests.helpers.scraping import _TestArtistUrl, _TestInfoUrl
 
 urls = {
     gs.GoogleSitesArtistUrl: {
@@ -86,47 +86,31 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://plus.google.com/+KazuhiroMizushima",
-        url_type=gpl.GooglePlusArtistUrl,
-        url_properties=dict(user_id="+KazuhiroMizushima"),
-        primary_names=[],
-        secondary_names=["KazuhiroMizushima"],
-        related=[],
-        is_deleted=True,
-    )
+class TestGooglePlusArtistUrl1(_TestArtistUrl):
+    url_string = "https://plus.google.com/+KazuhiroMizushima"
+    url_type = gpl.GooglePlusArtistUrl
+    url_properties = dict(user_id="+KazuhiroMizushima")
+    primary_names = []
+    secondary_names = ["KazuhiroMizushima"]
+    related = []
+    is_deleted = True
 
 
-def test_artist_url_2():
-    generate_artist_test(
-        url_string="https://plus.google.com/115763191749244545325",
-        url_type=gpl.GooglePlusArtistUrl,
-        url_properties=dict(user_id="115763191749244545325"),
-        primary_names=[],
-        secondary_names=[],
-        related=[],
-        is_deleted=True,
-    )
+class TestGooglePlusArtistUrl2(_TestArtistUrl):
+    url_string = "https://plus.google.com/115763191749244545325"
+    url_type = gpl.GooglePlusArtistUrl
+    url_properties = dict(user_id="115763191749244545325")
+    primary_names = []
+    secondary_names = []
+    related = []
+    is_deleted = True
 
 
-def test_artist_url_3():
-    generate_info_test(
-        url_string="http://profiles.google.com/mutex.skyhigh/about",
-        url_type=g.GoogleProfilesUrl,
-        url_properties=dict(username="mutex.skyhigh"),
-        primary_names=[],
-        secondary_names=["mutex.skyhigh"],
-        related=[],
-        is_deleted=True,
-    )
-
-
-def test_post_url_1():
-    generate_post_test(
-        url_string="https://plus.google.com/u/0/b/115763191749244545325/102486819006366238576",
-        url_type=gpl.GooglePlusPostUrl,
-        url_properties=dict(user_id="115763191749244545325", post_id=102486819006366238576),
-        gallery="https://plus.google.com/115763191749244545325",
-        is_deleted=True,
-    )
+class TestGoogleProfilesUrl(_TestInfoUrl):
+    url_string = "http://profiles.google.com/mutex.skyhigh/about"
+    url_type = g.GoogleProfilesUrl
+    url_properties = dict(username="mutex.skyhigh")
+    primary_names = []
+    secondary_names = ["mutex.skyhigh"]
+    related = []
+    is_deleted = True

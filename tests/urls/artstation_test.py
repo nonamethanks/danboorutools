@@ -8,7 +8,7 @@ from danboorutools.logical.urls.artstation import (
     ArtStationPostUrl,
 )
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     ArtStationOldPostUrl: {
@@ -60,12 +60,10 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://himetyan.artstation.com/",
-        url_type=ArtStationArtistUrl,
-        url_properties=dict(username="himetyan"),
-        primary_names=["Hime tyan art"],
-        secondary_names=["himetyan"],
-        related=["https://www.instagram.com/hime_tyan_art"],
-    )
+class TestArtStationArtistUrl(_TestArtistUrl):
+    url_string = "https://himetyan.artstation.com/"
+    url_type = ArtStationArtistUrl
+    url_properties = dict(username="himetyan")
+    primary_names = ["Hime tyan art"]
+    secondary_names = ["himetyan"]
+    related = ["https://www.instagram.com/hime_tyan_art"]

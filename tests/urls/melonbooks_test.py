@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls import melonbooks as mb
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test, generate_post_test
+from tests.helpers.scraping import _TestArtistUrl, _TestPostUrl
 
 urls = {
     mb.MelonbooksProductUrl: {
@@ -45,21 +45,17 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://www.melonbooks.co.jp/circle/index.php?circle_id=107578#",
-        url_type=mb.MelonbooksCircleUrl,
-        url_properties=dict(circle_id=107578),
-        primary_names=["取手ぽっぽ", "トリデポッポ"],
-        secondary_names=[],
-        related=["https://www.pixiv.net/en/users/13678408", "https://www.twitter.com/synindx_73train"],
-    )
+class TestMelonbooksCircleUrl(_TestArtistUrl):
+    url_string = "https://www.melonbooks.co.jp/circle/index.php?circle_id=107578#"
+    url_type = mb.MelonbooksCircleUrl
+    url_properties = dict(circle_id=107578)
+    primary_names = ["取手ぽっぽ", "トリデポッポ"]
+    secondary_names = []
+    related = ["https://www.pixiv.net/en/users/13678408", "https://www.twitter.com/synindx_73train"]
 
 
-def test_post_url_1():
-    generate_post_test(
-        url_string="https://www.melonbooks.co.jp/detail/detail.php?product_id=647344",
-        url_type=mb.MelonbooksProductUrl,
-        url_properties=dict(product_id=647344),
-        gallery="https://www.melonbooks.co.jp/search/search.php?name=mignon&text_type=author",
-    )
+class TestMelonbooksProductUrl(_TestPostUrl):
+    url_string = "https://www.melonbooks.co.jp/detail/detail.php?product_id=647344"
+    url_type = mb.MelonbooksProductUrl
+    url_properties = dict(product_id=647344)
+    gallery = "https://www.melonbooks.co.jp/search/search.php?name=mignon&text_type=author"

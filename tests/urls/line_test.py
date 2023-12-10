@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls import line as l
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     l.LineArtistUrl: {
@@ -35,13 +35,20 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://store.line.me/stickershop/author/1140847/en",
-        url_type=l.LineArtistUrl,
-        url_properties=dict(artist_id=1140847),
-        primary_names=[],
-        secondary_names=[],
-        related=[],
-        is_deleted=True,
-    )
+class TestLineArtistUrl1(_TestArtistUrl):
+    url_string = "https://store.line.me/stickershop/author/1140847/en"
+    url_type = l.LineArtistUrl
+    url_properties = dict(artist_id=1140847)
+    primary_names = []
+    secondary_names = []
+    related = []
+    is_deleted = True
+
+
+class TestLineArtistUrl2(_TestArtistUrl):
+    url_string = "https://music.line.me/webapp/artist/mi00000000167e08b5"
+    url_type = l.LineMusicArtistUrl
+    url_properties = dict(artist_id="mi00000000167e08b5")
+    primary_names = ["幽閉サテライト"]
+    secondary_names = []
+    related = []

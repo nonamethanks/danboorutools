@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls import pixiv as p
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test, generate_info_test, generate_post_test, generate_redirect_test
+from tests.helpers.scraping import _TestArtistUrl, _TestInfoUrl, _TestPostUrl, _TestRedirectUrl
 
 urls = {
     p.PixivImageUrl: {
@@ -109,53 +109,47 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://www.pixiv.net/en/users/10183321/artworks",
-        url_type=p.PixivArtistUrl,
-        primary_names=["囬巾"],
-        secondary_names=["2001sys", "pixiv 10183321"],
-        related=["https://www.pixiv.net/stacc/2001sys", "https://huijin177.lofter.com",
-                 "https://calamitail.fanbox.cc", "https://sketch.pixiv.net/@2001sys"],
-        post_count=40,
-        url_properties=dict(user_id=10183321),
-        posts=["https://www.pixiv.net/en/artworks/95096202"],
-    )
+class TestPixivArtistUrl(_TestArtistUrl):
+    url_string = "https://www.pixiv.net/en/users/10183321/artworks"
+    url_type = p.PixivArtistUrl
+    primary_names = ["囬巾"]
+    secondary_names = ["2001sys", "pixiv 10183321"]
+    related = ["https://www.pixiv.net/stacc/2001sys",
+               "https://huijin177.lofter.com",
+               "https://calamitail.fanbox.cc",
+               "https://sketch.pixiv.net/@2001sys"]
+    post_count = 40
+    url_properties = dict(user_id=10183321)
+    posts = ["https://www.pixiv.net/en/artworks/95096202"]
 
 
-def test_info_url_1():
-    generate_info_test(
-        url_type=p.PixivStaccUrl,
-        url_string="https://www.pixiv.net/stacc/982430143",
-        url_properties=dict(stacc="982430143"),
-        related=["https://www.pixiv.net/en/users/14761279"],
-        primary_names=[],
-        secondary_names=["982430143"],
-    )
+class TestPixivStaccUrl(_TestInfoUrl):
+    url_type = p.PixivStaccUrl
+    url_string = "https://www.pixiv.net/stacc/982430143"
+    url_properties = dict(stacc="982430143")
+    related = ["https://www.pixiv.net/en/users/14761279"]
+    primary_names = []
+    secondary_names = ["982430143"]
 
 
-def test_post_url_1():
-    generate_post_test(
-        url_type=p.PixivPostUrl,
-        url_string="https://www.pixiv.net/en/artworks/95096202",
-        asset_count=7,
-        score=2473,
-        created_at="2021-12-28 14:53:00",
-        url_properties=dict(post_id=95096202),
-        assets=["https://i.pximg.net/img-original/img/2021/12/28/23/53/02/95096202_p6.png"],
-    )
+class TestPixivPostUrl1(_TestPostUrl):
+    url_type = p.PixivPostUrl
+    url_string = "https://www.pixiv.net/en/artworks/95096202"
+    asset_count = 7
+    score = 2473
+    created_at = "2021-12-28 14:53:00"
+    url_properties = dict(post_id=95096202)
+    assets = ["https://i.pximg.net/img-original/img/2021/12/28/23/53/02/95096202_p6.png"]
 
 
-def test_post_url_2():
-    generate_post_test(
-        url_type=p.PixivPostUrl,
-        url_string="https://www.pixiv.net/en/artworks/unlisted/ntQchboUi1CsqMhDpo5j",
-        asset_count=1,
-        score=0,
-        created_at="2021-05-31 15:45:00",
-        url_properties=dict(post_id="ntQchboUi1CsqMhDpo5j"),
-        assets=["https://i.pximg.net/img-original/img/2021/06/01/00/45/05/90237981-673ede4b6e1780f98dcba5241972ce7b_p0.jpg"],
-    )
+class TestPixivPostUrl2(_TestPostUrl):
+    url_type = p.PixivPostUrl
+    url_string = "https://www.pixiv.net/en/artworks/unlisted/ntQchboUi1CsqMhDpo5j"
+    asset_count = 1
+    score = 0
+    created_at = "2021-05-31 15:45:00"
+    url_properties = dict(post_id="ntQchboUi1CsqMhDpo5j")
+    assets = ["https://i.pximg.net/img-original/img/2021/06/01/00/45/05/90237981-673ede4b6e1780f98dcba5241972ce7b_p0.jpg"]
 
 
 # assert_asset_url(
@@ -167,10 +161,8 @@ def test_post_url_2():
 # )
 
 
-def test_redirect_url_1():
-    generate_redirect_test(
-        url_type=p.PixivMeUrl,
-        url_string="https://www.pixiv.me/982430143",
-        url_properties=dict(stacc="982430143"),
-        redirects_to="https://www.pixiv.net/en/users/14761279",
-    )
+class TestPixivMeUrl(_TestRedirectUrl):
+    url_type = p.PixivMeUrl
+    url_string = "https://www.pixiv.me/982430143"
+    url_properties = dict(stacc="982430143")
+    redirects_to = "https://www.pixiv.net/en/users/14761279"

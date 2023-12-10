@@ -59,6 +59,19 @@ class LineMusicArtistUrl(ArtistUrl, LineUrl):
     artist_id: str
     normalize_template = "https://music.line.me/webapp/artist/{artist_id}"
 
+    @property
+    def primary_names(self) -> list[str]:
+        assert (name_el := self.html.select_one(".artist_summary_section .title"))
+        return [name_el.text.strip()]
+
+    @property
+    def secondary_names(self) -> list[str]:
+        return []
+
+    @property
+    def related(self) -> list[Url]:
+        return []
+
 
 class LineMusicAlbumUrl(PostUrl, LineUrl):
     album_id: str

@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls import fanza as fz
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_post_test
+from tests.helpers.scraping import _TestPostUrl
 
 urls = {
     fz.FanzaDoujinAuthorUrl: {
@@ -81,10 +81,8 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_post_url_2():
-    generate_post_test(
-        url_string="https://book.dmm.co.jp/product/4102975/b064bcmcm01996/?utm_medium=dmm_affiliate&utm_source=conoco-990&utm_campaign=affiliate_api",
-        url_type=fz.FanzaBookWorkUrl,
-        url_properties=dict(series_id=4102975, work_id="b064bcmcm01996"),
-        gallery="https://book.dmm.co.jp/list/?author=238988",
-    )
+class TestFanzaBookWorkUrl(_TestPostUrl):
+    url_string = "https://book.dmm.co.jp/product/4102975/b064bcmcm01996/?utm_medium=dmm_affiliate&utm_source=conoco-990&utm_campaign=affiliate_api"
+    url_type = fz.FanzaBookWorkUrl
+    url_properties = dict(series_id=4102975, work_id="b064bcmcm01996")
+    gallery = "https://book.dmm.co.jp/list/?author=238988"

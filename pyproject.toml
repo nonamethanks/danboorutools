@@ -201,16 +201,16 @@ extension-pkg-whitelist = ["_testcapi", "pydantic"]
 filterwarnings = ["ignore::DeprecationWarning"]
 log_level = "0"
 log_cli = true
-addopts = "-raP --showlocals -vv"
+addopts = "-raP --showlocals -vv -m 'not autoignore'"
 markers = [
     "scraping",
     "parsing",
     "danbooru",
-    "weird_html_parsing",
     "gallery",
     "artist",
     "post",
     "info",
     "redirect",
     "artist_finder",
+    "autoignore",
 ]

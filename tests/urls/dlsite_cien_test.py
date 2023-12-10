@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.dlsite_cien import DlsiteCienArticleUrl, DlsiteCienCreatorUrl, DlsiteCienProfileUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_info_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     DlsiteCienCreatorUrl: {
@@ -27,16 +27,14 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_info_url_1():
-    generate_info_test(
-        url_string="https://ci-en.dlsite.com/creator/16182",
-        url_type=DlsiteCienCreatorUrl,
-        url_properties=dict(creator_id=16182),
-        primary_names=["ナナバラメイ"],
-        secondary_names=[],
-        related=[
-            "https://skeb.jp/@7rose_may",
-            "https://twitter.com/7rose_may2",
-            "https://www.pixiv.net/en/users/11823554",
-        ],
-    )
+class TestDlsiteCienCreatorUrl(_TestArtistUrl):
+    url_string = "https://ci-en.dlsite.com/creator/16182"
+    url_type = DlsiteCienCreatorUrl
+    url_properties = dict(creator_id=16182)
+    primary_names = ["ナナバラメイ"]
+    secondary_names = []
+    related = [
+        "https://skeb.jp/@7rose_may",
+        "https://twitter.com/7rose_may2",
+        "https://www.pixiv.net/en/users/11823554",
+    ]

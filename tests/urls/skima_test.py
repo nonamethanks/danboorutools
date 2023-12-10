@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.skima import SkimaArtistUrl, SkimaGalleryUrl, SkimaImageUrl, SkimaItemUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     SkimaArtistUrl: {
@@ -37,12 +37,10 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://skima.jp/profile?id=244678",
-        url_type=SkimaArtistUrl,
-        url_properties=dict(user_id=244678),
-        primary_names=["隼人ろっく"],
-        secondary_names=[],
-        related=[],
-    )
+class TestSkimaArtistUrl(_TestArtistUrl):
+    url_string = "https://skima.jp/profile?id=244678"
+    url_type = SkimaArtistUrl
+    url_properties = dict(user_id=244678)
+    primary_names = ["隼人ろっく"]
+    secondary_names = []
+    related = []

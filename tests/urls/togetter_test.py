@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.togetter import TogetterArtistUrl, TogetterLiUrl, TogetterPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     TogetterPostUrl: {
@@ -26,13 +26,11 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://min.togetter.com/id/srm_chi",
-        url_type=TogetterArtistUrl,
-        url_properties=dict(username="srm_chi"),
-        primary_names=[],
-        secondary_names=["srm_chi"],
-        related=["https://twitter.com/srm_chi"],
-        is_deleted=True,
-    )
+class TestTogetterArtistUrl(_TestArtistUrl):
+    url_string = "https://min.togetter.com/id/srm_chi"
+    url_type = TogetterArtistUrl
+    url_properties = dict(username="srm_chi")
+    primary_names = []
+    secondary_names = ["srm_chi"]
+    related = ["https://twitter.com/srm_chi"]
+    is_deleted = True

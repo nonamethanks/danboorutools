@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.tw6 import Tw6ArtistUrl, Tw6CharacterUrl, Tw6ImageUrl, Tw6PostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     Tw6ArtistUrl: {
@@ -33,12 +33,10 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://tw6.jp/gallery/master/?master_id=05344",
-        url_type=Tw6ArtistUrl,
-        url_properties=dict(user_id=5344),
-        primary_names=["いもーす"],
-        secondary_names=[],
-        related=[],
-    )
+class TestTw6ArtistUrl(_TestArtistUrl):
+    url_string = "https://tw6.jp/gallery/master/?master_id=05344"
+    url_type = Tw6ArtistUrl
+    url_properties = dict(user_id=5344)
+    primary_names = ["いもーす"]
+    secondary_names = []
+    related = []

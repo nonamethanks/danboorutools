@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.afdian import AfdianArtistImageUrl, AfdianArtistUrl, AfdianImageUrl, AfdianPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     AfdianArtistUrl: {
@@ -32,23 +32,19 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://afdian.net/a/mgong520",
-        url_type=AfdianArtistUrl,
-        url_properties=dict(username="mgong520"),
-        primary_names=["尼德汞"],
-        secondary_names=["mgong520"],
-        related=[],
-    )
+class TestAfdianArtistUrl1(_TestArtistUrl):
+    url_string = "https://afdian.net/a/mgong520"
+    url_type = AfdianArtistUrl
+    url_properties = dict(username="mgong520")
+    primary_names = ["尼德汞"]
+    secondary_names = ["mgong520"]
+    related = []
 
 
-def test_artist_url_2():
-    generate_artist_test(
-        url_string="https://afdian.net/a/rubyredsims",
-        url_type=AfdianArtistUrl,
-        url_properties=dict(username="rubyredsims"),
-        primary_names=["RUBY RED SIMS"],
-        secondary_names=["rubyredsims"],
-        related=[],
-    )
+class TestAfdianArtistUrl2(_TestArtistUrl):
+    url_string = "https://afdian.net/a/rubyredsims"
+    url_type = AfdianArtistUrl
+    url_properties = dict(username="rubyredsims")
+    primary_names = ["RUBY RED SIMS"]
+    secondary_names = ["rubyredsims"]
+    related = []

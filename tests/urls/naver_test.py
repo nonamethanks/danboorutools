@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls import naver as n
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test, generate_redirect_test
+from tests.helpers.scraping import _TestArtistUrl, _TestRedirectUrl
 
 urls = {
     n.NaverBlogArtistUrl: {
@@ -52,7 +52,7 @@ urls = {
     n.NaverCafePostWithArtistIdUrl: {
         "https://cafe.naver.com/ArticleRead.nhn?clubid=29039136&articleid=2817624&": "https://cafe.naver.com/ca-fe/cafes/29039136/articles/2817624",
         "https://cafe.naver.com/ca-fe/cafes/29767250/articles/388": "https://cafe.naver.com/ca-fe/cafes/29767250/articles/388",
-        "https://m.cafe.naver.com/ca-fe/web/cafes/10947985/articles/204011?art=aW50ZXJuYWwtY2FmZS13ZWItc2VjdGlvbi1zZWFyY2gtbGlzdA.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiYXJ0aWNsZUlkIjoyMDQwMTEsImNhZmVVcmwiOiJvaHdvdyIsImlzc3VlZEF0IjoxNjk3MDg1NjIzNDMxfQ.u2UbcjPRkICdt59GrJUuRGxkjL1wwMIkmkLBHrBPp0w&q=섀도우댄서%09&tc=section_search_result_articles": "https://cafe.naver.com/ca-fe/cafes/10947985/articles/204011"
+        "https://m.cafe.naver.com/ca-fe/web/cafes/10947985/articles/204011?art=aW50ZXJuYWwtY2FmZS13ZWItc2VjdGlvbi1zZWFyY2gtbGlzdA.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiYXJ0aWNsZUlkIjoyMDQwMTEsImNhZmVVcmwiOiJvaHdvdyIsImlzc3VlZEF0IjoxNjk3MDg1NjIzNDMxfQ.u2UbcjPRkICdt59GrJUuRGxkjL1wwMIkmkLBHrBPp0w&q=섀도우댄서%09&tc=section_search_result_articles": "https://cafe.naver.com/ca-fe/cafes/10947985/articles/204011",
     },
     n.NaverGrafolioArtistUrl: {
         "https://grafolio.naver.com/taccachantrieri13art": "https://grafolio.naver.com/taccachantrieri13art",
@@ -78,39 +78,31 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://blog.naver.com/evildice/",
-        url_type=n.NaverBlogArtistUrl,
-        url_properties=dict(username="evildice"),
-        primary_names=["콜드림"],
-        secondary_names=["evildice"],
-        related=[],
-    )
+class TestNaverBlogArtistUrl(_TestArtistUrl):
+    url_string = "https://blog.naver.com/evildice/"
+    url_type = n.NaverBlogArtistUrl
+    url_properties = dict(username="evildice")
+    primary_names = ["콜드림"]
+    secondary_names = ["evildice"]
+    related = []
 
 
-def test_redirect_url_1():
-    generate_redirect_test(
-        url_string="https://cafe.naver.com/ca-fe/cafes/27807122/members/wuEFQlBuDP4vM30IcO5Maw",
-        url_type=n.NaverCafeArtistWithIdUrl,
-        url_properties=dict(user_id=27807122),
-        redirects_to="https://cafe.naver.com/brushonacademy/",
-    )
+class TestNaverCafeArtistWithIdUrl1(_TestRedirectUrl):
+    url_string = "https://cafe.naver.com/ca-fe/cafes/27807122/members/wuEFQlBuDP4vM30IcO5Maw"
+    url_type = n.NaverCafeArtistWithIdUrl
+    url_properties = dict(user_id=27807122)
+    redirects_to = "https://cafe.naver.com/brushonacademy/"
 
 
-def test_redirect_url_2():
-    generate_redirect_test(
-        url_string="https://post.naver.com/my.nhn?memberNo=9055207",
-        url_type=n.NaverPostArtistWithIdUrl,
-        url_properties=dict(user_id=9055207),
-        redirects_to="https://post.naver.com/parang9494",
-    )
+class TestNaverCafeArtistWithIdUrl2(_TestRedirectUrl):
+    url_string = "https://post.naver.com/my.nhn?memberNo=9055207"
+    url_type = n.NaverPostArtistWithIdUrl
+    url_properties = dict(user_id=9055207)
+    redirects_to = "https://post.naver.com/parang9494"
 
 
-def test_redirect_url_3():
-    generate_redirect_test(
-        url_string="https://cafe.naver.com/ca-fe/cafes/29767250/articles/388",
-        url_type=n.NaverCafePostWithArtistIdUrl,
-        url_properties=dict(user_id=29767250, post_id=388),
-        redirects_to="https://cafe.naver.com/nexonmoe/388",
-    )
+class TestNaverCafeArtistWithIdUrl3(_TestRedirectUrl):
+    url_string = "https://cafe.naver.com/ca-fe/cafes/29767250/articles/388"
+    url_type = n.NaverCafePostWithArtistIdUrl
+    url_properties = dict(user_id=29767250, post_id=388)
+    redirects_to = "https://cafe.naver.com/nexonmoe/388"

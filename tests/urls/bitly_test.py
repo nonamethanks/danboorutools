@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.bitly import BitlyUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_redirect_test
+from tests.helpers.scraping import _TestRedirectUrl
 
 urls = {
     BitlyUrl: {
@@ -20,10 +20,8 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_redirect_url_1():
-    generate_redirect_test(
-        url_string="https://bit.ly/3xcRBib",
-        url_type=BitlyUrl,
-        url_properties=dict(redirect_id="3xcRBib"),
-        redirects_to="https://www.youtube.com/results?search_query=%E9%9A%BC%E4%BA%BA%E3%82%8D%E3%81%A3%E3%81%8Fch&sp=EgIIBA%253D%253D",
-    )
+class TestBitlyUrl(_TestRedirectUrl):
+    url_string = "https://bit.ly/3xcRBib"
+    url_type = BitlyUrl
+    url_properties = dict(redirect_id="3xcRBib")
+    redirects_to = "https://www.youtube.com/results?search_query=%E9%9A%BC%E4%BA%BA%E3%82%8D%E3%81%A3%E3%81%8Fch&sp=EgIIBA%253D%253D"

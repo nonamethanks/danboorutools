@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.plurk import PlurkArtistUrl, PlurkImageUrl, PlurkPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     PlurkArtistUrl: {
@@ -34,14 +34,12 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://www.plurk.com/vivi890812",
-        url_type=PlurkArtistUrl,
-        url_properties=dict(username="vivi890812"),
-        primary_names=["犬勇者-CWT65次日 O28"],
-        secondary_names=["vivi890812"],
-        related=["https://her178542.pixnet.net",
-                 "https://home.gamer.com.tw/homeindex.php?owner=her682913",
-                 "https://www.pixiv.net/en/users/5253106"],
-    )
+class TestPlurkArtistUrl(_TestArtistUrl):
+    url_string = "https://www.plurk.com/vivi890812"
+    url_type = PlurkArtistUrl
+    url_properties = dict(username="vivi890812")
+    primary_names = ["犬勇者-CWT65次日 O28"]
+    secondary_names = ["vivi890812"]
+    related = ["https://her178542.pixnet.net",
+               "https://home.gamer.com.tw/homeindex.php?owner=her682913",
+               "https://www.pixiv.net/en/users/5253106"]

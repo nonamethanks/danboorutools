@@ -9,7 +9,7 @@ from danboorutools.logical.urls.hatena import (
     HatenaUgomemoUrl,
 )
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test, generate_info_test
+from tests.helpers.scraping import _TestInfoUrl
 
 urls = {
     HatenaFotolifeArtistUrl: {
@@ -64,23 +64,19 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_info_url_1():
-    generate_info_test(
-        url_string="https://profile.hatena.ne.jp/gekkakou616/",
-        url_type=HatenaProfileUrl,
-        url_properties=dict(username="gekkakou616"),
-        primary_names=["りゅーがもの"],
-        secondary_names=["gekkakou616"],
-        related=["http://pixiv.me/gmk616"],
-    )
+class TestHatenaFotolifeArtistUrl1(_TestInfoUrl):
+    url_string = "https://profile.hatena.ne.jp/gekkakou616/"
+    url_type = HatenaProfileUrl
+    url_properties = dict(username="gekkakou616")
+    primary_names = ["りゅーがもの"]
+    secondary_names = ["gekkakou616"]
+    related = ["http://pixiv.me/gmk616"]
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://f.hatena.ne.jp/msmt1118/",
-        url_type=HatenaFotolifeArtistUrl,
-        url_properties=dict(username="msmt1118"),
-        primary_names=[],
-        secondary_names=["msmt1118"],
-        related=["https://profile.hatena.ne.jp/msmt1118/"],
-    )
+class TestHatenaFotolifeArtistUrl2(_TestInfoUrl):
+    url_string = "https://f.hatena.ne.jp/msmt1118/"
+    url_type = HatenaFotolifeArtistUrl
+    url_properties = dict(username="msmt1118")
+    primary_names = []
+    secondary_names = ["msmt1118"]
+    related = ["https://profile.hatena.ne.jp/msmt1118/"]

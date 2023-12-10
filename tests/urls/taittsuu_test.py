@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.taittsuu import TaittsuuArtistUrl, TaittsuuPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     TaittsuuArtistUrl: {
@@ -24,12 +24,10 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://taittsuu.com/users/reco",
-        url_type=TaittsuuArtistUrl,
-        url_properties=dict(username="reco"),
-        primary_names=["れこ"],
-        secondary_names=["reco"],
-        related=["https://www.pixiv.net/users/1987712"],
-    )
+class TestTaittsuuArtistUrl(_TestArtistUrl):
+    url_string = "https://taittsuu.com/users/reco"
+    url_type = TaittsuuArtistUrl
+    url_properties = dict(username="reco")
+    primary_names = ["れこ"]
+    secondary_names = ["reco"]
+    related = ["https://www.pixiv.net/users/1987712"]

@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.weibo import WeiboArtistUrl, WeiboImageUrl, WeiboPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     WeiboArtistUrl: {
@@ -61,57 +61,47 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://www.weibo.com/u/5501756072",
-        url_type=WeiboArtistUrl,
-        url_properties=dict(artist_short_id=5501756072),
-        primary_names=["阿尔托莉雅厨"],
-        secondary_names=[],
-        related=[],
-    )
+class TestWeiboArtistUrl1(_TestArtistUrl):
+    url_string = "https://www.weibo.com/u/5501756072"
+    url_type = WeiboArtistUrl
+    url_properties = dict(artist_short_id=5501756072)
+    primary_names = ["阿尔托莉雅厨"]
+    secondary_names = []
+    related = []
 
 
-def test_artist_url_2():
-    generate_artist_test(
-        url_string="https://www.weibo.com/vicdragon",
-        url_type=WeiboArtistUrl,
-        url_properties=dict(username="vicdragon"),
-        primary_names=["温柔贤淑王凌雪王姐姐"],
-        secondary_names=["vicdragon"],
-        related=[],
-    )
+class TestWeiboArtistUrl2(_TestArtistUrl):
+    url_string = "https://www.weibo.com/vicdragon"
+    url_type = WeiboArtistUrl
+    url_properties = dict(username="vicdragon")
+    primary_names = ["温柔贤淑王凌雪王姐姐"]
+    secondary_names = ["vicdragon"]
+    related = []
 
 
-def test_artist_url_3():
-    generate_artist_test(
-        url_string="https://www.weibo.com/n/肆巳4",
-        url_type=WeiboArtistUrl,
-        url_properties=dict(screen_name="肆巳4"),
-        primary_names=["肆巳4"],
-        secondary_names=[],
-        related=[],
-    )
+class TestWeiboArtistUrl3(_TestArtistUrl):
+    url_string = "https://www.weibo.com/n/肆巳4"
+    url_type = WeiboArtistUrl
+    url_properties = dict(screen_name="肆巳4")
+    primary_names = ["肆巳4"]
+    secondary_names = []
+    related = []
 
 
-def test_artist_url_4():
-    generate_artist_test(
-        url_string="https://www.weibo.com/p/1005055399876326",
-        url_type=WeiboArtistUrl,
-        url_properties=dict(artist_long_id=1005055399876326),
-        primary_names=["橙子呦S"],
-        secondary_names=["chengziyou666"],
-        related=["https://www.pixiv.net/en/users/12972879"],
-    )
+class TestWeiboArtistUrl4(_TestArtistUrl):
+    url_string = "https://www.weibo.com/p/1005055399876326"
+    url_type = WeiboArtistUrl
+    url_properties = dict(artist_long_id=1005055399876326)
+    primary_names = ["橙子呦S"]
+    secondary_names = ["chengziyou666"]
+    related = ["https://www.pixiv.net/en/users/12972879"]
 
 
-def test_artist_url_5():
-    generate_artist_test(
-        url_string="https://weibo.com/u/271222260",
-        url_type=WeiboArtistUrl,
-        url_properties=dict(artist_short_id=271222260),
-        primary_names=[],
-        secondary_names=[],
-        related=[],
-        is_deleted=True,
-    )
+class TestWeiboArtistUrl5(_TestArtistUrl):
+    url_string = "https://weibo.com/u/271222260"
+    url_type = WeiboArtistUrl
+    url_properties = dict(artist_short_id=271222260)
+    primary_names = []
+    secondary_names = []
+    related = []
+    is_deleted = True

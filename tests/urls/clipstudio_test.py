@@ -7,7 +7,7 @@ from danboorutools.logical.urls.clipstudio import (
     ClipStudioUserSearchUrl,
 )
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_info_test
+from tests.helpers.scraping import _TestInfoUrl
 
 urls = {
     ClipStudioAssetPostUrl: {
@@ -36,13 +36,11 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_info_url_1():
-    generate_info_test(
-        url_string="http://fuujin.sees.clip-studio.com",
-        url_type=ClipStudioBlogUrl,
-        url_properties=dict(blog_name="fuujin"),
-        primary_names=[],
-        secondary_names=["fuujin"],
-        related=[],
-        is_deleted=True,
-    )
+class TestClipStudioBlogUrl(_TestInfoUrl):
+    url_string = "http://fuujin.sees.clip-studio.com"
+    url_type = ClipStudioBlogUrl
+    url_properties = dict(blog_name="fuujin")
+    primary_names = []
+    secondary_names = ["fuujin"]
+    related = []
+    is_deleted = True

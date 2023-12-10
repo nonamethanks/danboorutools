@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.behance import BehanceArtistUrl, BehancePostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     BehanceArtistUrl: {
@@ -27,16 +27,14 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://www.behance.net/kienphongtran",
-        url_type=BehanceArtistUrl,
-        url_properties=dict(username="kienphongtran"),
-        primary_names=["Kien Phong Tran"],
-        secondary_names=["kienphongtran"],
-        related=[
-            "http://twitter.com/KienPhong_Tran",
-            "http://youtube.com/channel/UCxw3WZ7N63dYExDwbZbHvqg",
-            "http://instagram.com/phng_11.02",
-        ],
-    )
+class TestBehanceArtistUrl(_TestArtistUrl):
+    url_string = "https://www.behance.net/kienphongtran"
+    url_type = BehanceArtistUrl
+    url_properties = dict(username="kienphongtran")
+    primary_names = ["Kien Phong Tran"]
+    secondary_names = ["kienphongtran"]
+    related = [
+        "http://twitter.com/KienPhong_Tran",
+        "http://youtube.com/channel/UCxw3WZ7N63dYExDwbZbHvqg",
+        "http://instagram.com/phng_11.02",
+    ]

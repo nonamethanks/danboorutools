@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls import mastodon as m
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test, generate_info_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     m.MastodonArtistUrl: {
@@ -50,24 +50,22 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://pawoo.net/@2075642",
-        url_type=m.MastodonArtistUrl,
-        url_properties=dict(username="2075642"),
-        primary_names=["はいむら"],
-        secondary_names=["2075642"],
-        related=["http://r-s.sakura.ne.jp", "https://twitter.com/haimurakiyotaka",
-                 "https://pawoo.net/web/accounts/457571", "https://www.pixiv.net/en/users/164728"],
-    )
+class TestMastodonArtistUrl1(_TestArtistUrl):
+    url_string = "https://pawoo.net/@2075642"
+    url_type = m.MastodonArtistUrl
+    url_properties = dict(username="2075642")
+    primary_names = ["はいむら"]
+    secondary_names = ["2075642"]
+    related = ["http://r-s.sakura.ne.jp",
+               "https://twitter.com/haimurakiyotaka",
+               "https://pawoo.net/web/accounts/457571",
+               "https://www.pixiv.net/en/users/164728"]
 
 
-def test_info_url_1():
-    generate_info_test(
-        url_string="https://pawoo.net/web/accounts/457571",
-        url_type=m.MastodonWebIdUrl,
-        url_properties=dict(user_id=457571),
-        primary_names=["はいむら"],
-        secondary_names=["2075642"],
-        related=["https://pawoo.net/@2075642"],
-    )
+class TestMastodonArtistUrl2(_TestArtistUrl):
+    url_string = "https://pawoo.net/web/accounts/457571"
+    url_type = m.MastodonWebIdUrl
+    url_properties = dict(user_id=457571)
+    primary_names = ["はいむら"]
+    secondary_names = ["2075642"]
+    related = ["https://pawoo.net/@2075642"]

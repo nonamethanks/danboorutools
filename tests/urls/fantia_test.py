@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.fantia import FantiaFanclubAssetUrl, FantiaFanclubUrl, FantiaImageUrl, FantiaPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     FantiaFanclubUrl: {
@@ -48,12 +48,10 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://fantia.jp/fanclubs/483760",
-        url_type=FantiaFanclubUrl,
-        url_properties=dict(fanclub_id=483760),
-        related=["https://twitter.com/nirvana_ppp", "https://www.pixiv.net/en/users/9654202"],
-        primary_names=["enanthate"],
-        secondary_names=[],
-    )
+class TestFantiaFanclubUrl(_TestArtistUrl):
+    url_string = "https://fantia.jp/fanclubs/483760"
+    url_type = FantiaFanclubUrl
+    url_properties = dict(fanclub_id=483760)
+    related = ["https://twitter.com/nirvana_ppp", "https://www.pixiv.net/en/users/9654202"]
+    primary_names = ["enanthate"]
+    secondary_names = []

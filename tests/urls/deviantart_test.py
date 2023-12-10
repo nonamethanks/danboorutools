@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.deviantart import DeviantArtArtistUrl, DeviantArtImageUrl, DeviantArtPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     DeviantArtPostUrl: {
@@ -60,19 +60,16 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-@pytest.mark.weird_html_parsing
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://www.deviantart.com/oneori",
-        url_type=DeviantArtArtistUrl,
-        url_properties=dict(username="oneori"),
-        primary_names=["oneori"],
-        secondary_names=[],
-        related=[
-            "https://www.facebook.com/KittyRaymson/",
-            "https://www.instagram.com/o_neo_ri",
-            "https://www.youtube.com/channel/UCqiIF06TpxsxuIEuRSNsajw",
-            "https://twitter.com/o_Neo_ri",
-            "https://vk.com/neo_kitty_art",
-        ],
-    )
+class TestDeviantArtArtistUrl(_TestArtistUrl):
+    url_string = "https://www.deviantart.com/oneori"
+    url_type = DeviantArtArtistUrl
+    url_properties = dict(username="oneori")
+    primary_names = ["oneori"]
+    secondary_names = []
+    related = [
+        "https://www.facebook.com/KittyRaymson/",
+        "https://www.instagram.com/o_neo_ri",
+        "https://www.youtube.com/channel/UCqiIF06TpxsxuIEuRSNsajw",
+        "https://twitter.com/o_Neo_ri",
+        "https://vk.com/neo_kitty_art",
+    ]

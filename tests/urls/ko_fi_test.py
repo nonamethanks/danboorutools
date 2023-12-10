@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.ko_fi import KoFiArtistUrl, KoFiImageUrl, KoFiPostUrl, KofiShopPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     KoFiArtistUrl: {
@@ -34,32 +34,28 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://ko-fi.com/ririko_riri",
-        url_type=KoFiArtistUrl,
-        url_properties=dict(username="ririko_riri"),
-        related=[],
-        primary_names=[],
-        secondary_names=["ririko_riri"],
-        is_deleted=True,
-    )
+class TestKoFiArtistUrl1(_TestArtistUrl):
+    url_string = "https://ko-fi.com/ririko_riri"
+    url_type = KoFiArtistUrl
+    url_properties = dict(username="ririko_riri")
+    related = []
+    primary_names = []
+    secondary_names = ["ririko_riri"]
+    is_deleted = True
 
 
-def test_artist_url_2():
-    generate_artist_test(
-        url_string="https://ko-fi.com/simzart",
-        url_type=KoFiArtistUrl,
-        url_properties=dict(username="simzart"),
-        related=["https://go.twitch.tv/simzart/",
-                 "https://www.instagram.com/simz.art/",
-                 "https://www.facebook.com/simoneferrieroart",
-                 "https://twitter.com/SimzArts",
-                 "https://www.youtube.com/channel/UCc9-wPmgwCAoNJF6a5iC1gQ",
-                 "https://www.tumblr.com/simzart",
-                 "https://www.reddit.com/user/simz88",
-                 "https://www.twitch.tv/SimzArt",
-                 "https://www.tiktok.com/@simz.art"],
-        primary_names=["Simz"],
-        secondary_names=["simzart"],
-    )
+class TestKoFiArtistUrl2(_TestArtistUrl):
+    url_string = "https://ko-fi.com/simzart"
+    url_type = KoFiArtistUrl
+    url_properties = dict(username="simzart")
+    related = ["https://go.twitch.tv/simzart/",
+               "https://www.instagram.com/simz.art/",
+               "https://www.facebook.com/simoneferrieroart",
+               "https://twitter.com/SimzArts",
+               "https://www.youtube.com/channel/UCc9-wPmgwCAoNJF6a5iC1gQ",
+               "https://www.tumblr.com/simzart",
+               "https://www.reddit.com/user/simz88",
+               "https://www.twitch.tv/SimzArt",
+               "https://www.tiktok.com/@simz.art"]
+    primary_names = ["Simz"]
+    secondary_names = ["simzart"]

@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.throne import ThroneArtistUrl, ThronePostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     ThroneArtistUrl: {
@@ -25,12 +25,10 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://throne.com/iomaaki",
-        url_type=ThroneArtistUrl,
-        url_properties=dict(username="iomaaki"),
-        primary_names=["mae"],
-        secondary_names=["iomaaki"],
-        related=["https://twitter.com/iomaaki", "https://twitch.tv/iomaaki", "https://iomaaki.carrd.co/"],
-    )
+class TestThroneArtistUrl(_TestArtistUrl):
+    url_string = "https://throne.com/iomaaki"
+    url_type = ThroneArtistUrl
+    url_properties = dict(username="iomaaki")
+    primary_names = ["mae"]
+    secondary_names = ["iomaaki"]
+    related = ["https://twitter.com/iomaaki", "https://twitch.tv/iomaaki", "https://iomaaki.carrd.co/"]

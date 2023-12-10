@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.reddit import RedditPostUrl, RedditUserUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_info_test
+from tests.helpers.scraping import _TestInfoUrl
 
 urls = {
     RedditUserUrl: {
@@ -32,24 +32,20 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_info_url_1():
-    generate_info_test(
-        url_string="https://www.reddit.com/user/imsleepyzen",
-        url_properties=dict(username="imsleepyzen"),
-        url_type=RedditUserUrl,
-        related=["https://twitter.com/imsleepyzen", "https://www.instagram.com/imsleepyzen"],
-        primary_names=["imsleepyzen"],
-        secondary_names=[],
-    )
+class TestRedditUserUrl1(_TestInfoUrl):
+    url_string = "https://www.reddit.com/user/imsleepyzen"
+    url_properties = dict(username="imsleepyzen")
+    url_type = RedditUserUrl
+    related = ["https://twitter.com/imsleepyzen", "https://www.instagram.com/imsleepyzen"]
+    primary_names = ["imsleepyzen"]
+    secondary_names = []
 
 
-def test_info_url_2():
-    generate_info_test(
-        url_string="https://www.reddit.com/user/AkioAsaku",
-        url_type=RedditUserUrl,
-        url_properties=dict(username="AkioAsaku"),
-        primary_names=["AkioAsaku"],
-        secondary_names=[],
-        related=[],
-        is_deleted=True,
-    )
+class TestRedditUserUrl2(_TestInfoUrl):
+    url_string = "https://www.reddit.com/user/AkioAsaku"
+    url_type = RedditUserUrl
+    url_properties = dict(username="AkioAsaku")
+    primary_names = ["AkioAsaku"]
+    secondary_names = []
+    related = []
+    is_deleted = True

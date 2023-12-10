@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.pixiv_sketch import PixivSketchArtistUrl, PixivSketchImageUrl, PixivSketchPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     PixivSketchImageUrl: {
@@ -31,13 +31,11 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://sketch.pixiv.net/@interplanetary",
-        url_type=PixivSketchArtistUrl,
-        url_properties=dict(stacc="interplanetary"),
-        primary_names=[],
-        secondary_names=["interplanetary"],
-        related=["https://www.pixiv.net/stacc/interplanetary"],
-        is_deleted=True,
-    )
+class TestPixivSketchArtistUrl(_TestArtistUrl):
+    url_string = "https://sketch.pixiv.net/@interplanetary"
+    url_type = PixivSketchArtistUrl
+    url_properties = dict(stacc="interplanetary")
+    primary_names = []
+    secondary_names = ["interplanetary"]
+    related = ["https://www.pixiv.net/stacc/interplanetary"]
+    is_deleted = True

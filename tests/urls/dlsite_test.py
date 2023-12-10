@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.dlsite import DlsiteAuthorUrl, DlsiteImageUrl, DlsiteWorkUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_post_test
+from tests.helpers.scraping import _TestPostUrl
 
 urls = {
     DlsiteAuthorUrl: {
@@ -63,10 +63,8 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_post_url_1():
-    generate_post_test(
-        url_string="https://www.dlsite.com/books/work/=/product_id/BJ115183.html/?unique_op=af&utm_medium=affiliate&utm_source=none",
-        url_type=DlsiteWorkUrl,
-        url_properties=dict(work_id="BJ115183", subsite="books"),
-        gallery="https://www.dlsite.com/books/author/=/author_id/AJ002787",
-    )
+class TestDlsiteWorkUrl(_TestPostUrl):
+    url_string = "https://www.dlsite.com/books/work/=/product_id/BJ115183.html/?unique_op=af&utm_medium=affiliate&utm_source=none"
+    url_type = DlsiteWorkUrl
+    url_properties = dict(work_id="BJ115183", subsite="books")
+    gallery = "https://www.dlsite.com/books/author/=/author_id/AJ002787"

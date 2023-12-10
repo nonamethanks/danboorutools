@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.emotionflow import EmotionflowArtistUrl, EmotionflowImageUrl, EmotionflowPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     EmotionflowArtistUrl: {
@@ -34,12 +34,10 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://galleria.emotionflow.com/72085/",
-        url_type=EmotionflowArtistUrl,
-        url_properties=dict(user_id=72085),
-        primary_names=["karadaganai"],
-        secondary_names=[],
-        related=[],
-    )
+class TestEmotionflowArtistUrl(_TestArtistUrl):
+    url_string = "https://galleria.emotionflow.com/72085/"
+    url_type = EmotionflowArtistUrl
+    url_properties = dict(user_id=72085)
+    primary_names = ["karadaganai"]
+    secondary_names = []
+    related = []

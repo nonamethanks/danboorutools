@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.threads import ThreadsArtistUrl, ThreadsPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     ThreadsArtistUrl: {
@@ -24,12 +24,10 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://www.threads.net/@mawari5577",
-        url_type=ThreadsArtistUrl,
-        url_properties=dict(username="mawari5577"),
-        primary_names=["海猫まわり"],
-        secondary_names=["mawari5577"],
-        related=["https://www.instagram.com/mawari5577/"],
-    )
+class TestThreadsArtistUrl(_TestArtistUrl):
+    url_string = "https://www.threads.net/@mawari5577"
+    url_type = ThreadsArtistUrl
+    url_properties = dict(username="mawari5577")
+    primary_names = ["海猫まわり"]
+    secondary_names = ["mawari5577"]
+    related = ["https://www.instagram.com/mawari5577/"]

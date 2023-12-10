@@ -1,4 +1,3 @@
-import inspect
 import logging
 import re
 
@@ -8,50 +7,34 @@ pytest.register_assert_rewrite("tests.helpers")
 
 
 def pytest_collection_modifyitems(items, config):
+    items = filter(should_perform_test, items)
+
     added = []
     for item in items:
         module_name = item.module.__name__  # type: str
         if module_name.startswith("tests.urls"):
-            domain = item.parent.name.removesuffix("_test.py")
+            domain = module_name.split(".")[-1].removesuffix("_test")
             if domain not in added:
                 config.addinivalue_line("markers", domain)
                 added += [domain]
             item.add_marker(getattr(pytest.mark, domain))
+            function_name = item.function.__name__  # type: str
+            if function_name.startswith("test_parsing"):
+                item.add_marker(pytest.mark.parsing)
+                item._nodeid = re.sub(r"::test_parsing\[(.*)-(.*)-(.*)\]", "::test_parsing::\\3[\\1]", item.nodeid)
 
-            validate_function_name(item)
-            rename_item(item)
-
-
-url_types = ["artist", "gallery", "info", "redirect", "post"]
-
-
-def validate_function_name(item) -> None:
-    function_name = item.function.__name__  # type: str
-    if function_name.startswith("test_parsing"):
-        item.add_marker(pytest.mark.parsing)
-    elif function_name.startswith(tuple(f"test_{url_type}_url" for url_type in url_types)):
-        for test_type in url_types:
-            if function_name.startswith(f"test_{test_type}_url"):
-                break
-        else:
-            raise NotImplementedError(function_name)
-
-        source = inspect.getsource(item.function)
-        string = re.search(r'url_string="(.*?)"', source)
-        url_type = re.search(r"url_type=(?:\w+\.)?(\w+),?", source)
-        assert string, item.nodeid
-        assert url_type, item.nodeid
-        item._nodeid = f"{item.nodeid}::{test_type}::{url_type.groups()[0]}[{string.groups()[0]}]"
-        item.add_marker(getattr(pytest.mark, test_type))
-        item.add_marker(pytest.mark.scraping)
-    else:
-        raise NotImplementedError(function_name)
+            if isinstance(item.parent, pytest.Class):
+                item._node_id = re.sub(r"::test_", f"{item.parent.__class__.__name__}::test_", item.nodeid)
 
 
-def rename_item(item):
-    function_name = item.function.__name__
-    if function_name.startswith("test_parsing"):
-        item._nodeid = re.sub(r"::test_parsing\[(.*)-(.*)-(.*)\]", "::test_parsing::\\3[\\1]", item.nodeid)
+def should_perform_test(item) -> bool:  # noqa: PLR0911
+    for property_name in ["posts",  "post_count",
+                          "asset_count", "assets",
+                          "score", "created_at"]:
+        if item.name.endswith(f"test_{property_name}") and getattr(item.parent.obj, property_name) is None:
+            return False
+
+    return True
 
 
 logging.getLogger("urllib3").setLevel(logging.INFO)

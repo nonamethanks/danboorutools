@@ -11,7 +11,7 @@ from danboorutools.logical.urls.toranoana import (
     ToranoanaWebcomicPageUrl,
 )
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test, generate_post_test
+from tests.helpers.scraping import _TestArtistUrl, _TestPostUrl
 
 urls = {
     ToranoanaItemUrl: {
@@ -62,21 +62,17 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://ec.toranoana.jp/joshi_r/ec/cot/circle/2UPADB6Q8673dA6Td687/all/",
-        url_properties=dict(subsite="ec", subdirs="joshi_r/ec/cot", circle_id="2UPADB6Q8673dA6Td687"),
-        url_type=ToranoanaCircleUrl,
-        primary_names=[],
-        secondary_names=["▼(ぎゃくさんかく)"],
-        related=[],
-    )
+class TestToranoanaCircleUrl(_TestArtistUrl):
+    url_string = "https://ec.toranoana.jp/joshi_r/ec/cot/circle/2UPADB6Q8673dA6Td687/all/"
+    url_type = ToranoanaCircleUrl
+    url_properties = dict(subsite="ec", subdirs="joshi_r/ec/cot", circle_id="2UPADB6Q8673dA6Td687")
+    primary_names = []
+    secondary_names = ["▼(ぎゃくさんかく)"]
+    related = []
 
 
-def test_post_url_1():
-    generate_post_test(
-        url_string="https://ec.toranoana.jp/tora_r/ec/item/040030823758/",
-        url_type=ToranoanaItemUrl,
-        url_properties=dict(item_id="040030823758", subdirs="tora_r/ec", subsite="ec"),
-        gallery="https://ec.toranoana.jp/tora_r/ec/app/catalog/list?searchActorName=mignon",
-    )
+class TestToranoanaItemUrl(_TestPostUrl):
+    url_string = "https://ec.toranoana.jp/tora_r/ec/item/040030823758/"
+    url_type = ToranoanaItemUrl
+    url_properties = dict(item_id="040030823758", subdirs="tora_r/ec", subsite="ec")
+    gallery = "https://ec.toranoana.jp/tora_r/ec/app/catalog/list?searchActorName=mignon"

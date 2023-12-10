@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls import vk
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test, generate_post_test, generate_redirect_test
+from tests.helpers.scraping import _TestArtistUrl, _TestPostUrl, _TestRedirectUrl
 
 urls = {
     vk.VkArtistUrl: {
@@ -42,32 +42,26 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_post_url_1():
-    generate_post_test(
-        url_string="https://vk.com/straywhispertaker?z=photo-147565682_457271000%2Falbum-147565682_269415385",
-        url_type=vk.VkPhotoUrl,
-        url_properties=dict(username="straywhispertaker",
-                            album_id="269415385",
-                            photo_id="457271000",
-                            user_id="147565682"),
-    )
+class TestVkPostUrl(_TestPostUrl):
+    url_string = "https://vk.com/straywhispertaker?z=photo-147565682_457271000%2Falbum-147565682_269415385"
+    url_type = vk.VkPhotoUrl
+    url_properties = dict(username="straywhispertaker",
+                          album_id="269415385",
+                          photo_id="457271000",
+                          user_id="147565682")
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://vk.com/drinkai",
-        url_type=vk.VkArtistUrl,
-        url_properties=dict(username="drinkai"),
-        primary_names=["Пьяная Нейросеть"],
-        secondary_names=["drinkai"],
-        related=[],
-    )
+class TestVkArtistUrl(_TestArtistUrl):
+    url_string = "https://vk.com/drinkai"
+    url_type = vk.VkArtistUrl
+    url_properties = dict(username="drinkai")
+    primary_names = ["Пьяная Нейросеть"]
+    secondary_names = ["drinkai"]
+    related = []
 
 
-def test_redirect_url_1():
-    generate_redirect_test(
-        url_string="https://vk.com/public219466993",
-        url_type=vk.VkArtistIdUrl,
-        url_properties=dict(user_id="219466993"),
-        redirects_to="https://vk.com/drinkai",
-    )
+class TestVkArtistIdUrl(_TestRedirectUrl):
+    url_string = "https://vk.com/public219466993"
+    url_type = vk.VkArtistIdUrl
+    url_properties = dict(user_id="219466993")
+    redirects_to = "https://vk.com/drinkai"

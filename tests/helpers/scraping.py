@@ -1,148 +1,126 @@
-import datetime
-import re
+from datetime import datetime
 from typing import TypeVar
 
-from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, PostUrl, RedirectUrl, Url
+import pytest
+
+from danboorutools.models.url import GalleryUrl, InfoUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.time import datetime_from_string
 
 UrlTypeVar = TypeVar("UrlTypeVar", bound=Url)
 
 
-def generate_artist_test(*,  # noqa: PLR0913
-                         url_string: str,
-                         url_type: type[ArtistUrl],
-                         url_properties: dict,
-                         primary_names: list[str],
-                         secondary_names: list[str],
-                         related: list[str],
-                         post_count: int | None = None,
-                         posts: list[str] | None = None,
-                         is_deleted: bool = False) -> None:
+class _TestUrl:
+    url_string: str
+    url_type: type[Url]
+    url_properties: dict
+    is_deleted: bool = False
 
-    artist_url = _assert_parsed(url_string=url_string, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
-    _assert_gallery_data(artist_url, post_count=post_count, posts=posts)
-    _assert_info_data(artist_url, primary_names=primary_names, secondary_names=secondary_names, related=related)
+    @pytest.fixture(scope="class")
+    def parsed_url(self) -> Url:
+        return Url.parse(self.url_string)
 
+    @pytest.mark.parsing
+    def test_correct_url_type(self, parsed_url: Url) -> None:
+        expected_url_type = self.url_type
+        assert isinstance(parsed_url, expected_url_type)
 
-def generate_gallery_test(*,  # noqa: PLR0913
-                         url_string: str,
-                         url_type: type[GalleryUrl],
-                         url_properties: dict,
-                         post_count: int | None = None,
-                         posts: list[str] | None = None,
-                         is_deleted: bool = False) -> None:
+    @pytest.mark.parsing
+    def test_correct_url_properties(self, parsed_url: Url) -> None:
+        for property_name, expected_value in self.url_properties.items():
+            actual_value = getattr(parsed_url, property_name)
+            assert actual_value == expected_value
 
-    gallery_url = _assert_parsed(url_string=url_string, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
-    _assert_gallery_data(gallery_url, post_count=post_count, posts=posts)
-
-
-def generate_redirect_test(*,
-                           url_string: str,
-                           url_type: type[RedirectUrl],
-                           url_properties: dict,
-                           redirects_to: str,
-                           is_deleted: bool = False,
-                           ) -> None:
-
-    redirect_url = _assert_parsed(url_string=url_string, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
-    redirect_to = Url.parse(redirects_to)
-
-    assert redirect_url.resolved.normalized_url == redirect_to.normalized_url
+    @pytest.mark.scraping
+    def test_deleted_status(self, parsed_url: Url) -> None:
+        expected_deleted = self.is_deleted
+        assert parsed_url.is_deleted == expected_deleted
 
 
-def generate_info_test(*,  # noqa: PLR0913
-                         url_string: str,
-                         url_type: type[InfoUrl],
-                         url_properties: dict,
-                         primary_names: list[str],
-                         secondary_names: list[str],
-                         related: list[str],
-                         is_deleted: bool = False) -> None:
+@pytest.mark.redirect
+class _TestRedirectUrl(_TestUrl):
+    redirects_to: str
 
-    info_url = _assert_parsed(url_string=url_string, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
-    _assert_info_data(info_url, primary_names=primary_names, secondary_names=secondary_names, related=related)
+    @pytest.mark.scraping
+    def test_redirect_to(self, parsed_url: RedirectUrl) -> None:
+        expected_redirect = parsed_url.resolved.normalized_url
+        actual_redirect = Url.parse(self.redirects_to).normalized_url
+        assert actual_redirect == expected_redirect
 
 
-def generate_post_test(*,  # noqa: PLR0913
-                       url_string: str,
-                       url_type: type[PostUrl],
-                       url_properties: dict,
-                       created_at: datetime.datetime | str | None = None,
-                       asset_count: int | None = None,
-                       score: int | None = None,
-                       assets: list[str | re.Pattern[str]] | None = None,
-                       md5s: list[str] | None = None,
-                       is_deleted: bool = False,
-                       gallery: Url | str | None = None) -> None:
+class _TestInfoUrl(_TestUrl):
+    primary_names: list[str]
+    secondary_names: list[str]
+    related: list[str]
 
-    post = _assert_parsed(url_string=url_string, url_type=url_type, url_properties=url_properties, is_deleted=is_deleted)
+    @pytest.mark.info
+    @pytest.mark.scraping
+    def test_primary_names(self, parsed_url: InfoUrl) -> None:
+        expected_primary_names = self.primary_names
+        assert sorted(parsed_url.primary_names) == sorted(expected_primary_names)
 
-    if created_at is not None:
-        assert post.created_at == datetime_from_string(created_at)
-    if asset_count is not None:
-        assert len(post.assets) == asset_count
-    if score is not None:
-        assert post.score >= score
+    @pytest.mark.info
+    @pytest.mark.scraping
+    def test_secondary_names(self, parsed_url: InfoUrl) -> None:
+        expected_secondary_names = self.secondary_names
+        assert sorted(parsed_url.secondary_names) == sorted(expected_secondary_names)
 
-    if assets is not None:
-        found_assets = post.assets
-        for expected_asset in assets:
-            if isinstance(expected_asset, str):
-                assert Url.parse(expected_asset) in found_assets
-            else:
-                assert any(re.search(expected_asset, element.normalized_url) for element in found_assets)
-
-    if md5s is not None:
-        found_md5s = [_file.md5 for asset in post.assets for _file in asset.files]
-        assert all(md5 in found_md5s for md5 in md5s), (md5s, found_md5s)
-
-    if gallery is not None:
-        gallery = Url.parse(gallery)
-        assert post.gallery.normalized_url == gallery.normalized_url
+    @pytest.mark.info
+    @pytest.mark.scraping
+    def test_related(self, parsed_url: InfoUrl) -> None:
+        expected_related = [Url.parse(u) for u in self.related]
+        assert sorted(parsed_url.related, key=lambda u: u.normalized_url) == sorted(expected_related, key=lambda u: u.normalized_url)
 
 
-def _assert_parsed(url_string: str,
-                   url_type: type[UrlTypeVar],
-                   url_properties: dict,
-                   is_deleted: bool = False,
-                   ) -> UrlTypeVar:
+class _TestGalleryUrl(_TestInfoUrl):
+    post_count: int | None = None
+    posts: list[str] | None = None
 
-    url = Url.parse(url_string)
+    @pytest.mark.gallery
+    @pytest.mark.scraping
+    def test_post_count(self, parsed_url: GalleryUrl) -> None:
+        expected_post_count = self.post_count
+        assert len(parsed_url.known_posts) >= expected_post_count  # pyright: ignore[reportGeneralTypeIssues]
 
-    assert isinstance(url, url_type)
-
-    for property_name, expected_value in url_properties.items():
-        actual_value = getattr(url, property_name)
-        assert actual_value == expected_value
-
-    assert url.is_deleted == is_deleted
-    return url
-
-
-def _assert_gallery_data(gallery_url: GalleryUrl,
-                         post_count: int | None = None,
-                         posts: list[str] | None = None) -> None:
-    if not post_count and not posts:
-        return
-
-    found_posts = gallery_url.extract_posts()
-
-    if post_count is not None:
-        assert len(found_posts) >= post_count
-
-    if posts is not None:
-        for post in posts:
-            assert Url.parse(post) in found_posts
+    @pytest.mark.gallery
+    @pytest.mark.scraping
+    def test_posts(self, parsed_url: GalleryUrl) -> None:
+        extracted_posts = parsed_url.extract_posts()
+        # pylint: disable=not-an-iterable
+        assert all(Url.parse(post) in extracted_posts for post in self.posts)  # pyright: ignore[reportOptionalIterable]
 
 
-def _assert_info_data(info_url: InfoUrl,
-                      primary_names: list[str],
-                      secondary_names: list[str],
-                      related: list[str]) -> None:
-    if related is not None:
-        parsed_related = [Url.parse(u) for u in related]
-        assert sorted(info_url.related, key=lambda u: u.normalized_url) == sorted(parsed_related, key=lambda u: u.normalized_url)
-    if primary_names is not None:
-        assert sorted(info_url.primary_names) == sorted(primary_names)
-    if secondary_names is not None:
-        assert sorted(info_url.secondary_names) == sorted(secondary_names)
+@pytest.mark.artist
+class _TestArtistUrl(_TestGalleryUrl, _TestInfoUrl):
+    ...
+
+
+@pytest.mark.post
+class _TestPostUrl(_TestUrl):
+    created_at: datetime | str | None = None
+    asset_count: int | None = None
+    assets: list[str] | None = None
+    score: int | None = None
+
+    @pytest.mark.scraping
+    def test_created_at(self, parsed_url: PostUrl) -> None:
+        expected_created_at = datetime_from_string(self.created_at)  # pyright: ignore[reportGeneralTypeIssues]
+        actual_created_at = parsed_url.created_at
+        assert actual_created_at == expected_created_at
+
+    @pytest.mark.scraping
+    def test_asset_count(self, parsed_url: PostUrl) -> None:
+        expected_asset_count = self.asset_count
+        assert len(parsed_url.assets) >= expected_asset_count  # pyright: ignore[reportGeneralTypeIssues]
+
+    @pytest.mark.scraping
+    def test_assets(self, parsed_url: PostUrl) -> None:
+        extracted_assets = parsed_url.assets
+        # pylint: disable=not-an-iterable
+        # type: ignore[arg-type]
+        assert all(Url.parse(asset) in extracted_assets for asset in self.assets)  # pyright: ignore[reportOptionalIterable]
+
+    @pytest.mark.scraping
+    def test_score(self, parsed_url: PostUrl) -> None:
+        expected_score = self.score
+        actual_score = parsed_url.score
+        assert actual_score >= expected_score  # pyright: ignore[reportGeneralTypeIssues]

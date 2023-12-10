@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.potofu import PotofuArtistUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_info_test
+from tests.helpers.scraping import _TestInfoUrl
 
 urls = {
     PotofuArtistUrl: {
@@ -20,18 +20,16 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_info_test(
-        url_string="https://potofu.me/158161163",
-        url_type=PotofuArtistUrl,
-        url_properties=dict(user_id="158161163"),
-        related=[
-            "https://marshmallow-qa.com/_158161163",
-            "https://mobile.twitter.com/_158161163",
-            "https://pawoo.net/@_158161163",
-            "https://skeb.jp/@_158161163",
-            "https://www.pixiv.net/en/users/88293257",
-        ],
-        primary_names=["錫i", "suzzu"],
-        secondary_names=[],
-    )
+class TestPoipikuArtistUrl(_TestInfoUrl):
+    url_string = "https://potofu.me/158161163"
+    url_type = PotofuArtistUrl
+    url_properties = dict(user_id="158161163")
+    related = [
+        "https://marshmallow-qa.com/_158161163",
+        "https://mobile.twitter.com/_158161163",
+        "https://pawoo.net/@_158161163",
+        "https://skeb.jp/@_158161163",
+        "https://www.pixiv.net/en/users/88293257",
+    ]
+    primary_names = ["錫i", "suzzu"]
+    secondary_names = []

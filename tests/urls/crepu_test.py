@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.crepu import CrepuArtistUrl, CrepuPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     CrepuArtistUrl: {
@@ -23,12 +23,12 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://crepu.net/user/shio_332",
-        url_type=CrepuArtistUrl,
-        url_properties=dict(username="shio_332"),
-        primary_names=["汐見"],
-        secondary_names=["shio_332"],
-        related=["https://twitter.com/nomiya332", "https://www.pixiv.net/users/87958749", "https://xfolio.jp/portfolio/nomiya332"],
-    )
+class TestCrepuArtistUrl(_TestArtistUrl):
+    url_string = "https://crepu.net/user/shio_332"
+    url_type = CrepuArtistUrl
+    url_properties = dict(username="shio_332")
+    primary_names = ["汐見"]
+    secondary_names = ["shio_332"]
+    related = ["https://twitter.com/nomiya332",
+               "https://www.pixiv.net/users/87958749",
+               "https://xfolio.jp/portfolio/nomiya332"]

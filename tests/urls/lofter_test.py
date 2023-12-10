@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.lofter import LofterArtistUrl, LofterImageUrl, LofterPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     LofterArtistUrl: {
@@ -34,12 +34,10 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://lbgu1.lofter.com/",
-        url_type=LofterArtistUrl,
-        url_properties=dict(username="lbgu1"),
-        primary_names=["LB"],
-        secondary_names=["lbgu1"],
-        related=[],
-    )
+class TestLofterArtistUrl(_TestArtistUrl):
+    url_string = "https://lbgu1.lofter.com/"
+    url_type = LofterArtistUrl
+    url_properties = dict(username="lbgu1")
+    primary_names = ["LB"]
+    secondary_names = ["lbgu1"]
+    related = []

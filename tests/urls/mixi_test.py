@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls import mixi as m
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import generate_artist_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     m.MixiProfileUrl: {
@@ -56,14 +56,11 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-@pytest.mark.weird_html_parsing
-def test_artist_url_1():
-    generate_artist_test(
-        url_string="https://mixi.jp/show_friend.pl?id=31861634",
-        url_type=m.MixiProfileUrl,
-        url_properties=dict(profile_id=31861634),
-        primary_names=["えんちー"],
-        secondary_names=[],
-        related=["http://mixi.jp/view_diary.pl?guid=ON&id=1558166939&owner_id=31861634",
-                 "http://photo.mixi.jp/view_album.pl?album_id=422201184507583&owner_id=31861634"],
-    )
+class TestMixiProfileUrl(_TestArtistUrl):
+    url_string = "https://mixi.jp/show_friend.pl?id=31861634"
+    url_type = m.MixiProfileUrl
+    url_properties = dict(profile_id=31861634)
+    primary_names = ["えんちー"]
+    secondary_names = []
+    related = ["http://mixi.jp/view_diary.pl?guid=ON&id=1558166939&owner_id=31861634",
+               "http://photo.mixi.jp/view_album.pl?album_id=422201184507583&owner_id=31861634"]
