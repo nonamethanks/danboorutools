@@ -12,6 +12,7 @@ from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.booth import BoothArtistUrl
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.fantia import FantiaFanclubUrl
+from danboorutools.logical.urls.fanza import FanzaDoujinAuthorUrl
 from danboorutools.logical.urls.patreon import PatreonArtistUrl
 from danboorutools.logical.urls.pixiv import PixivArtistUrl
 from danboorutools.logical.urls.twitter import TwitterArtistUrl, TwitterIntentUrl
@@ -179,7 +180,7 @@ class SkebArtistData(BaseModel):
             urls += [FantiaFanclubUrl.build(fanclub_id=self.fantia_id)]
 
         if self.fanza_id:
-            raise NotImplementedError(self.fanza_id)
+            urls += [FanzaDoujinAuthorUrl.build(user_id=self.fanza_id, subsubsite="dc")]
 
         if self.patreon_id:
             urls += [PatreonArtistUrl.build(username=self.patreon_id)]

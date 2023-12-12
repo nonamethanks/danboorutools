@@ -2,6 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.skeb import SkebAbsolutePostUrl, SkebArtistUrl, SkebImageUrl, SkebPostUrl
 from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     SkebArtistUrl: {
@@ -38,3 +39,20 @@ urls = {
 )
 def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
+
+
+class TestSkebArtistUrl(_TestArtistUrl):
+    url_string = "https://skeb.jp/@75RYrNYp9rtngjo"
+    url_type = SkebArtistUrl
+    url_properties = dict(username="75RYrNYp9rtngjo")
+    primary_names = ["もにゃもにゃ🔞@skeb募集中"]
+    secondary_names = ["75RYrNYp9rtngjo"]
+    related = [
+        "https://twitter.com/75RYrNYp9rtngjo",
+        "https://www.pixiv.net/en/users/39797324",
+        "https://fantia.jp/fanclubs/413020",
+        "https://vu420kzd.fanbox.cc/",
+        "https://twitter.com/intent/user?user_id=752139289878683649",
+        "https://www.dmm.co.jp/dc/doujin/-/list/=/article=maker/id=79639/sotokanda-001",
+        "https://skeb.jp/@75RYrNYp9rtngjo",  # i guess twitter bio ends up in skeb so there's a circular linking
+    ]

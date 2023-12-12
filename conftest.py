@@ -7,7 +7,7 @@ pytest.register_assert_rewrite("tests.helpers")
 
 
 def pytest_collection_modifyitems(items, config):
-    items = filter(should_perform_test, items)
+    items[:] = list(filter(should_perform_test, items))
 
     added = []
     for item in items:
@@ -27,9 +27,9 @@ def pytest_collection_modifyitems(items, config):
                 item._node_id = re.sub(r"::test_", f"{item.parent.__class__.__name__}::test_", item.nodeid)
 
 
-def should_perform_test(item) -> bool:  # noqa: PLR0911
+def should_perform_test(item) -> bool:
     for property_name in ["posts",  "post_count",
-                          "asset_count", "assets",
+                          "assets", "asset_count",
                           "score", "created_at"]:
         if item.name.endswith(f"test_{property_name}") and getattr(item.parent.obj, property_name) is None:
             return False

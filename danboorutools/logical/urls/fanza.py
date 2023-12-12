@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from functools import cached_property
 from typing import Literal
-from urllib.parse import urljoin
 
 from danboorutools.logical.sessions.fanza import FanzaBookData, FanzaSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
