@@ -33,7 +33,7 @@ class VkArtistUrl(ArtistUrl, VkUrl):
         if self.user_id:
             return VkArtistIdUrl.build(user_id=self.user_id)
         assert (url_el := self.html.select_one("meta[property='og:url']"))
-        assert isinstance(user_id_url := Url.parse(url_el["content"]), VkArtistIdUrl)   # pyright: ignore[reportGeneralTypeIssues]
+        assert isinstance(user_id_url := Url.parse(url_el["content"]), VkArtistIdUrl)
         return user_id_url
 
 
@@ -45,7 +45,7 @@ class VkArtistIdUrl(RedirectUrl, VkUrl):
     @cached_property
     def resolved(self) -> VkArtistUrl:
         assert (mobile_link_el := self.html.select_one("link[rel='alternate'][media='only screen and (max-width: 640px)']"))
-        url = Url.parse(mobile_link_el["href"])  # pyright: ignore[reportGeneralTypeIssues]
+        url = Url.parse(mobile_link_el["href"])
         assert isinstance(url, VkArtistUrl)
         return url
 

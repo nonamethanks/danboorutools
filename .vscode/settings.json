@@ -40,6 +40,6 @@
         "refactor": "Warning",
         "info": "Warning"
     },
-    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.typeCheckingMode": "off",
     "mypy-type-checker.importStrategy": "fromEnvironment",
 }

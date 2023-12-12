@@ -24,7 +24,7 @@ class TaittsuuArtistUrl(ArtistUrl, TaittsuuUrl):
     @property
     def related(self) -> list[Url]:
         urls = self.html.select("#profilePanel .profile-url a")
-        return [Url.parse(url_el["href"]) for url_el in urls]  # pyright: ignore[reportGeneralTypeIssues]
+        return [Url.parse(url_el["href"]) for url_el in urls]
 
 
 class TaittsuuPostUrl(PostUrl, TaittsuuUrl):

@@ -34,7 +34,7 @@ class XfolioArtistUrl(ArtistUrl, XfolioUrl):
         meta_description_el = self.html.select_one("meta[property='og:description']")
         assert meta_description_el
         content = meta_description_el["content"]
-        match = re.search(r"/creator:([\S]*)", content)   # pyright: ignore[reportGeneralTypeIssues]
+        match = re.search(r"/creator:([\S]*)", content)
         assert match
         name = match.groups()[0]
         return [name.strip()]

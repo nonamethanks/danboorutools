@@ -16,7 +16,7 @@ class MelonbooksProductUrl(PostUrl, MelonbooksUrl):
     @property
     def gallery(self) -> MelonbooksAuthorUrl:
         assert (artists_el := self.html.find("th", string="作家名"))
-        artists = artists_el.parent.select("td a:not(.fa-heart)")  # pyright: ignore[reportOptionalMemberAccess]
+        artists = artists_el.parent.select("td a:not(.fa-heart)")
         if len(artists) != 1:
             raise NotImplementedError(self, artists)
 
@@ -33,7 +33,7 @@ class MelonbooksCircleUrl(ArtistUrl, MelonbooksUrl):
     @property
     def primary_names(self) -> list[str]:
         assert (pen_names_el := self.html.find("th", string="ペンネーム"))
-        pen_names = pen_names_el.parent.select_one("td").text.split()   # pyright: ignore[reportOptionalMemberAccess]
+        pen_names = pen_names_el.parent.select_one("td").text.split()
         return [p.strip("()") for p in pen_names]
 
     @property
@@ -43,9 +43,9 @@ class MelonbooksCircleUrl(ArtistUrl, MelonbooksUrl):
     @property
     def related(self) -> list[Url]:
         assert (pixiv_id_el := self.html.find("th", string="PixivID"))
-        pixiv_url = pixiv_id_el.parent.select_one("td").text.split()   # pyright: ignore[reportOptionalMemberAccess]
+        pixiv_url = pixiv_id_el.parent.select_one("td").text.split()
         assert (twitter_url_el := self.html.find("th", string="X(Twitter) URL"))
-        twitter_url = twitter_url_el.parent.select_one("td").text.split()  # pyright: ignore[reportOptionalMemberAccess]
+        twitter_url = twitter_url_el.parent.select_one("td").text.split()
 
         return [
             Url.parse(u.strip())

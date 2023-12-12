@@ -79,14 +79,14 @@ class _TestGalleryUrl(_TestInfoUrl):
     @pytest.mark.scraping
     def test_post_count(self, parsed_url: GalleryUrl) -> None:
         expected_post_count = self.post_count
-        assert len(parsed_url.known_posts) >= expected_post_count  # pyright: ignore[reportGeneralTypeIssues]
+        assert len(parsed_url.known_posts) >= expected_post_count
 
     @pytest.mark.gallery
     @pytest.mark.scraping
     def test_posts(self, parsed_url: GalleryUrl) -> None:
         extracted_posts = parsed_url.extract_posts()
         # pylint: disable=not-an-iterable
-        assert all(Url.parse(post) in extracted_posts for post in self.posts)  # pyright: ignore[reportOptionalIterable]
+        assert all(Url.parse(post) in extracted_posts for post in self.posts)
 
 
 @pytest.mark.artist
@@ -103,24 +103,24 @@ class _TestPostUrl(_TestUrl):
 
     @pytest.mark.scraping
     def test_created_at(self, parsed_url: PostUrl) -> None:
-        expected_created_at = datetime_from_string(self.created_at)  # pyright: ignore[reportGeneralTypeIssues]
+        expected_created_at = datetime_from_string(self.created_at)
         actual_created_at = parsed_url.created_at
         assert actual_created_at == expected_created_at
 
     @pytest.mark.scraping
     def test_asset_count(self, parsed_url: PostUrl) -> None:
         expected_asset_count = self.asset_count
-        assert len(parsed_url.assets) >= expected_asset_count  # pyright: ignore[reportGeneralTypeIssues]
+        assert len(parsed_url.assets) >= expected_asset_count
 
     @pytest.mark.scraping
     def test_assets(self, parsed_url: PostUrl) -> None:
         extracted_assets = parsed_url.assets
         # pylint: disable=not-an-iterable
         # type: ignore[arg-type]
-        assert all(Url.parse(asset) in extracted_assets for asset in self.assets)  # pyright: ignore[reportOptionalIterable]
+        assert all(Url.parse(asset) in extracted_assets for asset in self.assets)
 
     @pytest.mark.scraping
     def test_score(self, parsed_url: PostUrl) -> None:
         expected_score = self.score
         actual_score = parsed_url.score
-        assert actual_score >= expected_score  # pyright: ignore[reportGeneralTypeIssues]
+        assert actual_score >= expected_score

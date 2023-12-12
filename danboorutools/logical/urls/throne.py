@@ -34,7 +34,7 @@ class ThroneArtistUrl(ArtistUrl, ThroneUrl):
     def related(self) -> list[Url]:
         link_els = self._info_container.select("a.chakra-button")
         assert link_els
-        return [Url.parse(link_el["href"]) for link_el in link_els]  # pyright: ignore[reportGeneralTypeIssues]
+        return [Url.parse(link_el["href"]) for link_el in link_els]
 
 
 class ThronePostUrl(PostUrl, ThroneUrl):

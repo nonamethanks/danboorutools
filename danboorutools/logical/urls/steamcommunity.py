@@ -36,7 +36,7 @@ class SteamCommunityProfileUrl(ArtistUrl, SteamUrl):
         assert (profile_el := self.html.select_one(".profile_summary"))
         links = profile_el.select(".bb_link")
 
-        return [Url.parse(link["href"]) for link in links]  # pyright: ignore[reportGeneralTypeIssues]
+        return [Url.parse(link["href"]) for link in links]
 
 
 class SteamcommunityFileUrl(PostUrl, SteamUrl):
