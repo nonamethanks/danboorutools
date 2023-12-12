@@ -116,6 +116,16 @@ urls = {{
 )
 def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
+
+
+class Test{class_name_base}ArtistUrl(_TestArtistUrl):
+    url_string = "{original_url}"
+    url_type = {class_name_base}ArtistUrl
+    url_properties = dict(username=)
+    primary_names = []
+    secondary_names = []
+    related = []
+
 """
 
 BASE_FOLDER = settings.BASE_FOLDER / "danboorutools"
