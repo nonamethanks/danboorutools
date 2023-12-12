@@ -101,7 +101,13 @@ class PatreonArtistData(BaseModel):
             if included["type"] in ("user", "post_aggregation", "goal", "free_trial_configuration"):
                 continue
             if included["type"] == "social-connection":
-                urls += [included["attributes"]["external_profile_url"]]
+                url_string = included["attributes"]["external_profile_url"]
+                if not url_string:
+                    if included["attributes"]["app_name"] == "twitter":
+                        continue  # for some reason patreon still includes this
+                    else:
+                        raise NotImplementedError(included)
+                urls += [url_string]
                 continue
             raise NotImplementedError(included)
 
