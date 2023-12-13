@@ -24,7 +24,6 @@ click = "^8.1.7"
 loguru = "^0.7.2"
 python-dotenv = "^1.0.0"
 selenium = "^4.16.0"
-pytz = "^2023.3.post1"
 filetype = "^1.2.0"
 beautifulsoup4 = "^4.12.2"
 html5lib = "^1.1"
@@ -93,6 +92,7 @@ module = [
     "fake_useragent.*",
     "filetype.*",
     "ring.*",
+    "billiard.*",
 ]
 ignore_missing_imports = true
 

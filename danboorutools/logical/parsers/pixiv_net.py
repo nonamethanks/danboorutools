@@ -1,7 +1,5 @@
 import re
-from datetime import datetime
-
-from pytz import UTC
+from datetime import UTC, datetime
 
 from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser

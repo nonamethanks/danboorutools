@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import warnings
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, final
-
-from pytz import UTC
 
 from danboorutools import logger
 from danboorutools.util.time import datetime_from_string

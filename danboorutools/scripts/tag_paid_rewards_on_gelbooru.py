@@ -1,8 +1,8 @@
 import datetime
+from datetime import UTC
 from typing import Literal
 
 import click
-from pytz import UTC
 
 from danboorutools import logger
 from danboorutools.logical.sessions.danbooru import danbooru_api

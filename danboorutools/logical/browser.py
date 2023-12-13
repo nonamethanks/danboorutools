@@ -5,9 +5,9 @@ import datetime
 import os
 import random
 import time
+from datetime import UTC
 from typing import TYPE_CHECKING
 
-from pytz import UTC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options

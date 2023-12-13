@@ -4,11 +4,11 @@ import datetime
 import os
 import re
 import time
+from datetime import UTC
 from typing import Literal
 
 import click
 from discord_webhook import DiscordEmbed, DiscordWebhook
-from pytz import UTC
 
 from danboorutools import logger
 from danboorutools.logical.progress_tracker import ProgressTracker

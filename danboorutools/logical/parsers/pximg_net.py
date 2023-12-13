@@ -1,7 +1,4 @@
-from datetime import datetime
-
-import pytz
-from pytz import UTC
+from datetime import UTC, datetime
 
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.booth import BoothImageUrl, BoothProfileImageUrl, BoothUrl
@@ -49,14 +46,14 @@ class PximgNetParser(UrlParser):
                 instance = PixivProfileImageUrl(parsed_url=parsable_url,
                                                 stacc=None)
                 created_at = datetime(year=int(year), month=int(month), day=int(day),
-                                      hour=int(hour), minute=int(minute), second=int(second), tzinfo=pytz.UTC)
+                                      hour=int(hour), minute=int(minute), second=int(second), tzinfo=UTC)
                 return instance
 
             # https://i.pximg.net/novel-cover-original/img/2022/11/17/15/07/44/tei336490527346_a4ef4696530c4675fabef4b8e6e186c9.jpg
             # https://i.pximg.net/c/600x600/novel-cover-master/img/2018/08/18/19/45/23/10008846_215387d3665210eed0a7cc564e4c93f3_master1200.jpg
             case *_, image_dir, "img", year, month, day, hour, minute, second, filename if image_dir in PixivPaths.novel_image_paths:
                 created_at = datetime(year=int(year), month=int(month), day=int(day),
-                                      hour=int(hour), minute=int(minute), second=int(second), tzinfo=pytz.UTC)
+                                      hour=int(hour), minute=int(minute), second=int(second), tzinfo=UTC)
                 try:
                     novel_id = int(filename.split("_")[0])
                 except ValueError:
@@ -70,7 +67,7 @@ class PximgNetParser(UrlParser):
                 return PixivGalleryAssetUrl(parsed_url=parsable_url,
                                             user_id=int(parsable_url.stem.split("_")[0]))
                 # instance.created_at = datetime(year=int(year), month=int(month), day=int(day),
-                #                                hour=int(hour), minute=int(minute), second=int(second), tzinfo=pytz.UTC)
+                #                                hour=int(hour), minute=int(minute), second=int(second), tzinfo=UTC)
 
             # https://i.pximg.net/img25/img/nwqkqr/22218203.jpg
             case *_, "img", stacc, filename:

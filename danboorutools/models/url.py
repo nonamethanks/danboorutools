@@ -245,7 +245,7 @@ class PostUrl(Url):
             self.assets = []
 
         if isinstance(asset, str):
-            asset = Url.parse(asset)  # pyright: ignore[reportGeneralTypeIssues]
+            asset = Url.parse(asset)
             assert isinstance(asset, PostAssetUrl), asset
 
         if asset in self.assets:
