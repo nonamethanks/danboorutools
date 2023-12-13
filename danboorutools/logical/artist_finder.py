@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from typing import TYPE_CHECKING
 
@@ -23,7 +24,16 @@ from danboorutools.logical.urls.youtube import YoutubePlaylistUrl, YoutubeVideoU
 from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, RedirectUrl, UnknownUrl, UnsupportedUrl, Url, UselessUrl
 
 if TYPE_CHECKING:
-    from danboorutools.models.danbooru import DanbooruPost
+    from danboorutools.models.danbooru import DanbooruArtist, DanbooruPost
+
+
+class DuplicateArtistOnDanbooruError(Exception):
+    def __init__(self, duplicate_url: Url, artists: list[DanbooruArtist]) -> None:
+        self.duplicate_url = duplicate_url
+        self.artists = artists
+
+        self.message = f"The following artists share the url {duplicate_url.normalized_url}: {', '.join(a.url for a in artists)}"
+        super().__init__(self.message)
 
 
 class ArtistFinder:
@@ -63,6 +73,10 @@ class ArtistFinder:
 
         try:
             artist_tag = self._find_or_create_artist_tag(artist_url, result_from_archives)
+        except DuplicateArtistOnDanbooruError as e:
+            self.post_duplicate_on_forums(post=post, duplicate_url=e.duplicate_url, artists=e.artists)
+            self.skipped_posts.value = [*self.skipped_posts.value, post.id]
+            return False
         except Exception as e:
             e.add_note(f"On post: {post}, artist: {artist_url}, archived result: {result_from_archives}")
             raise
@@ -231,7 +245,10 @@ class ArtistFinder:
         for url in artist_urls:
             results = danbooru_api.artists(url_matches=url.parsed_url.raw_url)
             if results:
-                assert len(results) == 1, results  # TODO: post in the forums in case there's more than one artist
+
+                if len(results) > 1:
+                    raise DuplicateArtistOnDanbooruError(duplicate_url=url, artists=results)
+
                 result, = results
                 if result.tag.category_name != "artist":
                     raise NotImplementedError(f"{result} is not an artist tag!")
@@ -343,3 +360,18 @@ class ArtistFinder:
     def is_url_worth_implementing(cls, url: UnknownUrl) -> bool:
         url_results = danbooru_api.artists(url_matches=f"*{url.parsed_url.domain}*", limit=100)
         return len(url_results) > 40
+
+    def post_duplicate_on_forums(self, post: DanbooruPost, duplicate_url: Url, artists: list[DanbooruArtist]) -> None:
+        assert len(artists) > 1  # you never know lmao
+        logger.info("Sending duplicate message to forums...")
+        message = f"During an automated scan to determine the author of post #{post.id}, "
+        message += "the following artists were found to have a duplicate url:"
+        for artist in sorted(artists, key=lambda x: x.id):
+            message += f"\n* artist #{artist.id} ([[{artist.name}]])"
+        message += f"\n\nThe duplicate url is {duplicate_url.normalized_url}.\n"
+        message += "This post will be skipped on subsequent scans.\n"
+        message += "Please merge these artists if appropriate, and assign the correct artist to the post manually."
+        logger.info(message)
+
+        raise NotImplementedError(message)
+        # danbooru_api.create_forum_post(topic_id=os.environ["DANBOORU_ARTIST_TOPIC_ID"], body=message)

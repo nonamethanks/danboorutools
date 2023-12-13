@@ -275,6 +275,10 @@ class DanbooruApi(Session):
         assert isinstance(response, dict)
         return response
 
+    # def create_forum_post(self, topic_id: int | None, body: str) -> None:
+    #     if not topic_id:
+    #         raise NotImplementedError("Creating new topics is not supported yet.")
+
 
 def kwargs_to_include(**kwargs) -> dict:
     """Turn kwargs into url parameters that Rails can understand."""
