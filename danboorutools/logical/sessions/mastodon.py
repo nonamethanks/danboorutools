@@ -23,6 +23,8 @@ class MastodonSession(Session):
             site = "PAWOO"
         elif "baraag.net" in domain:
             site = "BARAAG"
+        elif "mstdn.jp" in domain:
+            site = "MSTDN_JP"
         else:
             site = "PAWOO"
             domain = "pawoo.net"  # backend developers hate this simple trick!
@@ -37,7 +39,7 @@ class MastodonSession(Session):
         )
 
     @ring.lru()
-    def user_data(self, domain: str, /, user_id: int | None = None, username: str | None = None) -> MastodonArtistData:
+    def user_data(self, *, domain: str, user_id: int | None = None, username: str | None = None) -> MastodonArtistData:
         if not username and not user_id:
             raise ValueError(username, user_id)
 
@@ -45,16 +47,17 @@ class MastodonSession(Session):
             if username:
                 user_data = self._user_data_from_username(domain=domain, username=username)
             elif user_id:
-                user_data = self.api(domain).account(user_id)
+                user_data: dict = self.api(domain).account(user_id)
         except MastodonNetworkError as e:
             if "Read timed out." in str(e):
                 raise ReadTimeout from e
             raise
         else:
+            user_data.setdefault("oauth_authentications", None)
             return MastodonArtistData(**user_data)
 
     @ring.lru()
-    def _user_data_from_username(self, /, domain: str, username: str) -> dict:
+    def _user_data_from_username(self, *, domain: str, username: str) -> dict:
         for user in self.api(domain).account_search(f"{username}@{domain}"):
             if user["username"] == username:
                 return user

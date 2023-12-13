@@ -12,6 +12,7 @@ urls = {
         "https://baraag.net/web/@loodncrood": "https://baraag.net/@loodncrood",
         "https://pawoo.net/users/esoraneko": "https://pawoo.net/@esoraneko",
         "https://pawoo.net/users/khurata/media": "https://pawoo.net/@khurata",
+        "https://mstdn.jp/@torizono1024": "https://mstdn.jp/@torizono1024",
     },
     m.MastodonWebIdUrl: {
         "https://pawoo.net/web/accounts/47806": "https://pawoo.net/web/accounts/47806",
@@ -50,7 +51,7 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-class TestMastodonArtistUrl1(_TestArtistUrl):
+class TestPawooArtistUrl(_TestArtistUrl):
     url_string = "https://pawoo.net/@2075642"
     url_type = m.MastodonArtistUrl
     url_properties = dict(username="2075642")
@@ -62,10 +63,20 @@ class TestMastodonArtistUrl1(_TestArtistUrl):
                "https://www.pixiv.net/en/users/164728"]
 
 
-class TestMastodonArtistUrl2(_TestArtistUrl):
+class TestPawooWebIdUrl(_TestArtistUrl):
     url_string = "https://pawoo.net/web/accounts/457571"
     url_type = m.MastodonWebIdUrl
     url_properties = dict(user_id=457571)
     primary_names = ["はいむら"]
     secondary_names = ["2075642"]
     related = ["https://pawoo.net/@2075642"]
+
+
+class TestMstdnJpArtistUrl(_TestArtistUrl):
+    url_string = "https://mstdn.jp/@torizono1024"
+    url_type = m.MastodonArtistUrl
+    url_properties = dict(username="torizono1024")
+    primary_names = ["とりぞの"]
+    secondary_names = ["torizono1024"]
+    related = ["http://poipiku.com/3014509",
+               "https://mstdn.jp/web/accounts/109363953676297347"]

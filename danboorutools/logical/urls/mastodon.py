@@ -38,7 +38,7 @@ class MastodonArtistUrl(ArtistUrl, MastodonUrl):
 
     @cached_property
     def artist_data(self) -> MastodonArtistData:
-        return self.session.user_data(self.site, username=self.username)
+        return self.session.user_data(domain=self.site, username=self.username)
 
     @property
     def user_id_url(self) -> MastodonWebIdUrl:
@@ -64,7 +64,7 @@ class MastodonWebIdUrl(InfoUrl, MastodonUrl):
 
     @property
     def artist_data(self) -> MastodonArtistData:
-        return self.session.user_data(self.site, user_id=self.user_id)
+        return self.session.user_data(domain=self.site, user_id=self.user_id)
 
     @property
     def artist_url(self) -> MastodonArtistUrl:
