@@ -78,6 +78,8 @@ class _SaucenaoDanbooruData(_SaucenaoBaseDataResponse):
     # index 9 - danbooru
     danbooru_id: int
     gelbooru_id: int
+    sankaku_id: int | None = None
+
     creator: str
     material: str
     characters: str
@@ -86,7 +88,7 @@ class _SaucenaoDanbooruData(_SaucenaoBaseDataResponse):
 
     @property
     def danbooru_post_id(self) -> int:
-        return DanbooruPost.id_from_url(self.ext_urls[0])
+        return DanbooruPost.id_from_url(self.ext_urls[0])  # pylint: disable=unsubscriptable-object
 
     @property
     def artist_result(self) -> SaucenaoArtistResult:
