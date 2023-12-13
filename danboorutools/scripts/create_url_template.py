@@ -97,6 +97,7 @@ import pytest
 
 from danboorutools.logical.urls.{module_name} import {class_name_base}ArtistUrl, {class_name_base}ImageUrl, {class_name_base}PostUrl
 from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {{
     {class_name_base}ArtistUrl: {{
