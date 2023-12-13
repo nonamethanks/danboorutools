@@ -75,7 +75,8 @@ class UrlParser:
             return None
 
         if parsable_url.is_base_url:
-            return None
+            from danboorutools.models.url import UselessUrl
+            return UselessUrl(parsed_url=parsable_url)
 
         try:
             parsed_url = parser.match_url(parsable_url)

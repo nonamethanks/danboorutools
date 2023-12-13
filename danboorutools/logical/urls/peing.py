@@ -15,7 +15,7 @@ class PeingUserUrl(InfoUrl, PeingUrl):
     def primary_names(self) -> list[str]:
         assert (title_el := self.html.select_one("meta[property='og:title']"))
         assert (name_match := re.match(r"^You can listen anonymously!(.*)'s Questionbox$", title_el["content"]))
-        return name_match.groups()
+        return list(name_match.groups())
 
     @property
     def secondary_names(self) -> list[str]:
