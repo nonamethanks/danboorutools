@@ -89,45 +89,55 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
 
 
 class TestFc2BlogUrl1(_TestArtistUrl):
-    url_string="http://mogu08.blog104.fc2.com/"
-    url_type=fc2.Fc2BlogUrl
-    url_properties=dict(username="mogu08", domain="fc2.com", subsite="blog")
-    related=[]
-    primary_names=["あきらめmo。"]
-    secondary_names=["mogu08"]
+    url_string = "http://mogu08.blog104.fc2.com/"
+    url_type = fc2.Fc2BlogUrl
+    url_properties = dict(username="mogu08", domain="fc2.com", subsite="blog")
+    related = []
+    primary_names = ["あきらめmo。"]
+    secondary_names = ["mogu08"]
 
 
 class TestFc2BlogUrl2(_TestArtistUrl):
-    url_string="http://laindell.blog.2nt.com/"
-    url_type=fc2.Fc2BlogUrl
-    url_properties=dict(username="laindell", domain="2nt.com", subsite="blog")
-    related=[]
-    primary_names=["れいんでる"]
-    secondary_names=["laindell"]
+    url_string = "http://laindell.blog.2nt.com/"
+    url_type = fc2.Fc2BlogUrl
+    url_properties = dict(username="laindell", domain="2nt.com", subsite="blog")
+    related = []
+    primary_names = ["れいんでる"]
+    secondary_names = ["laindell"]
 
 
 class TestFc2BlogUrl3(_TestArtistUrl):
-    url_string="http://kudanya.blog42.fc2.com/"
-    url_type=fc2.Fc2BlogUrl
-    url_properties=dict(username="kudanya", domain="fc2.com", subsite="blog")
-    related=[]
-    primary_names=["くだんや"]
-    secondary_names=["kudanya"]
+    url_string = "http://kudanya.blog42.fc2.com/"
+    url_type = fc2.Fc2BlogUrl
+    url_properties = dict(username="kudanya", domain="fc2.com", subsite="blog")
+    related = []
+    primary_names = ["くだんや"]
+    secondary_names = ["kudanya"]
 
 
 class TestFc2BlogUrl4(_TestArtistUrl):
-    url_string="http://cocy.blog57.fc2.com/"
-    url_type=fc2.Fc2BlogUrl
-    url_properties=dict(username="cocy", domain="fc2.com", subsite="blog")
-    related=[]
-    primary_names=["寝起きふう"]
-    secondary_names=["cocy"]
+    url_string = "http://cocy.blog57.fc2.com/"
+    url_type = fc2.Fc2BlogUrl
+    url_properties = dict(username="cocy", domain="fc2.com", subsite="blog")
+    related = []
+    primary_names = ["寝起きふう"]
+    secondary_names = ["cocy"]
 
 
 class TestFc2BlogUrl5(_TestArtistUrl):
-    url_string="http://xxxmixberry.web.fc2.com/"
-    url_type=fc2.Fc2BlogUrl
-    url_properties=dict(username="xxxmixberry", domain="fc2.com", subsite="web")
-    related=[]
-    primary_names=["millefeuille"]
-    secondary_names=["xxxmixberry"]
+    url_string = "http://xxxmixberry.web.fc2.com/"
+    url_type = fc2.Fc2BlogUrl
+    url_properties = dict(username="xxxmixberry", domain="fc2.com", subsite="web")
+    related = []
+    primary_names = ["millefeuille"]
+    secondary_names = ["xxxmixberry"]
+
+
+class TestFc2BlogUrl6(_TestArtistUrl):
+    url_string = "http://torimeiro.web.fc2.com"
+    url_type = fc2.Fc2BlogUrl
+    url_properties = dict(username="torimeiro", domain="fc2.com", subsite="web")
+    related = []
+    primary_names = []
+    secondary_names = ["torimeiro"]
+    is_deleted = True
