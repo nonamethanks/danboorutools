@@ -20,7 +20,8 @@ UNSUPPORTED_DOMAINS = (
     "coocan.jp",
     "discord.gg",  # way too much of a pain in the ass
     "kakao.com",  # korean chat app?
-    "itch.io",
+    "interq.or.jp",  # shitty old japanese site
+    "itch.io",  # indie vidya store
     "mbsp.jp",
     "nobody.jp",
     "pixnet.net",
@@ -30,7 +31,7 @@ UNSUPPORTED_DOMAINS = (
     "webnode.jp",
     "wixsite.com",
     "whitesnow.jp",
-    "wordpress.com",
+    "wordpress.com",  # too many possibilities
 )
 
 
