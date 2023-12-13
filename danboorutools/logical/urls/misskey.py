@@ -1,5 +1,5 @@
 from danboorutools.logical.sessions.misskey import MisskeySession, MisskeyUserData
-from danboorutools.models.url import ArtistUrl, Url
+from danboorutools.models.url import ArtistUrl, RedirectUrl, Url
 
 
 class MisskeyUrl(Url):
@@ -28,3 +28,9 @@ class MisskeyUserUrl(ArtistUrl, MisskeyUrl):
     @property
     def related(self) -> list[Url]:
         return self.artist_data.related_urls
+
+
+class MisskeyUserIdUrl(RedirectUrl, MisskeyUrl):
+    user_id: str
+
+    normalize_template = "https://misskey.io/users/{user_id}"

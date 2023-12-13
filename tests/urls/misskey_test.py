@@ -1,13 +1,16 @@
 import pytest
 
-from danboorutools.logical.urls.misskey import MisskeyUserUrl
+from danboorutools.logical.urls.misskey import MisskeyUserIdUrl, MisskeyUserUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import _TestArtistUrl
+from tests.helpers.scraping import _TestArtistUrl, _TestRedirectUrl
 
 urls = {
     MisskeyUserUrl: {
         "https://misskey.io/@snail0326": "https://misskey.io/@snail0326",
     },
+    MisskeyUserIdUrl: {
+        "https://misskey.io/users/9hlc3rsola": "https://misskey.io/users/9hlc3rsola",
+    }
 }
 
 
@@ -27,3 +30,10 @@ class TestMisskeyUserUrl(_TestArtistUrl):
     primary_names = ["ぶじうさ"]
     secondary_names = ["ChobitsX4"]
     related = ["https://www.patreon.com/ChobitsX4", "http://pixiv.net/users/211326"]
+
+
+class TestMisskeyUserIdUrl(_TestRedirectUrl):
+    url_string = "https://misskey.io/users/9hlc3rsola"
+    url_type = MisskeyUserIdUrl
+    url_properties = dict(user_id="9hlc3rsola")
+    redirects_to = "https://misskey.io/@peach11_01"

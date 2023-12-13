@@ -1,5 +1,5 @@
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
-from danboorutools.logical.urls.misskey import MisskeyUrl, MisskeyUserUrl
+from danboorutools.logical.urls.misskey import MisskeyUrl, MisskeyUserIdUrl, MisskeyUserUrl
 
 
 class MisskeyIoParser(UrlParser):
@@ -9,6 +9,10 @@ class MisskeyIoParser(UrlParser):
             case username, if username.startswith("@"):
                 return MisskeyUserUrl(parsed_url=parsable_url,
                                       username=username.removeprefix("@"))
+
+            case "users", user_id:
+                return MisskeyUserIdUrl(parsed_url=parsable_url,
+                                        user_id=user_id)
 
             case _:
                 return None
