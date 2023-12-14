@@ -47,6 +47,9 @@ discord-webhook = "^1.3.0"
 urllib3 = "^2.1.0"
 fake-useragent = "^1.4.0"
 google-cloud-bigquery = "^3.14.0"
+celery = "^5.3.6"
+redis = "^5.0.1"
+watchdog = {extras = ["watchmedo"], version = "^3.0.0"}
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.31.0.10"
@@ -61,6 +64,7 @@ line-profiler = "^4.1.2"
 ruff = "^0.0.291"
 types-beautifulsoup4 = "^4.12.0.7"
 types-pillow = "^10.1.0.2"
+celery-types = "^0.20.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.3"

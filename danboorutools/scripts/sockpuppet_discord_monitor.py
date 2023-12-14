@@ -62,6 +62,7 @@ class SockpuppetDetector:
         if not latest_signups:
             return
         self.last_checked_session.value = max(latest_signups, key=lambda x: x.id).id
+        logger.info("Done.")
 
     def get_latest_signups(self) -> list[DanbooruUserEvent]:
         if self.last_checked_session.value:

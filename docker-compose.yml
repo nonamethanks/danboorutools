@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     init: true  # protects from chromedriver zombie processes
-    command: tail -F anything
+    command: poetry run watchmedo auto-restart -d /code/danboorutools -p="*" -R -- celery -- -A danboorutools.celery_tasks.tasks worker -B --loglevel=INFO -s /tmp/celerybeat-schedule
     volumes:
       # development
       - ./danboorutools:/code/danboorutools/:ro
@@ -20,6 +20,13 @@ services:
       - ./cookies:/code/cookies/
       - ./screenshots:/code/screenshots/
       - ./.ipython:/home/danboorutools/.ipython  # ipython interpreter history persistence
-
     tmpfs:
       - /tmp
+
+  redis:
+    image: redis
+    restart: always
+
+  mail:
+    image: bytemark/smtp
+    restart: always

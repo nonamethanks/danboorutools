@@ -14,7 +14,7 @@ if "sockpuppet of user #" not in sock_message.lower():
 
 
 def main() -> None:
-    logger.info(f"Searching for ban messages containing '{sock_message}'")
+    logger.info(f"Searching for ban messages containing '{sock_message}'...")
     bans = danbooru_api.bans(reason_matches=sock_message)
     for ban in bans:
         banned_user = ban.user

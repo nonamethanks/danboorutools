@@ -27,6 +27,7 @@ RUN pip install -U pip poetry
 WORKDIR /code
 COPY --chown=danboorutools:danboorutools poetry.lock pyproject.toml /code/
 COPY --chown=danboorutools:danboorutools danboorutools /code/danboorutools
+COPY --chown=danboorutools:danboorutools celery_tasks.py /code/celery_tasks.py
 RUN mkdir /code/screenshots /code/cookies
 RUN mkdir /home/danboorutools/.ipython
 
@@ -34,3 +35,5 @@ RUN poetry install --no-interaction --no-ansi
 
 ENV SHELL /bin/bash
 ENV TERM xterm-256color
+
+CMD poetry run watchmedo auto-restart -d /code/danboorutools -p="*" -R -- celery -- -A danboorutools.celery_tasks.tasks worker -B --loglevel=INFO -s /tmp/celerybeat-schedule
