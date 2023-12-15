@@ -101,15 +101,16 @@ class _SaucenaoDanbooruData(_SaucenaoBaseDataResponse):
         elif not isinstance(source_from_saucenao, PostUrl):
             raise NotImplementedError(self, source_from_saucenao)
 
-        result = SaucenaoArtistResult(found_urls=[], primary_names=[], secondary_names=[])
+        result = SaucenaoArtistResult(found_urls=[source_from_saucenao.artist], primary_names=[], secondary_names=[])
+
+        if not self.creator:
+            return result  # Saucenao doesn't have it
+        if "," in self.creator:
+            return result  # saucenao database is fucked
+        if self.creator.strip() + "," in self.material or self.material.strip() == self.creator.strip():
+            return result  # as above, sometimes copyrights end up in the creator field
 
         if isinstance(source_from_saucenao, PixivUrl):
-            if not self.creator:
-                return result  # Saucenao doesn't have it
-            if "," in self.creator:
-                return result  # saucenao database is fucked
-            if self.creator in self.material:
-                return result  # as above
             if match := re.match(r"^pixiv id (\d+)$",  self.creator):
                 result.found_urls += [PixivArtistUrl.build(user_id=int(match.groups()[0]))]
             else:
