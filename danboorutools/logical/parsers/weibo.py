@@ -4,7 +4,7 @@ from danboorutools.logical.urls.weibo import WeiboArtistUrl, WeiboImageUrl, Weib
 
 
 class WeiboComParser(UrlParser):
-    RESERVED_USERNAMES = ["u", "n", "p", "profile", "status", "detail"]
+    RESERVED_USERNAMES = ("u", "n", "p", "profile", "status", "detail", "ttarticle")
     domains = ("weibo.com", "weibo.cn")
 
     @classmethod
