@@ -18,6 +18,20 @@ def test_artist_name_translation_2() -> None:
     assert ArtistFinder.sanitize_tag_name(name) == "seikan"
 
 
+@pytest.mark.parsing
+@pytest.mark.artist_finder
+def test_artist_name_translation_3() -> None:
+    name = "大発作"
+    assert ArtistFinder.sanitize_tag_name(name) == "daihatsu_saku"
+
+
+@pytest.mark.parsing
+@pytest.mark.artist_finder
+def test_artist_name_translation_4() -> None:
+    name = "神成迅子"
+    assert ArtistFinder.sanitize_tag_name(name) == "shen_cheng_xun_zi"
+
+
 @pytest.mark.scraping
 @pytest.mark.artist_finder
 def test_artist_url_extraction() -> None:

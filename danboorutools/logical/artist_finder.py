@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import pykakasi
 import unidecode
 from cloudscraper.exceptions import CloudflareChallengeError
+from py_trans import PyTranslator
 from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
@@ -37,6 +38,7 @@ class DuplicateArtistOnDanbooruError(Exception):
 
 class ArtistFinder:
     kakasi = pykakasi.kakasi()
+    translator = PyTranslator()
 
     # TODO: should rename all user_123 artists to a proper extracted name
     def __init__(self) -> None:
@@ -325,13 +327,13 @@ class ArtistFinder:
 
     @classmethod
     def romanize_tag_name(cls, potential_tag: str) -> str:
+        language = cls.translator.detect(potential_tag)
         translated_results = cls.kakasi.convert(potential_tag)
 
         if len(translated_results) == 1 and translated_results[0]["orig"].strip() == potential_tag.strip():
             # single japanese word
             candidate = translated_results[0]["passport"]
-        elif "".join([k["orig"] for k in translated_results]) == potential_tag and all(k["passport"] for k in translated_results):
-            # multiple japanese words
+        elif language == "ja":
             candidate = "_".join(k["passport"] for k in translated_results)
         else:
             # chinese, korean, etc
