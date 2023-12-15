@@ -31,7 +31,7 @@ class WeiboArtistUrl(ArtistUrl, WeiboUrl):
     def secondary_names(self) -> list[str]:
         if self.extra_secondary_names:
             return list(set(self.extra_secondary_names))
-        return []
+        return [f"weibo {self.artist_id}"]
 
     @property
     def related(self) -> list[Url]:
