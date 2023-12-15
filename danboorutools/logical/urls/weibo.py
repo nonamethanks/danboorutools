@@ -1,27 +1,11 @@
-from danboorutools.exceptions import DeadUrlError
-from danboorutools.logical.sessions.weibo import WeiboSession, WeiboUserData
+from datetime import datetime
+
+from danboorutools.logical.sessions.weibo import WeiboPostData, WeiboSession, WeiboUserData
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
 class WeiboUrl(Url):
     session = WeiboSession()
-
-
-class WeiboPostUrl(PostUrl, WeiboUrl):
-    illust_long_id: int | None = None
-    illust_base62_id: str | None = None
-    artist_short_id: int | None = None
-
-    @classmethod
-    def normalize(cls, **kwargs) -> str | None:
-        if (artist_short_id := kwargs.get("artist_short_id")) and (illust_base62_id := kwargs.get("illust_base62_id")):
-            return f"https://www.weibo.com/{artist_short_id}/{illust_base62_id}"
-        elif (illust_long_id := kwargs.get("illust_long_id")):
-            return f"https://www.weibo.com/detail/{illust_long_id}"
-        elif (illust_base62_id := kwargs.get("illust_base62_id")):
-            return f"https://m.weibo.cn/status/{illust_base62_id}"
-        else:
-            raise NotImplementedError
 
 
 class WeiboArtistUrl(ArtistUrl, WeiboUrl):
@@ -75,6 +59,38 @@ class WeiboArtistUrl(ArtistUrl, WeiboUrl):
         if self.is_deleted:
             return []
         return self.artist_data.related_urls
+
+
+class WeiboPostUrl(PostUrl, WeiboUrl):
+    illust_long_id: int | None = None
+    illust_base62_id: str | None = None
+    artist_short_id: int | None = None
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str | None:
+        if (artist_short_id := kwargs.get("artist_short_id")) and (illust_base62_id := kwargs.get("illust_base62_id")):
+            return f"https://www.weibo.com/{artist_short_id}/{illust_base62_id}"
+        elif (illust_long_id := kwargs.get("illust_long_id")):
+            return f"https://www.weibo.com/detail/{illust_long_id}"
+        elif (illust_base62_id := kwargs.get("illust_base62_id")):
+            return f"https://m.weibo.cn/status/{illust_base62_id}"
+        else:
+            raise NotImplementedError
+
+    @property
+    def post_data(self) -> WeiboPostData:
+        if self.illust_base62_id:
+            return self.session.post_data(base_62_id=self.illust_base62_id)
+        else:
+            raise NotImplementedError(self)
+
+    @property
+    def gallery(self) -> WeiboArtistUrl:
+        return self.post_data.artist_url
+
+    @property
+    def created_at(self) -> datetime:
+        return self.post_data.created_at
 
 
 class WeiboImageUrl(PostAssetUrl, WeiboUrl):

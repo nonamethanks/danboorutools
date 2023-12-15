@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.weibo import WeiboArtistUrl, WeiboImageUrl, WeiboPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import _TestArtistUrl
+from tests.helpers.scraping import _TestArtistUrl, _TestPostUrl
 
 urls = {
     WeiboArtistUrl: {
@@ -105,3 +105,11 @@ class TestWeiboArtistUrl5(_TestArtistUrl):
     secondary_names = []
     related = []
     is_deleted = True
+
+
+class TestWeiboPostUrl(_TestPostUrl):
+    url_string = "https://m.weibo.cn/status/NvMjgDF9z"
+    url_type = WeiboPostUrl
+    url_properties = dict(illust_base62_id="NvMjgDF9z")
+    created_at = "Wed Dec 06 00:00:25 +0800 2023"
+    gallery = "https://m.weibo.cn/profile/6775494073"

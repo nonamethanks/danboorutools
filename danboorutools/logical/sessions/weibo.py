@@ -1,16 +1,22 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 from json import JSONDecodeError
 from typing import TYPE_CHECKING
+
+from pydantic import field_validator
 
 from danboorutools.exceptions import DeadUrlError, NotLoggedInError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
+from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
     from requests import Response
+
+    from danboorutools.logical.urls.weibo import WeiboArtistUrl
 
 
 class WeiboSession(Session):
@@ -58,6 +64,13 @@ class WeiboSession(Session):
 
         return WeiboUserData(**data["data"]["user"])
 
+    def post_data(self, base_62_id: str) -> WeiboPostData:
+        post_json = self.extract_json_from_html(
+            f"https://m.weibo.cn/status/{base_62_id}",
+            pattern=r"\$render_data = \[([\s\S]+)\]\[0\]",
+        )
+        return WeiboPostData(**post_json["status"])
+
 
 class WeiboUserData(BaseModel):
     id: int
@@ -75,3 +88,22 @@ class WeiboUserData(BaseModel):
             urls += [Url.parse(self.url)]
 
         return list(dict.fromkeys(urls))
+
+
+class WeiboPostData(BaseModel):
+    bid: str  # base 62 id
+    mid: int  # long id
+
+    user: dict
+
+    created_at: datetime
+
+    @property
+    def artist_url(self) -> WeiboArtistUrl:
+        from danboorutools.logical.urls.weibo import WeiboArtistUrl
+        return WeiboArtistUrl.build(artist_short_id=self.user["id"])
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def validate_created_at(cls, value: str) -> datetime:
+        return datetime_from_string(value)

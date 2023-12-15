@@ -100,6 +100,7 @@ class _TestPostUrl(_TestUrl):
     asset_count: int | None = None
     assets: list[str] | None = None
     score: int | None = None
+    gallery: str | None = None
 
     @pytest.mark.scraping
     def test_created_at(self, parsed_url: PostUrl) -> None:
@@ -124,3 +125,9 @@ class _TestPostUrl(_TestUrl):
         expected_score = self.score
         actual_score = parsed_url.score
         assert actual_score >= expected_score
+
+    @pytest.mark.scraping
+    def test_gallery(self, parsed_url: PostUrl) -> None:
+        actual_gallery = parsed_url.gallery
+        expected_gallery = Url.parse(self.gallery)
+        assert expected_gallery == actual_gallery
