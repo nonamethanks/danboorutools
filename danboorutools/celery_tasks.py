@@ -85,9 +85,14 @@ def setup_logger(signal: Signal, sender: Task, task_id: str, *args, **kwargs) ->
 
 @tasks.on_after_configure.connect
 def setup_periodic_tasks(sender: Celery, **kwargs) -> None:  # noqa: ARG001 # pylint: disable=unused-argument
+    if os.environ.get("AUTOMATIC_TASKS_ENABLED") != "1":
+        return
+
     sender.add_periodic_task(60.0, monitor_sockpuppets.s())
 
-    sender.add_periodic_task(crontab(minute="0", hour="*/8"), create_artist_tags.s())
+    sender.add_periodic_task(crontab(minute="0", hour="18-9/6"), create_artist_tags.s())
+    sender.add_periodic_task(crontab(minute="0", hour="6,20"), create_artist_tags.s())
+    sender.add_periodic_task(crontab(minute="0", hour="9-18"), create_artist_tags.s())
     sender.add_periodic_task(crontab(minute="9", hour="17"), _tag_paid_rewards_on_gelbooru.s())
 
 
