@@ -18,11 +18,15 @@ class LofterArtistUrl(ArtistUrl, LofterUrl):
 
     normalize_template = "https://{username}.lofter.com"
 
+    _commentary_css = (
+        ".head .text",  # https://lbgu1.lofter.com/
+        ".selfinfo .text",  # https://jiaojiaojiazuzy.lofter.com/
+        ".p-homepage #j-about",  # https://chaodazu.lofter.com/
+    )
+
     @property
     def primary_names(self) -> list[str]:
-        artist_name = self.html.select_one(".head .title")
-        if not artist_name or not artist_name.text:
-            raise NotImplementedError(self)
+        assert (artist_name := self.html.select_one("title"))
         return [artist_name.text]
 
     @property
@@ -31,7 +35,11 @@ class LofterArtistUrl(ArtistUrl, LofterUrl):
 
     @property
     def related(self) -> list[Url]:
-        commentary = self.html.select_one(".head .text")
+        commentary = None
+        for selector in self._commentary_css:
+            commentary = self.html.select_one(selector)
+            if commentary:
+                break
         if not commentary or not commentary.text:
             raise NotImplementedError(self)
         return [Url.parse(u) for u in extract_urls_from_string(commentary.text)]

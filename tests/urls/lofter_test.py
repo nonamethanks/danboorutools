@@ -34,10 +34,28 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-class TestLofterArtistUrl(_TestArtistUrl):
+class TestLofterArtistUrl1(_TestArtistUrl):
     url_string = "https://lbgu1.lofter.com/"
     url_type = LofterArtistUrl
     url_properties = dict(username="lbgu1")
     primary_names = ["LB"]
     secondary_names = ["lbgu1"]
+    related = []
+
+
+class TestLofterArtistUrl2(_TestArtistUrl):
+    url_string = "https://jiaojiaojiazuzy.lofter.com/"
+    url_type = LofterArtistUrl
+    url_properties = dict(username="jiaojiaojiazuzy")
+    primary_names = ["佼佼家族"]
+    secondary_names = ["jiaojiaojiazuzy"]
+    related = []
+
+
+class TestLofterArtistUrl3(_TestArtistUrl):
+    url_string = "https://chaodazu.lofter.com/"
+    url_type = LofterArtistUrl
+    url_properties = dict(username="chaodazu")
+    primary_names = ["老祖祖"]
+    secondary_names = ["chaodazu"]
     related = []
