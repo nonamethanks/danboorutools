@@ -30,7 +30,8 @@ def pytest_collection_modifyitems(items, config):
 def should_perform_test(item) -> bool:
     for property_name in ["posts",  "post_count",
                           "assets", "asset_count",
-                          "score", "created_at", "gallery"]:
+                          "score", "created_at", "gallery",
+                          "redirect_url_properties"]:
         if item.name.endswith(f"test_{property_name}") and getattr(item.parent.obj, property_name) is None:
             return False
 

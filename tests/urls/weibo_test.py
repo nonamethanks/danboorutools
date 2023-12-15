@@ -1,8 +1,8 @@
 import pytest
 
-from danboorutools.logical.urls.weibo import WeiboArtistUrl, WeiboImageUrl, WeiboPostUrl
+from danboorutools.logical.urls.weibo import WeiboArtistUrl, WeiboImageUrl, WeiboLegacyArtistUrl, WeiboPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import _TestArtistUrl, _TestPostUrl
+from tests.helpers.scraping import _TestArtistUrl, _TestPostUrl, _TestRedirectUrl
 
 urls = {
     WeiboArtistUrl: {
@@ -10,20 +10,21 @@ urls = {
         "https://www.weibo.com/u/5957640693/home?wvr=5": "https://www.weibo.com/u/5957640693",
         "https://m.weibo.cn/profile/5501756072": "https://www.weibo.com/u/5501756072",
         "https://m.weibo.cn/u/5501756072": "https://www.weibo.com/u/5501756072",
-        "https://www.weibo.com/p/1005055399876326": "https://www.weibo.com/p/1005055399876326",
-        "https://www.weibo.com/p/1005055399876326/home?from=page_100505&mod=TAB&is_hot=1": "https://www.weibo.com/p/1005055399876326",
-        "https://www.weibo.cn/p/1005055399876326": "https://www.weibo.com/p/1005055399876326",
-        "https://m.weibo.com/p/1005055399876326": "https://www.weibo.com/p/1005055399876326",
         "https://www.weibo.com/5501756072": "https://www.weibo.com/u/5501756072",
         "https://www.weibo.cn/5501756072": "https://www.weibo.com/u/5501756072",
         "https://weibo.com/1843267214/profile": "https://www.weibo.com/u/1843267214",
-        "https://weibo.com/n/肆巳4": "https://www.weibo.com/n/肆巳4",
-        "https://www.weibo.com/n/小小男爵不要坑": "https://www.weibo.com/n/小小男爵不要坑",
+        "https://www.weibo.com/p/1005055399876326": "https://www.weibo.com/u/5399876326",
+        "https://www.weibo.com/p/1005055399876326/home?from=page_100505&mod=TAB&is_hot=1": "https://www.weibo.com/u/5399876326",
+        "https://www.weibo.cn/p/1005055399876326": "https://www.weibo.com/u/5399876326",
+        "https://m.weibo.com/p/1005055399876326": "https://www.weibo.com/u/5399876326",
+        "https://www.weibo.com/p/1006065770760941/photos?from=page_100606#wbphoto_nav": "https://www.weibo.com/u/5770760941",
+    },
+    WeiboLegacyArtistUrl: {
         "https://www.weibo.com/endlessnsmt": "https://www.weibo.com/endlessnsmt",
         "https://www.weibo.cn/endlessnsmt": "https://www.weibo.com/endlessnsmt",
         "https://www.weibo.com/lvxiuzi0/home": "https://www.weibo.com/lvxiuzi0",
-
-
+        "https://weibo.com/n/肆巳4": "https://www.weibo.com/n/肆巳4",
+        "https://www.weibo.com/n/小小男爵不要坑": "https://www.weibo.com/n/小小男爵不要坑",
     },
     WeiboImageUrl: {
         "http://ww1.sinaimg.cn/large/69917555gw1f6ggdghk28j20c87lbhdt.jpg": "https://ww1.sinaimg.cn/large/69917555gw1f6ggdghk28j20c87lbhdt.jpg",
@@ -64,43 +65,16 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
 class TestWeiboArtistUrl1(_TestArtistUrl):
     url_string = "https://www.weibo.com/u/5501756072"
     url_type = WeiboArtistUrl
-    url_properties = dict(artist_short_id=5501756072)
+    url_properties = dict(artist_id=5501756072)
     primary_names = ["阿尔托莉雅厨"]
     secondary_names = []
     related = []
 
 
-class TestWeiboArtistUrl2(_TestArtistUrl):
-    url_string = "https://www.weibo.com/vicdragon"
-    url_type = WeiboArtistUrl
-    url_properties = dict(username="vicdragon")
-    primary_names = ["温柔贤淑王凌雪王姐姐"]
-    secondary_names = ["vicdragon"]
-    related = []
-
-
-class TestWeiboArtistUrl3(_TestArtistUrl):
-    url_string = "https://www.weibo.com/n/肆巳4"
-    url_type = WeiboArtistUrl
-    url_properties = dict(screen_name="肆巳4")
-    primary_names = ["肆巳4"]
-    secondary_names = []
-    related = []
-
-
-class TestWeiboArtistUrl4(_TestArtistUrl):
-    url_string = "https://www.weibo.com/p/1005055399876326"
-    url_type = WeiboArtistUrl
-    url_properties = dict(artist_long_id=1005055399876326)
-    primary_names = ["橙子呦S"]
-    secondary_names = ["chengziyou666"]
-    related = ["https://www.pixiv.net/en/users/12972879"]
-
-
 class TestWeiboArtistUrl5(_TestArtistUrl):
     url_string = "https://weibo.com/u/271222260"
     url_type = WeiboArtistUrl
-    url_properties = dict(artist_short_id=271222260)
+    url_properties = dict(artist_id=271222260)
     primary_names = []
     secondary_names = []
     related = []
@@ -113,3 +87,19 @@ class TestWeiboPostUrl(_TestPostUrl):
     url_properties = dict(illust_base62_id="NvMjgDF9z")
     created_at = "Wed Dec 06 00:00:25 +0800 2023"
     gallery = "https://m.weibo.cn/profile/6775494073"
+
+
+class TestWeiboLegacyArtistUrl1(_TestRedirectUrl):
+    url_string = "https://www.weibo.com/vicdragon"
+    url_type = WeiboLegacyArtistUrl
+    url_properties = dict(username="vicdragon")
+    redirects_to = "https://www.weibo.com/u/1286749292"
+    redirect_url_properties = dict(extra_primary_names=None, extra_secondary_names=["vicdragon"])
+
+
+class TestWeiboLegacyArtistUrl2(_TestRedirectUrl):
+    url_string = "https://www.weibo.com/n/肆巳4"
+    url_type = WeiboLegacyArtistUrl
+    url_properties = dict(screen_name="肆巳4")
+    redirects_to = "https://www.weibo.com/u/6990161098"
+    redirect_url_properties = dict(extra_primary_names=["肆巳4"], extra_secondary_names=None)

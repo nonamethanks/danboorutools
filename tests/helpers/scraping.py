@@ -26,7 +26,8 @@ class _TestUrl:
 
     @pytest.mark.parsing
     def test_correct_url_properties(self, parsed_url: Url) -> None:
-        for property_name, expected_value in self.url_properties.items():
+        expected_properties = self.url_properties
+        for property_name, expected_value in expected_properties.items():
             actual_value = getattr(parsed_url, property_name)
             assert actual_value == expected_value
 
@@ -39,12 +40,22 @@ class _TestUrl:
 @pytest.mark.redirect
 class _TestRedirectUrl(_TestUrl):
     redirects_to: str
+    redirect_url_properties: dict | None = None
 
     @pytest.mark.scraping
     def test_redirect_to(self, parsed_url: RedirectUrl) -> None:
         expected_redirect = parsed_url.resolved.normalized_url
         actual_redirect = Url.parse(self.redirects_to).normalized_url
         assert actual_redirect == expected_redirect
+
+    @pytest.mark.scraping
+    def test_redirect_url_properties(self, parsed_url: RedirectUrl) -> None:
+        resolved_url = parsed_url.resolved
+        expected_properties = self.redirect_url_properties
+
+        for property_name, expected_value in expected_properties.items():
+            actual_value = getattr(resolved_url, property_name)
+            assert actual_value == expected_value
 
 
 class _TestInfoUrl(_TestUrl):
@@ -79,14 +90,14 @@ class _TestGalleryUrl(_TestInfoUrl):
     @pytest.mark.scraping
     def test_post_count(self, parsed_url: GalleryUrl) -> None:
         expected_post_count = self.post_count
-        assert len(parsed_url.known_posts) >= expected_post_count
+        assert len(parsed_url.known_posts) >= expected_post_count  # type: ignore[operator]
 
     @pytest.mark.gallery
     @pytest.mark.scraping
     def test_posts(self, parsed_url: GalleryUrl) -> None:
         extracted_posts = parsed_url.extract_posts()
         # pylint: disable=not-an-iterable
-        assert all(Url.parse(post) in extracted_posts for post in self.posts)
+        assert all(Url.parse(post) in extracted_posts for post in self.posts)  # type: ignore[operator]
 
 
 @pytest.mark.artist

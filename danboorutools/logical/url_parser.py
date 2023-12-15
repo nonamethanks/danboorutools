@@ -34,10 +34,6 @@ UNSUPPORTED_DOMAINS = (
     "wordpress.com",  # too many possibilities
 )
 
-UNSUPPORTED_HOSTS = (
-    "blog.sina.com.cn",  # shitty half dead weibo blogging platform
-)
-
 
 class UrlParser:
     domains: tuple[str, ...] = ()
@@ -77,9 +73,6 @@ class UrlParser:
         parsable_url = ParsableUrl(url)
         parser = parsers.get(parsable_url.domain.lower())
         if not parser:
-            if parsable_url.hostname in UNSUPPORTED_HOSTS:
-                from danboorutools.models.url import UnsupportedUrl
-                return UnsupportedUrl(parsed_url=parsable_url)
             return None
 
         if parsable_url.is_base_url:
