@@ -130,6 +130,10 @@ class ArtistFinder:
         return self.create_artist_tag(primary_names, secondary_names, found_artist_urls)
 
     def search_for_artist_in_archives(self, post: DanbooruPost) -> SaucenaoArtistResult | Ascii2dArtistResult | None:
+        if post.file_ext in ["mp4", "webm", "swf"]:
+            logger.debug(f"Skipping reverse searching {post} because it's a video.")
+            return None
+
         logger.debug("Checking Ascii2d...")
         result = self.ascii2d.find_gallery(post.file_url, original_url=post.source, original_post=post)
         if result:
