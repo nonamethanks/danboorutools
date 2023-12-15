@@ -86,6 +86,8 @@ class WeiboPostUrl(PostUrl, WeiboUrl):
 
     @property
     def gallery(self) -> WeiboArtistUrl:
+        if self.artist_short_id:
+            return WeiboArtistUrl.build(artist_short_id=self.artist_short_id)
         return self.post_data.artist_url
 
     @property

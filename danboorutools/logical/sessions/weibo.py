@@ -65,10 +65,14 @@ class WeiboSession(Session):
         return WeiboUserData(**data["data"]["user"])
 
     def post_data(self, base_62_id: str) -> WeiboPostData:
-        post_json = self.extract_json_from_html(
-            f"https://m.weibo.cn/status/{base_62_id}",
-            pattern=r"\$render_data = \[([\s\S]+)\]\[0\]",
-        )
+        url = f"https://m.weibo.cn/status/{base_62_id}"
+        try:
+            post_json = self.extract_json_from_html(url, pattern=r"\$render_data = \[([\s\S]+)\]\[0\]")
+        except ValueError as e:
+            if "微博不存在或暂无查看权限!" in self.get_html(url).body.text:
+                raise DeadUrlError(original_url=url, status_code=404) from e
+            else:
+                raise
         return WeiboPostData(**post_json["status"])
 
 
