@@ -63,6 +63,9 @@ class ArtistFinder:
             if not result_from_archives:
                 logger.error(f"Couldn't extract an artist for post {post}.")
                 self.skipped_posts.value = [*self.skipped_posts.value, post.id]
+
+                assert source.is_deleted
+                danbooru_api.update_post_tags(post, ["bad_id"])
                 return False
         else:
             assert artist_url
@@ -82,7 +85,11 @@ class ArtistFinder:
             e.add_note(f"On post: {post}, artist: {artist_url}, archived result: {result_from_archives}")
             raise
 
-        danbooru_api.update_post_tags(post, ["-artist_request", artist_tag])
+        tags_to_send = ["-artist_request", artist_tag]
+        if source.is_deleted:
+            tags_to_send += ["bad_id"]
+
+        danbooru_api.update_post_tags(post, tags_to_send)
         return True
 
     def _find_or_create_artist_tag(self,
