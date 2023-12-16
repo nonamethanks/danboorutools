@@ -50,7 +50,7 @@ celery = "^5.3.6"
 redis = "^5.0.1"
 watchdog = { extras = ["watchmedo"], version = "^3.0.0" }
 py-trans = "^0.6.1"
-aiofiles = "^23.2.1"
+aiofiles = "^23.2.1"                                      # needed for py-trans
 pykakasi = "^2.2.1"
 
 [tool.poetry.group.dev.dependencies]
