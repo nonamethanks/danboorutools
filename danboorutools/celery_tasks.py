@@ -53,18 +53,20 @@ class CustomCeleryTask(Task):  # pylint: disable=abstract-method
         # https://gist.github.com/darklow/c70a8d1147f05be877c3
         # https://stackoverflow.com/a/45333231/1092940
 
-        if DESTINATION_EMAIL:
-            now = datetime.datetime.now(datetime.UTC).astimezone()
-            pretty_name = self.name.replace("danboorutools.celery_tasks.", "")
-            subject = f"Failure on task {pretty_name} - {exc} - {einfo.exception}"
-            traceback: str = einfo.traceback
-            message = f"The task {pretty_name} failed at {now} with the following exception:\n\n{traceback}"
-            try:
-                send_email(send_to=DESTINATION_EMAIL, message=message, subject=subject)
-            except Exception:
-                message = f"The task {pretty_name} failed at {now} but an email couldn't be delivered."
-                logger.error(message)
-                send_email(send_to=DESTINATION_EMAIL, message=message, subject=subject)
+        if not DESTINATION_EMAIL:
+            return
+
+        now = datetime.datetime.now(datetime.UTC).astimezone()
+        pretty_name = self.name.replace("danboorutools.celery_tasks.", "")
+        subject = f"Failure on task {pretty_name} - {exc} - {einfo.exception}"
+        traceback: str = einfo.traceback
+        message = f"The task {pretty_name} failed at {now} with the following exception:\n\n{traceback}"
+        try:
+            send_email(send_to=DESTINATION_EMAIL, message=message, subject=subject)
+        except Exception:
+            message = f"The task {pretty_name} failed at {now} but an email couldn't be delivered."
+            logger.error(message)
+            send_email(send_to=DESTINATION_EMAIL, message=message, subject=subject)
 
     def __call__(self, *args, **kwargs):
 
