@@ -3,6 +3,7 @@ import os
 import random
 import sys
 
+import redis
 from billiard.einfo import ExceptionInfo
 from celery.app.base import Celery
 from celery.app.task import Task
@@ -34,15 +35,28 @@ class CeleryConfig:
 tasks.config_from_object(CeleryConfig)
 
 
-class CustomCeleryTask(Task):  # pylint: disable=abstract-method
-    # https://gist.github.com/darklow/c70a8d1147f05be877c3
-    # https://stackoverflow.com/a/45333231/1092940
+class CustomCeleryTask(Task):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.redis_conn = redis.Redis(
+            host="redis",
+            port=6379,
+            db=0,
+            decode_responses=True,
+            socket_connect_timeout=0.5,
+            socket_timeout=0.5,
+            socket_keepalive=False,
+            health_check_interval=5,
+        )
 
     def on_failure(self, exc: Exception, task_id: str, args: tuple, kwargs: dict, einfo: ExceptionInfo) -> None:  # noqa: PLR0913, ARG002
+        # https://gist.github.com/darklow/c70a8d1147f05be877c3
+        # https://stackoverflow.com/a/45333231/1092940
+
         if DESTINATION_EMAIL:
             now = datetime.datetime.now(datetime.UTC).astimezone()
             pretty_name = self.name.replace("danboorutools.celery_tasks.", "")
-            subject = f"Failure on task {pretty_name}"
+            subject = f"Failure on task {pretty_name} - {exc} - {einfo.exception}"
             traceback: str = einfo.traceback
             message = f"The task {pretty_name} failed at {now} with the following exception:\n\n{traceback}"
             try:
@@ -51,6 +65,19 @@ class CustomCeleryTask(Task):  # pylint: disable=abstract-method
                 message = f"The task {pretty_name} failed at {now} but an email couldn't be delivered."
                 logger.error(message)
                 send_email(send_to=DESTINATION_EMAIL, message=message, subject=subject)
+
+    def __call__(self, *args, **kwargs):
+
+        lock_key = f"__celery_tasks_{self.name}__"
+
+        if self.redis_conn.get(lock_key):
+            logger.error(f"Another instance of the task {self.name} is running, skipping.")
+            return None
+
+        self.redis_conn.set(lock_key, "1", 60)
+        result = super().__call__(*args, **kwargs)
+        self.redis_conn.delete(lock_key)
+        return result
 
 
 @task_prerun.connect
@@ -116,6 +143,7 @@ def monitor_sockpuppets() -> None:
 @tasks.task(base=CustomCeleryTask)
 def create_artist_tags() -> None:
     add_artists_to_posts(search=["pixiv:any"])
+    add_artists_to_posts(search=["(source:*weibo.com* or source:*weibo.cn*)", "-official_art"])
 
 
 @tasks.task(base=CustomCeleryTask)
