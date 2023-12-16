@@ -35,7 +35,7 @@ class CeleryConfig:
 tasks.config_from_object(CeleryConfig)
 
 
-class CustomCeleryTask(Task):
+class CustomCeleryTask(Task):  # pylint: disable=abstract-method
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.redis_conn = redis.Redis(
