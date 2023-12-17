@@ -13,23 +13,6 @@ class ArtStationOldPostUrl(RedirectUrl, ArtStationUrl):
     normalize_template = "https://www.artstation.com/artwork/{post_title}"
 
 
-class ArtStationPostUrl(PostUrl, ArtStationUrl):
-    post_id: str
-    username: str | None
-
-    @classmethod
-    def normalize(cls, **kwargs) -> str:
-        post_id = kwargs["post_id"]
-        if username := kwargs.get("username"):
-            return f"https://{username}.artstation.com/projects/{post_id}"
-        else:
-            return f"https://www.artstation.com/artwork/{post_id}"
-
-    def _extract_assets(self) -> list[str]:
-        post_data = self.session.post_data(self.post_id)
-        return [asset["image_url"] for asset in post_data.assets if asset["has_image"]]
-
-
 class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):
     username: str
 
@@ -50,6 +33,29 @@ class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):
     @property
     def related(self) -> list[Url]:
         return self.artist_data.related_urls
+
+
+class ArtStationPostUrl(PostUrl, ArtStationUrl):
+    post_id: str
+    username: str | None
+
+    @classmethod
+    def normalize(cls, **kwargs) -> str:
+        post_id = kwargs["post_id"]
+        if username := kwargs.get("username"):
+            return f"https://{username}.artstation.com/projects/{post_id}"
+        else:
+            return f"https://www.artstation.com/artwork/{post_id}"
+
+    def _extract_assets(self) -> list[str]:
+        post_data = self.session.post_data(self.post_id)
+        return [asset["image_url"] for asset in post_data.assets if asset["has_image"]]
+
+    @property
+    def gallery(self) -> ArtStationArtistUrl:
+        if not self.username:
+            raise NotImplementedError(self)
+        return ArtStationArtistUrl.build(username=self.username)
 
 
 class ArtStationImageUrl(PostAssetUrl, ArtStationUrl):
