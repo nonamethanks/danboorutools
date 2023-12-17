@@ -12,6 +12,7 @@ from danboorutools.logical.urls.dlsite import DlsiteUrl, DlsiteWorkUrl
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.fantia import FantiaFanclubUrl
 from danboorutools.logical.urls.fanza import FanzaUrl
+from danboorutools.logical.urls.lofter import LofterPostUrl
 from danboorutools.logical.urls.melonbooks import MelonbooksProductUrl
 from danboorutools.logical.urls.nicoseiga import NicoSeigaArtistUrl
 from danboorutools.logical.urls.nijie import NijieArtistUrl
@@ -177,6 +178,8 @@ class Ascii2dArtistResult:
 
         if "sakura.ne.jp" in (url_text := url_groups[0].text.strip()):
             self.__parse_sakura_result(url_groups[0], data)
+        elif ".lofter.com" in url_text:
+            self.__parse_lofter_result(url_groups[0], data)
         elif not (extracted_urls := extract_urls_from_string(url_text)):
             return
         else:
@@ -206,6 +209,13 @@ class Ascii2dArtistResult:
         assert isinstance(sakura_url, SakuraBlogUrl)
         data["primary_names"].append(name)
         data["found_urls"].append(sakura_url)
+
+    @staticmethod
+    def __parse_lofter_result(element: Tag, data: dict[str, list]) -> None:
+        lofter_url = Url.parse(element.text)
+        assert isinstance(lofter_url, LofterPostUrl)
+        data["posts"].append(lofter_url)
+        data["found_urls"].append(lofter_url.gallery)
 
 
 class Ascii2dSession(Session):
