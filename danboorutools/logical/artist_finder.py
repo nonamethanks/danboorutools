@@ -112,7 +112,8 @@ class ArtistFinder:
             except ReadTimeout:
                 continue
             except Exception as e:
-                raise NotImplementedError(url_with_names) from e
+                e.add_note(f"While extracting primary names from {url_with_names}...")
+                raise
             try:
                 url_secondary_names = url_with_names.secondary_names
             except ReadTimeout:

@@ -58,14 +58,15 @@ class CustomCeleryTask(Task):  # pylint: disable=abstract-method
 
         now = datetime.datetime.now(datetime.UTC).astimezone()
         pretty_name = self.name.replace("danboorutools.celery_tasks.", "")
-        subject = f"Failure on task {pretty_name} - {exc} - {einfo.exception}"
+        subject = f"Failure on task {pretty_name}"
         traceback: str = einfo.traceback
         message = f"The task {pretty_name} failed at {now} with the following exception:\n\n{traceback}"
         try:
             send_email(send_to=DESTINATION_EMAIL, message=message, subject=subject)
-        except Exception:
+        except Exception as e:
             message = f"The task {pretty_name} failed at {now} but an email couldn't be delivered."
             logger.error(message)
+            logger.exception(e)
             send_email(send_to=DESTINATION_EMAIL, message=message, subject=subject)
 
     def __call__(self, *args, **kwargs):
