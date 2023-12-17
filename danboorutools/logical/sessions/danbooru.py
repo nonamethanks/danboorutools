@@ -51,6 +51,7 @@ class DanbooruApi(Session):
         "comment_vote": "id,created_at,score,is_deleted,user,comment",
         "media_asset": "id,created_at,md5,file_ext,file_size,image_width,image_height,duration,pixel_hash,variants,post",
         "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
+        "post_replacement": "id,created_at,post",
         "post_vote": "id,created_at,score,is_deleted,user,post",
         "tag": "id,name,post_count,category,created_at,is_deprecated,wiki_page,artist",
         "user": "id,name,created_at,level,level_string,post_update_count,note_update_count,post_upload_count,is_banned,is_deleted,bans,last_ip_addr",  # noqa: E501
@@ -125,6 +126,9 @@ class DanbooruApi(Session):
 
     def artists(self, **kwargs) -> list[models.DanbooruArtist]:
         return self._generic_endpoint(models.DanbooruArtist, **kwargs)
+
+    def post_replacements(self, **kwargs) -> list[models.DanbooruReplacement]:
+        return self._generic_endpoint(models.DanbooruReplacement, **kwargs)
 
     def bans(self, **kwargs) -> list[models.DanbooruBan]:
         return self._generic_endpoint(models.DanbooruBan, **kwargs)

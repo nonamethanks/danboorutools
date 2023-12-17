@@ -305,5 +305,11 @@ class DanbooruFeedback(DanbooruModel):
     creator: DanbooruUser
 
 
+class DanbooruReplacement(DanbooruModel):
+    danbooru_model_name = "post_replacement"
+
+    post: DanbooruPost
+
+
 DanbooruArtist.model_rebuild(force=True)
 DanbooruUserEvent.model_rebuild(force=True)

@@ -67,6 +67,7 @@ ruff = "^0.0.291"
 types-beautifulsoup4 = "^4.12.0.7"
 types-pillow = "^10.1.0.2"
 celery-types = "^0.20.0"
+types-peewee = "^3.17.0.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.3"

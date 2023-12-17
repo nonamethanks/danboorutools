@@ -2740,6 +2740,17 @@ files = [
 ]
 
 [[package]]
+name = "types-peewee"
+version = "3.17.0.0"
+description = "Typing stubs for peewee"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "types-peewee-3.17.0.0.tar.gz", hash = "sha256:689e00884d90e24b108a6905d56ced070cbb758dc1ac5b2d40a6f5af464028df"},
+    {file = "types_peewee-3.17.0.0-py3-none-any.whl", hash = "sha256:fada1fcbda3498ff5030453f079a09c0bfe075e92f25a14f1e51036f0edb7772"},
+]
+
+[[package]]
 name = "types-pillow"
 version = "10.1.0.2"
 description = "Typing stubs for Pillow"
@@ -3154,4 +3165,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11,<3.12"
-content-hash = "e458a64759771cee1c0c1b9be36452dbe8f629d607569a8f789ebf105f260e99"
+content-hash = "619be9799c360a870a1d2a0aa3b6984add910567270c046729f65f70a337762e"
