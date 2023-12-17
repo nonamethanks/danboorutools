@@ -1,8 +1,8 @@
 import pytest
 
-from danboorutools.logical.urls.lofter import LofterArtistUrl, LofterImageUrl, LofterPostUrl
+from danboorutools.logical.urls.lofter import LofterArtistUrl, LofterImageUrl, LofterPostUrl, LofterRedirectArtistUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import _TestArtistUrl
+from tests.helpers.scraping import _TestArtistUrl, _TestRedirectUrl
 
 urls = {
     LofterArtistUrl: {
@@ -22,6 +22,9 @@ urls = {
 
         # http://gacha.nosdn.127.net/0a47df61008b46668a56d2f9e4b3c0b3.png?axis=0\u0026enlarge=1\u0026imageView\u0026quality=100\u0026type=png
     },
+    LofterRedirectArtistUrl: {
+        "https://www.lofter.com/mentionredirect.do?blogId=1890789": "https://www.lofter.com/mentionredirect.do?blogId=1890789",
+    }
 }
 
 
@@ -59,3 +62,10 @@ class TestLofterArtistUrl3(_TestArtistUrl):
     primary_names = ["老祖祖"]
     secondary_names = ["chaodazu"]
     related = []
+
+
+class TestLofterRedirectArtistUrl(_TestRedirectUrl):
+    url_string = "https://www.lofter.com/mentionredirect.do?blogId=1890789"
+    url_type = LofterRedirectArtistUrl
+    url_properties = dict(blog_id=1890789)
+    redirects_to = "https://sakuraihum.lofter.com/"

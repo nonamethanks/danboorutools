@@ -1,4 +1,4 @@
-from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
+from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.misc import extract_urls_from_string
 
 
@@ -49,3 +49,8 @@ class LofterImageUrl(PostAssetUrl, LofterUrl):
     @property
     def full_size(self) -> str:
         return self.parsed_url.url_without_query
+
+
+class LofterRedirectArtistUrl(RedirectUrl, LofterUrl):
+    blog_id: int
+    normalize_template = "https://www.lofter.com/mentionredirect.do?blogId={blog_id}"

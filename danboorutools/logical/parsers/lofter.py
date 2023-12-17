@@ -1,6 +1,6 @@
 from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
-from danboorutools.logical.urls.lofter import LofterArtistUrl, LofterImageUrl, LofterPostUrl, LofterUrl
+from danboorutools.logical.urls.lofter import LofterArtistUrl, LofterImageUrl, LofterPostUrl, LofterRedirectArtistUrl, LofterUrl
 
 
 class LofterComParser(UrlParser):
@@ -19,6 +19,10 @@ class LofterComParser(UrlParser):
                 case "front", "blog", "home-page", username:
                     return LofterArtistUrl(parsed_url=parsable_url,
                                            username=username)
+
+                case "mentionredirect.do", :
+                    return LofterRedirectArtistUrl(parsed_url=parsable_url,
+                                                   blog_id=int(parsable_url.query["blogId"]))
 
                 case _:
                     return None
