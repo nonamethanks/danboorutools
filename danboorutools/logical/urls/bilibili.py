@@ -40,7 +40,11 @@ class BilibiliArtistUrl(ArtistUrl, BilibiliUrl):
 
     @property
     def artist_data(self) -> BilibiliUserData:
-        return self.session.user_data(user_id=self.user_id)
+        try:
+            return self.session.user_data(user_id=self.user_id)
+        except NotImplementedError as e:
+            e.add_note(f"On {self}")
+            raise
 
     @property
     def primary_names(self) -> list[str]:
