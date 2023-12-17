@@ -87,7 +87,11 @@ class Ascii2dArtistResult:
 
             site_el = link_object.select_one("small")
             if not site_el:
+                if link_object.text.strip() == "麻生 FANBOX":
+                    continue
+
                 raise ValueError(link_object)
+
             site = site_el.text.strip()
             if site in ["dlsite", "dmm", "amazon"]:
                 for sublink in link_object.select("a"):
@@ -126,7 +130,7 @@ class Ascii2dArtistResult:
             if site in ["pixiv", "fanbox", "ニジエ", "tinami", "ニコニコ静画", "fantia"]:
                 assert isinstance(
                     second_url,
-                    (PixivArtistUrl, FanboxArtistUrl, NijieArtistUrl, TinamiArtistUrl, NicoSeigaArtistUrl, FantiaFanclubUrl),
+                    PixivArtistUrl | FanboxArtistUrl | NijieArtistUrl | TinamiArtistUrl | NicoSeigaArtistUrl | FantiaFanclubUrl,
                 )
                 data["primary_names"].append(artist_name)
             elif site == "twitter":
