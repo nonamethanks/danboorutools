@@ -13,6 +13,8 @@ class LofterArtistUrl(ArtistUrl, LofterUrl):
 
     @property
     def primary_names(self) -> list[str]:
+        if self.is_deleted:
+            return []
         assert (artist_name := self.html.select_one("title"))
         return [artist_name.text]
 
@@ -22,6 +24,8 @@ class LofterArtistUrl(ArtistUrl, LofterUrl):
 
     @property
     def related(self) -> list[Url]:
+        if self.is_deleted:
+            return []
         assert (commentary_el := self.html.select_one("meta[name='Description']"))
         return [Url.parse(u) for u in extract_urls_from_string(commentary_el["content"])]
 
