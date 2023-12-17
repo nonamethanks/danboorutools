@@ -77,7 +77,7 @@ class _SaucenaoPixivData(_SaucenaoBaseDataResponse):
 class _SaucenaoDanbooruData(_SaucenaoBaseDataResponse):
     # index 9 - danbooru
     danbooru_id: int
-    gelbooru_id: int
+    gelbooru_id: int | None = None
     sankaku_id: int | None = None
 
     creator: str
