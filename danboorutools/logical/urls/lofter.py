@@ -6,13 +6,6 @@ class LofterUrl(Url):
     pass
 
 
-class LofterPostUrl(PostUrl, LofterUrl):
-    username: str
-    post_id: str
-
-    normalize_template = "https://{username}.lofter.com/post/{post_id}"
-
-
 class LofterArtistUrl(ArtistUrl, LofterUrl):
     username: str
 
@@ -43,6 +36,17 @@ class LofterArtistUrl(ArtistUrl, LofterUrl):
         if not commentary or not commentary.text:
             raise NotImplementedError(self)
         return [Url.parse(u) for u in extract_urls_from_string(commentary.text)]
+
+
+class LofterPostUrl(PostUrl, LofterUrl):
+    username: str
+    post_id: str
+
+    normalize_template = "https://{username}.lofter.com/post/{post_id}"
+
+    @property
+    def gallery(self) -> LofterArtistUrl:
+        return LofterArtistUrl.build(username=self.username)
 
 
 class LofterImageUrl(PostAssetUrl, LofterUrl):
