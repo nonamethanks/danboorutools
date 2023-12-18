@@ -41,12 +41,13 @@ class _SaucenaoBaseDataResponse(BaseModel):
 
     ext_urls: list[str] | None = None
 
+    @property
+    def artist_result(self) -> SaucenaoArtistResult:
+        raise NotImplementedError(self)
+
 
 class _NotImplementedDataResponse(_SaucenaoBaseDataResponse):
     model_config = ConfigDict(extra="allow")
-
-    def artist_result(self) -> SaucenaoArtistResult:
-        raise NotImplementedError(self)
 
 
 class _SaucenaoPixivData(_SaucenaoBaseDataResponse):
@@ -123,9 +124,26 @@ class _SaucenaoDanbooruData(_SaucenaoBaseDataResponse):
         return result
 
 
+class _SaucenaoArtstationData(_SaucenaoBaseDataResponse):
+    # index 39 - artstation
+
+    title: str
+    as_project: str
+    author_name: str
+    author_url: str
+
+    @property
+    def artist_result(self) -> SaucenaoArtistResult:
+        return SaucenaoArtistResult(
+            primary_names=[self.author_name.strip()],
+            secondary_names=[],
+            found_urls=[Url.parse(self.author_url)],
+        )
+
+
 class _SaucenaoApiResult(BaseModel):
     header: _SaucenaoHeaderResponse
-    data: _SaucenaoPixivData | _SaucenaoDanbooruData | _NotImplementedDataResponse
+    data: _SaucenaoBaseDataResponse
 
     @validator("data", pre=True)
     @classmethod
@@ -134,6 +152,8 @@ class _SaucenaoApiResult(BaseModel):
             return _SaucenaoPixivData(**value)
         elif values["header"].index_id == 9:
             return _SaucenaoDanbooruData(**value)
+        elif values["header"].index_id == 39:
+            return _SaucenaoArtstationData(**value)
         else:
             return _NotImplementedDataResponse(**value)
 
