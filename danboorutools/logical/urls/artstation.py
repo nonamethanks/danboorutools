@@ -32,7 +32,7 @@ class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):
 
     @property
     def related(self) -> list[Url]:
-        return self.artist_data.related_urls
+        return [u for u in self.artist_data.related_urls if u != self]
 
 
 class ArtStationPostUrl(PostUrl, ArtStationUrl):
