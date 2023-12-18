@@ -8,8 +8,6 @@ from billiard.einfo import ExceptionInfo
 from celery.app.base import Celery
 from celery.app.task import Task
 from celery.schedules import crontab
-from celery.signals import task_prerun
-from celery.utils.dispatch import Signal
 
 from danboorutools import logger, settings
 from danboorutools.logical.sessions.danbooru import danbooru_api
@@ -22,7 +20,7 @@ from danboorutools.util.mail import send_email
 tasks = Celery("tasks", broker="redis://redis:6379/1", backend="redis://redis:6379/1")
 DESTINATION_EMAIL = os.environ.get("EMAIL", None)
 if DESTINATION_EMAIL:
-    logger.info(f"Destination email set to {DESTINATION_EMAIL} for automatic errors.")
+    logger.info(f"Destination email sfor automatic errors: {DESTINATION_EMAIL} ")
 else:
     logger.warning("No destination email set for automatic errors.")
 
@@ -70,6 +68,7 @@ class CustomCeleryTask(Task):  # pylint: disable=abstract-method
             send_email(send_to=DESTINATION_EMAIL, message=message, subject=subject)
 
     def __call__(self, *args, **kwargs):
+        self.setup_logger()
 
         lock_key = f"__celery_tasks_{self.name}__"
 
@@ -82,35 +81,33 @@ class CustomCeleryTask(Task):  # pylint: disable=abstract-method
         self.redis_conn.delete(lock_key)
         return result
 
+    def setup_logger(self) -> None:
+        loguru_colors = ["e", "c", "g", "m", "r"]
+        loguru_colors += [f"l{c}" for c in loguru_colors]
+        color = random.choice(loguru_colors)
+        logger.remove()
+        pretty_name = self.name.replace("danboorutools.celery_tasks.", "")
 
-@task_prerun.connect
-def setup_logger(signal: Signal, sender: Task, task_id: str, *args, **kwargs) -> None:  # noqa: ARG001 # pylint: disable=unused-argument
-    loguru_colors = ["e", "c", "g", "m", "r"]
-    loguru_colors += [f"l{c}" for c in loguru_colors]
-    color = random.choice(loguru_colors)
-    logger.remove()
-    pretty_name = sender.name.replace("danboorutools.celery_tasks.", "")
-
-    logger_format = f"[<{color}>{pretty_name}</{color}>] " + "[{level}] {message}"
-    loggers = {
-        "handlers": [
-            {
-                "level": os.environ.get("LOGGER_LEVEL", "INFO"),
-                "sink": sys.stderr,
-                "format": logger_format,
-                "colorize": True,
-                "backtrace": True,
-                "diagnose": True,
-            },
-        ],
-    }
-    logger.configure(**loggers)
-    logger.log_to_file(
-        filename=pretty_name,
-        folder=settings.BASE_FOLDER / "logs" / "celery" / pretty_name,
-        format="[{time:YYYY-MM-DD HH:mm:ss,SSS}] [{level}] <level>{message}</level>",
-        level="TRACE",
-    )
+        logger_format = f"[<{color}>{pretty_name}</{color}>] " + "[{level}] {message}"
+        loggers = {
+            "handlers": [
+                {
+                    "level": os.environ.get("LOGGER_LEVEL", "INFO"),
+                    "sink": sys.stderr,
+                    "format": logger_format,
+                    "colorize": True,
+                    "backtrace": True,
+                    "diagnose": True,
+                },
+            ],
+        }
+        logger.configure(**loggers)
+        logger.log_to_file(
+            filename=pretty_name,
+            folder=settings.BASE_FOLDER / "logs" / "celery" / pretty_name,
+            format="[{time:YYYY-MM-DD HH:mm:ss,SSS}] [{level}] <level>{message}</level>",
+            level="TRACE",
+        )
 
 
 @tasks.on_after_configure.connect
