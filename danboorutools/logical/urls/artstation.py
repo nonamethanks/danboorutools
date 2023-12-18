@@ -1,4 +1,4 @@
-from danboorutools.logical.sessions.artstation import ArtstationArtistData, ArtstationSession
+from danboorutools.logical.sessions.artstation import ArtstationArtistData, ArtstationPostData, ArtstationSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
@@ -47,15 +47,17 @@ class ArtStationPostUrl(PostUrl, ArtStationUrl):
         else:
             return f"https://www.artstation.com/artwork/{post_id}"
 
+    @property
+    def post_data(self) -> ArtstationPostData:
+        return self.session.post_data(self.post_id)
+
     def _extract_assets(self) -> list[str]:
-        post_data = self.session.post_data(self.post_id)
-        return [asset["image_url"] for asset in post_data.assets if asset["has_image"]]
+        return [asset["image_url"] for asset in self.post_data.assets if asset["has_image"]]
 
     @property
     def gallery(self) -> ArtStationArtistUrl:
-        if not self.username:
-            raise NotImplementedError(self)
-        return ArtStationArtistUrl.build(username=self.username)
+        username = self.username or self.post_data.user["username"]
+        return ArtStationArtistUrl.build(username=username)
 
 
 class ArtStationImageUrl(PostAssetUrl, ArtStationUrl):

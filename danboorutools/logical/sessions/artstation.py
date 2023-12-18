@@ -3,12 +3,24 @@ from __future__ import annotations
 import os
 from datetime import datetime
 
+# from requests import Response
+# from requests.adapters import HTTPAdapter
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
 
 
 class ArtstationSession(Session):
+    # def __init__(self, *args, **kwargs) -> None:
+    #     super().__init__(*args, **kwargs)
+    #     self.mount("https://", HTTPAdapter(pool_connections=1))
+    #     self.verify = False
+    #     self.cert = None
+    #     self.trust_env = False
+    #
+    # def request(self, *args, verify: bool = False, **kwargs) -> Response:
+    #     return super().request(*args, verify=verify, **kwargs)
+
     def artist_data(self, username: str) -> ArtstationArtistData:
         response = self.get_json(f"https://www.artstation.com/users/{username}.json")
         return ArtstationArtistData(**response)
@@ -61,12 +73,10 @@ class ArtstationArtistData(BaseModel):
 
 class ArtstationPostData(BaseModel):
     assets: list
-    asset_count: int
 
     permalink: str
 
     created_at: datetime
     likes_count: int
 
-    icons: dict
-    cover: dict[str, str]
+    user: dict
