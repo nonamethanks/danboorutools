@@ -2,27 +2,34 @@ from __future__ import annotations
 
 import copy
 import os
+import warnings
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+from requests.adapters import HTTPAdapter
+from urllib3.exceptions import InsecureRequestWarning
 
 from danboorutools.exceptions import NotAnUrlError
-
-# from requests import Response
-# from requests.adapters import HTTPAdapter
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
+if TYPE_CHECKING:
+    from requests import Response
+
 
 class ArtstationSession(Session):
-    # def __init__(self, *args, **kwargs) -> None:
-    #     super().__init__(*args, **kwargs)
-    #     self.mount("https://", HTTPAdapter(pool_connections=1))
-    #     self.verify = False
-    #     self.cert = None
-    #     self.trust_env = False
-    #
-    # def request(self, *args, verify: bool = False, **kwargs) -> Response:
-    #     return super().request(*args, verify=verify, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.mount("https://", HTTPAdapter(pool_connections=1))
+        self.verify = False
+        self.cert = None
+        self.trust_env = False
+
+    def request(self, *args, verify: bool = False, **kwargs) -> Response:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", InsecureRequestWarning)
+            return super().request(*args, verify=verify, **kwargs)
 
     def artist_data(self, username: str) -> ArtstationArtistData:
         response = self.get_json(f"https://www.artstation.com/users/{username}.json")
