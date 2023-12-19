@@ -81,12 +81,20 @@ class TestWeiboArtistUrl5(_TestArtistUrl):
     is_deleted = True
 
 
-class TestWeiboPostUrl(_TestPostUrl):
+class TestWeiboPostUrl1(_TestPostUrl):
     url_string = "https://m.weibo.cn/status/NvMjgDF9z"
     url_type = WeiboPostUrl
     url_properties = dict(illust_base62_id="NvMjgDF9z")
     created_at = "Wed Dec 06 00:00:25 +0800 2023"
     gallery = "https://m.weibo.cn/profile/6775494073"
+
+
+class TestWeiboPostUrl2(_TestPostUrl):
+    url_string = "https://weibo.com/detail/4979676376208302"
+    url_type = WeiboPostUrl
+    url_properties = dict(illust_long_id=4979676376208302)
+    created_at = "2023-12-16 12:47:9"
+    gallery = "https://www.weibo.com/u/6938478408"
 
 
 class TestWeiboLegacyArtistUrl1(_TestRedirectUrl):

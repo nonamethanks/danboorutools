@@ -89,8 +89,10 @@ class WeiboPostUrl(PostUrl, WeiboUrl):
     def post_data(self) -> WeiboPostData:
         if self.illust_base62_id:
             return self.session.post_data(base_62_id=self.illust_base62_id)
+        elif self.illust_long_id:
+            return self.session.post_data(long_id=self.illust_long_id)
         else:
-            raise NotImplementedError(self)
+            raise ValueError
 
     @property
     def gallery(self) -> WeiboArtistUrl:

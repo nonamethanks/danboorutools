@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TypeVar
 
 import pytest
@@ -115,8 +115,8 @@ class _TestPostUrl(_TestUrl):
 
     @pytest.mark.scraping
     def test_created_at(self, parsed_url: PostUrl) -> None:
-        expected_created_at = datetime_from_string(self.created_at)
-        actual_created_at = parsed_url.created_at
+        expected_created_at = datetime_from_string(self.created_at).astimezone(UTC)
+        actual_created_at = parsed_url.created_at.astimezone(UTC)
         assert actual_created_at == expected_created_at
 
     @pytest.mark.scraping

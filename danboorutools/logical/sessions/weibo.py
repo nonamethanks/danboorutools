@@ -28,8 +28,14 @@ class WeiboSession(Session):
 
         return WeiboUserData(**data["data"]["userInfo"])
 
-    def post_data(self, base_62_id: str) -> WeiboPostData:
-        url = f"https://m.weibo.cn/status/{base_62_id}"
+    def post_data(self, base_62_id: str | None = None, long_id: int | None = None) -> WeiboPostData:
+        if base_62_id:
+            url = f"https://m.weibo.cn/status/{base_62_id}"
+        elif long_id:
+            url = f"https://m.weibo.cn/detail/{long_id}"
+        else:
+            raise ValueError("Either base_62_id or long_id must be provided.")
+
         try:
             post_json = self.extract_json_from_html(url, pattern=r"\$render_data = \[([\s\S]+)\]\[0\]")
         except ValueError as e:
