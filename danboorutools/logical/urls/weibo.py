@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.weibo import WeiboPostData, WeiboSession, WeiboUserData
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
@@ -103,6 +104,15 @@ class WeiboPostUrl(PostUrl, WeiboUrl):
     @property
     def created_at(self) -> datetime:
         return self.post_data.created_at
+
+    @property
+    def is_deleted(self) -> bool:
+        try:
+            _ = self.post_data
+        except DeadUrlError:
+            return True
+        else:
+            return False
 
 
 class WeiboImageUrl(PostAssetUrl, WeiboUrl):

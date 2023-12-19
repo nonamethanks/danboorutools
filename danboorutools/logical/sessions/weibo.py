@@ -39,7 +39,8 @@ class WeiboSession(Session):
         try:
             post_json = self.extract_json_from_html(url, pattern=r"\$render_data = \[([\s\S]+)\]\[0\]")
         except ValueError as e:
-            if "微博不存在或暂无查看权限!" in self.get_html(url).body.text:
+            body = self.get_html(url).body.text
+            if "微博不存在或暂无查看权限!" in body or "由于博主设置，目前内容暂不可见。" in body:
                 raise DeadUrlError(original_url=url, status_code=404) from e
             else:
                 raise
