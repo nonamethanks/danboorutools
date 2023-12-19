@@ -22,6 +22,7 @@ UNSUPPORTED_DOMAINS = (
     "kakao.com",  # korean chat app?
     "interq.or.jp",  # shitty old japanese site
     "itch.io",  # indie vidya store
+    "linkedin.com",  # i ain't gonna add fucking linkedin links lmao
     "mbsp.jp",
     "nobody.jp",
     "pixnet.net",
