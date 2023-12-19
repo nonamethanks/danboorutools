@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import copy
 import os
 from datetime import datetime
+
+from danboorutools.exceptions import NotAnUrlError
 
 # from requests import Response
 # from requests.adapters import HTTPAdapter
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
-from danboorutools.util.misc import BaseModel
+from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 
 class ArtstationSession(Session):
@@ -57,18 +60,25 @@ class ArtstationArtistData(BaseModel):
 
     @property
     def related_urls(self) -> list[Url]:
-        urls = [
-            Url.parse(u["url"])
-            for u in self.social_profiles
-            if u["social_network"] != "public_email"
-        ]
+        parsed_urls: list[Url] = []
+        for profile_data in self.social_profiles:
+            if profile_data["social_network"] == "public_email":
+                continue
+            try:
+                parsed_urls.append(Url.parse(profile_data["url"]))
+            except NotAnUrlError:
+                pass
 
-        internal_urls = ["profile_artstation_website_url", "artstation_url",
-                         "large_avatar_url", "medium_avatar_url", "default_cover_url", "software_items"]
-        for url_value in {v for k, v in self._raw_data.items() if k.endswith("_url") and v and k not in internal_urls}:
-            urls += [Url.parse(url_value)]
+        data = copy.deepcopy(self._raw_data)
 
-        return list(dict.fromkeys(urls))
+        for value in ["profile_artstation_website_url", "artstation_url",
+                      "large_avatar_url", "medium_avatar_url", "default_cover_url", "software_items",
+                      "social_profiles"]:
+            data.pop(value)
+
+        parsed_urls += list(map(Url.parse, extract_urls_from_string(str(data))))
+
+        return list(set(parsed_urls))
 
 
 class ArtstationPostData(BaseModel):

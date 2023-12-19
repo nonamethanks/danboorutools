@@ -67,3 +67,13 @@ class TestArtStationArtistUrl(_TestArtistUrl):
     primary_names = ["Hime tyan art"]
     secondary_names = ["himetyan"]
     related = ["https://www.instagram.com/hime_tyan_art"]
+
+
+class TestArtStationArtistUrl2(_TestArtistUrl):
+    url_string = "https://www.artstation.com/eronkim"
+    url_type = ArtStationArtistUrl
+    url_properties = dict(username="eronkim")
+    primary_names = ["Eron Kim"]
+    secondary_names = ["eronkim"]
+    related = ["https://www.instagram.com/eron_kim",
+               "https://blog.naver.com/eronkim"]
