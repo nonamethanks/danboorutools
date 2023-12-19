@@ -4,6 +4,7 @@ import re
 from pydantic import ConfigDict, validator
 
 from danboorutools import logger
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.pixiv import PixivArtistUrl, PixivStaccUrl, PixivUrl
 from danboorutools.models.danbooru import DanbooruPost
@@ -93,7 +94,9 @@ class _SaucenaoDanbooruData(_SaucenaoBaseDataResponse):
 
     @property
     def artist_result(self) -> SaucenaoArtistResult:
-        if (_source := self.source.removesuffix(" (deleted)")).startswith("file://"):  # bruh
+        if not (_source := self.source.removesuffix(" (deleted)")):
+            return None
+        if _source.startswith("file://"):  # bruh
             return None
         source_from_saucenao = Url.parse(_source)
 
@@ -102,7 +105,12 @@ class _SaucenaoDanbooruData(_SaucenaoBaseDataResponse):
         elif not isinstance(source_from_saucenao, PostUrl):
             raise NotImplementedError(self, source_from_saucenao)
 
-        result = SaucenaoArtistResult(found_urls=[source_from_saucenao.artist], primary_names=[], secondary_names=[])
+        try:
+            artist = source_from_saucenao.artist
+        except DeadUrlError:
+            result = SaucenaoArtistResult(found_urls=[], primary_names=[], secondary_names=[])
+        else:
+            result = SaucenaoArtistResult(found_urls=[artist], primary_names=[], secondary_names=[])
 
         if not self.creator:
             return result  # Saucenao doesn't have it

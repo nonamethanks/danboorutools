@@ -239,7 +239,7 @@ class Ascii2dSession(Session):
                 logger.error("ASCII2D is having issues. Skipping check.")
                 return []
             else:
-                raise NotImplementedError(f"Page layout might have changed: {ascii2d_url}")
+                raise NotImplementedError(f"Page layout might have changed: {ascii2d_url} - {response}")
 
         results: list[Ascii2dArtistResult] = []
         for result_html in html_results:
