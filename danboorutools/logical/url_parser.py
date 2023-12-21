@@ -25,6 +25,7 @@ UNSUPPORTED_DOMAINS = (
     "linkedin.com",  # i ain't gonna add fucking linkedin links lmao
     "mbsp.jp",
     "nobody.jp",
+    "pinterest.com",  # too high chance of third-party
     "pixnet.net",
     "ribbon.to",
     "starfree.jp",
