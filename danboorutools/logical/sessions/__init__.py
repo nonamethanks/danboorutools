@@ -21,6 +21,7 @@ from fake_useragent import UserAgent
 from pyrate_limiter.limiter import Limiter
 from pyrate_limiter.request_rate import RequestRate
 from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
 from danboorutools.exceptions import CloudFrontError, DeadUrlError, DownloadError, HTTPError, JsonNotFoundError, RateLimitError
@@ -89,6 +90,7 @@ class Session(_CloudScraper):
 
     @ring.lru()
     @on_exception(constant, RateLimitError, max_tries=2, interval=30, jitter=None)
+    @on_exception(constant, ReadTimeout, max_tries=3, interval=5, jitter=None)
     @on_exception(constant, RequestsConnectionError, max_tries=3, interval=5, jitter=None)
     def _cached_request(self, http_method: str, url: str | Url, *args, **kwargs) -> Response:
         if not isinstance(url, str):
