@@ -24,6 +24,8 @@ class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):
 
     @property
     def primary_names(self) -> list[str]:
+        if self.is_deleted:
+            return []
         return [self.artist_data.full_name]
 
     @property
@@ -32,6 +34,8 @@ class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):
 
     @property
     def related(self) -> list[Url]:
+        if self.is_deleted:
+            return []
         return [u for u in self.artist_data.related_urls if u != self]
 
 
@@ -64,6 +68,9 @@ class ArtStationImageUrl(PostAssetUrl, ArtStationUrl):
     filename: str
     asset_type: str
     asset_subdirs: str
+
+    post = None
+    gallery = None
 
     @property
     def full_size(self) -> str:

@@ -73,7 +73,11 @@ class ArtistFinder:
             result_from_archives = None
             if artist_url.is_deleted:
                 # still check saucenao/ascii2d for more data
-                result_from_archives = self.search_for_artist_in_archives(post)
+                try:
+                    result_from_archives = self.search_for_artist_in_archives(post)
+                except Exception as e:
+                    e.add_note(f"On post: {post}, artist: {artist_url}")
+                    raise
 
         try:
             artist_tag = self._find_or_create_artist_tag(artist_url, result_from_archives)

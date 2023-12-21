@@ -102,6 +102,8 @@ class _SaucenaoDanbooruData(_SaucenaoBaseDataResponse):
 
         if isinstance(source_from_saucenao, PostAssetUrl):
             source_from_saucenao = source_from_saucenao.post
+            if not source_from_saucenao:  # can't extract post from asset
+                return None
         elif not isinstance(source_from_saucenao, PostUrl):
             raise NotImplementedError(self, source_from_saucenao)
 

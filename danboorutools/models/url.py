@@ -136,6 +136,7 @@ class Url(metaclass=PseudoDataclass):
         if isinstance(self, ArtistUrl):
             return self
         elif isinstance(self, PostUrl | ArtistAlbumUrl | GalleryAssetUrl):
+            assert self.gallery
             return self.gallery.artist
         elif isinstance(self, PostAssetUrl):
             if hasattr(self, "gallery") and self.gallery:  # old pixiv urls have artist stacc data in them
@@ -230,7 +231,7 @@ class ArtistAlbumUrl(GalleryUrl, Url):
     """An artist album is an album belonging to an artist url that contains other posts."""
 
     @cached_property
-    def gallery(self) -> GalleryUrl:
+    def gallery(self) -> GalleryUrl | None:
         raise NotImplementedError(self, "hasn't implemented gallery extraction.")
 
 
@@ -270,7 +271,7 @@ class PostUrl(Url):
         raise NotImplementedError(self, "hasn't implemented asset extraction.")
 
     @cached_property
-    def gallery(self) -> GalleryUrl:
+    def gallery(self) -> GalleryUrl | None:
         raise NotImplementedError(self, "hasn't implemented gallery extraction.")
 
     @cached_property
@@ -328,7 +329,7 @@ class _AssetUrl(Url):
 
 class PostAssetUrl(_AssetUrl, Url):
     @cached_property
-    def post(self) -> PostUrl:
+    def post(self) -> PostUrl | None:
         raise NotImplementedError(self, "hasn't implemented post extraction.")
 
 
@@ -336,7 +337,7 @@ class PostAssetUrl(_AssetUrl, Url):
 class GalleryAssetUrl(_AssetUrl, Url):
     """An asset belonging to a gallery instead of a post (such as a background image)."""
     @cached_property
-    def gallery(self) -> PostUrl:
+    def gallery(self) -> PostUrl | None:
         raise NotImplementedError(self, "hasn't implemented gallery extraction.")
 
 

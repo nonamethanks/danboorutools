@@ -6,10 +6,11 @@ import warnings
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from pykakasi import UnknownCharacterException
 from requests.adapters import HTTPAdapter
 from urllib3.exceptions import InsecureRequestWarning
 
-from danboorutools.exceptions import NotAnUrlError
+from danboorutools.exceptions import NotAnUrlError, UnknownUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
@@ -71,6 +72,8 @@ class ArtstationArtistData(BaseModel):
         for profile_data in self.social_profiles:
             if profile_data["social_network"] == "public_email":
                 continue
+            if profile_data["url"] == "http://":  # why...
+                continue
             try:
                 parsed_urls.append(Url.parse(profile_data["url"]))
             except NotAnUrlError:
@@ -80,10 +83,14 @@ class ArtstationArtistData(BaseModel):
 
         for value in ["profile_artstation_website_url", "artstation_url",
                       "large_avatar_url", "medium_avatar_url", "default_cover_url", "software_items",
-                      "social_profiles"]:
+                      "social_profiles", "badges"]:
             data.pop(value)
 
-        parsed_urls += list(map(Url.parse, extract_urls_from_string(str(data))))
+        try:
+            parsed_urls += list(map(Url.parse, extract_urls_from_string(str(data))))
+        except UnknownUrlError as e:
+            e.add_note(f"Data: {data}")
+            raise
 
         return list(set(parsed_urls))
 
