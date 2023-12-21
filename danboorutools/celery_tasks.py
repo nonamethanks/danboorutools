@@ -142,9 +142,19 @@ def monitor_sockpuppets() -> None:
 
 @tasks.task(base=CustomCeleryTask)
 def create_artist_tags() -> None:
-    add_artists_to_posts(search=["pixiv:any"])
-    add_artists_to_posts(search=["(source:*weibo.com/* or source:*weibo.cn/*)", "-official_art"])
-    add_artists_to_posts(search=["source:*lofter.com/*"])
+    exceptions = []
+    for search in [
+        ["pixiv:any"],
+        ["(source:*weibo.com/* or source:*weibo.cn/*)", "-official_art"],
+        ["source:*lofter.com/*"],
+    ]:
+        try:
+            add_artists_to_posts(search=search)
+        except Exception as e:
+            e.add_note(f"On search: {search}")
+            exceptions.append(e)
+    if exceptions:
+        raise exceptions[0]
 
 
 @tasks.task(base=CustomCeleryTask)
