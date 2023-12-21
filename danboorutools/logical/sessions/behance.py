@@ -20,7 +20,7 @@ class BehanceUserData(BaseModel):
 
     links: list
 
-    social_links: list[dict[str, str]]
+    social_links: list[dict]
 
     @property
     def related_urls(self) -> list[Url]:

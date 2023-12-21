@@ -86,6 +86,11 @@ class ArtstationArtistData(BaseModel):
                       "social_profiles", "badges"]:
             data.pop(value)
 
+        portfolio = data.pop("portfolio")
+        parsed_urls += list(map(Url.parse, extract_urls_from_string(portfolio["summary"])))
+        if portfolio["resume_url"]:
+            parsed_urls += [Url.parse(portfolio["resume_url"])]
+
         try:
             parsed_urls += list(map(Url.parse, extract_urls_from_string(str(data))))
         except UnknownUrlError as e:
