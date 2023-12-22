@@ -31,7 +31,8 @@ UNSUPPORTED_DOMAINS = (
     "starfree.jp",
     "webclap.com",
     "webnode.jp",
-    "wixsite.com",
+    "wix.com", # blogging platform, too messy
+    "wixsite.com", # as above
     "whitesnow.jp",
     "wordpress.com",  # too many possibilities
 )
