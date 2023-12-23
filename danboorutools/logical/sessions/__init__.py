@@ -21,7 +21,7 @@ from fake_useragent import UserAgent
 from pyrate_limiter.limiter import Limiter
 from pyrate_limiter.request_rate import RequestRate
 from requests.exceptions import ConnectionError as RequestsConnectionError
-from requests.exceptions import ReadTimeout
+from requests.exceptions import ConnectTimeout, ReadTimeout
 
 from danboorutools import logger
 from danboorutools.exceptions import CloudFrontError, DeadUrlError, DownloadError, HTTPError, JsonNotFoundError, RateLimitError
@@ -109,10 +109,12 @@ class Session(_CloudScraper):
 
         try:
             with self.limiter.ratelimit(url_domain, delay=True):
-                response = super().request(http_method, url, *args, **kwargs)
+                response: Response = super().request(http_method, url, *args, **kwargs)
         except ConnectionError as e:
             e.add_note(f"Method: {http_method}; url: {url}")
             raise
+        except ConnectTimeout as e:
+            raise DeadUrlError(original_url=url, status_code=0) from e
         except RequestsConnectionError as e:
             if "Caused by NameResolutionError" in str(e):
                 raise DeadUrlError(original_url=url, status_code=0) from e
