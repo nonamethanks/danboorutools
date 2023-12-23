@@ -89,6 +89,7 @@ class TestTwitterArtistUrl2(_TestArtistUrl):
     related = [
         "https://skeb.jp/@soyso_su40",
         "https://twitter.com/intent/user?user_id=2945315071",
+        "https://bsky.app/profile/soysosu40.bsky.social",
     ]
 
 

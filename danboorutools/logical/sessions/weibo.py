@@ -22,9 +22,10 @@ class WeiboSession(Session):
     def user_data(self, artist_id: int) -> WeiboUserData:
         data_url = f"https://m.weibo.cn/api/container/getIndex?jumpfrom=weibocom&type=uid&value={artist_id}"
 
-        data = self.get_json(data_url)
+        response = self.get(data_url)
+        data = self._try_json_response(response)
         if data.get("msg") == "这里还没有内容":  # user does not exist
-            raise DeadUrlError(original_url=data_url, status_code=404)
+            raise DeadUrlError(response=response)
 
         return WeiboUserData(**data["data"]["userInfo"])
 

@@ -67,7 +67,7 @@ class TestWeiboArtistUrl1(_TestArtistUrl):
     url_type = WeiboArtistUrl
     url_properties = dict(artist_id=5501756072)
     primary_names = ["阿尔托莉雅厨"]
-    secondary_names = []
+    secondary_names = ["weibo 5501756072"]
     related = []
 
 
@@ -76,7 +76,7 @@ class TestWeiboArtistUrl5(_TestArtistUrl):
     url_type = WeiboArtistUrl
     url_properties = dict(artist_id=271222260)
     primary_names = []
-    secondary_names = []
+    secondary_names = ["weibo 271222260"]
     related = []
     is_deleted = True
 

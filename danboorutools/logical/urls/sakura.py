@@ -37,7 +37,6 @@ class SakuraBlogUrl(ArtistUrl, SakuraUrl):
             if e.status_code == 403:
                 return True
             else:
-                assert e.response
                 return "このサーバーは、さくらのレンタルサーバで提供されています。" in e.response.text
         except ConnectionError as e:
             if "Name or service not known" in str(e):

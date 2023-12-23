@@ -62,18 +62,19 @@ class TwitterSession(Session):
 
         graphql_url = f"https://twitter.com/i/api/graphql/{endpoint}"
 
-        data = self.get_json(
+        response = self.get(
             graphql_url,
             params=params,
             headers=headers,
-        )["data"]
+        )
+        data = self._try_json_response(response)["data"]
 
         if not data:
-            raise DeadUrlError(original_url=graphql_url, status_code=200)
+            raise DeadUrlError(response=response)
 
         try:
             if not (user_data := data["user"]):
-                raise DeadUrlError(original_url=graphql_url, status_code=200)
+                raise DeadUrlError(response=response)
         except KeyError:
             # motherfucking cunt
             print(data)  # noqa: T201
@@ -83,7 +84,7 @@ class TwitterSession(Session):
             old_user_data = user_data["result"]["legacy"]
         except KeyError as e:
             if user_data["result"]["message"] == "User is suspended":
-                raise DeadUrlError(original_url=graphql_url, status_code=200) from e
+                raise DeadUrlError(response=response) from e
             raise
 
         return TwitterUserData(**old_user_data | {"id": user_data["result"]["rest_id"]})

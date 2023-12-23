@@ -216,12 +216,6 @@ class Session(_CloudScraper):
             raise NotImplementedError(parsable_json) from e
         return parsed_json
 
-    def unscramble(self, url: str) -> str:
-        resp = self.head(url, allow_redirects=True)
-        if resp.status_code != 200:
-            return url
-        return resp.url
-
     @cached_property
     def browser_cookies(self) -> dict:
         self.browser_login()

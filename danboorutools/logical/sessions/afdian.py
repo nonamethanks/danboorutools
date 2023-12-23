@@ -9,12 +9,13 @@ from danboorutools.util.misc import BaseModel, extract_urls_from_string
 class AfdianSession(Session):
     def artist_data(self, username: str) -> AfdianArtistData:
         url = f"https://afdian.net/api/user/get-profile-by-slug?url_slug={username}"
-        response = self.get_json(url)
+        resp = self.get(url)
+        data = self._try_json_response(resp)
 
-        if response.get("em") == "用户不存在":  # User does not exist
-            raise DeadUrlError(status_code=404, original_url=url)
+        if data.get("em") == "用户不存在":  # User does not exist
+            raise DeadUrlError(response=resp)
 
-        user_data = response["data"]["user"]
+        user_data = data["data"]["user"]
         return AfdianArtistData(**user_data)
 
 
