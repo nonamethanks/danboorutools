@@ -158,6 +158,9 @@ class DanbooruHTTPError(HTTPError):
                 msg += f"\n     {row}"
         return msg
 
+    def __reduce__(self):
+        return (self.__class__, (self.response,))
+
 
 class NoPostsError(Exception):
     """No posts were found when scanning for them."""
