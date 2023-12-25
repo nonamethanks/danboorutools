@@ -19,9 +19,9 @@ class MastodonPostUrl(PostUrl, MastodonUrl):
     @classmethod
     def normalize(cls, **kwargs) -> str | None:
         if username := kwargs["username"]:
-            return f"https://{kwargs['site']}/@{username}/{kwargs['post_id']}"
+            return f"https://{kwargs["site"]}/@{username}/{kwargs["post_id"]}"
         else:
-            return f"https://{kwargs['site']}/web/statuses/{kwargs['post_id']}"
+            return f"https://{kwargs["site"]}/web/statuses/{kwargs["post_id"]}"
 
     @cached_property
     def gallery(self) -> MastodonArtistUrl:

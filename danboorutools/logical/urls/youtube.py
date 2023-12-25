@@ -81,6 +81,6 @@ class YoutubeCommunityPostUrl(PostUrl, YoutubeUrl):
     @classmethod
     def normalize(cls, **kwargs) -> str | None:
         if channel_id := kwargs.get("channel_id"):
-            return f"https://www.youtube.com/channel/{channel_id}/community?lb={kwargs['post_id']}"
+            return f"https://www.youtube.com/channel/{channel_id}/community?lb={kwargs["post_id"]}"
         else:
-            return f"https://www.youtube.com/post/{kwargs['post_id']}"
+            return f"https://www.youtube.com/post/{kwargs["post_id"]}"

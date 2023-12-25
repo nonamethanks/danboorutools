@@ -57,7 +57,7 @@ class DanbooruApi(Session):
         "user": "id,name,created_at,level,level_string,post_update_count,note_update_count,post_upload_count,is_banned,is_deleted,bans,last_ip_addr",  # noqa: E501
         "user_feedback": "id,category,body,user,creator,created_at,updated_at,is_deleted",
     }
-    only_string_defaults["user_event"] = f"id,created_at,category,user_session,user[{only_string_defaults['user']}]"
+    only_string_defaults["user_event"] = f"id,created_at,category,user_session,user[{only_string_defaults["user"]}]"
 
     def __init__(self, *args,
                  domain: Literal["testbooru", "danbooru"] = "testbooru",

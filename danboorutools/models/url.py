@@ -350,13 +350,13 @@ class RedirectUrl(Url):
     @on_exception(expo, ReadTimeout, max_tries=3)
     def resolved(self) -> Url:
         try:
-            resolved = self.parse(self.session.unscramble(self.normalized_url))
+            resp = self.session.get(self.normalized_url, allow_redirects=True)
         except DeadUrlError:
             self.is_deleted = True
             raise
 
-        if resolved == self:
-            raise DeadUrlError(status_code=404, original_url=self.normalized_url)
+        if (resolved := Url.parse(resp.url)) == self:
+            raise DeadUrlError(response=resp)
 
         return resolved
 

@@ -144,10 +144,10 @@ def create_url_template(url: str, force: bool = False) -> None:
     parsed = ParsableUrl(url)
     name_base = parsed.domain.removesuffix(f".{parsed.tld}")
 
-    parser_filename = PARSERS_FOLDER / f"{name_base.replace('-', '_')}.py"
-    url_filename = URLS_FOLDER / f"{name_base.replace('-', '_')}.py"
-    session_filename = SESSION_FOLDER / f"{name_base.replace('-', '_')}.py"
-    tests_filename = TESTS_FOLDER / f"{name_base.replace('-', '_')}_test.py"
+    parser_filename = PARSERS_FOLDER / f"{name_base.replace("-", "_")}.py"
+    url_filename = URLS_FOLDER / f"{name_base.replace("-", "_")}.py"
+    session_filename = SESSION_FOLDER / f"{name_base.replace("-", "_")}.py"
+    tests_filename = TESTS_FOLDER / f"{name_base.replace("-", "_")}_test.py"
 
     formatted_parser = PARSER_TEMPLATE.format(
         class_name_base=classize(name_base),

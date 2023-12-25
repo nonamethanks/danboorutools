@@ -25,9 +25,9 @@ class DlsiteAuthorUrl(ArtistUrl, DlsiteUrl):
     @classmethod
     def normalize(cls, **kwargs) -> str | None:
         if (subsite := kwargs["subsite"]) in ["maniax", "girls", "bl", "home", "pro"]:
-            return f"https://www.dlsite.com/{subsite}/circle/profile/=/maker_id/{kwargs['author_id']}"
+            return f"https://www.dlsite.com/{subsite}/circle/profile/=/maker_id/{kwargs["author_id"]}"
         elif subsite == "books":
-            return f"https://www.dlsite.com/books/author/=/author_id/{kwargs['author_id']}"
+            return f"https://www.dlsite.com/books/author/=/author_id/{kwargs["author_id"]}"
         else:
             raise NotImplementedError(subsite)
 

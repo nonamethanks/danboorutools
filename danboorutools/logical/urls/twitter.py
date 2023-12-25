@@ -67,7 +67,7 @@ class TwitterPostUrl(PostUrl, TwitterUrl):
 
     @classmethod
     def normalize(cls, **kwargs) -> str | None:
-        return f"https://twitter.com/{kwargs['username']}/status/{kwargs['post_id']}"
+        return f"https://twitter.com/{kwargs["username"]}/status/{kwargs["post_id"]}"
 
     @property
     def gallery(self) -> TwitterArtistUrl:

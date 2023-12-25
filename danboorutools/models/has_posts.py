@@ -36,7 +36,7 @@ class HasPosts:
             self._collected_posts = []
             raise
 
-        logger.info(f"Finished scanning. {len(self._collected_posts)} {'new ' if self.known_posts else ''}posts found.")
+        logger.info(f"Finished scanning. {len(self._collected_posts)} {"new " if self.known_posts else ""}posts found.")
 
         collected_posts = self._collected_posts
         self._collected_posts = []

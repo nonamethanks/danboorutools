@@ -99,7 +99,7 @@ class Session(_CloudScraper):
         kwargs["headers"] = self.DEFAULT_HEADERS | kwargs.get("headers", {})
 
         if kwargs.get("params"):
-            logger.trace(f"{http_method} request made to {url}?{urlencode(kwargs['params'])}")
+            logger.trace(f"{http_method} request made to {url}?{urlencode(kwargs["params"])}")
         else:
             logger.trace(f"{http_method} request made to {url}")
 
@@ -201,7 +201,7 @@ class Session(_CloudScraper):
         html = self._response_as_html(response)
 
         if not (elements := html.select(selector or "script")):
-            raise ValueError(f"No element with selector {selector or 'script'} found in page.")
+            raise ValueError(f"No element with selector {selector or "script"} found in page.")
 
         for script in elements:
             if (match := re.search(pattern, script.decode_contents())):
@@ -241,7 +241,7 @@ class Session(_CloudScraper):
                 "value": saved_cookie,
                 "domain": domain if domain else "",
             })
-        logger.debug(f"Saving cookies: {', '.join(c['name'] + '=' + c['value'] for c in to_save)}.")
+        logger.debug(f"Saving cookies: {", ".join(c["name"] + "=" + c["value"] for c in to_save)}.")
         save_cookies_for(self.session_domain, cookies=to_save)
 
     def load_cookies(self) -> None:

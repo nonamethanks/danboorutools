@@ -48,7 +48,7 @@ def replace_from_gallery(ehentai_url: EHentaiGalleryUrl, search_tags_str: str) -
         raise NotImplementedError
 
     id_list = [p.id for p in posts]
-    logger.info(f"These posts will be replaced: {danbooru_api.base_url}/posts?tags=id:{','.join(map(str, id_list))}")
+    logger.info(f"These posts will be replaced: {danbooru_api.base_url}/posts?tags=id:{",".join(map(str, id_list))}")
     click.confirm("Continue?", abort=True)
 
     if len(posts) > 5:

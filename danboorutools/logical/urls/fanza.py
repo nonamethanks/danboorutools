@@ -44,9 +44,9 @@ class FanzaDlsoftWorkUrl(PostUrl, FanzaUrl):
     @classmethod
     def normalize(cls, **kwargs) -> str | None:
         if kwargs["subsubsite"] == "mono":
-            return f"https://www.dmm.co.jp/mono/pcgame/-/detail/=/cid={kwargs['work_id']}/"
+            return f"https://www.dmm.co.jp/mono/pcgame/-/detail/=/cid={kwargs["work_id"]}/"
         else:
-            return f"https://dlsoft.dmm.co.jp/detail/{kwargs['work_id']}/"
+            return f"https://dlsoft.dmm.co.jp/detail/{kwargs["work_id"]}/"
 
     @property
     def gallery(self) -> FanzaDlsoftAuthorUrl:
@@ -85,9 +85,9 @@ class FanzaBookWorkUrl(PostUrl, FanzaUrl):
     @classmethod
     def normalize(cls, **kwargs) -> str | None:
         if series_id := kwargs.get("series_id"):
-            return f"https://book.dmm.co.jp/product/{series_id}/{kwargs['work_id']}/"
+            return f"https://book.dmm.co.jp/product/{series_id}/{kwargs["work_id"]}/"
         else:
-            return f"https://www.dmm.co.jp/mono/book/-/detail/=/cid={kwargs['work_id']}/"
+            return f"https://www.dmm.co.jp/mono/book/-/detail/=/cid={kwargs["work_id"]}/"
         # different from FanzaBookNoSeriesUrl, in that "mono" books do not redirect because they're region-restricted
         # what a clusterfuck!
 
