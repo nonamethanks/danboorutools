@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "danboorutools"
-version = "0.0.5"
+version = "0.1.0"
 description = "A set of danbooru admin tools."
 authors = ["nonamethanks <nonamethanks@nonamethanks.xyz>"]
 
@@ -86,7 +86,6 @@ line_length = 140
 check_untyped_defs = true
 enable_error_code = "redundant-expr,ignore-without-code"
 warn_unused_ignores = true
-no_pretty = true
 show_column_numbers = true
 show_error_codes = true
 strict_equality = true

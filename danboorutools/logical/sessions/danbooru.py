@@ -13,7 +13,6 @@ from danboorutools.exceptions import DanbooruHTTPError, RateLimitError
 from danboorutools.logical.sessions import Session
 from danboorutools.models import danbooru as models
 from danboorutools.models.url import UnknownUrl, Url, UselessUrl
-from danboorutools.version import version
 
 if TYPE_CHECKING:
     from danboorutools.models.file import File
@@ -79,7 +78,7 @@ class DanbooruApi(Session):
         if method == "GET" and "params" in kwargs and endpoint != "posts.json":
             kwargs["params"].setdefault("limit", 1000)
 
-        kwargs["headers"] = {"User-Agent": f"DanbooruTools/{version}"}
+        kwargs["headers"] = {"User-Agent": "DanbooruTools/0.1.0"}
 
         endpoint_url = self.base_url.strip("/") + "/" + endpoint.strip("/")
         response = self.request(method, endpoint_url, *args, **kwargs)

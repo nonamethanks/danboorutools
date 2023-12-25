@@ -50,7 +50,8 @@ class NewgroundsSession(Session):
             return
 
         headers = {"Origin": base_url, "Referer": f"{base_url}/passport"}
-        login_url = base_url + html.select_one("form[method='post']")["action"]
+        assert (acttion_el := html.select_one("form[method='post']"))
+        login_url = base_url + acttion_el.attrs["action"]
         data = {
             "username": username,
             "password": password,

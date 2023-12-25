@@ -7,7 +7,6 @@ from requests import Response
 
 from danboorutools.logical.sessions import Session
 from danboorutools.models.gelbooru import GelbooruPost
-from danboorutools.version import version
 
 
 class GelbooruApi(Session):
@@ -36,7 +35,7 @@ class GelbooruApi(Session):
         assert response.ok
 
     def gelbooru_request(self, method: str, endpoint: str, *args, **kwargs) -> Response:
-        kwargs["headers"] = {"User-Agent": f"DanbooruTools/{version}"}
+        kwargs["headers"] = {"User-Agent": "DanbooruTools/0.1.0"}
         if kwargs.get("params", {}).get("json") == 1:
             kwargs["headers"]["Content-Type"] = "application/json"
 
