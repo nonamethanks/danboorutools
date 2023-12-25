@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 parsers: dict[str, type[UrlParser]] = {}
 
 UNSUPPORTED_DOMAINS = (
+    "alice-books.com",  # doujinshi store
     "amebaownd.com",
     "artmug.kr",  # not worth it, looks like a terrible site to implement
     "coocan.jp",
@@ -31,8 +32,8 @@ UNSUPPORTED_DOMAINS = (
     "starfree.jp",
     "webclap.com",
     "webnode.jp",
-    "wix.com", # blogging platform, too messy
-    "wixsite.com", # as above
+    "wix.com",  # blogging platform, too messy
+    "wixsite.com",  # as above
     "whitesnow.jp",
     "wordpress.com",  # too many possibilities
 )
