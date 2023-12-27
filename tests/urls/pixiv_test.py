@@ -68,6 +68,7 @@ urls = {
         "https://www.pixiv.net/en/artworks/46324488": "https://www.pixiv.net/en/artworks/46324488",
         "https://www.pixiv.net/artworks/46324488": "https://www.pixiv.net/en/artworks/46324488",
         "http://www.pixiv.net/i/18557054": "https://www.pixiv.net/en/artworks/18557054",
+        "https://www.pixiv.net/en/artworks/87385588#": "https://www.pixiv.net/en/artworks/87385588",
 
         "http://www.pixiv.net/member_illust.php?mode=medium&illust_id=18557054": "https://www.pixiv.net/en/artworks/18557054",
         "http://www.pixiv.net/member_illust.php?mode=big&illust_id=18557054": "https://www.pixiv.net/en/artworks/18557054",

@@ -57,7 +57,7 @@ class PixivNetParser(UrlParser):
                 except ValueError:
                     if "#" in post_id:
                         [post_id, potential_page] = post_id.split("#")
-                        if potential_page == "manga":
+                        if potential_page == "manga" or not potential_page:
                             return p.PixivPostUrl(parsed_url=parsable_url,
                                                   post_id=int(post_id))
                         else:
