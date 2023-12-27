@@ -13,7 +13,7 @@ USER danboorutools
 ENV PYTHON_USER danboorutools
 ENV PYENV_ROOT /home/${PYTHON_USER}/.pyenv
 ENV PATH ${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}
-ENV PYTHON_VERSION 3.11
+ENV PYTHON_VERSION 3.12
 
 RUN pyenv install ${PYTHON_VERSION}
 RUN pyenv global ${PYTHON_VERSION}
