@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from functools import cached_property
 
-from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.mastodon import MastodonArtistData, MastodonSession
 from danboorutools.models.url import ArtistUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
@@ -10,6 +9,15 @@ from danboorutools.models.url import ArtistUrl, InfoUrl, PostAssetUrl, PostUrl, 
 class MastodonUrl(Url):
     site: str
     session = MastodonSession()
+
+    @cached_property
+    def site_name(self) -> str:
+        if self.site == "pawoo.net":
+            return "pawoo"
+        elif self.site == "baraag.net":
+            return "baraag"
+        else:
+            raise NotImplementedError(self.site)
 
 
 class MastodonPostUrl(PostUrl, MastodonUrl):

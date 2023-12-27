@@ -2,7 +2,7 @@ from danboorutools.models.url import ArtistUrl, DeadDomainUrl, PostUrl, Url
 
 
 class GooglePlusUrl(DeadDomainUrl, Url):
-    ...
+    site_name = "google+"
 
 
 class GooglePlusArtistUrl(ArtistUrl, GooglePlusUrl):

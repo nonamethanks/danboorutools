@@ -37,16 +37,7 @@ class Url(metaclass=PseudoDataclass):
         self.parsed_url = parsed_url
         self.url_properties = url_properties
         for property_name, property_value in url_properties.items():
-            # check_type(property_value, self.computed_type_hints[property_name])  # type: ignore[attr-defined]
             setattr(self, property_name, property_value)
-
-    # def __init_subclass__(cls) -> None:
-    #     if inspect.getfile(cls) == __file__:
-    #         return
-
-    #     from typing import Literal
-    #     computed_type_hints = get_type_hints(cls, globalns=globals() | {"Literal": Literal})
-    #     cls.computed_type_hints = computed_type_hints  # type: ignore[attr-defined]
 
     @property
     def pathable_name(self) -> str:
@@ -149,6 +140,16 @@ class Url(metaclass=PseudoDataclass):
             raise UnknownUrlError(self)
         else:
             raise NotImplementedError(self, type(self))
+
+    @cached_property
+    def site_name(self) -> str:
+        current_module = self.__module__
+        subfolder, submodule = current_module.rsplit(".", 1)
+        if subfolder != "danboorutools.logical.urls":
+            raise NotImplementedError("Site name unknown")
+        if not submodule:
+            raise NotImplementedError("Site name unknown")
+        return submodule
 
 
 ########################################################################

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from danboorutools.exceptions import DeadUrlError
 from danboorutools.models.url import ArtistUrl, DeadDomainUrl, InfoUrl, PostUrl, Url
 
 

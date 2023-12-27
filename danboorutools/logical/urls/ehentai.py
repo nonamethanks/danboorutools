@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 class EHentaiUrl(Url):
     session = EHentaiSession()
 
+    site_name = "e-hentai"
+
     @cached_property
     def html(self) -> BeautifulSoup:
         if not isinstance(self, EHentaiPageUrl | EHentaiGalleryUrl):

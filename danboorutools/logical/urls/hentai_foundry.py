@@ -10,6 +10,8 @@ from danboorutools.util.time import datetime_from_string
 class HentaiFoundryUrl(Url):
     session = HentaiFoundrySession()
 
+    site_name = "hentai-foundry"
+
 
 class HentaiFoundryPostUrl(PostUrl, HentaiFoundryUrl):
     username: str

@@ -11,6 +11,8 @@ from danboorutools.util.time import datetime_from_string
 class KoFiUrl(Url):
     session = KoFiSession()
 
+    site_name = "ko-fi"
+
 
 class KoFiArtistUrl(ArtistUrl, KoFiUrl):
     username: str
