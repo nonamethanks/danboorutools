@@ -22,10 +22,11 @@ from danboorutools.util.misc import BaseModel
 
 class TwitterSession(Session):
     BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"  # noqa: S105
-    CSRF_TOKEN = os.environ["TWITTER_CSRF"]
-    AUTH_TOKEN = os.environ["TWITTER_AUTH"]
 
     def user_data(self, user_name: str | None = None, user_id: int | None = None) -> TwitterUserData:
+        csrf_token = os.environ["TWITTER_CSRF"]
+        auth_token = os.environ["TWITTER_AUTH"]
+
         if user_name:
             endpoint = "G3KGOASz96M-Qu0nwmGXNg/UserByScreenName"
             variables = f'{{"screen_name":"{user_name}","withSafetyModeUserFields":true}}'
@@ -37,8 +38,8 @@ class TwitterSession(Session):
 
         headers = {
             "authorization": f"Bearer {self.BEARER_TOKEN}",
-            "cookie": f"lang=en; auth_token={self.AUTH_TOKEN}; ct0={self.CSRF_TOKEN}; ",
-            "x-csrf-token": self.CSRF_TOKEN,
+            "cookie": f"lang=en; auth_token={auth_token}; ct0={csrf_token}; ",
+            "x-csrf-token": csrf_token,
         }
 
         features = {
