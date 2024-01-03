@@ -51,7 +51,7 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-class TestPawooArtistUrl(_TestArtistUrl):
+class TestPawooArtistUrl1(_TestArtistUrl):
     url_string = "https://pawoo.net/@2075642"
     url_type = m.MastodonArtistUrl
     url_properties = dict(username="2075642")
@@ -61,6 +61,15 @@ class TestPawooArtistUrl(_TestArtistUrl):
                "https://twitter.com/haimurakiyotaka",
                "https://pawoo.net/web/accounts/457571",
                "https://www.pixiv.net/en/users/164728"]
+
+
+class TestPawooArtistUrl2(_TestArtistUrl):  # api says he's got an empty display name
+    url_string = "https://pawoo.net/@41790000"
+    url_type = m.MastodonArtistUrl
+    url_properties = dict(username="41790000")
+    primary_names = []
+    secondary_names = ["41790000"]
+    related = ["https://pawoo.net/web/accounts/144367", "https://www.pixiv.net/en/users/1034992"]
 
 
 class TestPawooWebIdUrl(_TestArtistUrl):

@@ -58,7 +58,9 @@ class MastodonArtistUrl(ArtistUrl, MastodonUrl):
 
     @property
     def primary_names(self) -> list[str]:
-        return [self.artist_data.display_name]
+        if self.artist_data.display_name:
+            return [self.artist_data.display_name]
+        return []
 
     @property
     def secondary_names(self) -> list[str]:

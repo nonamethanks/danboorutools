@@ -123,7 +123,7 @@ class ArtistFinder:
             except ReadTimeout:
                 continue
 
-            # ensure no stray None made its way here
+            # ensure no stray `None`s or empty strings made their way here
             assert all(url_primary_names) and all(url_secondary_names), (url_with_names, url_primary_names, url_secondary_names)
             primary_names += url_primary_names
             secondary_names += [name for name in url_secondary_names if name not in primary_names]
