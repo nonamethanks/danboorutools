@@ -71,7 +71,7 @@ class TestWeiboArtistUrl1(_TestArtistUrl):
     related = []
 
 
-class TestWeiboArtistUrl5(_TestArtistUrl):
+class TestWeiboArtistUrl2(_TestArtistUrl):
     url_string = "https://weibo.com/u/271222260"
     url_type = WeiboArtistUrl
     url_properties = dict(artist_id=271222260)
