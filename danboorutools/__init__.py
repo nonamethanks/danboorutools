@@ -29,17 +29,14 @@ class Logger(_Logger):
                     **kwargs) -> Path:
         caller_path = Path(inspect.stack()[1].filename)
 
-        if filename:
+        if filename:  # noqa: SIM108
             filename = Path(filename).stem + "_{time}.log"
         else:
             filename = Path(inspect.stack()[1].filename).name + "_{time}.log"
 
-        if folder:
-            folder = Path(folder)
-        else:
-            folder = settings.BASE_FOLDER / "logs" / "scripts" / caller_path.stem
-
+        folder = Path(folder) if folder else settings.BASE_FOLDER / "logs" / "scripts" / caller_path.stem
         final_path = Path(folder) / filename
+
         file_handler = self.add(final_path, retention=retention, enqueue=True, level=level, **kwargs)
 
         log_path = Path(self._core.handlers[file_handler]._sink._file.name)
@@ -69,7 +66,7 @@ logger.add(sys.stderr, level=logger_level)
 
 
 class InterceptHandler(logging.Handler):
-    def emit(self, record) -> None:
+    def emit(self, record: logging.LogRecord) -> None:
         # https://github.com/Delgan/loguru#entirely-compatible-with-standard-logging
         try:
             level = logger.level(record.levelname).name
@@ -78,7 +75,7 @@ class InterceptHandler(logging.Handler):
 
         # Find caller from where originated the logged message.
         frame, depth = sys._getframe(6), 6
-        while frame and frame.f_code.co_filename == logging.__file__:
+        while frame.f_code.co_filename == logging.__file__:
             frame = frame.f_back  # type: ignore[assignment]
             depth += 1
 
