@@ -80,7 +80,7 @@ from danboorutools.util.misc import BaseModel
 
 class {class_name_base}Session(Session):
     def artist_data(self, username: str) -> {class_name_base}ArtistData:
-        artist_data = self.get_json(f"")
+        artist_data = self.get(f"").json()
         return {class_name_base}ArtistData(**artist_data)
 
 
