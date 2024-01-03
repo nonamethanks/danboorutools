@@ -12,7 +12,7 @@ from danboorutools.util.misc import BaseModel
 class PixivSketchSession(Session):
     def get_feed(self, feed_url: str) -> PixivSketchFeedData:
         feed_headers = {"x-requested-with": "https://sketch.pixiv.net/api/walls/home.json"}
-        feed_data = self.get_json(feed_url, headers=feed_headers, cookies=PixivSession().cookies_from_env)
+        feed_data = self.get(feed_url, headers=feed_headers, cookies=PixivSession().cookies_from_env).json()
         return PixivSketchFeedData(**feed_data)
 
 

@@ -17,33 +17,23 @@ if TYPE_CHECKING:
 
 class HentaiFoundrySession(Session):
     @ring.lru()
-    def get_html(self, url: str | Url, *args, skip_cache: bool = False, **kwargs) -> BeautifulSoup:
-        if not isinstance(url, str):
-            url = url.normalized_url
-
+    def login(self) -> None:
         try:
             self.load_cookies()
         except NoCookiesForDomainError:
             pass
 
-        response = self.get(url, *args, skip_cache=skip_cache, **kwargs)
-        html = self._response_as_html(response)
-
-        if self._filters_are_set(html):
-            return html
-
-        if skip_cache:
-            raise NotImplementedError(url)
-
-        self._set_filters(html)
-        return self.get_html(url, *args, skip_cache=True, **kwargs)
+        resp = self.get("https://www.hentai-foundry.com/")
+        if self._filters_are_set(resp.html):
+            return
+        self._set_filters(resp.html)
 
     def _filters_are_set(self, html: BeautifulSoup) -> bool:
         filter_form = html.select_one("#FilterBox form")
         rating_filters = filter_form.select(".filter_div[class*=' rating_']")
         for rating_filter in rating_filters:
             if dropdown := rating_filter.select_one("select"):
-                rating_value = max(dropdown.select("option"), key=lambda el: int(el["value"]))
+                rating_value = max(dropdown.select("option"), key=lambda el: int(el.attrs["value"]))
                 if rating_value.get("selected") != "selected":
                     return False
             elif rating_filter.select_one(".ratingCheckbox"):
@@ -88,7 +78,7 @@ class HentaiFoundrySession(Session):
 
         url = f"http://www.hentai-foundry.com/users/FaveUsersRecentPictures?username={username}&page={page}&enterAgree=1"
 
-        page_soup = self.get_html(url)
+        page_soup = self.get(url).html
 
         all_thumbs = page_soup.select("a.thumbLink")
         if not all_thumbs:

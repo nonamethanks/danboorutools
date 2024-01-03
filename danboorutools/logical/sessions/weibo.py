@@ -23,7 +23,7 @@ class WeiboSession(Session):
         data_url = f"https://m.weibo.cn/api/container/getIndex?jumpfrom=weibocom&type=uid&value={artist_id}"
 
         response = self.get(data_url)
-        data = self._try_json_response(response)
+        data = response.json()
         if data.get("msg") == "这里还没有内容":  # user does not exist
             raise DeadUrlError(response=response)
 
@@ -37,12 +37,13 @@ class WeiboSession(Session):
         else:
             raise ValueError("Either base_62_id or long_id must be provided.")
 
+        response = self.get(url)
         try:
-            post_json = self.extract_json_from_html(url, pattern=r"\$render_data = \[([\s\S]+)\]\[0\]")
+            post_json = response.search_json(pattern=r"\$render_data = \[([\s\S]+)\]\[0\]")
         except ValueError as e:
-            body = self.get_html(url).body.text
+            body = response.html.body.text
             if "微博不存在或暂无查看权限!" in body or "由于博主设置，目前内容暂不可见。" in body:
-                raise DeadUrlError(original_url=url, status_code=404) from e
+                raise DeadUrlError(response) from e
             else:
                 raise
         return WeiboPostData(**post_json["status"])

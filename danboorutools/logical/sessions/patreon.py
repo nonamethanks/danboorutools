@@ -7,6 +7,7 @@ from typing import Literal
 import ring
 from bs4 import BeautifulSoup
 
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
@@ -17,10 +18,9 @@ from danboorutools.util.misc import BaseModel, extract_urls_from_string
 class PatreonSession(Session):
     @ring.lru()
     def artist_data(self, url: str) -> PatreonArtistData:
-        json_pattern = r"({\"props\".*})"
-        parsed_data = self.extract_json_from_html(
-            url,
-            pattern=json_pattern,
+        response = self.get(url)
+        parsed_data = response.search_json(
+            pattern=r"({\"props\".*})",
             selector="script#__NEXT_DATA__",
         )
 
@@ -29,6 +29,8 @@ class PatreonSession(Session):
         try:
             return PatreonArtistData(**user_data["campaign"])
         except KeyError as e:
+            if user_data["curtainType"] == "user_removed":
+                raise DeadUrlError(response) from e
             raise NotImplementedError(user_data) from e
 
     @property
@@ -42,7 +44,7 @@ class PatreonSession(Session):
         }
 
         data_url = self._generate_data_url(campaign="feed", cursor=cursor)
-        data = self.get_json(data_url, headers=headers, cookies=self.cookies_from_env)
+        data = self.get(data_url, headers=headers, cookies=self.cookies_from_env).json()
 
         return PatreonCampaignResponse(**data)
 

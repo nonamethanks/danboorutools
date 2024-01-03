@@ -16,8 +16,8 @@ from danboorutools.util.misc import BaseModel, extract_urls_from_string
 class DeviantartSession(Session):
     @ring.lru()
     def user_data(self, username: str) -> DeviantartUserData:
-        parsed_json = self.extract_json_from_html(
-            f"https://www.deviantart.com/{username}",
+        response = self.get(f"https://www.deviantart.com/{username}")
+        parsed_json = response.search_json(
             pattern=r'window.__INITIAL_STATE__ = JSON.parse\("(.*)"\);',
             post_process=lambda x: x.encode("utf-8").decode("unicode_escape"),
         )

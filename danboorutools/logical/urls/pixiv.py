@@ -172,12 +172,12 @@ class PixivPostUrl(PostUrl, PixivUrl):
     @property
     def _pages_data(self) -> dict:
         post_id = f"unlisted/{self.post_id}" if self.unlisted else self.post_id
-        return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}/pages?lang=en")
+        return self.session.get_api(f"https://www.pixiv.net/ajax/illust/{post_id}/pages?lang=en")
 
     @property
     def ugoira_data(self) -> dict:
         post_id = f"unlisted/{self.post_id}" if self.unlisted else self.post_id
-        return self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}/ugoira_meta?lang=en")
+        return self.session.get_api(f"https://www.pixiv.net/ajax/illust/{post_id}/ugoira_meta?lang=en")
 
 
 def _process_post(self: PixivArtistUrl | PixivFeed, post_object: PixivGroupedIllustData) -> None:
@@ -189,7 +189,7 @@ def _process_post(self: PixivArtistUrl | PixivFeed, post_object: PixivGroupedIll
         asset_urls = [post_ugoira_data["originalSrc"]]
     else:
         # Can't avoid fetching this for single-page posts because all samples are jpg, even for png files
-        post_pages_data = self.session.get_json(f"https://www.pixiv.net/ajax/illust/{post.post_id}/pages")
+        post_pages_data = self.session.get_api(f"https://www.pixiv.net/ajax/illust/{post.post_id}/pages")
         asset_urls = [img["urls"]["original"] for img in post_pages_data]
 
     if isinstance(self, PixivArtistUrl):

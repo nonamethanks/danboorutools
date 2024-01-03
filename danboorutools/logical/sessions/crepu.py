@@ -8,9 +8,10 @@ from danboorutools.util.misc import BaseModel
 if TYPE_CHECKING:
     from danboorutools.models.url import Url
 
+
 class CrepuSession(Session):
     def artist_data(self, username: str) -> CrepuArtistData:
-        artist_data = self.get_json(f"https://api.crepu.net/api/v1.0/user_crepu_id?crepu_id={username}")
+        artist_data = self.get(f"https://api.crepu.net/api/v1.0/user_crepu_id?crepu_id={username}").json()
         return CrepuArtistData(**artist_data["data"])
 
 
@@ -33,13 +34,13 @@ class CrepuArtistData(BaseModel):
         from danboorutools.models.url import Url
         return [
             Url.parse(url)
-                 for url in [
-                    self.user_twitter_url,
-                    self.user_instagram_url,
-                    self.user_pixiv_url,
-                    self.user_genseki_url,
-                    self.user_taittsuu_url,
-                    self.user_url,
-                ]
+            for url in [
+                self.user_twitter_url,
+                self.user_instagram_url,
+                self.user_pixiv_url,
+                self.user_genseki_url,
+                self.user_taittsuu_url,
+                self.user_url,
+            ]
             if url
         ]

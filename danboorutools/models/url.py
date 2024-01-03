@@ -119,7 +119,7 @@ class Url(metaclass=PseudoDataclass):
 
     @cached_property
     def html(self) -> BeautifulSoup:
-        return self.session.get_html(self.normalized_url)
+        return self.session.get(self.normalized_url).html
 
     @cached_property
     @final

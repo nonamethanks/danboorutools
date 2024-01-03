@@ -20,7 +20,7 @@ class KoFiSession(Session):
 
     @property
     def followed_artists(self) -> list[KoFiArtistUrl]:
-        html = self.get_html("https://ko-fi.com/manage/following", cookies=self.cookies_from_env)
+        html = self.get("https://ko-fi.com/manage/following", cookies=self.cookies_from_env).html
         artists = [el["href"] for el in html.select(".person-row-name-link")]
         return artists
 
@@ -29,7 +29,7 @@ class KoFiSession(Session):
 
         from danboorutools.logical.urls.ko_fi import KoFiArtistUrl, KoFiPostUrl
 
-        html = self.get_html(f"https://ko-fi.com/Feed/LoadNewsfeedPage?pageIndex={page}", cookies=self.cookies_from_env)
+        html = self.get(f"https://ko-fi.com/Feed/LoadNewsfeedPage?pageIndex={page}", cookies=self.cookies_from_env).html
         collected: list[KoFiPostUrl] = []
         feed_items = html.select(".feeditem-unit:has(.feeditem-imagecontainer):not(:has(.kfds-c-locked-overlay-wrapper))")
         if not feed_items:

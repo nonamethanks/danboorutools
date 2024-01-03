@@ -12,14 +12,14 @@ class NicovideoSession(Session):
     def nicovideo_artist_data(self, user_id: int) -> NicoSeigaArtistData:
         url = f"https://nvapi.nicovideo.jp/v1/users/{user_id}"
         headers = {"X-Frontend-Id": "3"}
-        response = self.get_json(url, headers=headers)["data"]["user"]
+        response = self.get(url, headers=headers).json()["data"]["user"]
         return NicoSeigaArtistData(**response)
 
     def get_nicoseiga_feed(self, min_id: int | None = None) -> NicoSeigaFeedData:
         page_url = "https://public.api.nicovideo.jp/v1/timelines/nicorepo/last-1-month/my/pc/entries.json"
         if min_id:
             page_url += f"?untilId={min_id}"
-        page_json = self.get_json(page_url, cookies={"user_session": os.environ["NICOSEIGA_USER_SESSION_COOKIE"]})
+        page_json = self.get(page_url, cookies={"user_session": os.environ["NICOSEIGA_USER_SESSION_COOKIE"]}).json()
         return NicoSeigaFeedData(**page_json)
 
 

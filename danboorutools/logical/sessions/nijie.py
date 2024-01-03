@@ -7,25 +7,13 @@ import ring
 
 from danboorutools import logger
 from danboorutools.exceptions import NoCookiesForDomainError
-from danboorutools.logical.sessions import Session
-
-if TYPE_CHECKING:
-    from bs4 import BeautifulSoup
-    from requests import Response
+from danboorutools.logical.sessions import ScraperResponse, Session
 
 
 class NijieSession(Session):
     MAX_CALLS_PER_SECOND = 1
 
-    def get_html(self, *args, **kwargs) -> BeautifulSoup:
-        self.login()
-
-        resp = self.get(*args, **kwargs)
-        html = self._response_as_html(resp)
-
-        return html
-
-    def request(self, method: str, *args, **kwargs) -> Response:
+    def request(self, method: str, *args, **kwargs) -> ScraperResponse:
         kwargs["cookies"] = {"R18": "1"} | kwargs.get("cookies", {})
         return super().request(method, *args, **kwargs)
 
@@ -45,20 +33,18 @@ class NijieSession(Session):
         if not self._check_login(response, save_cookies=True):
             raise NotImplementedError(response.text)
 
-    def _check_login(self, response: Response, save_cookies: bool = False) -> bool:
-        html = self._response_as_html(response)
-        if html.find("a", string="プロフ設定"):
+    def _check_login(self, response: ScraperResponse, save_cookies: bool = False) -> bool:
+        if response.html.find("a", string="プロフ設定"):
             if save_cookies:
                 self.save_cookies("nijie_tok", "NIJIEIJIEID", domain=".nijie.info")
             logger.debug("Confirmed logged in to nijie.")
             return True
         return False
 
-    def _do_login(self) -> Response:
+    def _do_login(self) -> ScraperResponse:
         logger.info("Logging into nijie.")
         login_url = "https://nijie.info/age_jump.php?url="
-        resp = self.get(login_url, skip_cache=True)
-        html = self._response_as_html(resp)
+        html = self.get(login_url, skip_cache=True).html
 
         login_token_el = html.select_one("form[action='/login_int.php'] [name='url']")
         assert login_token_el

@@ -28,7 +28,7 @@ class PlurkSession(Session):
     @ring.lru()
     def user_data(self, username: str) -> PlurkArtistData:
         response = self.post("https://www.plurk.com/APP/Profile/getPublicProfile", json={"user_id": username}, auth=self.oauth)
-        response_data = self._try_json_response(response)
+        response_data = response.json()
         if response_data.get("error_text") == "User not found":
             raise DeadUrlError(response)
         return PlurkArtistData(**response_data["user_info"])
@@ -40,8 +40,7 @@ class PlurkSession(Session):
             options["offset"] = offset
 
         response = self.post("https://www.plurk.com/APP/Timeline/getPlurks", json=options, auth=self.oauth)
-        response_data = self._try_json_response(response)
-        return [PlurkPostData(**post) for post in response_data["plurks"]]
+        return [PlurkPostData(**post) for post in response.json()["plurks"]]
 
 
 class PlurkArtistData(BaseModel):

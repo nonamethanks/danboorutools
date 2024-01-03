@@ -5,15 +5,23 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 from danboorutools.logical.sessions.newgrounds import NewgroundsSession
-from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
+from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url, _AssetUrl
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
     from datetime import datetime
 
+    from bs4 import BeautifulSoup
+
 
 class NewgroundsUrl(Url):
     session = NewgroundsSession()
+
+    @cached_property
+    def html(self) -> BeautifulSoup:
+        if not isinstance(self, _AssetUrl):
+            self.session.login()
+        return super().html
 
 
 class NewgroundsPostUrl(PostUrl, NewgroundsUrl):

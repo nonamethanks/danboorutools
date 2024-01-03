@@ -33,7 +33,7 @@ class ArtstationSession(Session):
             return super().request(*args, verify=verify, **kwargs)
 
     def artist_data(self, username: str) -> ArtstationArtistData:
-        response = self.get_json(f"https://www.artstation.com/users/{username}.json")
+        response = self.get(f"https://www.artstation.com/users/{username}.json").json()
         return ArtstationArtistData(**response)
 
     def get_followed_artists(self) -> list[str]:
@@ -41,7 +41,7 @@ class ArtstationSession(Session):
         artists: set[str] = set()
         page = 1
         while True:
-            response = self.get_json(f"https://www.artstation.com/users/{username}/following.json?page={page}")
+            response = self.get(f"https://www.artstation.com/users/{username}/following.json?page={page}").json()
             artists |= {user["subdomain"] for user in response["data"]}
             if len(artists) < response["total_count"]:
                 page += 1
@@ -50,12 +50,12 @@ class ArtstationSession(Session):
 
     def post_data(self, post_id: str) -> ArtstationPostData:
         url = f"https://www.artstation.com/projects/{post_id}.json"
-        response = self.get_json(url)
+        response = self.get(url).json()
         return ArtstationPostData(**response)
 
     def get_posts_from_artist(self, artist: str, page: int) -> list[ArtstationPostData]:
         url = f"https://www.artstation.com/users/{artist}/projects.json?page={page}"
-        json_data = self.get_json(url)["data"]
+        json_data = self.get(url).json()["data"]
         return [ArtstationPostData(**post_data) for post_data in json_data]
 
 

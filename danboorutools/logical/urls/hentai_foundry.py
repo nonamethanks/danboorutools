@@ -2,6 +2,8 @@ import re
 from datetime import datetime
 from functools import cached_property
 
+from bs4 import BeautifulSoup
+
 from danboorutools.logical.sessions.hentai_foundry import HentaiFoundrySession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.time import datetime_from_string
@@ -11,6 +13,12 @@ class HentaiFoundryUrl(Url):
     session = HentaiFoundrySession()
 
     site_name = "hentai-foundry"
+
+    @cached_property
+    def html(self) -> BeautifulSoup:
+        if not isinstance(self, PostAssetUrl):
+            self.session.login()
+        return super().html
 
 
 class HentaiFoundryPostUrl(PostUrl, HentaiFoundryUrl):

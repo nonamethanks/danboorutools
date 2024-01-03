@@ -41,7 +41,7 @@ class SkebSession(Session):
         return request
 
     def artist_data(self, username: str) -> SkebArtistData:
-        response = self.get_json(f"https://skeb.jp/api/users/{username}")
+        response = self.get(f"https://skeb.jp/api/users/{username}").json()
 
         return SkebArtistData(**response)
 
@@ -61,7 +61,7 @@ class SkebSession(Session):
         response = super().request("POST", "https://skeb.jp/api/auth/twitter")
         oauth_url = response.url
         assert oauth_url.startswith("https://api.twitter.com/oauth/authenticate?oauth_token="), oauth_url
-        html = self._response_as_html(response)
+        html = response.html
 
         data = {
             "authenticity_token": html.select_one("input[name='authenticity_token']")["value"],
@@ -76,7 +76,7 @@ class SkebSession(Session):
             "referer": oauth_url,
         }
         response = super().request("POST", "https://api.twitter.com/oauth/authenticate", data=data, headers=headers)
-        html = self._response_as_html(response)
+        html = response.html
         if "Verify your identity by entering the phone number associated with your Twitter account." in str(html):
             html = self.__login_with_phone(oauth_url, html)
 
@@ -106,13 +106,13 @@ class SkebSession(Session):
         response = super().request("POST", "https://twitter.com/account/login_challenge", data=data, headers=headers)
         if not response.status_code == 200:
             raise NotImplementedError(self)
-        return self._response_as_html(response)
+        return response.html
 
     def get_feed(self, offset: int | None = None, limit: int | None = None) -> list[SkebPostFeedData]:
         username = os.environ["TWITTER_USERNAME"]
         offset = offset or 0
         limit = limit or 90
-        feed_data = self.get_json(f"https://skeb.jp/api/users/{username}/following_works?sort=date&offset={offset}&limit={limit}")
+        feed_data = self.get(f"https://skeb.jp/api/users/{username}/following_works?sort=date&offset={offset}&limit={limit}").json()
         if not feed_data:
             raise NotImplementedError("No posts found. Check cookies.")
         if not isinstance(feed_data, list):
@@ -121,7 +121,7 @@ class SkebSession(Session):
 
     def get_post_data(self, /, post_id: int, username: str) -> SkebPostData:
         headers = {"Referer": f"https://skeb.jp/@{username}/works/{post_id}"}
-        post_data = self.get_json(f"https://skeb.jp/api/users/{username}/works/{post_id}", headers=headers)
+        post_data = self.get(f"https://skeb.jp/api/users/{username}/works/{post_id}", headers=headers).json()
         return SkebPostData(**post_data)
 
 

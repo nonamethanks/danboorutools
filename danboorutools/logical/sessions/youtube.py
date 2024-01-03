@@ -22,7 +22,7 @@ class YoutubeSession(Session):
 
     @ring.lru()
     def channel_data(self, artist_url: str) -> YoutubeChannelData:
-        starting_json = self.extract_json_from_html(f"{artist_url}/about", pattern=r"ytInitialData = ({.*?});")
+        starting_json = self.get(f"{artist_url}/about").search_json(pattern=r"ytInitialData = ({.*?});")
 
         result = re.findall(r'continuationCommand":{"token":"(.*?)","request":"CONTINUATION_REQUEST_TYPE_BROWSE"',
                             json.dumps(starting_json, separators=(",", ":")))
@@ -46,15 +46,14 @@ class YoutubeSession(Session):
                     "u_tz", "u_his", "u_h", "u_w", "u_ah", "u_aw", "u_cd"]:
             data["context"]["adSignalsInfo"]["params"].append({"key": key, "value": ""})  # type: ignore[index]
 
-        resp = self.post(
+        json_data = self.post(
             "https://www.youtube.com/youtubei/v1/browse",
             params={
                 "key": "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
                 "prettyPrint": "false",
             },
             json=data,
-        )
-        json_data = self._try_json_response(resp)
+        ).json()
 
         channel_metadata = starting_json["metadata"]["channelMetadataRenderer"]
 

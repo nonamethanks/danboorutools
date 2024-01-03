@@ -2,35 +2,34 @@ from __future__ import annotations
 
 import os
 import time
-from typing import TYPE_CHECKING
 
 import ring
 from pyrate_limiter import Limiter, RequestRate
 
-from danboorutools.exceptions import NoCookiesForDomainError
-from danboorutools.logical.sessions import Session
-
-if TYPE_CHECKING:
-    from bs4 import BeautifulSoup
+from danboorutools.exceptions import NoCookiesForDomainError, NotLoggedInError
+from danboorutools.logical.sessions import ScraperResponse, Session
 
 
 class NewgroundsSession(Session):
     feed_html_ratelimiter = Limiter(RequestRate(1, 2))
 
-    @feed_html_ratelimiter.ratelimit("newgrounds_feed_html", delay=True)
-    def get_html(self, *args, **kwargs) -> BeautifulSoup:
-        self.login()
-        resp = self.get(*args, **kwargs)
-        html = self._response_as_html(resp)
+    def get(self, *args, **kwargs) -> ScraperResponse:
+        if "newgrounds.com" in args[0]:
+            self.login()
+
+        with self.feed_html_ratelimiter.ratelimit("newgrounds_feed_html", delay=True):
+            response = super().get(*args, **kwargs)
+
+        html = response.html
 
         if "You're making too many requests. Wait a bit before trying again" in str(html):
             time.sleep(60 * 10)
-            return self.get_html(*args, **kwargs)
+            return self.get(*args, **kwargs)
 
         if "You must be logged in, and at least 18 years of age to view this content!" in str(html):
-            raise NotImplementedError("Not logged in.")
+            raise NotLoggedInError(response)
 
-        return html
+        return response
 
     @ring.lru()
     def login(self) -> None:
@@ -44,8 +43,7 @@ class NewgroundsSession(Session):
         except NoCookiesForDomainError:
             pass
 
-        response = self.get(f"{base_url}/passport")
-        html = self._response_as_html(response)
+        html = super().get(f"{base_url}/passport").html
         if html.select_one(f"[alt=\"{username}'s Icon\"]"):
             return
 
@@ -58,8 +56,7 @@ class NewgroundsSession(Session):
             "remember": "1",
             "login": "1",
         }
-        response = self.post(login_url, headers=headers, data=data)
-        html = self._response_as_html(response)
+        html = self.post(login_url, headers=headers, data=data).html
         if html.select_one(f"[alt=\"{username}'s Icon\"]"):
             return
 

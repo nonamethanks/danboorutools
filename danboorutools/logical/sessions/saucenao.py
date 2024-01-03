@@ -183,7 +183,7 @@ class SaucenaoSession(Session):
     def _reverse_search_url(self, image_url: str) -> list[_SaucenaoApiResult]:
         """Reverse search an url."""
         saucenao_url = f"https://saucenao.com/search.php?db=999&output_type=2&numres=16&url={image_url}&api_key={self.API_KEY}"
-        response = self.get_json(saucenao_url)
+        response = self.get(saucenao_url).json()
         results = response["results"]
         if not results:
             raise NotImplementedError(response)

@@ -25,7 +25,7 @@ class KoFiArtistUrl(ArtistUrl, KoFiUrl):
             return []
         links = self.html.select(".profile-page-tile .social-link a, .social-profile-link a")
 
-        links = [link["href"] for link in links]
+        links = [link.attrs["href"] for link in links]
         return [self.parse(link) for link in links]
 
     @property
@@ -51,13 +51,13 @@ class KoFiPostUrl(PostUrl, KoFiUrl):
 
     @cached_property
     def html(self) -> BeautifulSoup:
-        return self.session.get_html(f"https://ko-fi.com/Gallery/LoadGalleryItem?galleryItemId={self.post_id}")
+        return self.session.get(f"https://ko-fi.com/Gallery/LoadGalleryItem?galleryItemId={self.post_id}").html
 
     def _extract_assets(self) -> list[str]:
         if self.html.select(".label-hires"):
             raise NotImplementedError(self)
         images = [
-            el["src"].replace("/post/", "/display/")
+            el.attrs["src"].replace("/post/", "/display/")
             for el in self.html.select("img.gallery-image")
         ]
         return list(dict.fromkeys(images))

@@ -25,15 +25,15 @@ class FantiaSession(Session):
         return super().request(*args, **kwargs)
 
     def get_feed(self, page: int) -> dict:
-        page_json = self.get_json(f"https://fantia.jp/api/v1/me/timelines/posts?page={page}&per=24")
+        page_json = self.get(f"https://fantia.jp/api/v1/me/timelines/posts?page={page}&per=24").json()
         return page_json
 
     def get_post_data(self, post_id: int) -> FantiaPostData:
         post_url = f"https://fantia.jp/posts/{post_id}"
-        html = self.get_html(post_url)
+        html = self.get(post_url).html
         csrf = html.select_one("meta[name='csrf-token']")["content"]
 
-        api_response = self.get_json(f"https://fantia.jp/api/v1/posts/{post_id}", headers={"X-CSRF-Token": csrf})
+        api_response = self.get(f"https://fantia.jp/api/v1/posts/{post_id}", headers={"X-CSRF-Token": csrf}).json()
         if not api_response.get("post"):
             raise NotImplementedError(f"Could not parse fantia api response for {post_url}: {api_response}")
 

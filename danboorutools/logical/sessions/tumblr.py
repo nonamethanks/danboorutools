@@ -31,7 +31,7 @@ class TumblrSession(Session):
     @ring.lru()
     def blog_data(self, blog_name: str) -> TumblrBlogData:
         params = {"api_key": os.environ["TUMBLR_CONSUMER_KEY"]}
-        response = self.get_json(f"https://api.tumblr.com/v2/blog/{blog_name}/info", params=params, auth=self.oauth)
+        response = self.get(f"https://api.tumblr.com/v2/blog/{blog_name}/info", params=params, auth=self.oauth).json()
         response = self._validate_api_response(response)
         return TumblrBlogData(**response["blog"])
 
@@ -42,7 +42,7 @@ class TumblrSession(Session):
             "offset": offset or 0,
             "reblog_info": True,
         }
-        response = self.get_json("https://api.tumblr.com/v2/user/dashboard", params=params, auth=self.oauth)
+        response = self.get("https://api.tumblr.com/v2/user/dashboard", params=params, auth=self.oauth).json()
         response = self._validate_api_response(response)
         if not response:
             raise NotImplementedError("No posts found.")

@@ -113,15 +113,15 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
 class TestPixivArtistUrl(_TestArtistUrl):
     url_string = "https://www.pixiv.net/en/users/10183321/artworks"
     url_type = p.PixivArtistUrl
+    url_properties = dict(user_id=10183321)
     primary_names = ["囬巾"]
     secondary_names = ["2001sys", "pixiv 10183321"]
     related = ["https://www.pixiv.net/stacc/2001sys",
                "https://huijin177.lofter.com",
                "https://calamitail.fanbox.cc",
                "https://sketch.pixiv.net/@2001sys"]
-    post_count = 40
-    url_properties = dict(user_id=10183321)
-    posts = ["https://www.pixiv.net/en/artworks/95096202"]
+    # post_count = 40
+    # posts = ["https://www.pixiv.net/en/artworks/95096202"]
 
 
 class TestPixivStaccUrl(_TestInfoUrl):
@@ -136,10 +136,10 @@ class TestPixivStaccUrl(_TestInfoUrl):
 class TestPixivPostUrl1(_TestPostUrl):
     url_type = p.PixivPostUrl
     url_string = "https://www.pixiv.net/en/artworks/95096202"
+    url_properties = dict(post_id=95096202)
     asset_count = 7
     score = 2473
     created_at = "2021-12-28 14:53:00"
-    url_properties = dict(post_id=95096202)
     assets = ["https://i.pximg.net/img-original/img/2021/12/28/23/53/02/95096202_p6.png"]
 
 

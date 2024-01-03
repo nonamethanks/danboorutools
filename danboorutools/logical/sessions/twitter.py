@@ -68,18 +68,22 @@ class TwitterSession(Session):
             params=params,
             headers=headers,
         )
-        data = self._try_json_response(response)["data"]
+        data = response.json()
 
         if not data:
             raise DeadUrlError(response=response)
 
         try:
-            if not (user_data := data["user"]):
-                raise DeadUrlError(response=response)
+            user_data = data["user"]
         except KeyError:
-            # motherfucking cunt
-            print(data)  # noqa: T201
-            raise
+            try:
+                user_data = data["data"]["user"]
+            except KeyError:
+                print(data)  # noqa: T201
+                raise
+
+        if not user_data:
+            raise DeadUrlError(response=response)
 
         try:
             old_user_data = user_data["result"]["legacy"]

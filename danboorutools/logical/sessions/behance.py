@@ -8,7 +8,7 @@ from danboorutools.util.misc import BaseModel
 class BehanceSession(Session):
     def user_data(self, username: str) -> BehanceUserData:
         headers = {"x-requested-with": "XMLHttpRequest"}
-        user_data = self.get_json(f"https://www.behance.net/{username}/projects", headers=headers)
+        user_data = self.get(f"https://www.behance.net/{username}/projects", headers=headers).json()
         return BehanceUserData(**user_data["profile"]["owner"])
 
 

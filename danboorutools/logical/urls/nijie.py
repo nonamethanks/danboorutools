@@ -3,13 +3,21 @@ from datetime import datetime
 from functools import cached_property
 from urllib.parse import urljoin
 
+from bs4 import BeautifulSoup
+
 from danboorutools.logical.sessions.nijie import NijieSession
-from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
+from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url, _AssetUrl
 from danboorutools.util.time import datetime_from_string
 
 
 class NijieUrl(Url):
     session = NijieSession()
+
+    @cached_property
+    def html(self) -> BeautifulSoup:
+        if not isinstance(self, _AssetUrl):
+            self.session.login()
+        return super().html
 
 
 class NijiePostUrl(PostUrl, NijieUrl):
@@ -66,7 +74,7 @@ class NijieArtistUrl(ArtistUrl, NijieUrl):
 
     @property
     def related(self) -> list[Url]:
-        assert (url_els := self.html.select("#main-center-none #prof a"))
+        assert (url_els := self.html.select("#main-center-none #prof a:not(.__cf_email__)"))
         return list(map(Url.parse, [u.text for u in url_els]))
 
 

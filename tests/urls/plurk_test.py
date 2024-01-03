@@ -38,7 +38,7 @@ class TestPlurkArtistUrl(_TestArtistUrl):
     url_string = "https://www.plurk.com/vivi890812"
     url_type = PlurkArtistUrl
     url_properties = dict(username="vivi890812")
-    primary_names = ["犬勇者-CWT65次日 O28"]
+    primary_names = ["犬勇者-新刊急救中"]
     secondary_names = ["vivi890812"]
     related = ["https://her178542.pixnet.net",
                "https://home.gamer.com.tw/homeindex.php?owner=her682913",

@@ -20,6 +20,7 @@ from cloudscraper.exceptions import CloudflareChallengeError
 from fake_useragent import UserAgent
 from pyrate_limiter.limiter import Limiter
 from pyrate_limiter.request_rate import RequestRate
+from requests import Response
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import ConnectTimeout, ReadTimeout
 
@@ -34,9 +35,57 @@ from danboorutools.util.time import datetime_from_string
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from requests import Response
-
     from danboorutools.models.url import Url
+
+
+class ScraperResponse(Response):
+    def __init__(self, response: Response) -> None:  # pylint: disable=super-init-not-called
+        self.__setstate__(response.__getstate__())  # type: ignore[attr-defined]
+
+    @cached_property
+    def html(self) -> BeautifulSoup:
+        if not self.ok:
+            raise HTTPError(self)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", XMLParsedAsHTMLWarning)
+            try:
+                # not .text by default because pages like https://soundcloud.com/user-798138171 don't get parsed correctly at the json part
+                decoded_content = self.content.decode("utf-8")
+            except UnicodeDecodeError:
+                decoded_content = self.text
+            return BeautifulSoup(decoded_content, "html5lib")
+
+    def json(self, **kwargs) -> dict:
+        try:
+            return super().json(**kwargs)
+        except json.JSONDecodeError as e:
+            logger.error(self.text)
+            if not self.ok:
+                raise HTTPError(self) from e
+            else:
+                raise
+
+    def search_json(self, pattern: str, selector: str | None = None, post_process: Callable[[str], str] | None = None) -> dict:
+        html = self.html
+
+        if not (elements := html.select(selector or "script")):
+            raise ValueError(f"No element with selector {selector or "script"} found in page.")
+
+        for script in elements:
+            if (match := re.search(pattern, script.decode_contents())):
+                break
+        else:
+            raise JsonNotFoundError(self)
+
+        parsable_json = match.groups()[0]
+        if post_process:
+            parsable_json = post_process(parsable_json)
+        try:
+            parsed_json = json.loads(parsable_json)
+        except json.decoder.JSONDecodeError as e:
+            raise NotImplementedError(parsable_json) from e
+        return parsed_json
 
 
 class Session(_CloudScraper):
@@ -79,14 +128,15 @@ class Session(_CloudScraper):
     def browser(self) -> Browser:
         return Browser()
 
-    def request(self, method: str, *args, skip_cache: bool | None = None, **kwargs) -> Response:
+    def request(self, method: str, *args, skip_cache: bool | None = None, **kwargs) -> ScraperResponse:
         if skip_cache is True \
                 or (skip_cache is None and self.DISABLE_AUTOMATIC_CACHE)\
                 or (method.lower() not in ["get", "head"] and skip_cache is not False):
             # always cache every request by default, but discard the cache if a subsequent call is made that does not want a cached version
             # in theory cache access is slower, but who cares, the limiter will always be the request itself anyway
             self._cached_request.delete(method, *args, **kwargs)
-        return self._cached_request(method, *args, **kwargs)
+        response = self._cached_request(method, *args, **kwargs)
+        return ScraperResponse(response)
 
     @ring.lru()
     @on_exception(constant, RateLimitError, max_tries=2, interval=30, jitter=None)
@@ -158,66 +208,6 @@ class Session(_CloudScraper):
 
         return File.identify(tmp_filename, destination_dir=download_dir, md5_as_filename=True)
 
-    def get_html(self, *args, **kwargs) -> BeautifulSoup:
-        response = self.get(*args, **kwargs)
-        return self._response_as_html(response)
-
-    def _response_as_html(self, response: Response) -> BeautifulSoup:
-        if not response.ok:
-            raise HTTPError(response)
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", XMLParsedAsHTMLWarning)
-            try:
-                # not .text by default because pages like https://soundcloud.com/user-798138171 don't get parsed correctly at the json part
-                decoded_content = response.content.decode("utf-8")
-            except UnicodeDecodeError:
-                decoded_content = response.text
-            return BeautifulSoup(decoded_content, "html5lib")
-
-    def get_json(self, *args, **kwargs) -> dict:
-        response = self.get(*args, **kwargs)
-        return self._try_json_response(response)
-
-    @staticmethod
-    def _try_json_response(response: Response) -> dict:
-        try:
-            return response.json()
-        except json.JSONDecodeError as e:
-            print(response.text)  # noqa: T201
-            if not response.ok:
-                raise HTTPError(response) from e
-            else:
-                raise
-
-    def extract_json_from_html(self,
-                               url: str,
-                               *args,
-                               pattern: str,
-                               selector: str | None = None,
-                               post_process: Callable[[str], str] | None = None,
-                               **kwargs) -> dict:
-        response = self.get(url, *args, **kwargs)
-        html = self._response_as_html(response)
-
-        if not (elements := html.select(selector or "script")):
-            raise ValueError(f"No element with selector {selector or "script"} found in page.")
-
-        for script in elements:
-            if (match := re.search(pattern, script.decode_contents())):
-                break
-        else:
-            raise JsonNotFoundError(response)
-
-        parsable_json = match.groups()[0]
-        if post_process:
-            parsable_json = post_process(parsable_json)
-        try:
-            parsed_json = json.loads(parsable_json)
-        except json.decoder.JSONDecodeError as e:
-            raise NotImplementedError(parsable_json) from e
-        return parsed_json
-
     @cached_property
     def browser_cookies(self) -> dict:
         self.browser_login()
@@ -251,14 +241,14 @@ class Session(_CloudScraper):
             self.cookies.set(**cookie)
 
     if TYPE_CHECKING:
-        def get(self, *args, **kwargs) -> Response:  # pylint: disable=unused-argument
+        def get(self, *args, **kwargs) -> ScraperResponse:  # pylint: disable=unused-argument
             ...
 
-        def post(self, *args, **kwargs) -> Response:  # pylint: disable=unused-argument
+        def post(self, *args, **kwargs) -> ScraperResponse:  # pylint: disable=unused-argument
             ...
 
-        def head(self, *args, **kwargs) -> Response:  # pylint: disable=unused-argument
+        def head(self, *args, **kwargs) -> ScraperResponse:  # pylint: disable=unused-argument
             ...
 
-        def delete(self, *args, **kwargs) -> Response:  # pylint: disable=unused-argument
+        def delete(self, *args, **kwargs) -> ScraperResponse:  # pylint: disable=unused-argument
             ...

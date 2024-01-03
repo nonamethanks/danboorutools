@@ -7,7 +7,7 @@ from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 class VgenSession(Session):
     def artist_data(self, username: str) -> VgenArtistData:
-        artist_data = self.extract_json_from_html(f"https://vgen.co/{username}", pattern=r"(.*)", selector="#__NEXT_DATA__")
+        artist_data = self.get(f"https://vgen.co/{username}").search_json(pattern=r"(.*)", selector="#__NEXT_DATA__")
         return VgenArtistData(**artist_data["props"]["pageProps"]["user"])
 
 

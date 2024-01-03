@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import ring
 
 from danboorutools.logical.sessions import Session
@@ -17,8 +15,7 @@ class MisskeySession(Session):
             json={"username": username, "host": None},
             headers={"referer": "https://misskey.io/"},
         )
-        data = self._try_json_response(response)
-        return MisskeyUserData(**data)
+        return MisskeyUserData(**response.json())
 
 
 class MisskeyUserData(BaseModel):

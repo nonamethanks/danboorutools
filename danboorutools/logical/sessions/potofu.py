@@ -7,7 +7,7 @@ from danboorutools.util.misc import BaseModel
 
 class PotofuSession(Session):
     def user_data(self, user_id: str) -> PotofuArtistData:
-        user_data = self.get_json(f"https://api.potofu.me/users/{user_id}")
+        user_data = self.get(f"https://api.potofu.me/users/{user_id}").json()
         return PotofuArtistData(**user_data["user"])
 
 

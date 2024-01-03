@@ -226,7 +226,7 @@ class Ascii2dSession(Session):
         # can't use /color/md5 because sometimes the result is not cached and requires a cloudflare-protected POST
         ascii2d_url = f"https://ascii2d.net/search/url/{url}"
         try:
-            response = self.get_html(ascii2d_url)
+            response = self.get(ascii2d_url).html
         except HTTPError as e:
             if e.status_code == 502:
                 logger.error("ASCII2D is having issues. Skipping check.")

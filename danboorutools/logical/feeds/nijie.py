@@ -1,5 +1,4 @@
 from collections.abc import Iterator
-from datetime import datetime
 
 from bs4 import Tag
 
@@ -15,7 +14,7 @@ class NijieFeed(Feed):
         page = 1
         while True:
             base_url = f"https://nijie.info/like_user_view.php?p={page}"
-            html = self.session.get_html(base_url)
+            html = self.session.get(base_url).html
             posts = html.select("div#center_column div.nijie")
 
             yield posts

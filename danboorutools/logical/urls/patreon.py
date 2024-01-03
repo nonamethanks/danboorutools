@@ -39,14 +39,20 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
 
     @property
     def related(self) -> list[Url]:
+        if self.is_deleted:
+            return []
         return self.artist_data.related_urls
 
     @property
     def primary_names(self) -> list[str]:
+        if self.is_deleted:
+            return []
         return [self.artist_data.name]
 
     @property
     def secondary_names(self) -> list[str]:
+        if self.username:
+            return [self.username]
         return [self.artist_data.username] if self.artist_data.username else []
 
 

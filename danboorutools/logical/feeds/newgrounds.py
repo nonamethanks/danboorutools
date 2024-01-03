@@ -11,7 +11,7 @@ from danboorutools.models.url import Url
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from bs4 import BeautifulSoup, Tag
+    from bs4 import Tag
 
 
 class NewgroundsFeed(Feed):
@@ -21,7 +21,7 @@ class NewgroundsFeed(Feed):
         feed_url = "https://www.newgrounds.com/social/feeds/show/favorite-artists"
 
         while True:
-            posts_page: BeautifulSoup = self.session.get_html(feed_url)
+            posts_page = self.session.get(feed_url).html
             thumbnails = posts_page.select(".pod-body a.portal-feed-large-title")
 
             if not thumbnails:

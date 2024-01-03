@@ -26,16 +26,23 @@ class EHentaiUrl(Url):
     def html(self) -> BeautifulSoup:
         if not isinstance(self, EHentaiPageUrl | EHentaiGalleryUrl):
             raise TypeError
-
+        self.session.browser_login()
         try:
-            return self.session.get_html(self.normalized_url)
+            self.session.head(self.normalized_url)
         except DeadUrlError:
-            if self.subsite == "exhentai":
+            if self.subsite == "exhentai":  # pylint: disable=access-member-before-definition
                 raise
+            else:
+                self.subsite = "exhentai"  # pylint: disable=attribute-defined-outside-init
+                del self.__dict__["normalized_url"]
+                return self.html
 
-        self.subsite = "exhentai"
-        del self.__dict__["normalized_url"]
-        return self.html
+        browser = self.session.browser
+
+        if browser.current_url != self.normalized_url:
+            browser.get(self.normalized_url)
+
+        return BeautifulSoup(browser.page_source, "html5lib")
 
 
 class EHentaiImageUrl(PostAssetUrl, EHentaiUrl):

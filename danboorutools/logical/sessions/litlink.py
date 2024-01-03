@@ -9,10 +9,12 @@ from danboorutools.util.misc import BaseModel, extract_urls_from_string
 class LitLinkSession(Session):
     def artist_data(self, username: str) -> LitLinkArtistData:
         artist_url = f"https://lit.link/{username}"
-        artist_data = self.extract_json_from_html(artist_url, pattern=r"(.*)", selector="script#__NEXT_DATA__")
+        response = self.get(artist_url)
+        artist_data = response.search_json(pattern=r"(.*)", selector="script#__NEXT_DATA__")
         profile_data = artist_data["props"]["pageProps"]["profile"]
+
         if profile_data is None:
-            raise DeadUrlError(status_code=200, original_url=artist_url)
+            raise DeadUrlError(response)
         return LitLinkArtistData(**profile_data)
 
 

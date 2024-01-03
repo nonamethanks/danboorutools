@@ -40,9 +40,8 @@ class ThreadsSession(Session):
         }
 
         response = self.post("https://www.threads.net/api/graphql", cookies=cookies, headers=headers, data=data)
-        artist_data = self._try_json_response(response)
 
-        return ThreadsArtistData(**artist_data["data"]["xdt_user_by_username"])
+        return ThreadsArtistData(**response.json()["data"]["xdt_user_by_username"])
 
 
 class ThreadsArtistData(BaseModel):

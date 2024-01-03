@@ -36,7 +36,7 @@ class EmotionflowArtistUrl(ArtistUrl, EmotionflowUrl):
 
     @cached_property
     def profile_html(self) -> Tag:
-        return self.session.get_html(f"{self.normalized_url}profile.html")
+        return self.session.get(f"{self.normalized_url}profile.html").html
 
 
 class EmotionflowPostUrl(PostUrl, EmotionflowUrl):

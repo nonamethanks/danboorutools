@@ -26,7 +26,7 @@ class FanboxSession(Session):
         if use_cookies:
             kwargs["cookies"] = {"FANBOXSESSID": os.environ["FANBOX_FANBOXSESSID"]} | kwargs.get("cookies", {})
 
-        data = self.get_json(json_url, *args, **kwargs)
+        data = self.get(json_url, *args, **kwargs).json()
         if data.get("error") == "general_error":
             raise NotImplementedError(f"Couldn't get the data from {json_url}: {data}")
 

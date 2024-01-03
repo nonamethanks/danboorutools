@@ -10,7 +10,7 @@ class AfdianSession(Session):
     def artist_data(self, username: str) -> AfdianArtistData:
         url = f"https://afdian.net/api/user/get-profile-by-slug?url_slug={username}"
         resp = self.get(url)
-        data = self._try_json_response(resp)
+        data = resp.json()
 
         if data.get("em") == "用户不存在":  # User does not exist
             raise DeadUrlError(response=resp)

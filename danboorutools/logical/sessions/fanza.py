@@ -28,7 +28,7 @@ class FanzaSession(Session):
         return super().request(*args, **kwargs)
 
     def book_data(self, book_id: str) -> FanzaBookData:
-        response = self.get_json(f"https://book.dmm.co.jp/ajax/bff/content/?shop_name=adult&content_id={book_id}")
+        response = self.get(f"https://book.dmm.co.jp/ajax/bff/content/?shop_name=adult&content_id={book_id}").json()
         return FanzaBookData(**response)
 
 

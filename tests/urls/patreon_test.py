@@ -41,11 +41,22 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-class TestPatreonArtistUrl(_TestArtistUrl):
+class TestPatreonArtistUrl1(_TestArtistUrl):
     url_string = "https://www.patreon.com/himetyanart"
     url_type = PatreonArtistUrl
     url_properties = dict(username="himetyanart")
     primary_names = ["Hime-Tyan Art"]
     secondary_names = ["himetyanart"]
-    related = ["https://www.instagram.com/tyanka6", "https://twitter.com/Antyan87884404"
+    related = ["https://www.instagram.com/tyanka6",
+               "https://twitter.com/Antyan87884404",
                "https://www.youtube.com/channel/UC2XXjmV5QdgkT4iJlkk-1ew"]
+
+
+class TestPatreonArtistUrl2(_TestArtistUrl):
+    url_string = "https://www.patreon.com/teiputi"
+    url_type = PatreonArtistUrl
+    url_properties = dict(username="teiputi")
+    primary_names = []
+    secondary_names = ["teiputi"]
+    related = []
+    is_deleted = True

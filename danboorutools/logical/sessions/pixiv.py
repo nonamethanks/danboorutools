@@ -29,10 +29,10 @@ class PixivSession(Session):
     def cookies_from_env(self) -> dict[str, str]:
         return {"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]}.copy()
 
-    def get_json(self, *args, skip_cache: bool = False, **kwargs) -> dict:
+    def get_api(self, url: str) -> dict:
         self.cookies.clear()  # pixiv does not like it if I send it the cookies from a previous request
-        resp = self.get(*args, skip_cache=skip_cache, **kwargs)
-        json_data = self._try_json_response(resp)
+        resp = self.get(url)
+        json_data = resp.json()
 
         if json_data.get("error", False) is not False:
             if json_data["message"] in DELETION_MESSAGES:
@@ -49,23 +49,23 @@ class PixivSession(Session):
 
     def artist_data(self, user_id: int | str) -> PixivArtistData:
         url = f"https://www.pixiv.net/touch/ajax/user/details?id={user_id}&lang=en"
-        data = self.get_json(url)
+        data = self.get_api(url)
         return PixivArtistData(**data["user_details"])
 
     def post_data(self, post_id: int | str) -> PixivSingleIllustData:
-        data = self.get_json(f"https://www.pixiv.net/ajax/illust/{post_id}?lang=en")
+        data = self.get_api(f"https://www.pixiv.net/ajax/illust/{post_id}?lang=en")
         return PixivSingleIllustData(**data)
 
     def get_feed(self, page: int) -> list[PixivGroupedIllustData]:
         url = f"https://www.pixiv.net/touch/ajax/follow/latest?type=illusts&include_meta=0&p={page}&lang=en"
-        json_data = self.get_json(url)
+        json_data = self.get_api(url)
         if not (posts_data := json_data["illusts"]):
             raise NotImplementedError("No posts found. Check cookie.")
         return [PixivGroupedIllustData(**post_data) for post_data in posts_data]
 
     def get_user_illusts(self, user_id: int, page: int) -> list[PixivGroupedIllustData]:
         url = f"https://www.pixiv.net/touch/ajax/user/illusts?id={user_id}&p={page}&lang=en"
-        json_data = self.get_json(url)
+        json_data = self.get_api(url)
         return [PixivGroupedIllustData(**post_data) for post_data in json_data["body"]["illusts"]]
 
 
