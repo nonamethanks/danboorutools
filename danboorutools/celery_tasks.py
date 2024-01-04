@@ -57,7 +57,7 @@ class CustomCeleryTask(Task):  # pylint: disable=abstract-method
 
         now = datetime.datetime.now(datetime.UTC).astimezone()
         pretty_name = self.name.replace("danboorutools.celery_tasks.", "")
-        subject = f"Failure on task {pretty_name}"
+        subject = f"Failure on task {pretty_name}, exc: {exc.__class__.__name__}"
         traceback: str = einfo.traceback
         message = f"The task {pretty_name} failed at {now} with the following exception:\n\n{traceback}"
         try:
