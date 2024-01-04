@@ -73,14 +73,18 @@ class TwitterSession(Session):
         if not data:
             raise DeadUrlError(response=response)
 
-        try:
+        if "user" in data:
             user_data = data["user"]
-        except KeyError:
+        elif "data" in data:
             try:
                 user_data = data["data"]["user"]
-            except KeyError:
-                print(data)  # noqa: T201
-                raise
+            except KeyError as e:
+                if data["data"] == {}:
+                    raise DeadUrlError(response) from e
+                else:
+                    raise
+        else:
+            raise NotImplementedError(data)
 
         if not user_data:
             raise DeadUrlError(response=response)
