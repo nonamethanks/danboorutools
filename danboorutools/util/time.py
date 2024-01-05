@@ -7,7 +7,7 @@ from dateutil import parser
 def datetime_from_string(time_value: str | float | datetime.datetime, backup_tz: str | None = None) -> datetime.datetime:
     """Parse an int or str into a datetime."""
 
-    timezone = ZoneInfo(name=backup_tz) if backup_tz else datetime.UTC
+    timezone = ZoneInfo(backup_tz) if backup_tz else datetime.UTC
 
     if isinstance(time_value, int | float) or (isinstance(time_value, str) and time_value.isnumeric()):
         # unix timestamp
