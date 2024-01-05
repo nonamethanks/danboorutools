@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from danboorutools.models.url import ArtistUrl, Url
 
 
@@ -10,7 +12,7 @@ class RedditUserUrl(ArtistUrl, RedditUrl):
 
     normalize_template = "https://www.reddit.com/user/{username}"
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         return "Sorry, nobody on Reddit goes by that name" in str(self.html)
 

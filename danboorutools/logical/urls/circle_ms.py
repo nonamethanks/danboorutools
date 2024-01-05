@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from danboorutools.logical.sessions.circle_ms import CircleMsSession
 from danboorutools.models.url import InfoUrl, Url
 
@@ -11,7 +13,7 @@ class CircleMsCircleUrl(InfoUrl, CircleMsUrl):
 
     normalize_template = "https://portal.circle.ms/Circle/Index/{circle_id}"
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         if "※検索キーワードを入力してください" in str(self.html):
             return True

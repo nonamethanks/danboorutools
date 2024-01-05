@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import Literal
 
 from danboorutools.models.url import ArtistUrl, PostUrl, Url
@@ -12,7 +13,7 @@ class GamerTwArtistUrl(ArtistUrl, GamerTwUrl):
 
     normalize_template = "https://home.gamer.com.tw/homeindex.php?owner={artist_id}"
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         if "查詢失敗" in str(self.html):
             return True
@@ -39,7 +40,7 @@ class GamerTwPostUrl(PostUrl, GamerTwUrl):
 
     normalize_template = "https://home.gamer.com.tw/creationDetail.php?sn={post_id}"
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         if "查無此作品" in str(self.html):
             return True

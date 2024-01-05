@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.url import InfoUrl, PostAssetUrl, Url
 
@@ -23,7 +25,7 @@ class MyportfolioArtistUrl(InfoUrl, MyportfolioUrl):
     def related(self) -> list[Url]:
         return []
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         return ParsableUrl(self.session.get(self.normalized_url).url).domain == "adobe.com"
 

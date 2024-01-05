@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import cached_property
 
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.weibo import WeiboPostData, WeiboSession, WeiboUserData
@@ -105,7 +106,7 @@ class WeiboPostUrl(PostUrl, WeiboUrl):
     def created_at(self) -> datetime:
         return self.post_data.created_at
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         try:
             _ = self.post_data

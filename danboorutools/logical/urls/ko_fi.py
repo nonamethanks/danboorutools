@@ -39,7 +39,7 @@ class KoFiArtistUrl(ArtistUrl, KoFiUrl):
     def secondary_names(self) -> list[str]:
         return [self.username]
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         return self.session.get(self.normalized_url).url == "https://ko-fi.com/art?=redirect"
 

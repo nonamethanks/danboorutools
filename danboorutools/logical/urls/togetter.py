@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from danboorutools.logical.urls.twitter import TwitterArtistUrl
 from danboorutools.models.url import ArtistUrl, PostUrl, Url
 
@@ -23,7 +25,7 @@ class TogetterArtistUrl(ArtistUrl, TogetterUrl):
     def primary_names(self) -> list[str]:
         return []
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         return self.session.get(self.normalized_url).url == "https://min.togetter.com/"
 

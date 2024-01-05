@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from danboorutools.models.url import InfoUrl, Url
 
 
@@ -18,6 +20,6 @@ class HtmlCoJpArtistUrl(InfoUrl, Url):
     def related(self) -> list[Url]:
         return []
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         return True

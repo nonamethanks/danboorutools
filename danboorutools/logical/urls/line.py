@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import Literal
 
 from danboorutools.models.url import ArtistUrl, PostUrl, Url
@@ -13,7 +14,7 @@ class LineArtistUrl(ArtistUrl, LineUrl):
 
     normalize_template = "https://store.line.me/{store}/author/{artist_id}"
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         if self.html.select("[data-test='author-item']"):
             return False
@@ -44,7 +45,7 @@ class LinePostUrl(PostUrl, LineUrl):
 
     normalize_template = "https://store.line.me/{store}/product/{product_id}"
 
-    @property
+    @cached_property
     def is_deleted(self) -> bool:
         raise NotImplementedError
         # need to implement logic in case of expired ones, such as https://store.line.me/stickershop/product/1003926/en

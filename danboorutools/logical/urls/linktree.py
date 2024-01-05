@@ -20,4 +20,4 @@ class LinktreeUrl(InfoUrl):
         if not url_els:
             raise NotImplementedError(self)
 
-        return [Url.parse(el["href"]) for el in url_els]
+        return [Url.parse(el.attrs["href"]) for el in url_els]
