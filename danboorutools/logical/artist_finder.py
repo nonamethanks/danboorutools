@@ -46,6 +46,12 @@ class ArtistFinder:
         self.saucenao = SaucenaoSession()
         self.ascii2d = Ascii2dSession()
 
+    @classmethod
+    def update_artist_urls(cls, artist_id: int) -> None:
+        artist, = danbooru_api.artists(id=artist_id)
+        urls = cls.find_all_related_urls(*artist.urls)
+        danbooru_api.update_artist_urls(artist=artist, urls=urls)
+
     def create_or_tag_artist_for_post(self, post: DanbooruPost, retry_skipped: bool = False) -> bool:
         if not isinstance((source := post.source), Url):
             raise TypeError(source)
@@ -162,12 +168,12 @@ class ArtistFinder:
     def find_all_related_urls(cls, *urls: InfoUrl) -> list[InfoUrl | GalleryUrl]:
         found_artist_urls: list[GalleryUrl | InfoUrl | UnknownUrl] = []
         for url in urls:
-            found_artist_urls += cls.extract_related_urls_recursively(url, found_artist_urls)
+            found_artist_urls += [u for u in cls.extract_related_urls_recursively(url, found_artist_urls) if u not in found_artist_urls]
 
         if unknown := list(filter(lambda x: isinstance(x, UnknownUrl), found_artist_urls)):
             raise NotImplementedError(unknown)
-        logger.debug(f"Found urls: {", ".join(map(str, found_artist_urls))}")
 
+        logger.debug(f"Found urls: {", ".join(map(str, found_artist_urls))}")
         return found_artist_urls  # type: ignore[return-value] # false positive
 
     @classmethod
