@@ -40,7 +40,7 @@ pyrate-limiter = "<3.0.0"
 requests-oauthlib = "^1.3.1"
 deviantart = "^0.1.5"
 ring = "^0.10.1"
-pillow = "^10.1.0"
+pillow = "^10.2.0"
 imagehash = "^4.3.1"
 discord-webhook = "^1.3.0"
 urllib3 = "^2.1.0"
@@ -54,7 +54,7 @@ aiofiles = "^23.2.1"                                      # needed for py-trans
 pykakasi = "^2.2.1"
 
 [tool.poetry.group.dev.dependencies]
-types-requests = "^2.31.0.10"
+types-requests = "^2.31.0.20231231"
 pylint = "^3.0.3"
 types-python-dateutil = "^2.8.19.14"
 mypy = "^1.8.0"
@@ -70,7 +70,7 @@ celery-types = "^0.20.0"
 types-peewee = "^3.17.0.0"
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.4.3"
+pytest = "^7.4.4"
 
 [build-system]
 requires = ["poetry-core"]

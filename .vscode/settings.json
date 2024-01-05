@@ -42,4 +42,5 @@
     },
     "python.analysis.typeCheckingMode": "off",
     "mypy-type-checker.importStrategy": "fromEnvironment",
+    "pylint.importStrategy": "fromEnvironment",
 }
