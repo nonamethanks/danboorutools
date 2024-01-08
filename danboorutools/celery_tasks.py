@@ -86,7 +86,12 @@ class CustomCeleryTask(Task):  # pylint: disable=abstract-method
         loguru_colors = ["e", "c", "g", "m", "r"]
         loguru_colors += [f"l{c}" for c in loguru_colors]
         color = random.choice(loguru_colors)
-        logger.remove()
+
+        try:
+            logger.remove()
+        except FileNotFoundError:
+            pass
+
         pretty_name = self.name.replace("danboorutools.celery_tasks.", "")
 
         logger_format = f"[<{color}>{pretty_name}</{color}>] " + "[{level}] {message}"
