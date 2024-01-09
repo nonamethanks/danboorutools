@@ -18,6 +18,7 @@ from danboorutools.logical.sessions.saucenao import SaucenaoArtistResult, Saucen
 from danboorutools.logical.urls.facebook import FacebookMediaSetUrl
 from danboorutools.logical.urls.google_drive import GoogleDriveFileUrl
 from danboorutools.logical.urls.instagram import InstagramUrl
+from danboorutools.logical.urls.nicovideo import NicovideoVideoUrl
 from danboorutools.logical.urls.steamcommunity import SteamcommunityFileUrl
 from danboorutools.logical.urls.twitch import TwitchVideoUrl
 from danboorutools.logical.urls.youtube import YoutubePlaylistUrl, YoutubeVideoUrl
@@ -232,7 +233,7 @@ class ArtistFinder:
                 logger.debug("Skipping because it's a useless url...")
                 continue
 
-            if isinstance(related_url, YoutubeVideoUrl | YoutubePlaylistUrl):
+            if isinstance(related_url, YoutubeVideoUrl | YoutubePlaylistUrl | NicovideoVideoUrl):
                 logger.debug(f"Skipping {related_url} because it has a high chance of being a random video.")
                 continue
 
