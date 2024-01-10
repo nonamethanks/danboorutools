@@ -69,6 +69,9 @@ class HTTPError(Exception):
     def message(self) -> str:
         return f"The request to {self.original_url} failed with status code {self.status_code}."
 
+    def __reduce__(self):
+        return (self.__class__, (self.response, self.status_code, self.original_url))
+
 
 class DownloadError(HTTPError):
     """A file download failed with a specific error."""
@@ -157,9 +160,6 @@ class DanbooruHTTPError(HTTPError):
             for row in self.backtrace:
                 msg += f"\n     {row}"
         return msg
-
-    def __reduce__(self):
-        return (self.__class__, (self.response,))
 
 
 class NoPostsError(Exception):
