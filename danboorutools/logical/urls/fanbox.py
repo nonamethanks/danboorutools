@@ -9,13 +9,6 @@ class FanboxUrl(Url):
     session = FanboxSession()
 
 
-class FanboxPostUrl(PostUrl, FanboxUrl):
-    username: str
-    post_id: int
-
-    normalize_template = "https://{username}.fanbox.cc/posts/{post_id}"
-
-
 class FanboxArtistUrl(ArtistUrl, FanboxUrl):
     username: str  # it's not guaranteed that this is the stacc. it might change.
 
@@ -42,6 +35,17 @@ class FanboxArtistUrl(ArtistUrl, FanboxUrl):
         if self.is_deleted:
             return [self.username]
         return list({self.artist_data.creatorId, self.username})
+
+
+class FanboxPostUrl(PostUrl, FanboxUrl):
+    username: str
+    post_id: int
+
+    normalize_template = "https://{username}.fanbox.cc/posts/{post_id}"
+
+    @property
+    def gallery(self) -> FanboxArtistUrl:
+        return FanboxArtistUrl.build(username=self.username)
 
 
 class FanboxOldPostUrl(RedirectUrl, FanboxUrl):
