@@ -27,7 +27,6 @@ RUN pip install -U pip poetry
 WORKDIR /code
 COPY --chown=danboorutools:danboorutools poetry.lock pyproject.toml /code/
 COPY --chown=danboorutools:danboorutools danboorutools /code/danboorutools
-COPY --chown=danboorutools:danboorutools celery_tasks.py /code/celery_tasks.py
 RUN mkdir /code/screenshots /code/cookies
 RUN mkdir /home/danboorutools/.ipython
 
