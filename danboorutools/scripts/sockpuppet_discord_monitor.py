@@ -91,8 +91,8 @@ class SockpuppetDetector:
                 continue
 
             events = self.dapi.user_events(
-                **{"user_session[session_id]": signup.user_session.session_id},
                 category_not="50,400,500,600",
+                user_session={"session_id": signup.user_session.session_id},
             )
 
             if not (other_events := [e for e in events if e.user.name != signup.user.name]):
@@ -118,11 +118,7 @@ class SockpuppetDetector:
                 if SOCK_AUTOBAN_MESSAGE and any(ban_r.lower().startswith(SOCK_AUTOBAN_MESSAGE.lower()) for ban_r in previous_ban_reasons):
                     user_to_ban = signup.user
                     if not user_to_ban.is_banned:
-                        assert user_to_ban.level <= 20
-                        assert user_to_ban.created_at
-                        assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
-                        logger.info(f"<r>BANNING USER {user_to_ban}</r>")
-                        danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN_MESSAGE)
+                        self.ban_user(user_to_ban, validate=True)
 
                     if user_to_ban.name != str(user_to_ban.id):
                         logger.info(f"<r>RENAMING USER {user_to_ban} {user_to_ban.name} -> '{user_to_ban.id}' </r>")
@@ -135,6 +131,16 @@ class SockpuppetDetector:
             })
 
         return found
+
+    def ban_user(self, user_to_ban: DanbooruUser, validate: bool = True) -> None:
+        if validate:
+            assert user_to_ban.level <= 20
+            assert user_to_ban.created_at
+            assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
+
+        logger.info(f"<r>BANNING USER {user_to_ban}</r>")
+        raise NotImplementedError(f"CHECK {user_to_ban}")
+        danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN_MESSAGE)
 
     def send_to_discord(self, sock: DanbooruUser, session_id: str,  other_users: list[DanbooruUser]) -> dict:
         webhook = DiscordWebhook(
@@ -230,11 +236,10 @@ class SockpuppetDetector:
         logger.info(f"User {signup.user} matches carrier {SOCK_AUTOBAN_CARRIER}")
 
         user_to_ban = signup.user
-        assert user_to_ban.level <= 20
-        assert user_to_ban.created_at
-        assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
-        logger.info(f"<r>BANNING USER {user_to_ban}</r>")
-        danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN_MESSAGE)
+        if len(other_users) > 20:
+            raise NotImplementedError("Something wrong")
+
+        self.ban_user(user_to_ban)
         if user_to_ban.name != str(user_to_ban.id):
             logger.info(f"<r>RENAMING USER {user_to_ban} {user_to_ban.name} -> '{user_to_ban.id}' </r>")
             danbooru_api.rename_user(user_to_ban.id, new_name=user_to_ban.id)
@@ -242,8 +247,7 @@ class SockpuppetDetector:
         for other_user in other_users:
             assert other_user.level <= 20
             if not other_user.is_banned:
-                logger.info(f"<r>BANNING USER {other_user}</r>")
-                danbooru_api.ban_user(other_user.id, reason=SOCK_AUTOBAN_MESSAGE)
+                self.ban_user(other_user, validate=False)
             if other_user.name != str(other_user.id):
                 logger.info(f"<r>RENAMING USER {other_user} {other_user.name} -> '{other_user.id}' </r>")
                 danbooru_api.rename_user(other_user.id, new_name=other_user.id)
