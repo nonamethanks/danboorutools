@@ -139,7 +139,6 @@ class SockpuppetDetector:
             assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
 
         logger.info(f"<r>BANNING USER {user_to_ban}</r>")
-        raise NotImplementedError(f"CHECK {user_to_ban}")
         danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN_MESSAGE)
 
     def send_to_discord(self, sock: DanbooruUser, session_id: str,  other_users: list[DanbooruUser]) -> dict:
