@@ -347,7 +347,7 @@ class ArtistFinder:
         candidate = candidate.replace("(", "_(").replace(")", ")_")  # add underscore before parenthesis
         candidate = re.sub(r"_+", "_", candidate)                    # merge multiple underscores
         candidate = candidate.replace("(_", "(").replace("_)", ")")  # remove underscores inside parentheses
-        candidate = candidate.strip("_(-").strip()                    # strip underscores, hyphens and parentheses from end of string
+        candidate = candidate.strip("_(-").strip()                   # strip underscores, hyphens and parentheses from end of string
         candidate = re.sub(r"_?\(\)", "", candidate)
 
         return candidate.lower()

@@ -7,6 +7,7 @@ from danboorutools import logger
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.pixiv import PixivArtistUrl, PixivStaccUrl, PixivUrl
+from danboorutools.logical.urls.weibo import WeiboPostUrl
 from danboorutools.models.danbooru import DanbooruPost
 from danboorutools.models.url import InfoUrl, PostAssetUrl, PostUrl, Url
 from danboorutools.util.misc import BaseModel
@@ -128,8 +129,10 @@ class _SaucenaoDanbooruData(_SaucenaoBaseDataResponse):
                 stacc = self.creator.replace(" ", "_")
                 result.found_urls += [PixivStaccUrl.build(stacc=stacc)]
                 result.secondary_names += [stacc]
+        elif isinstance(source_from_saucenao, WeiboPostUrl):
+            pass
         else:
-            raise NotImplementedError(self)
+            raise NotImplementedError(source_from_saucenao, self)
 
         return result
 
