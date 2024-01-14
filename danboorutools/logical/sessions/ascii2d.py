@@ -150,14 +150,22 @@ class Ascii2dArtistResult:
                 self.__parse_fanza_result(link_object, data)
             elif link_object.has_attr("href"):
                 post_url = Url.parse(url_groups[0]["href"])
-                artist_url = Url.parse(url_groups[1]["href"])
-                artist_name = url_groups[1].text
-                data["found_urls"].append(artist_url)
+                try:
+                    artist_url = Url.parse(url_groups[1]["href"])
+                except IndexError:
+                    artist_url = None
+                else:
+                    artist_name = url_groups[1].text
+
+                if artist_url:
+                    data["found_urls"].append(artist_url)
                 if isinstance(post_url, PixivPostUrl) and isinstance(artist_url, PixivArtistUrl):
                     data["primary_names"].append(artist_name)
                     data["posts"].append(post_url)
                 elif isinstance(post_url, TwitterPostUrl) and isinstance(artist_url, TwitterArtistUrl):
                     data["secondary_names"].append(artist_name)
+                elif isinstance(post_url, DlsiteWorkUrl) and artist_url is None:  # https://ascii2d.net/search/color/82e1cf49e0418979f5a69cd279cd9948
+                    data["posts"].append(post_url)
                 else:
                     raise NotImplementedError(link_object, self.search_url, post_url, artist_url)
             elif isinstance(parsed := Url.parse(site), PixivPostUrl):
