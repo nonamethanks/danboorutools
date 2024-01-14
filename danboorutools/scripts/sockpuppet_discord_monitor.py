@@ -210,11 +210,14 @@ class SockpuppetDetector:
     def _check_for_sock(self, signup: DanbooruUserEvent, other_users: list[DanbooruUser]) -> bool:
         patterns = [
             r"^f_?[a4]_?g_?s\d*$",
-            r"^f_?\w_?g_?g_?o_?t_?s?\d*$",
+            r"f_?\w_?g_?g_?o_?t_?s?\d*$",
             r"n[_\s]?[i1l][_\s]?g[_\s]?g[_\s]?[e3][_\s]?r[_\s]?s?\d*$",
             r"^(homosexuality|lgbt|yuri|h_?word)_?disease$",
             r"^get_?correct(ion|ed)_?dykes\d*$",
             r"is[\s_]hetero$",
+            r"^upvote_\w+_pics?$",
+            r"_yurishit$",
+            r"trannies\d*$",
         ]
 
         if not any(re.search(pattern, signup.user.name, flags=re.IGNORECASE) for pattern in patterns):
