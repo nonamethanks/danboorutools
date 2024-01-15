@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
 from functools import cached_property
-from itertools import count, repeat
+from itertools import count, repeat, starmap
 from typing import TYPE_CHECKING
 
 from requests.exceptions import ProxyError
@@ -13,6 +12,9 @@ from danboorutools.logical.sessions.pixiv import PixivArtistData, PixivGroupedIl
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from datetime import datetime
+
     from danboorutools.logical.feeds.pixiv import PixivFeed
 
 
@@ -211,8 +213,8 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
 
     normalize_template = "https://www.pixiv.net/en/users/{user_id}"
 
-    def _extract_posts_from_each_page(self):  # noqa: ANN202
-        return map(self.session.get_user_illusts, zip(repeat(self.user_id), count(1), strict=True))
+    def _extract_posts_from_each_page(self) -> Iterator[list[PixivGroupedIllustData]]:
+        return starmap(self.session.get_user_illusts, zip(repeat(self.user_id), count(1), strict=True))
 
     _process_post = _process_post
 

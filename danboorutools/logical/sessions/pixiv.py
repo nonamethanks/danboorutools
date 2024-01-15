@@ -7,15 +7,11 @@ from typing import TYPE_CHECKING, Literal
 from pydantic import Field
 
 from danboorutools.exceptions import DeadUrlError
-from danboorutools.logical.sessions import Session
+from danboorutools.logical.sessions import ScraperResponse, Session
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.pixiv_sketch import PixivSketchArtistUrl
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
-
-if TYPE_CHECKING:
-    from requests import Response
-
 
 DELETION_MESSAGES = [
     "User has left pixiv or the user ID does not exist.",
@@ -41,7 +37,7 @@ class PixivSession(Session):
 
         return json_data["body"]
 
-    def request(self, *args, **kwargs) -> Response:
+    def request(self, *args, **kwargs) -> ScraperResponse:
         kwargs["cookies"] = self.cookies_from_env
         if "/img/" in args[1]:
             kwargs["headers"] = kwargs.get("headers", {}) | {"Referer": "https://app-api.pixiv.net/"}
@@ -66,7 +62,8 @@ class PixivSession(Session):
     def get_user_illusts(self, user_id: int, page: int) -> list[PixivGroupedIllustData]:
         url = f"https://www.pixiv.net/touch/ajax/user/illusts?id={user_id}&p={page}&lang=en"
         json_data = self.get_api(url)
-        return [PixivGroupedIllustData(**post_data) for post_data in json_data["body"]["illusts"]]
+        illusts = json_data["illusts"]
+        return [PixivGroupedIllustData(**post_data) for post_data in illusts]
 
 
 class PixivArtistData(BaseModel):
