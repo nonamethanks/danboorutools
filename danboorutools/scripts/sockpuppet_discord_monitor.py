@@ -5,12 +5,14 @@ import os
 import re
 import time
 from datetime import UTC
+from pathlib import Path
 from typing import Literal
 
 import click
+import yaml
 from discord_webhook import DiscordEmbed, DiscordWebhook
 
-from danboorutools import logger
+from danboorutools import logger, settings
 from danboorutools.logical.progress_tracker import ProgressTracker
 from danboorutools.logical.sessions.danbooru import DanbooruApi, danbooru_api
 from danboorutools.models.danbooru import DanbooruUser, DanbooruUserEvent
@@ -21,6 +23,9 @@ if SOCK_AUTOBAN_MESSAGE and "sockpuppet of user #" not in SOCK_AUTOBAN_MESSAGE.l
     raise NotImplementedError("Message must be like 'Sockpuppet of user #'")
 SOCK_AUTOBAN_CARRIER = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTOBAN_CARRIER"].strip()
 SOCK_AUTOBAN_IP_PREFIXES = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTOBAN_IP_PREFIX"].strip().split(",")
+
+sock_config = yaml.safe_load(Path(settings.BASE_FOLDER / "sock_config.yaml").read_text(encoding="utf-8"))
+SOCK_PATTERNS = [re.compile(p, re.I) for p in sock_config["patterns"]]
 
 
 class SockpuppetDetector:
@@ -45,6 +50,10 @@ class SockpuppetDetector:
         if SOCK_AUTOBAN_CARRIER and SOCK_AUTOBAN_IP_PREFIXES:
             logger.info(f"<r>Will autoban any user with certain names and carrier == '{SOCK_AUTOBAN_CARRIER}' "
                         f"and IP starting with {SOCK_AUTOBAN_IP_PREFIXES}</r>")
+
+            logger.info("<r>Configured autoban patterns:<r>")
+            for pattern in SOCK_PATTERNS:
+                logger.opt(colors=False).info(f"{pattern}")
 
     def detect_and_post(self) -> None:
         latest_signups = self.get_latest_signups()
@@ -208,19 +217,7 @@ class SockpuppetDetector:
         logger.info(f"Updated {changed_count} messages.")
 
     def _check_for_sock(self, signup: DanbooruUserEvent, other_users: list[DanbooruUser]) -> bool:
-        patterns = [
-            r"^f_?[a4]_?g_?s\d*$",
-            r"f_?\w_?g_?g_?o_?t_?s?\d*$",
-            r"n[_\s]?[i1l][_\s]?g[_\s]?g[_\s]?[e3][_\s]?r[_\s]?s?\d*$",
-            r"^(homosexuality|lgbt|yuri|h_?word)_?disease$",
-            r"^get_?correct(ion|ed)_?dykes\d*$",
-            r"is[\s_]hetero$",
-            r"^(?:up|down)vote_\w+pics?$",
-            r"_yurishit$",
-            r"trannies\d*$",
-        ]
-
-        if not any(re.search(pattern, signup.user.name, flags=re.IGNORECASE) for pattern in patterns):
+        if not any(pattern.search(signup.user.name) for pattern in SOCK_PATTERNS):
             return False
 
         logger.info(f"User {signup.user} matches name regex")

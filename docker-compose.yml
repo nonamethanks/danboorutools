@@ -14,6 +14,7 @@ services:
       # development
       - ./danboorutools:/code/danboorutools/:ro
       - ./pyproject.toml:/code/pyproject.toml:ro
+      - ./sock_config.yaml:/code/sock_config.yaml
       - ./logs:/code/logs/
       - ./data:/code/data/
       - ./tests:/code/tests:ro
