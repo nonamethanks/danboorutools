@@ -29,7 +29,7 @@ class File:
         match path.suffix.strip("."):
             case "rar" | "zip":
                 return ArchiveFile(raw_path=path)
-            case "jpg", "png":
+            case "jpg" | "png":
                 return ImageFile(raw_path=path)
             case _:
                 return UnknownFile(raw_path=path)
