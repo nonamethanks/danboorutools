@@ -30,8 +30,11 @@ class Logger(_Logger):
                     **kwargs) -> Path:
         caller_path = Path(inspect.stack()[1].filename)
 
+        skip_first_print = False
         if precise_file_path:
             final_path = Path(precise_file_path)
+            if precise_file_path.exists():
+                skip_first_print = True
         else:
             if filename:  # noqa: SIM108
                 filename = Path(filename).stem + "_{time}.log"
@@ -44,7 +47,10 @@ class Logger(_Logger):
         file_handler = self.add(final_path, retention=retention, enqueue=True, level=level, **kwargs)
 
         log_path = Path(self._core.handlers[file_handler]._sink._file.name)
-        logger.trace(f"Started logging at {log_path}.")
+
+        if not skip_first_print:
+            logger.trace(f"Started logging at {log_path}.")
+
         return log_path
 
 
