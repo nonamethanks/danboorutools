@@ -215,7 +215,7 @@ class SockpuppetDetector:
             r"^(homosexuality|lgbt|yuri|h_?word)_?disease$",
             r"^get_?correct(ion|ed)_?dykes\d*$",
             r"is[\s_]hetero$",
-            r"^upvote_\w+_pics?$",
+            r"^(?:up|down)vote_\w+pics?$",
             r"_yurishit$",
             r"trannies\d*$",
         ]
