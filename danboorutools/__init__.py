@@ -33,7 +33,7 @@ class Logger(_Logger):
         skip_first_print = False
         if precise_file_path:
             final_path = Path(precise_file_path)
-            if precise_file_path.exists():
+            if final_path.exists():
                 skip_first_print = True
         else:
             if filename:  # noqa: SIM108
