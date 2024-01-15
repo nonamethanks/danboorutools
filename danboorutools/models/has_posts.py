@@ -38,7 +38,8 @@ class HasPosts:
             self._collected_posts = []
             raise
 
-        logger.info(f"Finished scanning. {len(self._collected_posts)} {"new " if self.known_posts else ""}posts found.")
+        diff = len([p for p in self._collected_posts if p not in self.known_posts])
+        logger.info(f"Finished scanning. {diff} {"new " if self.known_posts else ""}posts found.")
 
         collected_posts = self._collected_posts
         self._collected_posts = []
@@ -87,6 +88,7 @@ class HasPosts:
                        is_deleted: bool = False,
                        ) -> None:
         if post in self.known_posts:
+            logger.info(f"Found a previously-seen post: {post}. Rescanning.")
             warnings.warn("Found a previously seen post.", FoundKnownPost, stacklevel=2)
             # No need to reassign, because urls are cached
 
