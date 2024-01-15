@@ -20,22 +20,26 @@ settings = _GlobalSettings()
 
 
 class Logger(_Logger):
-    def log_to_file(self,
+    def log_to_file(self,  # noqa: PLR0913
                     *,
                     filename: str | Path | None = None,
                     folder: str | Path | None = None,
                     retention: str | int = "7 days",
                     level: str = "TRACE",
+                    precise_file_path: str | Path | None = None,
                     **kwargs) -> Path:
         caller_path = Path(inspect.stack()[1].filename)
 
-        if filename:  # noqa: SIM108
-            filename = Path(filename).stem + "_{time}.log"
+        if precise_file_path:
+            final_path = Path(precise_file_path)
         else:
-            filename = Path(inspect.stack()[1].filename).name + "_{time}.log"
+            if filename:  # noqa: SIM108
+                filename = Path(filename).stem + "_{time}.log"
+            else:
+                filename = Path(inspect.stack()[1].filename).name + "_{time}.log"
 
-        folder = Path(folder) if folder else settings.BASE_FOLDER / "logs" / "scripts" / caller_path.stem
-        final_path = Path(folder) / filename
+            folder = Path(folder) if folder else settings.BASE_FOLDER / "logs" / "scripts" / caller_path.stem
+            final_path = Path(folder) / filename
 
         file_handler = self.add(final_path, retention=retention, enqueue=True, level=level, **kwargs)
 
