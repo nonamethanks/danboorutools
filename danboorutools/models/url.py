@@ -238,6 +238,9 @@ class ArtistAlbumUrl(GalleryUrl, Url):
 
 ########################################################################
 
+class DuplicateAssetError(Exception):
+    ...
+
 
 class PostUrl(Url):
     """A post contains multiple assets."""
@@ -251,7 +254,7 @@ class PostUrl(Url):
             assert isinstance(asset, PostAssetUrl), asset
 
         if asset in self.assets:
-            raise NotImplementedError(self, asset, self.assets)
+            raise DuplicateAssetError(self, asset, self.assets)
 
         asset.is_deleted = is_deleted
         asset.post = self  # pylint: disable=attribute-defined-outside-init # false positive
@@ -332,7 +335,6 @@ class PostAssetUrl(_AssetUrl, Url):
     @cached_property
     def post(self) -> PostUrl | None:
         raise NotImplementedError(self, "hasn't implemented post extraction.")
-
 
 
 class GalleryAssetUrl(_AssetUrl, Url):

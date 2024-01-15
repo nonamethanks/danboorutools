@@ -48,7 +48,6 @@ class HasPosts:
 
     def _extract_all_posts(self) -> None:
         for page, post_objects in enumerate(self._extract_posts_from_each_page()):  # type: ignore[var-annotated]
-            post_objects: list[PostT]
             if not post_objects:
                 logger.info("No more posts found. Quitting...")
                 return
