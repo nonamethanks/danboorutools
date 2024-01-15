@@ -51,9 +51,9 @@ class SockpuppetDetector:
             logger.info(f"<r>Will autoban any user with certain names and carrier == '{SOCK_AUTOBAN_CARRIER}' "
                         f"and IP starting with {SOCK_AUTOBAN_IP_PREFIXES}</r>")
 
-            logger.info("<r>Configured autoban patterns:<r>")
+            logger.info("<r>Configured autoban patterns:</r>")
             for pattern in SOCK_PATTERNS:
-                logger.opt(colors=False).info(f"{pattern}")
+                logger.info(f">  <r>{pattern}</r>")
 
     def detect_and_post(self) -> None:
         latest_signups = self.get_latest_signups()
