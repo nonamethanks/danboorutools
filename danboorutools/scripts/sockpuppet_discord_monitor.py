@@ -235,8 +235,8 @@ class SockpuppetDetector:
         logger.info(f"User {signup.user} matches carrier {SOCK_AUTOBAN_CARRIER}")
 
         user_to_ban = signup.user
-        if len(other_users) > 20:
-            raise NotImplementedError("Something wrong")
+        if len([u for u in other_users if not u.is_banned]) > 20:
+            raise NotImplementedError("Something's wrong, too many unbanned users.")
 
         self.ban_user(user_to_ban)
         if user_to_ban.name != str(user_to_ban.id):
