@@ -1,10 +1,9 @@
 from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
-from danboorutools.logical.urls.reddit import RedditPostUrl, RedditUrl, RedditUserUrl
+from danboorutools.logical.urls.reddit import RedditPostRedirectUrl, RedditPostUrl, RedditUrl, RedditUserUrl
 
 
 class RedditComParser(UrlParser):
-
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> RedditUrl | None:
         match parsable_url.url_parts:
@@ -29,6 +28,12 @@ class RedditComParser(UrlParser):
                                      post_id=post_id,
                                      title=title,
                                      second_post_id=second_post_id)
+
+            # https://www.reddit.com/r/Afrobull/s/EvhJrKokJV
+            case "r", subreddit, "s", post_id:
+                return RedditPostRedirectUrl(parsed_url=parsable_url,
+                                             subreddit=subreddit,
+                                             redirect_post_id=post_id)
 
             # https://www.reddit.com/user/blank_page_drawings/comments/nfjz0d/a_sleepy_orc/
             # https://www.reddit.com/user/blank_page_drawings/comments/nfjz0d

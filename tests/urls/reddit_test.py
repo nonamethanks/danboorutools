@@ -1,8 +1,8 @@
 import pytest
 
-from danboorutools.logical.urls.reddit import RedditPostUrl, RedditUserUrl
+from danboorutools.logical.urls.reddit import RedditPostRedirectUrl, RedditPostUrl, RedditUserUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import _TestInfoUrl
+from tests.helpers.scraping import _TestInfoUrl, _TestRedirectUrl
 
 urls = {
     RedditUserUrl: {
@@ -19,6 +19,9 @@ urls = {
         "https://www.reddit.com/gallery/ttyccp": "https://www.reddit.com/comments/ttyccp",
         "https://www.reddit.com/ttyccp": "https://www.reddit.com/comments/ttyccp",
         "http://www.reddit.com/r/Kappa/comments/34d761/shirt_idea_for_alex_myers_sponsorship/cqu5yc3": "https://www.reddit.com/r/Kappa/comments/34d761/shirt_idea_for_alex_myers_sponsorship/cqu5yc3",
+    },
+    RedditPostRedirectUrl: {
+        "https://www.reddit.com/r/Afrobull/s/EvhJrKokJV": "https://www.reddit.com/r/Afrobull/s/EvhJrKokJV",
     },
 }
 
@@ -49,3 +52,10 @@ class TestRedditUserUrl2(_TestInfoUrl):
     secondary_names = []
     related = []
     is_deleted = True
+
+
+class TestRedditRedirectPostUrl(_TestRedirectUrl):
+    url_string = "https://www.reddit.com/r/Afrobull/s/EvhJrKokJV"
+    url_type = RedditPostRedirectUrl
+    url_properties = dict(redirect_post_id="EvhJrKokJV", subreddit="Afrobull")
+    redirects_to = "https://www.reddit.com/r/Afrobull/comments/186gyjb/november_2023_fanart_poll_winner_%F0%9D%97%96%F0%9D%97%AE%F0%9D%97%BA%F0%9D%97%BA%F0%9D%98%86_street"

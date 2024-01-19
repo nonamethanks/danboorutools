@@ -1,6 +1,6 @@
 from functools import cached_property
 
-from danboorutools.models.url import ArtistUrl, Url
+from danboorutools.models.url import ArtistUrl, RedirectUrl, Url
 
 
 class RedditUrl(Url):
@@ -64,3 +64,10 @@ class RedditPostUrl(ArtistUrl, RedditUrl):
             return f"https://www.reddit.com/comments/{post_id}"
         else:
             raise NotImplementedError(kwargs)
+
+
+class RedditPostRedirectUrl(RedirectUrl, RedditUrl):
+    subreddit: str
+    redirect_post_id: str
+
+    normalize_template = "https://www.reddit.com/r/{subreddit}/s/{redirect_post_id}"
