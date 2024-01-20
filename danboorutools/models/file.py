@@ -126,16 +126,6 @@ class ImageFile(File):
         """Return the height of this file."""
         return self.sizes[1]
 
-    @classmethod
-    def from_dict(cls, /, **kwargs) -> File:
-        width, height = kwargs.pop("width", None), kwargs.pop("height", None)
-        instance: ImageFile = super().from_dict(**kwargs)  # type: ignore[assignment]
-        if width is not None:
-            instance.width = width
-        if height is not None:
-            instance.height = height
-        return instance
-
     @cached_property
     def short_similarity_hash(self) -> str:
         """Return a short wavelet hash (256 char) for this image."""
@@ -159,16 +149,6 @@ class ImageFile(File):
         other_hash = other_file.long_similarity_hash
 
         return sum(c1 != c2 for c1, c2 in zip(own_hash, other_hash, strict=True))
-
-    def to_dict(self) -> dict:
-        return {
-            "path": self.path.resolve(),
-            "md5": self.md5,
-            "width": self.width,
-            "height": self.height,
-            "short_similarity_hash": self.short_similarity_hash,
-            "long_similarity_hash": self.long_similarity_hash,
-        }
 
 
 class UnknownFile(File):
