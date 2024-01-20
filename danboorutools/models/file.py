@@ -69,7 +69,7 @@ class File:
     @cached_property
     def md5(self) -> str:
         """Return the md5 of this file."""
-        hash_md5 = hashlib.md5()  # noqa: S324
+        hash_md5 = hashlib.md5(usedforsecurity=False)
 
         with self.path.open("rb") as myf:
             for chunk in iter(lambda: myf.read(4096), b""):
