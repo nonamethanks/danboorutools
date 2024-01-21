@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import shutil
 import tempfile
 from functools import cached_property
 from pathlib import Path
@@ -45,22 +46,22 @@ class File:
         destination_dir.mkdir(parents=True, exist_ok=True)
 
         mime_type = filetype.guess(path)
+
         if not mime_type:
-            return UnknownFile(raw_path=path)
+            final_path = path
+        else:
+            true_ext = mime_type.extension
+            final_path = path.with_suffix(f".{true_ext}")
 
         _file = cls.get_subclass_for(path)
-
-        true_ext = mime_type.extension
-        true_path = path.with_suffix(f".{true_ext}")
-
         if md5_as_filename:
-            true_path = true_path.with_stem(_file.md5)
+            final_path = final_path.with_stem(_file.md5)
 
-        _file.rename(destination_dir / true_path.name)
+        _file.rename(destination_dir / final_path.name)
         return cls.get_subclass_for(_file.path)
 
     def rename(self, target: str | Path) -> None:
-        self.raw_path = Path(self.path).rename(target)
+        self.raw_path = Path(shutil.move(self.path, target))
 
     @property
     def path(self) -> Path:
