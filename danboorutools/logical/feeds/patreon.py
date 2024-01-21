@@ -18,7 +18,7 @@ class PatreonFeed(Feed):
             page_json = self.session.get_feed(cursor)
 
             assert page_json.data
-            yield list(zip(page_json.data, repeat(page_json.included)))  # noqa: B905
+            yield list(zip(page_json.data, repeat(page_json.included)))
 
             cursor = page_json.data[-1].attributes.published_at
 
