@@ -81,6 +81,10 @@ class File:
     def delete(self) -> None:
         self.path.unlink()
 
+    @property
+    def file_size(self) -> int:
+        return self.path.stat().st_size
+
 
 class ArchiveFile(File):
     @cached_property
