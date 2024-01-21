@@ -81,19 +81,6 @@ class File:
     def delete(self) -> None:
         self.path.unlink()
 
-    @classmethod
-    def from_dict(cls, /, **kwargs) -> File:
-        instance = File.known(kwargs.pop("path"))
-        if (md5 := kwargs.pop("md5", None)) is not None:
-            instance.md5 = md5
-        return instance
-
-    def to_dict(self) -> dict:
-        return {
-            "path": self.path.resolve(),
-            "md5": self.md5,
-        }
-
 
 class ArchiveFile(File):
     @cached_property
