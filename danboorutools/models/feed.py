@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import inspect
 from functools import lru_cache
 from importlib import import_module
@@ -19,6 +20,7 @@ class Feed(HasPosts):  # pylint: disable=abstract-method
     session = Session()
 
     quit_early_page = 3
+    max_post_age = datetime.timedelta(days=7)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}[]"
@@ -73,7 +75,7 @@ class FeedWithSeparateArtists(Feed, Generic[ArtistTypeVar, PostDataVar]):
             for post_data in post_objects:
                 self._process_post(post_data)
 
-            if self.quit_early_page and page + 1 >= self.quit_early_page:
+            if not self.known_posts and page + 1 >= self.quit_early_page:
                 logger.info("Stopping early because it's a first-time scan...")
                 return
 

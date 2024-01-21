@@ -1,3 +1,7 @@
+from datetime import datetime
+from functools import cached_property
+from posixpath import ismount
+
 from danboorutools.logical.sessions.artstation import ArtstationArtistData, ArtstationPostData, ArtstationSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
@@ -58,10 +62,18 @@ class ArtStationPostUrl(PostUrl, ArtStationUrl):
     def _extract_assets(self) -> list[str]:
         return [asset["image_url"] for asset in self.post_data.assets if asset["has_image"]]
 
-    @property
+    @cached_property
     def gallery(self) -> ArtStationArtistUrl:
         username = self.username or self.post_data.user["username"]
         return ArtStationArtistUrl.build(username=username)
+
+    @cached_property
+    def created_at(self) -> datetime:
+        return self.post_data.created_at
+
+    @cached_property
+    def score(self) -> int:
+        return self.post_data.likes_count
 
 
 class ArtStationImageUrl(PostAssetUrl, ArtStationUrl):

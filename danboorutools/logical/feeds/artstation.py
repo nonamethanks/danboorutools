@@ -1,38 +1,25 @@
 from collections.abc import Iterator
-from itertools import count, repeat
+from itertools import count
 
-from danboorutools.logical.sessions.artstation import ArtstationPostData, ArtstationSession
+from danboorutools.logical.sessions.artstation import ArtstationSession
 from danboorutools.logical.urls.artstation import ArtStationPostUrl
-from danboorutools.models.feed import FeedWithSeparateArtists
-from danboorutools.models.url import PostAssetUrl, Url
+from danboorutools.models.feed import Feed
+from danboorutools.models.url import Url
 
 
-class ArtstationFeed(FeedWithSeparateArtists):
+class ArtstationFeed(Feed):
     session = ArtstationSession()
 
-    _extract_artists = session.get_followed_artists
+    def _extract_posts_from_each_page(self) -> Iterator[list[str]]:
+        return map(self.session.get_post_urls_from_feed, count(1))
 
-    def _extract_posts_from_each_artist(self, artist: str) -> Iterator[list[ArtstationPostData]]:
-        return map(self.session.get_posts_from_artist, zip(repeat(artist), count(1), strict=True))
-
-    def _process_post(self, post_object: ArtstationPostData) -> None:
-        if post_object.icons["pano"]:
-            return
-
-        post = Url.parse(post_object.permalink)
+    def _process_post(self, post_object: str) -> None:
+        post = Url.parse(post_object)
         assert isinstance(post, ArtStationPostUrl)
-
-        if post_object.asset_count == 1:
-            asset = Url.parse(post_object.cover["small_square_url"])
-            assert isinstance(asset, PostAssetUrl)
-            assets = [asset]
-
-        else:
-            assets = post.assets
 
         self._register_post(
             post=post,
-            assets=assets,
-            created_at=post_object.created_at,
-            score=post_object.likes_count,
+            assets=post.assets,
+            created_at=post.created_at,
+            score=post.score,
         )

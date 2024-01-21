@@ -21,6 +21,7 @@ class HasPosts:
 
     quit_early_page = 0
     check_revisions = True
+    max_post_age: datetime | None = None
 
     @final
     def extract_posts(self, known_posts: list[PostUrl] | None = None) -> list[PostUrl]:
@@ -34,6 +35,8 @@ class HasPosts:
         try:
             logger.info(f"Scanning {self} for posts...")
             self._extract_all_posts()
+        except FoundPostTooOld:
+            logger.info("Found a post that's too old during a first-time scan. Quitting...")
         except (Exception, KeyboardInterrupt):
             self._collected_posts = []
             raise
@@ -66,7 +69,7 @@ class HasPosts:
 
                         seen_previous_post = True
 
-            if self.quit_early_page and page + 1 >= self.quit_early_page:
+            if not self.known_posts and page + 1 >= self.quit_early_page:
                 logger.info("Quitting early because it's a first-time scan...")
                 return
 
@@ -101,6 +104,10 @@ class HasPosts:
             return
 
         post.created_at = datetime_from_string(created_at) if created_at else datetime.now(tz=UTC)
+
+        if not self.known_posts and (self.max_post_age and post.created_at < datetime.now(tz=UTC) - self.max_post_age):
+            raise FoundPostTooOld
+
         post.score = score
         post.is_deleted = is_deleted
 
@@ -112,4 +119,8 @@ class HasPosts:
 
 
 class FoundKnownPost(Warning):
+    pass
+
+
+class FoundPostTooOld(Exception):
     pass

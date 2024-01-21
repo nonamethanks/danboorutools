@@ -4,19 +4,14 @@ import copy
 import os
 import warnings
 from datetime import datetime
-from typing import TYPE_CHECKING
 
-from pykakasi import UnknownCharacterException
 from requests.adapters import HTTPAdapter
 from urllib3.exceptions import InsecureRequestWarning
 
 from danboorutools.exceptions import NotAnUrlError, UnknownUrlError
-from danboorutools.logical.sessions import Session
+from danboorutools.logical.sessions import ScraperResponse, Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
-
-if TYPE_CHECKING:
-    from requests import Response
 
 
 class ArtstationSession(Session):
@@ -27,7 +22,7 @@ class ArtstationSession(Session):
         self.cert = None
         self.trust_env = False
 
-    def request(self, *args, verify: bool = False, **kwargs) -> Response:
+    def request(self, *args, verify: bool = False, **kwargs) -> ScraperResponse:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", InsecureRequestWarning)
             return super().request(*args, verify=verify, **kwargs)
@@ -35,18 +30,6 @@ class ArtstationSession(Session):
     def artist_data(self, username: str) -> ArtstationArtistData:
         response = self.get(f"https://www.artstation.com/users/{username}.json").json()
         return ArtstationArtistData(**response)
-
-    def get_followed_artists(self) -> list[str]:
-        username = os.environ["ARTSTATION_USERNAME"]
-        artists: set[str] = set()
-        page = 1
-        while True:
-            response = self.get(f"https://www.artstation.com/users/{username}/following.json?page={page}").json()
-            artists |= {user["subdomain"] for user in response["data"]}
-            if len(artists) < response["total_count"]:
-                page += 1
-            else:
-                return list(artists)
 
     def post_data(self, post_id: str) -> ArtstationPostData:
         url = f"https://www.artstation.com/projects/{post_id}.json"
@@ -57,6 +40,14 @@ class ArtstationSession(Session):
         url = f"https://www.artstation.com/users/{artist}/projects.json?page={page}"
         json_data = self.get(url).json()["data"]
         return [ArtstationPostData(**post_data) for post_data in json_data]
+
+    def get_post_urls_from_feed(self, page: int) -> list[str]:
+        cookies = {"ArtStationSessionCookie": os.environ["ARTSTATION_SESSION_COOKIE"]}
+        url = f"https://www.artstation.com/api/v2/community/explore/projects/following.json?page={page}&dimension=all&per_page=30"
+        json_data = self.get(url, cookies=cookies).json()["data"]
+        if json_data is None:
+            raise NotImplementedError("Cookie seems to have expired.")
+        return [post["url"] for post in json_data]
 
 
 class ArtstationArtistData(BaseModel):
