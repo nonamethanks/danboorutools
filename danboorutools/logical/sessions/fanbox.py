@@ -37,7 +37,7 @@ class FanboxSession(Session):
     def subscribe(self, username: str) -> None:
         cookies = {"FANBOXSESSID": os.environ["FANBOX_FANBOXSESSID"]}
 
-        html_request = self.get(f"https://{username}.fanbox.cc", cookies=cookies)
+        html_request = self.get(f"https://{username}.fanbox.cc", cookies=cookies, skip_cache=True)
         metadata_content = html_request.html.select_one("#metadata").attrs["content"]
         metadata = json.loads(html.unescape(metadata_content))
 
