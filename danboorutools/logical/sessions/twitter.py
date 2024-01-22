@@ -2,26 +2,73 @@ from __future__ import annotations
 
 import json
 import os
+import time
 
-from danboorutools.exceptions import DeadUrlError
+import ring
 
-# from datetime import datetime
-# from typing import TYPE_CHECKING
-# from pydantic import field_validator
+from danboorutools import logger
+from danboorutools.exceptions import DeadUrlError, NoCookiesForDomainError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
 
-# from danboorutools.util.time import datetime_from_string
-
-# if TYPE_CHECKING:
-#    from danboorutools.logical.urls.twitter import TwitterAssetUrl
-
-# SUSPENSION_MSG = "@{screen_name}'s account is temporarily unavailable because it violates the Twitter Media Policy. Learn more."
-
 
 class TwitterSession(Session):
     BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"  # noqa: S105
+
+    def subscribe(self, username: str) -> None:
+        self.browser_login()
+        self.browser.get(f"https://twitter.com/{username}")
+
+        if self.browser.find_elements("css selector", f"[aria-label='Following @{username}']"):
+            logger.info("Already subscribed.")
+            return
+
+        follow_button = self.browser.find_element("css selector", f"[aria-label='Follow @{username}']")
+        follow_button.click()
+        attempts = 0
+        while attempts < 5:
+            follow_button = self.browser.find_elements("css selector", f"[aria-label='Following @{username}']")
+            if follow_button and follow_button[0].text == "Following":
+                logger.info("Subscribed successfully.")
+                return
+            attempts += 1
+            time.sleep(1)
+        raise NotImplementedError(follow_button.text, username)
+
+    @ring.lru()
+    def browser_login(self) -> None:
+        try:
+            self.browser.load_cookies("twitter")
+            self.browser.get("https://twitter.com/home")
+            elements = self.browser.find_elements("css selector", ".public-DraftEditorPlaceholder-inner")
+        except NoCookiesForDomainError:
+            self._do_login()
+        else:
+            if not elements:
+                self._do_login()
+
+    def _do_login(self) -> None:
+        logger.info("Logging in to twitter...")
+        self.browser.delete_all_cookies()
+        self.browser.compile_login_form(
+            domain="twitter",
+            form_url="https://twitter.com/login",
+            steps=[
+                {
+                    "email": "[autocomplete='username']",
+                    "submit": ":has([autocomplete='username']) + div[role='button']",
+                },
+                {
+                    "password": "[autocomplete='current-password'][name='password']",
+                    "submit": "div[data-testid='LoginForm_Login_Button']",
+                },
+            ],
+            verification_url="https://twitter.com/home",
+            verification_element=".public-DraftEditorPlaceholder-inner",
+        )
+        # TODO: implement the stupid email confirmation
+        logger.trace("Successfully logged in in to twitter.")
 
     def user_data(self, user_name: str | None = None, user_id: int | None = None) -> TwitterUserData:
         csrf_token = os.environ["TWITTER_CSRF"]
@@ -118,47 +165,3 @@ class TwitterUserData(BaseModel):
                 related += [Url.parse(url_string)]
 
         return related
-
-
-# class TwitterTweetData(BaseModel):
-#     id: int
-#     created_at: datetime
-#     favorite_count: int
-#     extended_entities: dict[str, list[dict]] | None
-
-#     user: TwitterUserData
-
-#     @field_validator("created_at", mode="before")
-#     @classmethod
-#     def parse_created_at(cls, value: str) -> datetime:
-#         return datetime_from_string(value)
-
-#     @property
-#     def asset_urls(self) -> list[TwitterAssetUrl]:
-#         from danboorutools.logical.urls.twitter import TwitterAssetUrl
-
-#         if not self.extended_entities:
-#             return []
-
-#         assets = []
-#         for item in self.extended_entities["media"]:
-#             if item["type"] == "photo":
-#                 asset_str = item["media_url"] + ":orig"
-#             elif item["type"] == "animated_gif":
-#                 variants = item["video_info"]["variants"]
-#                 if len(variants) == 1:
-#                     asset_str = variants[0]["url"]
-#                 else:
-#                     raise NotImplementedError(variants)
-#             elif item["type"] == "video":
-#                 variants = item["video_info"]["variants"]
-#                 sorted_variants = sorted(variants, key=lambda k: k.get("bitrate", 0))
-#                 asset_str = sorted_variants[-1]["url"]
-#             else:
-#                 raise NotImplementedError(item)
-
-#             parsed = Url.parse(asset_str)
-#             assert isinstance(parsed, TwitterAssetUrl)
-#             assets.append(parsed)
-
-#         return assets

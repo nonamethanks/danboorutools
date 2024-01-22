@@ -60,6 +60,9 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     def artist_data(self) -> TwitterUserData:
         return self.session.user_data(user_name=self.username)
 
+    def subscribe(self) -> None:
+        return self.session.subscribe(self.username)
+
 
 class TwitterPostUrl(PostUrl, TwitterUrl):
     post_id: int
