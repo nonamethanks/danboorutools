@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-# import inspect
 from functools import cached_property, lru_cache
-from typing import TYPE_CHECKING, Self, TypeVar, final  # , get_type_hints
+from typing import TYPE_CHECKING, Self, TypeVar, final
 
 from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
 
-# from typeguard import check_type
 from danboorutools.exceptions import DeadUrlError, UnknownUrlError
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
@@ -80,7 +78,7 @@ class Url(metaclass=PseudoDataclass):
     if TYPE_CHECKING:
         # fucking mypy
         @classmethod  # type: ignore[no-redef]
-        def build(cls: type[UrlSubclass], /, **url_properties) -> UrlSubclass:  # noqa: F811 # pylint: disable=E0102,W0613
+        def build(cls: type[UrlSubclass], /, **url_properties) -> UrlSubclass:  # pylint: disable=E0102,W0613
             # sometimes type checkers really make me want to kill myself
             ...
 

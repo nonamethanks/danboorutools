@@ -1,4 +1,6 @@
-from danboorutools.exceptions import NotAnArtistError
+from functools import cached_property
+
+from danboorutools.exceptions import DeadUrlError, NotAnArtistError
 from danboorutools.logical.sessions.patreon import PatreonArtistData, PatreonSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
@@ -42,19 +44,28 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
     def related(self) -> list[Url]:
         if self.is_deleted:
             return []
-        return self.artist_data.related_urls
+        try:
+            return self.artist_data.related_urls
+        except NotAnArtistError:
+            return []
 
     @property
     def primary_names(self) -> list[str]:
         if self.is_deleted:
             return []
-        return [self.artist_data.name]
+        try:
+            return [self.artist_data.name]
+        except NotAnArtistError:
+            return []
 
     @property
     def secondary_names(self) -> list[str]:
         if self.username:
             return [self.username]
-        return [self.artist_data.username] if self.artist_data.username else []
+        try:
+            return [self.artist_data.username] if self.artist_data.username else []
+        except NotAnArtistError:
+            return []
 
     def subscribe(self) -> None:
         try:
@@ -62,6 +73,17 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
         except NotAnArtistError:
             return
         self.session.subscribe(username)
+
+    @cached_property
+    def is_deleted(self) -> bool:
+        try:
+            _ = self.artist_data
+        except DeadUrlError:
+            return True
+        except NotAnArtistError:
+            return False
+        else:
+            return False
 
 
 class PatreonImageUrl(PostAssetUrl, PatreonUrl):
