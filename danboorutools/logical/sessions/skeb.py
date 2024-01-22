@@ -21,7 +21,6 @@ from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 if TYPE_CHECKING:
-    from bs4 import BeautifulSoup
     from requests import Response
 
 
@@ -55,19 +54,19 @@ class SkebSession(Session):
         return bearer
 
     def login(self) -> None:
-        username = os.environ["TWITTER_USERNAME"]
+        email = os.environ["TWITTER_EMAIL"]
         password = os.environ["TWITTER_PASSWORD"]
 
         response = super().request("POST", "https://skeb.jp/api/auth/twitter")
         oauth_url = response.url
         assert oauth_url.startswith("https://api.twitter.com/oauth/authenticate?oauth_token="), oauth_url
-        html = response.html
 
         data = {
-            "authenticity_token": html.select_one("input[name='authenticity_token']")["value"],
+            "authenticity_token": response.html.select_one("input[name='authenticity_token']")["value"],
             "redirect_after_login": oauth_url,
+            "force_login": False,
             "oauth_token": ParsableUrl(oauth_url).query["oauth_token"],
-            "session[username_or_email]": username,
+            "session[username_or_email]": email,
             "session[password]": password,
             "remember_me": "1",
         }
@@ -76,40 +75,15 @@ class SkebSession(Session):
             "referer": oauth_url,
         }
         response = super().request("POST", "https://api.twitter.com/oauth/authenticate", data=data, headers=headers)
-        html = response.html
-        if "Verify your identity by entering the phone number associated with your Twitter account." in str(html):
-            html = self.__login_with_phone(oauth_url, html)
-
-        skeb_callback = html.select_one("a.maintain-context")["href"]
+        skeb_callback = response.html.select_one("a.maintain-context")["href"]
         response = super().request("GET", skeb_callback, skip_cache=True)
 
         bearer = ParsableUrl(response.history[0].headers["Location"]).query["auth_token"]
         (settings.BASE_FOLDER / "cookies" / "skeb_bearer.txt").write_text(bearer, encoding="utf-8")
         self.save_cookies("_interslice_session")
 
-    def __login_with_phone(self, oauth_url: str, html: BeautifulSoup) -> BeautifulSoup:
-        phone_number = os.environ["TWITTER_PHONE_NUMBER"]
-        headers = {
-            "origin": "https://api.twitter.com",
-            "referer": oauth_url,
-        }
-        data = {
-            "authenticity_token": html.select_one("input[name='authenticity_token']")["value"],
-            "challenge_id": html.select_one("input[name='challenge_id']")["value"],
-            "enc_user_id": html.select_one("input[name='enc_user_id']")["value"],
-            "challenge_type": "RetypePhoneNumber",
-            "platform": "web",
-            "redirect_after_login": html.select_one("input[name='authenticity_token']")["value"],
-            "remember_me": "",
-            "challenge_response": phone_number,
-        }
-        response = super().request("POST", "https://twitter.com/account/login_challenge", data=data, headers=headers)
-        if not response.status_code == 200:
-            raise NotImplementedError(self)
-        return response.html
-
     def get_feed(self, offset: int | None = None, limit: int | None = None) -> list[SkebPostFeedData]:
-        username = os.environ["TWITTER_USERNAME"]
+        username = os.environ["SKEB_USERNAME"]
         offset = offset or 0
         limit = limit or 90
         feed_data = self.get(f"https://skeb.jp/api/users/{username}/following_works?sort=date&offset={offset}&limit={limit}").json()
