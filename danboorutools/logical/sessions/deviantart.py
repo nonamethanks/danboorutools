@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import warnings
 from functools import cached_property
 
 import deviantart
@@ -11,6 +12,8 @@ from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.twitter import TwitterArtistUrl
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
+
+warnings.filterwarnings("ignore", module="deviantart", category=SyntaxWarning)
 
 
 class DeviantartSession(Session):
