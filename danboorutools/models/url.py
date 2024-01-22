@@ -221,6 +221,9 @@ class GalleryUrl(Url, HasPosts):  # pylint: disable=abstract-method
             super()._register_post(*args, **kwargs)
             kwargs.pop("post").gallery = self
 
+    def subscribe(self) -> None:
+        raise NotImplementedError(self, "hasn't implemented subscription.")
+
 
 class ArtistUrl(GalleryUrl, InfoUrl):  # pylint: disable=abstract-method
     """An artist url is a gallery but also has other extractable data."""

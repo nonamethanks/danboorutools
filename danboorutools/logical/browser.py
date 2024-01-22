@@ -9,9 +9,9 @@ from datetime import UTC
 from typing import TYPE_CHECKING
 
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from seleniumwire.webdriver import Chrome
 
 from danboorutools import logger, settings
 from danboorutools.exceptions import NoCookiesForDomainError
@@ -37,7 +37,17 @@ class Browser(Chrome):
 
         service = Service("/usr/bin/chromedriver")
 
-        super().__init__(service=service, options=options)
+        if (proxy_connection_string := os.environ.get("SELENIUM_PROXY_CONNECTION_STRING")):
+            seleniumwire_options = {
+                "proxy": {
+                    "http": proxy_connection_string,
+                    "verify_ssl": False,
+                },
+            }
+            super().__init__(service=service, options=options, seleniumwire_options=seleniumwire_options)
+
+        else:
+            super().__init__(service=service, options=options)
 
         self.cookie_dir = settings.BASE_FOLDER / "cookies"
 

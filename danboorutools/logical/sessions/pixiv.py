@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import os
+import time
 from datetime import datetime
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
+import ring
 from pydantic import Field
 
 from danboorutools.exceptions import DeadUrlError
@@ -21,10 +23,6 @@ DELETION_MESSAGES = [
 
 
 class PixivSession(Session):
-    @property
-    def cookies_from_env(self) -> dict[str, str]:
-        return {"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]}.copy()
-
     def get_api(self, url: str) -> dict:
         self.cookies.clear()  # pixiv does not like it if I send it the cookies from a previous request
         resp = self.get(url)
@@ -38,7 +36,7 @@ class PixivSession(Session):
         return json_data["body"]
 
     def request(self, *args, **kwargs) -> ScraperResponse:
-        kwargs["cookies"] = self.cookies_from_env
+        kwargs["cookies"] = {"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]}
         if "/img/" in args[1]:
             kwargs["headers"] = kwargs.get("headers", {}) | {"Referer": "https://app-api.pixiv.net/"}
         return super().request(*args, **kwargs)
@@ -64,6 +62,40 @@ class PixivSession(Session):
         json_data = self.get_api(url)
         illusts = json_data["illusts"]
         return [PixivGroupedIllustData(**post_data) for post_data in illusts]
+
+    def subscribe(self, user_id: int) -> None:
+
+        self.browser_login()
+
+        self.browser.get(f"https://www.pixiv.net/en/users/{user_id}")
+        button = self.browser.find_element("css selector", "button[data-click-label='follow']")
+        if button.text.strip() == "Following":
+            return
+
+        button.click()
+        attempts = 0
+        while attempts < 5:
+            button = self.browser.find_element("css selector", "button[data-click-label='follow']")
+            if button.text.strip() == "Following":
+                return
+
+            attempts += 1
+            time.sleep(1)
+
+        raise NotImplementedError(button.text)
+
+    @ring.lru()
+    def browser_login(self) -> None:
+        self.browser.delete_all_cookies()
+        cookie = {"name": "PHPSESSID", "value": os.environ["PIXIV_PHPSESSID_COOKIE"], "domain": ".pixiv.net"}
+        self.browser.execute_cdp_cmd("Network.enable", {})
+        self.browser.execute_cdp_cmd("Network.setCookie", cookie)
+        self.browser.execute_cdp_cmd("Network.disable", {})
+
+        # self.browser.get("https://www.pixiv.net/dashboard")
+        # if not self.browser.find_elements_by_text("Try posting your work"):
+        #     screenshot_path = self.browser.screenshot()
+        #     raise NotImplementedError(f"Could not log in. See {screenshot_path}")
 
 
 class PixivArtistData(BaseModel):

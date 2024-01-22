@@ -244,6 +244,9 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
     def artist_data(self) -> PixivArtistData:
         return self.session.artist_data(self.user_id)
 
+    def subscribe(self) -> None:
+        self.session.subscribe(self.user_id)
+
 
 class PixivMeUrl(RedirectUrl, PixivUrl):
     # Useful to have separate from Stacc, to get the pixiv ID indirectly
