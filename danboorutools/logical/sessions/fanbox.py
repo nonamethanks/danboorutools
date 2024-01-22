@@ -61,7 +61,7 @@ class FanboxSession(Session):
                 if response.json()["body"]["type"] == "already_followed":
                     return
             except KeyError as e:
-                e.add_note(response.json())
+                e.add_note(str(response.json()))
                 raise
             raise NotImplementedError(response.json())
         if response.json()["body"] is None:
