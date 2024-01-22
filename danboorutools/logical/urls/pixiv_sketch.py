@@ -4,6 +4,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import DeadUrlError
+from danboorutools.logical.sessions.pixiv_sketch import PixivSketchSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 if TYPE_CHECKING:
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class PixivSketchUrl(Url):
-    pass
+    session = PixivSketchSession()
 
 
 class PixivSketchPostUrl(PostUrl, PixivSketchUrl):
@@ -53,6 +54,9 @@ class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
             if response.status_code != 200:
                 raise NotImplementedError(self)
             return False
+
+    def subscribe(self) -> None:
+        self.session.subscribe(self.stacc)
 
 
 class PixivSketchImageUrl(PostAssetUrl, PixivSketchUrl):
