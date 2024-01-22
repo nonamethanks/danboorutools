@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import html
+import json
 import os
 from datetime import datetime
 
@@ -31,6 +33,41 @@ class FanboxSession(Session):
             raise NotImplementedError(f"Couldn't get the data from {json_url}: {data}")
 
         return data["body"]
+
+    def subscribe(self, username: str) -> None:
+        cookies = {"FANBOXSESSID": os.environ["FANBOX_FANBOXSESSID"]}
+
+        html_request = self.get(f"https://{username}.fanbox.cc", cookies=cookies)
+        metadata_content = html_request.html.select_one("#metadata").attrs["content"]
+        metadata = json.loads(html.unescape(metadata_content))
+
+        headers = {
+            "Origin": f"https://{username}.fanbox.cc",
+            "Referer": f"https://{username}.fanbox.cc/",
+            "x-csrf-token": metadata["csrfToken"],
+        }
+
+        user_id = self.artist_data(username).user.userId
+
+        response = self.post(
+            "https://api.fanbox.cc/follow.create",
+            headers=headers,
+            cookies=cookies,
+            json={"creatorUserId": user_id},
+        )
+
+        if not response.ok:
+            try:
+                if response.json()["body"]["type"] == "already_followed":
+                    return
+            except KeyError as e:
+                e.add_note(response.json())
+                raise
+            raise NotImplementedError(response.json())
+        if response.json()["body"] is None:
+            return
+
+        raise NotImplementedError(response.content)
 
 
 class _UserData(BaseModel):

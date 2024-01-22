@@ -36,6 +36,9 @@ class FanboxArtistUrl(ArtistUrl, FanboxUrl):
             return [self.username]
         return list({self.artist_data.creatorId, self.username})
 
+    def subscribe(self) -> None:
+        return self.session.subscribe(self.username)
+
 
 class FanboxPostUrl(PostUrl, FanboxUrl):
     username: str
