@@ -40,6 +40,8 @@ class FanboxSession(Session):
         html_request = self.get(f"https://{username}.fanbox.cc", cookies=cookies, skip_cache=True)
         metadata_content = html_request.html.select_one("#metadata").attrs["content"]
         metadata = json.loads(html.unescape(metadata_content))
+        if not metadata["context"]["user"]["userId"]:
+            raise NotImplementedError(f"Failed to login! Cookies: {cookies}")
 
         headers = {
             "Origin": f"https://{username}.fanbox.cc",
@@ -61,7 +63,7 @@ class FanboxSession(Session):
                 if response.json()["body"]["type"] == "already_followed":
                     return
             except KeyError as e:
-                e.add_note(str(response.json()))
+                e.add_note(f"Response: {response.json()}; metadata: {metadata}")
                 raise
             raise NotImplementedError(response.json())
         if response.json()["body"] is None:
