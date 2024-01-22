@@ -167,3 +167,11 @@ class NoPostsError(Exception):
 
     def __init__(self, extractor: HasPosts) -> None:
         super().__init__(f"No posts found when scanning with {extractor}")
+
+
+class NotAnArtistError(Exception):
+    """The user is not an artist."""
+
+    def __init__(self, url: str) -> None:
+        self.url = url
+        super().__init__(f"The user at {url} is not an artist.")

@@ -7,7 +7,7 @@ from typing import Literal
 import ring
 from bs4 import BeautifulSoup
 
-from danboorutools.exceptions import DeadUrlError
+from danboorutools.exceptions import DeadUrlError, NotAnArtistError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
@@ -16,6 +16,10 @@ from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 
 class PatreonSession(Session):
+    @property
+    def cookies_from_env(self) -> dict:
+        return {"session_id": os.environ["PATREON_SESSION_ID_COOKIE"]}
+
     @ring.lru()
     def artist_data(self, url: str) -> PatreonArtistData:
         response = self.get(url)
@@ -29,13 +33,21 @@ class PatreonSession(Session):
         try:
             return PatreonArtistData(**user_data["campaign"])
         except KeyError as e:
+            if user_data.get("pageUser"):
+                if user_data["pageUser"]["data"]["type"] == "user":
+                    raise NotAnArtistError(url) from e
+                else:
+                    raise NotImplementedError(user_data) from e
             if user_data["curtainType"] == "user_removed":
                 raise DeadUrlError(response) from e
             raise NotImplementedError(user_data) from e
 
-    @property
-    def cookies_from_env(self) -> dict:
-        return {"session_id": os.environ["PATREON_SESSION_ID_COOKIE"]}
+    def subscribe(self, artist_name: str) -> None:
+        try:
+            artist = self.artist_data(f"https://www.patreon.com/{artist_name}")
+        except NotAnArtistError:
+            return
+        raise NotImplementedError(self)
 
     def get_feed(self, cursor: str | None) -> PatreonCampaignResponse:
         headers = {

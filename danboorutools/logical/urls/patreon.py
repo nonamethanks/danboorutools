@@ -1,3 +1,4 @@
+from danboorutools.exceptions import NotAnArtistError
 from danboorutools.logical.sessions.patreon import PatreonArtistData, PatreonSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
@@ -54,6 +55,13 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
         if self.username:
             return [self.username]
         return [self.artist_data.username] if self.artist_data.username else []
+
+    def subscribe(self) -> None:
+        try:
+            username = self.username or self.artist_data.username
+        except NotAnArtistError:
+            return
+        self.session.subscribe(username)
 
 
 class PatreonImageUrl(PostAssetUrl, PatreonUrl):
