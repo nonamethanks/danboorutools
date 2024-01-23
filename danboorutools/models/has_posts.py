@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import warnings
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, TypeVar, final
+from typing import TYPE_CHECKING, TypeVar, final, overload
 
 from danboorutools import logger
 from danboorutools.util.time import datetime_from_string
@@ -10,21 +10,21 @@ from danboorutools.util.time import datetime_from_string
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
 
-    from danboorutools.models.url import GalleryAssetUrl, PostAssetUrl, PostUrl
+    from danboorutools.models.url import GalleryAssetUrl, GalleryUrl, PostAssetUrl, PostUrl
 
     PostT = TypeVar("PostT")
 
 
 class HasPosts:
-    _collected_posts: list[PostUrl]
-    known_posts: list[PostUrl]
+    _collected_posts: list[PostUrl | GalleryUrl]
+    known_posts: list[PostUrl | GalleryUrl]
 
     quit_early_page = 0
     check_revisions = True
     max_post_age: datetime | None = None
 
     @final
-    def extract_posts(self, known_posts: list[PostUrl] | None = None) -> list[PostUrl]:
+    def extract_posts(self, known_posts: list[PostUrl | GalleryUrl] | None = None) -> list[PostUrl | GalleryUrl]:
         try:
             self.known_posts += known_posts or []
         except AttributeError:
@@ -35,7 +35,7 @@ class HasPosts:
         try:
             logger.info(f"Scanning {self} for posts...")
             self._extract_all_posts()
-        except FoundPostTooOld:
+        except PostTooOldError:
             logger.info("Found a post that's too old during a first-time scan. Quitting...")
         except (Exception, KeyboardInterrupt):
             self._collected_posts = []
@@ -51,6 +51,15 @@ class HasPosts:
         return collected_posts
 
     def _extract_all_posts(self) -> None:
+        from danboorutools.models.url import GalleryUrl
+        if isinstance(self, GalleryUrl) and (g_assets := self._extract_assets()):
+            self._register_post(
+                self,
+                assets=g_assets,
+                created_at=datetime.now(tz=UTC),
+                score=0,
+            )
+
         for page, post_objects in enumerate(self._extract_posts_from_each_page()):  # type: ignore[var-annotated]
             if not post_objects:
                 logger.info("No more posts found. Quitting...")
@@ -69,7 +78,7 @@ class HasPosts:
 
                         seen_previous_post = True
 
-            if not self.known_posts and page + 1 >= self.quit_early_page:
+            if not self.known_posts and self.quit_early_page > 0 and page + 1 >= self.quit_early_page:
                 logger.info("Quitting early because it's a first-time scan...")
                 return
 
@@ -83,8 +92,16 @@ class HasPosts:
     def _process_post(self, post_object: PostT) -> None:
         raise NotImplementedError(f"{self} hasn't implemented post object processing.")
 
+    @overload
+    def _register_post(self, post: GalleryUrl, assets: Sequence[GalleryAssetUrl | str], created_at: datetime | str | int | None, score: int, is_deleted: bool = False) -> None:  # noqa: E501
+        ...
+
+    @overload
+    def _register_post(self, post: PostUrl, assets: Sequence[PostAssetUrl | str], created_at: datetime | str | int | None, score: int, is_deleted: bool = False) -> None:  # noqa: E501
+        ...
+
     def _register_post(self,  # noqa: PLR0913
-                       post: PostUrl,
+                       post: PostUrl | GalleryUrl,
                        assets: Sequence[PostAssetUrl | GalleryAssetUrl | str],
                        created_at: datetime | str | int | None,
                        score: int,
@@ -98,15 +115,13 @@ class HasPosts:
         if post in self._collected_posts:
             raise NotImplementedError(post)
 
-        if not assets:
-            # allowed to be empty so that revisions that become private, like fanbox or fantia,
-            # still go through the known posts check in order to abort early during rescans
+        if not assets and not post.__dict__.get("assets"):
             return
 
         post.created_at = datetime_from_string(created_at) if created_at else datetime.now(tz=UTC)
 
         if not self.known_posts and (self.max_post_age and post.created_at < datetime.now(tz=UTC) - self.max_post_age):
-            raise FoundPostTooOld
+            raise PostTooOldError
 
         post.score = score
         post.is_deleted = is_deleted
@@ -122,5 +137,5 @@ class FoundKnownPost(Warning):
     pass
 
 
-class FoundPostTooOld(Exception):
+class PostTooOldError(Exception):
     pass

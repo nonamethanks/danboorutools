@@ -21,7 +21,7 @@ class KoFiSession(Session):
     @property
     def followed_artists(self) -> list[KoFiArtistUrl]:
         html = self.get("https://ko-fi.com/manage/following", cookies=self.cookies_from_env).html
-        artists = [el["href"] for el in html.select(".person-row-name-link")]
+        artists = [el.attrs["href"] for el in html.select(".person-row-name-link")]
         return artists
 
     def get_feed(self, page: int = 0) -> list[KoFiPostUrl]:
@@ -35,7 +35,7 @@ class KoFiSession(Session):
         if not feed_items:
             raise NotImplementedError("No posts found. Check cookie.")
         for feed_item in feed_items:
-            artist_str = urljoin("https://ko-fi.com/", feed_item.select_one(".feeditem-thumbcontainer a")["href"])
+            artist_str = urljoin("https://ko-fi.com/", feed_item.select_one(".feeditem-thumbcontainer a").attrs["href"])
             artist = KoFiPostUrl.parse(artist_str)
             assert isinstance(artist, KoFiArtistUrl), (artist, artist_str)
 

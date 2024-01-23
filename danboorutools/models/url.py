@@ -277,6 +277,7 @@ class HasAssets(Generic[TypeVarAsset]):
         if "assets" not in self.__dict__:
             self.assets = []
 
+        assert isinstance(asset, _AssetUrl | str)
         if isinstance(asset, str):
             asset = Url.parse(asset)
 
@@ -296,6 +297,9 @@ class HasAssets(Generic[TypeVarAsset]):
             for asset in assets:
                 self._register_asset(asset)
         return self.__dict__["assets"]  # I'm gonna do what's called a "pro gamer move"
+
+    def _extract_assets(self) -> list[TypeVarAsset]:
+        raise NotImplementedError(self, "hasn't implemented asset extraction.")
 
 
 ########################################################################
@@ -318,7 +322,7 @@ class GalleryUrl(Url, HasPosts, HasAssets[GalleryAssetUrl]):
         raise NotImplementedError(self, "hasn't implemented subscription.")
 
     def _extract_assets(self) -> list[GalleryAssetUrl]:
-        return None
+        return []
 
 
 class ArtistUrl(GalleryUrl, InfoUrl):  # pylint: disable=abstract-method
@@ -331,9 +335,6 @@ class ArtistUrl(GalleryUrl, InfoUrl):  # pylint: disable=abstract-method
 class PostUrl(Url, HasAssets[PostAssetUrl]):
     """A post contains multiple assets."""
     asset_type = PostAssetUrl
-
-    def _extract_assets(self) -> Sequence[PostAssetUrl] | list[str]:
-        raise NotImplementedError(self, "hasn't implemented asset extraction.")
 
     if not TYPE_CHECKING:
         def _register_asset(self, *args, **kwargs) -> None:

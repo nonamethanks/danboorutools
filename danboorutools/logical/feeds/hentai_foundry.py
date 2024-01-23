@@ -26,7 +26,7 @@ class HentaiFoundryFeed(Feed):
 
         self._register_post(
             post=post,
-            assets=post.assets,
+            assets=post._extract_assets(),
             score=post.score,
             created_at=post.created_at,
         )
