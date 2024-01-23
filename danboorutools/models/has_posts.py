@@ -10,7 +10,7 @@ from danboorutools.util.time import datetime_from_string
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
 
-    from danboorutools.models.url import PostAssetUrl, PostUrl
+    from danboorutools.models.url import GalleryAssetUrl, PostAssetUrl, PostUrl
 
     PostT = TypeVar("PostT")
 
@@ -85,7 +85,7 @@ class HasPosts:
 
     def _register_post(self,  # noqa: PLR0913
                        post: PostUrl,
-                       assets: Sequence[PostAssetUrl | str],
+                       assets: Sequence[PostAssetUrl | GalleryAssetUrl | str],
                        created_at: datetime | str | int | None,
                        score: int,
                        is_deleted: bool = False,
