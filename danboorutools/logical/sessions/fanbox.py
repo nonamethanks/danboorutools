@@ -4,12 +4,16 @@ import html
 import json
 import os
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from pydantic import ConfigDict
 
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
+
+if TYPE_CHECKING:
+    from danboorutools.logical.urls.fanbox import FanboxArtistImageUrl
 
 
 class FanboxSession(Session):
@@ -21,6 +25,9 @@ class FanboxSession(Session):
     def post_data(self, post_id: int) -> FanboxPostData:
         post_json = self.get_and_parse_fanbox_json(f"https://api.fanbox.cc/post.info?postId={post_id}")
         return FanboxPostData(**post_json)
+
+    def get_posts(self, username: str, page: int) -> list[FanboxPostData]:
+        "https://api.fanbox.cc/post.listCreator?creatorId=yamadayoshinobu&limit=5"
 
     def get_and_parse_fanbox_json(self, json_url: str, *args, use_cookies: bool = False, **kwargs) -> dict:
         kwargs["headers"] = {"Origin": "https://www.fanbox.cc"} | kwargs.get("headers", {})
@@ -80,6 +87,7 @@ class _UserData(BaseModel):
 class FanboxArtistData(BaseModel):
     user: _UserData
     profileLinks: list[str]
+    profileItems: list[dict]
     creatorId: str  # url username
     model_config = ConfigDict(populate_by_name=True)
 
@@ -94,6 +102,21 @@ class FanboxArtistData(BaseModel):
             results += [pixiv_url]
 
         return results
+
+    @property
+    def featured_images(self) -> list[FanboxArtistImageUrl]:
+        from danboorutools.logical.urls.fanbox import FanboxArtistImageUrl
+
+        images: list[FanboxArtistImageUrl] = []
+        for url in self.profileItems:
+            if url["type"] == "image":
+                img = Url.parse(url["imageUrl"])
+                assert isinstance(img, FanboxArtistImageUrl)
+                images.append(img)
+            else:
+                raise NotImplementedError(url, self.profileItems, self)
+
+        return images
 
 
 class FanboxPostData(BaseModel):

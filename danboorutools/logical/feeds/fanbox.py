@@ -13,13 +13,13 @@ class FanboxFeed(Feed):
         while True:
             page_json = self.session.get_and_parse_fanbox_json(data_url, use_cookies=True)
 
-            if not (data_url := page_json["nextUrl"]):
-                return
-
             if not (posts_json := page_json["items"]):
                 raise NotImplementedError("No results found. Check cookies.")
 
             yield [post_json["id"] for post_json in posts_json]
+
+            if not (data_url := page_json["nextUrl"]):
+                return
 
     def _process_post(self, post_object: int) -> None:
         post_data = self.session.post_data(post_object)

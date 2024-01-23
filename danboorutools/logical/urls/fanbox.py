@@ -1,7 +1,15 @@
-import re
+from __future__ import annotations
 
-from danboorutools.logical.sessions.fanbox import FanboxArtistData, FanboxSession
+import re
+from functools import cached_property
+from typing import TYPE_CHECKING
+
+from danboorutools.logical.sessions.fanbox import FanboxArtistData, FanboxPostData, FanboxSession
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from datetime import datetime
 
 
 class FanboxUrl(Url):
@@ -38,6 +46,34 @@ class FanboxArtistUrl(ArtistUrl, FanboxUrl):
     def subscribe(self) -> None:
         return self.session.subscribe(self.username)
 
+    def _extract_posts_from_each_page(self) -> Iterator[list[int]]:
+        data_url = "https://api.fanbox.cc/post.listCreator?creatorId=yamadayoshinobu&limit=5"
+        while True:
+            page_json = self.session.get_and_parse_fanbox_json(data_url)
+
+            if not (posts_json := page_json["items"]):
+                return
+
+            yield [post_json["id"] for post_json in posts_json]
+            if not (data_url := page_json["nextUrl"]):
+                return
+
+    def _process_post(self, post_object: int) -> None:
+        post = FanboxPostUrl.build(
+            username=self.username,
+            post_id=post_object,
+        )
+
+        self._register_post(
+            post=post,
+            assets=post._extract_assets(),
+            created_at=post.created_at,
+            score=post.score,
+        )
+
+    def _extract_assets(self) -> list[GalleryAssetUrl]:
+        return self.artist_data.featured_images
+
 
 class FanboxPostUrl(PostUrl, FanboxUrl):
     username: str
@@ -48,6 +84,22 @@ class FanboxPostUrl(PostUrl, FanboxUrl):
     @property
     def gallery(self) -> FanboxArtistUrl:
         return FanboxArtistUrl.build(username=self.username)
+
+    def _extract_assets(self) -> list[PostAssetUrl]:
+        post_data = self.session.post_data(self.post_id)
+        return post_data.assets
+
+    @cached_property
+    def created_at(self) -> datetime:
+        return self.post_data.publishedDatetime
+
+    @cached_property
+    def score(self) -> int:
+        return self.post_data.likeCount
+
+    @property
+    def post_data(self) -> FanboxPostData:
+        return self.session.post_data(self.post_id)
 
 
 class FanboxOldPostUrl(RedirectUrl, FanboxUrl):
