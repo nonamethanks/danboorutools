@@ -15,7 +15,6 @@ from danboorutools.models.has_posts import HasPosts
 from danboorutools.util.misc import PseudoDataclass
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
     from datetime import datetime
 
     from bs4 import BeautifulSoup
@@ -275,7 +274,7 @@ class HasAssets(Generic[TypeVarAsset]):
 
     def _register_asset(self, asset: TypeVarAsset | str, is_deleted: bool = False) -> None:
         if "assets" not in self.__dict__:
-            self.assets = []
+            self.__dict__["assets"] = []
 
         assert isinstance(asset, _AssetUrl | str)
         if isinstance(asset, str):
@@ -288,15 +287,15 @@ class HasAssets(Generic[TypeVarAsset]):
 
         self.assets.append(asset)
 
-    @cached_property
-    def assets(self) -> list[TypeVarAsset]:  # pylint: disable=method-hidden
+    @property
+    def assets(self) -> list[TypeVarAsset]:
         if "assets" not in self.__dict__:
             assets = self._extract_assets()
             if not assets:
-                return []
+                self.__dict__["assets"] = []
             for asset in assets:
                 self._register_asset(asset)
-        return self.__dict__["assets"]  # I'm gonna do what's called a "pro gamer move"
+        return self.__dict__["assets"]
 
     def _extract_assets(self) -> list[TypeVarAsset]:
         raise NotImplementedError(self, "hasn't implemented asset extraction.")
@@ -308,15 +307,6 @@ class HasAssets(Generic[TypeVarAsset]):
 class GalleryUrl(Url, HasPosts, HasAssets[GalleryAssetUrl]):
     """A gallery contains multiple posts."""
     asset_type = GalleryAssetUrl
-
-    if not TYPE_CHECKING:
-        def _register_post(self, *args, **kwargs) -> None:
-            super()._register_post(*args, **kwargs)
-            kwargs.pop("post").gallery = self
-
-        def _register_asset(self, *args, **kwargs) -> None:
-            super()._register_asset(*args, **kwargs)
-            kwargs.pop("post").gallery = self
 
     def subscribe(self) -> None:
         raise NotImplementedError(self, "hasn't implemented subscription.")
@@ -335,11 +325,6 @@ class ArtistUrl(GalleryUrl, InfoUrl):  # pylint: disable=abstract-method
 class PostUrl(Url, HasAssets[PostAssetUrl]):
     """A post contains multiple assets."""
     asset_type = PostAssetUrl
-
-    if not TYPE_CHECKING:
-        def _register_asset(self, *args, **kwargs) -> None:
-            super()._register_asset(*args, **kwargs)
-            kwargs.pop("post").post = self
 
     @cached_property
     def gallery(self) -> GalleryUrl | None:
