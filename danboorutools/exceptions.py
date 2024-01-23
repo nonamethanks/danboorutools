@@ -175,3 +175,7 @@ class NotAnArtistError(Exception):
     def __init__(self, url: str) -> None:
         self.url = url
         super().__init__(f"The user at {url} is not an artist.")
+
+
+class DuplicateAssetError(Exception):
+    ...

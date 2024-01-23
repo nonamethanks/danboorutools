@@ -1,7 +1,7 @@
 import re
 
 from danboorutools.logical.sessions.fanbox import FanboxArtistData, FanboxSession
-from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
 class FanboxUrl(Url):
@@ -66,7 +66,7 @@ class FanboxOldArtistUrl(RedirectUrl, FanboxUrl):
     normalize_template = "https://www.pixiv.net/fanbox/creator/{pixiv_id}"
 
 
-class FanboxArtistImageUrl(PostAssetUrl, FanboxUrl):
+class FanboxArtistImageUrl(GalleryAssetUrl, FanboxUrl):
     pixiv_id: int
     image_type: str
 

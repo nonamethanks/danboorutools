@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from functools import cached_property, lru_cache
-from typing import TYPE_CHECKING, Self, TypeVar, final
+from typing import TYPE_CHECKING, Generic, Self, TypeVar, final
 
 from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
 
-from danboorutools.exceptions import DeadUrlError, UnknownUrlError
+from danboorutools.exceptions import DeadUrlError, DuplicateAssetError, UnknownUrlError
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.url_parser import UrlParser
@@ -211,86 +211,6 @@ class InfoUrl(Url):
 ########################################################################
 
 
-class GalleryUrl(Url, HasPosts):  # pylint: disable=abstract-method
-    """A gallery contains multiple posts."""
-
-    if not TYPE_CHECKING:  # TODO: bad hack, rewrite this
-        def _register_post(self, *args, **kwargs) -> None:
-            super()._register_post(*args, **kwargs)
-            kwargs.pop("post").gallery = self
-
-    def subscribe(self) -> None:
-        raise NotImplementedError(self, "hasn't implemented subscription.")
-
-
-class ArtistUrl(GalleryUrl, InfoUrl):  # pylint: disable=abstract-method
-    """An artist url is a gallery but also has other extractable data."""
-
-
-########################################################################
-
-class ArtistAlbumUrl(GalleryUrl, Url):
-    """An artist album is an album belonging to an artist url that contains other posts."""
-
-    @cached_property
-    def gallery(self) -> GalleryUrl | None:
-        raise NotImplementedError(self, "hasn't implemented gallery extraction.")
-
-
-########################################################################
-
-class DuplicateAssetError(Exception):
-    ...
-
-
-class PostUrl(Url):
-    """A post contains multiple assets."""
-
-    def _register_asset(self, asset: PostAssetUrl | str, is_deleted: bool = False) -> None:
-        if "assets" not in self.__dict__:
-            self.assets = []
-
-        if isinstance(asset, str):
-            asset = Url.parse(asset)
-            assert isinstance(asset, PostAssetUrl), asset
-
-        if asset in self.assets:
-            raise DuplicateAssetError(self, asset, self.assets)
-
-        asset.is_deleted = is_deleted
-        asset.post = self  # pylint: disable=attribute-defined-outside-init # false positive
-
-        self.assets.append(asset)
-
-    @cached_property
-    def assets(self) -> list[PostAssetUrl]:  # pylint: disable=method-hidden
-        if "assets" not in self.__dict__:
-            assets = self._extract_assets()
-            if not assets:
-                return []
-            for asset in assets:
-                self._register_asset(asset)
-        return self.__dict__["assets"]  # I'm gonna do what's called a "pro gamer move"
-
-    def _extract_assets(self) -> Sequence[PostAssetUrl] | list[str]:
-        raise NotImplementedError(self, "hasn't implemented asset extraction.")
-
-    @cached_property
-    def gallery(self) -> GalleryUrl | None:
-        raise NotImplementedError(self, "hasn't implemented gallery extraction.")
-
-    @cached_property
-    def created_at(self) -> datetime | None:
-        raise NotImplementedError(self, "hasn't implemented created_at extraction.")
-
-    @cached_property
-    def score(self) -> int:
-        raise NotImplementedError(self, "hasn't implemented score extraction.")
-
-
-########################################################################
-
-
 class _AssetUrl(Url):
     """An asset contains a list of files. It's usually a list of a single file, but it can be a zip file with multiple subfiles."""
     @cached_property
@@ -342,6 +262,105 @@ class GalleryAssetUrl(_AssetUrl, Url):
     """An asset belonging to a gallery instead of a post (such as a background image)."""
     @cached_property
     def gallery(self) -> PostUrl | None:
+        raise NotImplementedError(self, "hasn't implemented gallery extraction.")
+
+
+########################################################################
+
+
+TypeVarAsset = TypeVar("TypeVarAsset", bound=PostAssetUrl | GalleryAssetUrl)
+
+
+class HasAssets(Generic[TypeVarAsset]):
+
+    def _register_asset(self, asset: TypeVarAsset | str, is_deleted: bool = False) -> None:
+        if "assets" not in self.__dict__:
+            self.assets = []
+
+        if isinstance(asset, str):
+            asset = Url.parse(asset)
+
+        if asset in self.assets:
+            raise DuplicateAssetError(self, asset, self.assets)
+
+        asset.is_deleted = is_deleted
+
+        self.assets.append(asset)
+
+    @cached_property
+    def assets(self) -> list[TypeVarAsset]:  # pylint: disable=method-hidden
+        if "assets" not in self.__dict__:
+            assets = self._extract_assets()
+            if not assets:
+                return []
+            for asset in assets:
+                self._register_asset(asset)
+        return self.__dict__["assets"]  # I'm gonna do what's called a "pro gamer move"
+
+
+########################################################################
+
+
+class GalleryUrl(Url, HasPosts, HasAssets[GalleryAssetUrl]):
+    """A gallery contains multiple posts."""
+    asset_type = GalleryAssetUrl
+
+    if not TYPE_CHECKING:
+        def _register_post(self, *args, **kwargs) -> None:
+            super()._register_post(*args, **kwargs)
+            kwargs.pop("post").gallery = self
+
+        def _register_asset(self, *args, **kwargs) -> None:
+            super()._register_asset(*args, **kwargs)
+            kwargs.pop("post").gallery = self
+
+    def subscribe(self) -> None:
+        raise NotImplementedError(self, "hasn't implemented subscription.")
+
+    def _extract_assets(self) -> list[GalleryAssetUrl]:
+        return None
+
+
+class ArtistUrl(GalleryUrl, InfoUrl):  # pylint: disable=abstract-method
+    """An artist url is a gallery but also has other extractable data."""
+
+
+########################################################################
+
+
+class PostUrl(Url, HasAssets[PostAssetUrl]):
+    """A post contains multiple assets."""
+    asset_type = PostAssetUrl
+
+    def _extract_assets(self) -> Sequence[PostAssetUrl] | list[str]:
+        raise NotImplementedError(self, "hasn't implemented asset extraction.")
+
+    if not TYPE_CHECKING:
+        def _register_asset(self, *args, **kwargs) -> None:
+            super()._register_asset(*args, **kwargs)
+            kwargs.pop("post").post = self
+
+    @cached_property
+    def gallery(self) -> GalleryUrl | None:
+        raise NotImplementedError(self, "hasn't implemented gallery extraction.")
+
+    @cached_property
+    def created_at(self) -> datetime | None:
+        raise NotImplementedError(self, "hasn't implemented created_at extraction.")
+
+    @cached_property
+    def score(self) -> int:
+        raise NotImplementedError(self, "hasn't implemented score extraction.")
+
+
+########################################################################
+
+
+class ArtistAlbumUrl(GalleryUrl, Url):
+    """An artist album is an album belonging to an artist url that contains other posts."""
+
+    @cached_property
+    def gallery(self) -> GalleryUrl | None:
         raise NotImplementedError(self, "hasn't implemented gallery extraction.")
 
 
