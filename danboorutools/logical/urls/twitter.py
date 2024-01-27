@@ -114,10 +114,10 @@ class TwitterAssetUrl(PostAssetUrl, TwitterUrl):
 
     @property
     def full_size(self) -> str:
-        if self.parsed_url.extension != "mp4":
-            return f"https://{self.parsed_url.hostname}/{self.file_path}:orig"
+        if self.parsed_url.extension in ["mp4", "m3u8"]:
+            return self.parsed_url.url_without_query
         else:
-            raise NotImplementedError
+            return f"https://{self.parsed_url.hostname}/{self.file_path}:orig"
 
 
 class TwitterOnlyStatusUrl(RedirectUrl, TwitterUrl):
