@@ -60,7 +60,7 @@ class ScraperResponse(Response):
         try:
             return super().json(**kwargs)
         except json.JSONDecodeError as e:
-            logger.error(self.text)
+            logger.opt(raw=True).error(self.text)
             if not self.ok:
                 raise HTTPError(self) from e
             else:
