@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from functools import cached_property
 
 from danboorutools.exceptions import DeadUrlError, NotAnArtistError
@@ -26,6 +27,13 @@ class PatreonPostUrl(PostUrl, PatreonUrl):
 class PatreonArtistUrl(ArtistUrl, PatreonUrl):
     username: str | None
     user_id: int | None = None
+
+    def _extract_posts_from_each_page(self) -> Iterator:
+        try:
+            _ = self.artist_data
+        except NotAnArtistError:
+            return []
+        raise NotImplementedError
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
