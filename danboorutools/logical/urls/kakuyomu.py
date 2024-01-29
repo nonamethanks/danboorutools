@@ -1,4 +1,5 @@
 import re
+from functools import cached_property
 from urllib.parse import urljoin
 
 from danboorutools.logical.urls.twitter import TwitterArtistUrl
@@ -41,7 +42,7 @@ class KakuyomuPostUrl(PostUrl, KakuyomuUrl):
 
     normalize_template = "https://kakuyomu.jp/works/{post_id}"
 
-    @property
+    @cached_property
     def gallery(self) -> KakuyomuArtistUrl:
         selector = ".NewBox_box__45ont  .partialGiftWidgetActivityName a[href^='/users/'].LinkAppearance_link__POVTP"
         assert (gallery_el := self.html.select_one(selector))

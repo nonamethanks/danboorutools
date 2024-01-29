@@ -90,7 +90,7 @@ class TwitterPostUrl(PostUrl, TwitterUrl):
     def normalize(cls, **kwargs) -> str | None:
         return f"https://twitter.com/{kwargs["username"]}/status/{kwargs["post_id"]}"
 
-    @property
+    @cached_property
     def gallery(self) -> TwitterArtistUrl:
         return TwitterArtistUrl.build(username=self.username)
 

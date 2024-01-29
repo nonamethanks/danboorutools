@@ -30,7 +30,7 @@ class SkebPostUrl(PostUrl, SkebUrl):
     def post_data(self) -> SkebPostData:
         return self.session.get_post_data(username=self.username, post_id=self.post_id)
 
-    @property
+    @cached_property
     def gallery(self) -> SkebArtistUrl:
         return SkebArtistUrl.build(username=self.username)
 

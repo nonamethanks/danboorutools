@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from danboorutools.models.url import ArtistUrl, PostUrl, RedirectUrl, Url
 
 
@@ -29,7 +31,7 @@ class FiverrPostUrl(PostUrl, FiverrUrl):
 
     normalize_template = "https://www.fiverr.com/{artist_name}/{post_title}"
 
-    @property
+    @cached_property
     def gallery(self) -> FiverrArtistUrl:
         return FiverrArtistUrl.build(artist_name=self.artist_name)
 

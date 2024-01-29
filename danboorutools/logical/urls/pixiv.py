@@ -108,7 +108,7 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
         else:
             raise NotImplementedError(self)
 
-    @property
+    @cached_property
     def gallery(self) -> PixivArtistUrl | PixivStaccUrl | None:
         if not self.stacc:
             return None

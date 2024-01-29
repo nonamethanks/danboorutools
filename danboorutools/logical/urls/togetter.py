@@ -35,7 +35,7 @@ class TogetterPostUrl(PostUrl, TogetterUrl):
 
     normalize_template = "https://min.togetter.com/{post_id}"
 
-    @property
+    @cached_property
     def gallery(self) -> TogetterArtistUrl:
         gallery_link_el = self.html.select_one(".info_box .authour_link")
         assert gallery_link_el

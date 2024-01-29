@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from functools import cached_property
 from urllib.parse import urljoin
 
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, DeadDomainUrl, PostAssetUrl, PostUrl, Url
@@ -17,7 +18,7 @@ class ToranoanaItemUrl(PostUrl, ToranoanaUrl):
 
     normalize_template = "https://{subsite}.toranoana.jp/{subdirs}/item/{item_id}/"
 
-    @property
+    @cached_property
     def gallery(self) -> ToranoanaArtistUrl:
         authors = self.html.select(".product-detail-spec a[name='spec-actor']")
         if len(authors) != 1:

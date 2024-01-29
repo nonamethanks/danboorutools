@@ -1,5 +1,7 @@
 
 
+from functools import cached_property
+
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 
@@ -33,7 +35,7 @@ class GoogleSitesPostUrl(PostUrl, GoogleSitesUrl):
 
     normalize_template = "https://sites.google.com/site/{site_name}/_/rsrc/{post_path}"
 
-    @property
+    @cached_property
     def gallery(self) -> GoogleSitesArtistUrl:
         return GoogleSitesArtistUrl.build(site_name=self.site_name)
 

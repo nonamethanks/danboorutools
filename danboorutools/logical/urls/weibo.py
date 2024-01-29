@@ -96,13 +96,13 @@ class WeiboPostUrl(PostUrl, WeiboUrl):
         else:
             raise ValueError
 
-    @property
+    @cached_property
     def gallery(self) -> WeiboArtistUrl:
         if self.artist_id:
             return WeiboArtistUrl.build(artist_id=self.artist_id)
         return WeiboArtistUrl.build(artist_id=self.post_data.user.id)
 
-    @property
+    @cached_property
     def created_at(self) -> datetime:
         return self.post_data.created_at
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from functools import cached_property
+
 from danboorutools.logical.sessions.melonbooks import MelonbooksSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, PostAssetUrl, PostUrl, Url
 
@@ -13,7 +15,7 @@ class MelonbooksProductUrl(PostUrl, MelonbooksUrl):
 
     normalize_template = "https://www.melonbooks.co.jp/detail/detail.php?product_id={product_id}"
 
-    @property
+    @cached_property
     def gallery(self) -> MelonbooksAuthorUrl:
         assert (artists_el := self.html.find("th", string="作家名"))
         artists = artists_el.parent.select("td a:not(.fa-heart)")

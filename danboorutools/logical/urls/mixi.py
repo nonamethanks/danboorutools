@@ -1,4 +1,5 @@
 import re
+from functools import cached_property
 
 from danboorutools.logical.sessions.mixi import MixiSession
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, DeadDomainUrl, PostAssetUrl, PostUrl, Url
@@ -68,7 +69,7 @@ class MixiAlbumUrl(ArtistAlbumUrl, MixiUrl):
 
     normalize_template = "https://photo.mixi.jp/view_album.pl?album_id={album_id}&owner_id={owner_id}"
 
-    @property
+    @cached_property
     def gallery(self) -> MixiProfileUrl:
         return MixiProfileUrl.build(profile_id=self.owner_id)
 
@@ -79,7 +80,7 @@ class MixiPhotoUrl(PostUrl, MixiUrl):
 
     normalize_template = "https://photo.mixi.jp/view_photo.pl?photo_id={photo_id}&owner_id={owner_id}"
 
-    @property
+    @cached_property
     def gallery(self) -> MixiProfileUrl:
         return MixiProfileUrl.build(profile_id=self.owner_id)
 
@@ -90,7 +91,7 @@ class MixiApplicationUrl(PostUrl, MixiUrl):
 
     normalize_template = "https://mixi.jp/run_appli.pl?id={application_id}&owner_id={owner_id}"
 
-    @property
+    @cached_property
     def gallery(self) -> MixiProfileUrl:
         return MixiProfileUrl.build(profile_id=self.owner_id)
 
@@ -101,6 +102,6 @@ class MixiDiaryUrl(PostUrl, MixiUrl):
 
     normalize_template = "https://mixi.jp/view_diary.pl?id={diary_id}&owner_id={owner_id}"
 
-    @property
+    @cached_property
     def gallery(self) -> MixiProfileUrl:
         return MixiProfileUrl.build(profile_id=self.owner_id)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import cached_property
 from typing import Literal
 
 from danboorutools.logical.sessions.fanza import FanzaBookData, FanzaSession
@@ -48,7 +49,7 @@ class FanzaDlsoftWorkUrl(PostUrl, FanzaUrl):
         else:
             return f"https://dlsoft.dmm.co.jp/detail/{kwargs["work_id"]}/"
 
-    @property
+    @cached_property
     def gallery(self) -> FanzaDlsoftAuthorUrl:
         artists = self.html.select_one(".main-area-center").find("td", string="原画").parent.select("td.type-right a")
         if len(artists) != 1:
@@ -95,7 +96,7 @@ class FanzaBookWorkUrl(PostUrl, FanzaUrl):
     def book_data(self) -> FanzaBookData:
         return self.session.book_data(self.work_id)
 
-    @property
+    @cached_property
     def gallery(self) -> FanzaBookAuthorUrl:
         if len(self.book_data.author) != 1:
             raise NotImplementedError(self, self.book_data.author)

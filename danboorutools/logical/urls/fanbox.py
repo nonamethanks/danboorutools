@@ -81,7 +81,7 @@ class FanboxPostUrl(PostUrl, FanboxUrl):
 
     normalize_template = "https://{username}.fanbox.cc/posts/{post_id}"
 
-    @property
+    @cached_property
     def gallery(self) -> FanboxArtistUrl:
         return FanboxArtistUrl.build(username=self.username)
 

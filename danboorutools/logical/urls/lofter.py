@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.misc import extract_urls_from_string
 
@@ -36,7 +38,7 @@ class LofterPostUrl(PostUrl, LofterUrl):
 
     normalize_template = "https://{username}.lofter.com/post/{post_id}"
 
-    @property
+    @cached_property
     def gallery(self) -> LofterArtistUrl:
         return LofterArtistUrl.build(username=self.username)
 

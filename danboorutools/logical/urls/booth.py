@@ -1,4 +1,5 @@
 import re
+from functools import cached_property
 
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, PostAssetUrl, PostUrl, Url
 
@@ -66,7 +67,7 @@ class BoothItemUrl(PostUrl, BoothUrl):
         else:
             return f"https://booth.pm/items/{item_id}"
 
-    @property
+    @cached_property
     def gallery(self) -> BoothArtistUrl:
         if self.username:
             return BoothArtistUrl.build(username=self.username)

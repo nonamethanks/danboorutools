@@ -54,7 +54,7 @@ class NewgroundsPostUrl(PostUrl, NewgroundsUrl):
         datetime_str = self.html.select_one("meta[itemprop='datePublished']")["content"]
         return datetime_from_string(datetime_str)
 
-    @property
+    @cached_property
     def gallery(self) -> NewgroundsArtistUrl:
         return NewgroundsArtistUrl.build(username=self.username)
 

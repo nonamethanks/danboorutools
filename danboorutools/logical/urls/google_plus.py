@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from danboorutools.models.url import ArtistUrl, DeadDomainUrl, PostUrl, Url
 
 
@@ -31,6 +33,6 @@ class GooglePlusPostUrl(PostUrl, GooglePlusUrl):
 
     normalize_template = "https://plus.google.com/{user_id}/posts/{post_id}"
 
-    @property
+    @cached_property
     def gallery(self) -> GooglePlusArtistUrl:
         return GooglePlusArtistUrl.build(user_id=self.user_id)
