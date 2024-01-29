@@ -1,7 +1,8 @@
+from collections.abc import Iterator
 from functools import cached_property
 
 from danboorutools.exceptions import DeadUrlError
-from danboorutools.logical.sessions.twitter import TwitterSession, TwitterUserData
+from danboorutools.logical.sessions.twitter import TwitterSession, TwitterTimelineTweetData, TwitterUserData
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
@@ -13,6 +14,23 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     username: str
 
     normalize_template = "https://twitter.com/{username}"
+
+    def _extract_posts_from_each_page(self) -> Iterator[list[TwitterTimelineTweetData]]:
+        cursor = None
+        while True:
+            result = self.session.get_user_media(user_id=self.artist_data.id, cursor=cursor)
+            yield result.tweets
+            if not result.next_cursor:
+                return
+            cursor = result.next_cursor
+
+    def _process_post(self, post_object: TwitterTimelineTweetData) -> None:
+        self._register_post(
+            post=TwitterPostUrl.build(username=self.username, post_id=post_object.id_str),
+            assets=post_object.assets,
+            score=post_object.favorite_count,
+            created_at=post_object.created_at,
+        )
 
     @property
     def primary_names(self) -> list[str]:

@@ -3,14 +3,17 @@ from __future__ import annotations
 import json
 import os
 import time
+from datetime import datetime
 
 import ring
+from pydantic import field_validator
 
 from danboorutools import logger
 from danboorutools.exceptions import DeadUrlError, NoCookiesForDomainError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, save_cookies_for
+from danboorutools.util.time import datetime_from_string
 
 
 class TwitterSession(Session):
@@ -81,10 +84,18 @@ class TwitterSession(Session):
         save_cookies_for("twitter", self.browser.get_cookies())
         logger.trace("Successfully logged in in to twitter.")
 
-    def user_data(self, user_name: str | None = None, user_id: int | None = None) -> TwitterUserData:
+    @property
+    def _twitter_headers(self) -> dict[str, str]:
         csrf_token = os.environ["TWITTER_CSRF"]
         auth_token = os.environ["TWITTER_AUTH"]
 
+        return {
+            "authorization": f"Bearer {self.BEARER_TOKEN}",
+            "cookie": f"lang=en; auth_token={auth_token}; ct0={csrf_token}; ",
+            "x-csrf-token": csrf_token,
+        }
+
+    def user_data(self, user_name: str | None = None, user_id: int | None = None) -> TwitterUserData:
         if user_name:
             endpoint = "G3KGOASz96M-Qu0nwmGXNg/UserByScreenName"
             variables = f'{{"screen_name":"{user_name}","withSafetyModeUserFields":true}}'
@@ -93,12 +104,6 @@ class TwitterSession(Session):
             variables = f'{{"userId":"{user_id}","withSafetyModeUserFields":true}}'
         else:
             raise ValueError
-
-        headers = {
-            "authorization": f"Bearer {self.BEARER_TOKEN}",
-            "cookie": f"lang=en; auth_token={auth_token}; ct0={csrf_token}; ",
-            "x-csrf-token": csrf_token,
-        }
 
         features = {
             "hidden_profile_likes_enabled": True,
@@ -116,7 +121,6 @@ class TwitterSession(Session):
         params = {
             "variables": variables,
             "features": json.dumps(features, separators=(",", ":")),
-            "fieldToggles": '{"withAuxiliaryUserLabels":false}',
         }
 
         graphql_url = f"https://twitter.com/i/api/graphql/{endpoint}"
@@ -124,7 +128,7 @@ class TwitterSession(Session):
         response = self.get(
             graphql_url,
             params=params,
-            headers=headers,
+            headers=self._twitter_headers.copy(),
         )
         data = response.json()
 
@@ -155,6 +159,130 @@ class TwitterSession(Session):
             raise
 
         return TwitterUserData(**old_user_data | {"id": user_data["result"]["rest_id"]})
+
+    def get_user_media(self, user_id: int, cursor: str | None = None) -> TwitterPageOfMediaResults:
+        features = {
+            "responsive_web_graphql_exclude_directive_enabled": True,
+            "verified_phone_label_enabled": False,
+            "creator_subscriptions_tweet_preview_api_enabled": True,
+            "responsive_web_graphql_timeline_navigation_enabled": True,
+            "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
+            "c9s_tweet_anatomy_moderator_badge_enabled": True,
+            "tweetypie_unmention_optimization_enabled": True,
+            "responsive_web_edit_tweet_api_enabled": True,
+            "graphql_is_translatable_rweb_tweet_is_translatable_enabled": True,
+            "view_counts_everywhere_api_enabled": True,
+            "longform_notetweets_consumption_enabled": True,
+            "responsive_web_twitter_article_tweet_consumption_enabled": True,
+            "tweet_awards_web_tipping_enabled": False,
+            "freedom_of_speech_not_reach_fetch_enabled": False,
+            "standardized_nudges_misinfo": True,
+            "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": True,
+            "rweb_video_timestamps_enabled": True,
+            "longform_notetweets_rich_text_read_enabled": True,
+            "longform_notetweets_inline_media_enabled": True,
+            "responsive_web_media_download_video_enabled": False,
+            "responsive_web_enhance_cards_enabled": False,
+        }
+
+        variables = {
+            "userId": user_id,
+            "count": 20,
+            "includePromotedContent": False,
+            "withClientEventToken": False,
+            "withBirdwatchNotes": False,
+            "withVoice": True,
+            "withV2Timeline": True,
+        }
+
+        if cursor:
+            variables["cursor"] = cursor
+
+        params = {
+            "variables": json.dumps(variables, separators=(",", ":")),
+            "features": json.dumps(features, separators=(",", ":")),
+        }
+
+        response = self.get(
+            "https://twitter.com/i/api/graphql/cEjpJXA15Ok78yO4TUQPeQ/UserMedia",
+            params=params,
+            headers=self._twitter_headers,
+        )
+        timeline_instructions = response.json()["data"]["user"]["result"]["timeline_v2"]["timeline"]["instructions"]
+
+        entries = []
+        next_cursor: str | None = None
+
+        for instruction in timeline_instructions:
+            if instruction["type"] in ["TimelineClearCache", "TimelineTerminateTimeline"]:
+                continue
+            if instruction["type"] == "TimelineAddEntries":
+                for sub_instruction in instruction["entries"]:
+                    if sub_instruction["content"]["entryType"] == "TimelineTimelineCursor":
+                        if sub_instruction["content"]["cursorType"] == "Top":
+                            continue
+                        elif sub_instruction["content"]["cursorType"] == "Bottom":
+                            next_cursor = sub_instruction["content"]["value"]
+                        else:
+                            raise NotImplementedError(sub_instruction)
+                    elif sub_instruction["content"]["entryType"] == "TimelineTimelineModule":
+                        entries += [entry["item"]["itemContent"] for entry in sub_instruction["content"]["items"]]
+                    else:
+                        raise NotImplementedError(sub_instruction)
+                continue
+            elif instruction["type"] == "TimelineAddToModule":
+                entries += [entry["item"]["itemContent"] for entry in instruction["moduleItems"]]
+                continue
+            raise NotImplementedError(instruction)
+
+        tweets = []
+        for entry in entries:
+            if entry["itemType"] == "TimelineTweet":
+                tweet_data = entry["tweet_results"]["result"]["legacy"]
+                tweets.append(TwitterTimelineTweetData(**tweet_data))
+            else:
+                raise NotImplementedError(entry)
+
+        if not entries:
+            next_cursor = None
+        return TwitterPageOfMediaResults(next_cursor=next_cursor, tweets=tweets)
+
+
+class TwitterPageOfMediaResults(BaseModel):
+    next_cursor: str | None
+    tweets: list[TwitterTimelineTweetData]
+
+
+class TwitterTimelineTweetData(BaseModel):
+    id_str: int
+
+    favorite_count: int
+    created_at: datetime
+    entities: dict
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def parse_created_at(cls, value: str) -> datetime:
+        return datetime_from_string(value)
+
+    @property
+    def assets(self) -> list[str]:
+        extracted = []
+        for entity in self.entities["media"]:
+            if entity["type"] == "photo":
+                extracted.append(entity["media_url_https"])
+            elif entity["type"] == "video":
+                variants = entity["video_info"]["variants"]
+                biggest_url = max(variants, key=lambda x: x.get("bitrate", 0))["url"]
+                extracted.append(biggest_url)
+            elif entity["type"] == "animated_gif":
+                variants = entity["video_info"]["variants"]
+                biggest_url = max(variants, key=lambda x: x.get("bitrate", 0))["url"]
+                extracted.append(biggest_url)
+            else:
+                raise NotImplementedError(entity)
+
+        return extracted
 
 
 class TwitterUserData(BaseModel):
