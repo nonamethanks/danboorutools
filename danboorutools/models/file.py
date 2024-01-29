@@ -142,6 +142,14 @@ class ImageFile(File):
 
         return sum(c1 != c2 for c1, c2 in zip(own_hash, other_hash, strict=True))
 
+    def thumbnail(self, max_w: int = 100, max_h: int = 100, quality: int = 90, final_dir: str | Path = "/tmp") -> Path:  # noqa: S108
+        thumb_path = Path(final_dir) / f"{self.md5}_thumb.jpg"
+        with Image.open(self.path) as img:
+            img.thumbnail((max_w, max_h))
+            img.save(thumb_path, quality=quality, optimize=True)
+
+        return thumb_path
+
 
 class UnknownFile(File):
     pass
