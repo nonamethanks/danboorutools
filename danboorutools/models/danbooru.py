@@ -19,7 +19,7 @@ CATEGORY_MAP = {
 
 
 class DanbooruModel(BaseModel):
-    id: int  # noqa: A003
+    id: int
     created_at: datetime | None
     updated_at: datetime | None = None
     is_deleted: bool = False
@@ -159,7 +159,7 @@ class DanbooruPost(DanbooruModel):
         return "animated" in self.tags or "video" in self.tags or self.file_ext == "swf"
 
 
-class DanbooruIqdbMatch(DanbooruModel):
+class DanbooruIqdbMatch(BaseModel):
     post: DanbooruPost
     score: float
 

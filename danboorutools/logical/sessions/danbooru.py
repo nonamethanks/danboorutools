@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Sequence
+from pathlib import Path
 from typing import TYPE_CHECKING, Literal, TypeVar
 
 from backoff import expo, on_exception
@@ -257,9 +258,23 @@ class DanbooruApi(Session):
         self.danbooru_request("POST", f"post_replacements?post_id={post.id}", files=data)
         logger.info(f"Replaced {post} with {replacement_url or replacement_file}")
 
-    def iqdb_search(self, url: str) -> list[models.DanbooruIqdbMatch]:
-        data = self.danbooru_request("GET", "iqdb_queries.json", params={"url": url})
-        return [models.DanbooruIqdbMatch(**match) for match in data]
+    def iqdb_search(self, *,
+                    url: str | None = None,
+                    file_path: Path | None = None,
+                    min_similarity: int | None = None,
+                    ) -> list[models.DanbooruIqdbMatch]:
+        if url:
+            sim_query = {"similarity": min_similarity} if min_similarity else {}
+            data = {"url": url} | sim_query
+            response = self.danbooru_request("GET", "iqdb_queries.json", params=data)
+        elif file_path:
+            headers = {"Content-type": "multipart/form-data"}
+            files = {"search[file]": file_path.open("rb")}
+            data = {"search[similarity]": min_similarity} if min_similarity else {}
+            response = self.danbooru_request("POST", "iqdb_queries.json", headers=headers, files=files, data=data)
+        else:
+            raise ValueError("Either url or file_path must be present.")
+        return [models.DanbooruIqdbMatch(**match) for match in response]
 
     def rename_user(self, user_id: int, new_name: str) -> None:
         data = {
