@@ -64,7 +64,6 @@ class PixivSession(Session):
         return [PixivGroupedIllustData(**post_data) for post_data in illusts]
 
     def subscribe(self, user_id: int) -> None:
-
         self.browser_login()
 
         self.browser.get(f"https://www.pixiv.net/en/users/{user_id}")
