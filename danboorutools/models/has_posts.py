@@ -176,14 +176,17 @@ class HasPosts:
 
         message += "Found "
 
-        if self._new_posts:
-            message += f"{len(self._new_posts)} new posts"
+        if not self._new_posts and not self._revised_posts:
+            message += "no posts"
+        else:
+            if self._new_posts:
+                message += f"{len(self._new_posts)} new posts"
+
+                if self._revised_posts:
+                    message += " and "
 
             if self._revised_posts:
-                message += " and "
-
-        if self._revised_posts:
-            message += f"{len(self._revised_posts)} revised posts"
+                message += f"{len(self._revised_posts)} revised posts"
 
         if not finished:
             message += " so far"
