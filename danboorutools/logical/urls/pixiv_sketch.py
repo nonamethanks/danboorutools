@@ -4,10 +4,12 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import DeadUrlError
-from danboorutools.logical.sessions.pixiv_sketch import PixivSketchSession
+from danboorutools.logical.sessions.pixiv_sketch import PixivSketchPostData, PixivSketchSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from danboorutools.logical.urls.pixiv import PixivStaccUrl
 
 
@@ -15,16 +17,31 @@ class PixivSketchUrl(Url):
     session = PixivSketchSession()
 
 
-class PixivSketchPostUrl(PostUrl, PixivSketchUrl):
-    post_id: int
-
-    normalize_template = "https://sketch.pixiv.net/items/{post_id}"
-
-
 class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
     stacc: str
 
     normalize_template = "https://sketch.pixiv.net/@{stacc}"
+
+    def _extract_posts_from_each_page(self) -> Iterator[list[PixivSketchPostData]]:
+        page_url = f"https://sketch.pixiv.net/api/walls/@{self.stacc}/posts/public.json"
+        while True:
+            page = self.session.get_page_of_posts(
+                page_url,
+                headers={"x-requested-with": "https://sketch.pixiv.net/"},
+            )
+            yield page.posts
+            if page.next_page:
+                page_url = page.next_page
+            else:
+                return
+
+    def _process_post(self, post_object: PixivSketchPostData) -> None:
+        self._register_post(
+            post=PixivSketchPostUrl.build(post_id=post_object.id),
+            assets=[i["photo"]["original"]["url"] for i in post_object.media],
+            created_at=post_object.created_at,
+            score=post_object.feedback_count,
+        )
 
     @property
     def stacc_url(self) -> PixivStaccUrl:
@@ -57,6 +74,12 @@ class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
 
     def subscribe(self) -> None:
         self.session.subscribe(self.stacc)
+
+
+class PixivSketchPostUrl(PostUrl, PixivSketchUrl):
+    post_id: int
+
+    normalize_template = "https://sketch.pixiv.net/items/{post_id}"
 
 
 class PixivSketchImageUrl(PostAssetUrl, PixivSketchUrl):

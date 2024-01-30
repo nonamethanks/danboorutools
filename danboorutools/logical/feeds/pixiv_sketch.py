@@ -12,7 +12,10 @@ class PixivSketchFeed(Feed):
         json_url = "https://sketch.pixiv.net/api/walls/home.json"
 
         while True:
-            feed_data = self.session.get_feed(json_url)
+            feed_data = self.session.get_page_of_posts(
+                json_url,
+                headers={"x-requested-with": "https://sketch.pixiv.net/api/walls/home.json"},
+            )
 
             if not feed_data.posts:
                 raise NotImplementedError(self)

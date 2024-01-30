@@ -2,19 +2,23 @@ from __future__ import annotations
 
 import os
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 
 from danboorutools.logical.sessions import Session
+from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
+
+if TYPE_CHECKING:
+    from danboorutools.logical.urls.pixiv_sketch import PixivSketchImageUrl
 
 
 class PixivSketchSession(Session):
-    def get_feed(self, feed_url: str) -> PixivSketchFeedData:
-        feed_headers = {"x-requested-with": "https://sketch.pixiv.net/api/walls/home.json"}
+    def get_page_of_posts(self, url: str, headers: dict) -> PixivSketchPageData:
         cookies = {"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]}
-        feed_data = self.get(feed_url, headers=feed_headers, cookies=cookies).json()
-        return PixivSketchFeedData(**feed_data)
+        feed_data = self.get(url, headers=headers, cookies=cookies).json()
+        return PixivSketchPageData(**feed_data)
 
     def user_data(self, username: str) -> PixivSketchUserData:
         cookies = {"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]}
@@ -49,7 +53,7 @@ class PixivSketchUserData(BaseModel):
     description: str
 
 
-class PixivSketchFeedData(BaseModel):
+class PixivSketchPageData(BaseModel):
     data: dict
     links: dict = Field(..., alias="_links")
 
@@ -71,3 +75,13 @@ class PixivSketchPostData(BaseModel):
     feedback_count: int
 
     user: dict
+
+    @property
+    def assets(self) -> list[PixivSketchImageUrl]:
+        from danboorutools.logical.urls.pixiv_sketch import PixivSketchImageUrl
+
+        assets: list[PixivSketchImageUrl] = []
+        for image_data in self.media:
+            assert isinstance(asset := Url.parse(image_data["photo"]["original"]["url"]), PixivSketchImageUrl)
+            assets += [asset]
+        return assets
