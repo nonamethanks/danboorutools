@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, TypeVar, final, overload
 
 from danboorutools import logger
+from danboorutools.exceptions import DuplicateAssetError
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
@@ -25,7 +26,7 @@ class HasPosts:
     max_post_age: datetime | None = None
 
     @final
-    def extract_posts(self, known_posts: list[PostUrl | GalleryUrl] | None = None) -> list[PostUrl | GalleryUrl]:
+    def extract_posts(self, known_posts: list[PostUrl | GalleryUrl] | None = None) -> None:
         try:
             self.known_posts += known_posts or []
         except AttributeError:
@@ -49,8 +50,6 @@ class HasPosts:
             f" {self._new_posts} {"new " if self.known_posts else ""}posts found.",
             f" {self._revisioned_posts} posts with revisions found." if self._revisioned_posts else "",
         )
-
-        return self._new_posts, self._revisioned_posts
 
     def _extract_all_posts(self) -> None:
         from danboorutools.models.url import GalleryUrl
@@ -117,24 +116,55 @@ class HasPosts:
         if post in self._revisioned_posts or post in self._new_posts:
             raise NotImplementedError(post)
 
-        if not (old_assets := post.__dict__.get("assets", [])) and not assets:
-            return
-
+        post.score = score
+        post.is_deleted = is_deleted
         post.created_at = datetime_from_string(created_at) if created_at else datetime.now(tz=UTC)
 
+        # skip posts that are too old for a first scan (during feed scans etc)
         if not self.known_posts and (self.max_post_age and post.created_at < datetime.now(tz=UTC) - self.max_post_age):
             raise PostTooOldError
 
-        post.score = score
-        post.is_deleted = is_deleted
+        self.__insert_post(post=post, found_assets=assets)
 
-        for asset in assets:
-            post._register_asset(asset)
-            if asset in old_assets:
-                self._revisioned_posts.append(post)
+    def __insert_post(self, post: PostUrl | GalleryUrl, found_assets: Sequence[PostAssetUrl | GalleryAssetUrl | str]) -> None:
+        old_assets: list[PostAssetUrl | GalleryAssetUrl] = list(post.__dict__.get("assets", []))  # new list
+        has_new_assets = False
+        for asset in found_assets:
+            try:
+                post._register_asset(asset)
+            except DuplicateAssetError:
+                pass
             else:
-                self._new_posts.append(post)
+                has_new_assets = True
 
+        # check if it's a revision, a new post, or nothing at all
+        if has_new_assets and old_assets:
+            # has both old and new assets
+            self._revisioned_posts.append(post)
+        elif has_new_assets and not old_assets:
+            # only has new assets
+            self._new_posts.append(post)
+        elif not has_new_assets and old_assets:
+            # only has old assets
+            return
+        elif not has_new_assets and not old_assets:
+            # no post
+            return
+
+        # check for removed versions
+        found_asset_urls = [u if not isinstance(u, str) else post.parse(u) for u in found_assets]
+        for asset in old_assets:
+            if asset not in found_asset_urls:
+                # this asset was removed from the source
+                logger.info(f"Detected that asset {asset} for post {post} was deleted at the source.")
+                asset.is_deleted = True
+            else:
+                # still there
+                asset.is_deleted = False
+
+        self.print_progress(post)
+
+    def print_progress(self, post: PostUrl | GalleryUrl) -> None:
         logger.info(
             f"Found {len(self._new_posts):>3} posts ",
             f"and {len(self._revisioned_posts)} revisions" if self.known_posts else "",
