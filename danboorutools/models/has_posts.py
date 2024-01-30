@@ -16,7 +16,8 @@ if TYPE_CHECKING:
 
 
 class HasPosts:
-    _collected_posts: list[PostUrl | GalleryUrl]
+    _new_posts: list[PostUrl | GalleryUrl]
+    _revisioned_posts: list[PostUrl | GalleryUrl]
     known_posts: list[PostUrl | GalleryUrl]
 
     quit_early_page = 0
@@ -30,7 +31,8 @@ class HasPosts:
         except AttributeError:
             self.known_posts = known_posts or []
 
-        self._collected_posts = []
+        self._new_posts = []
+        self._revisioned_posts = []
 
         try:
             logger.info(f"Scanning {self} for posts...")
@@ -38,17 +40,17 @@ class HasPosts:
         except PostTooOldError:
             logger.info("Found a post that's too old during a first-time scan. Quitting...")
         except (Exception, KeyboardInterrupt):
-            self._collected_posts = []
+            self._new_posts = []
+            self._revisioned_posts = []
             raise
 
-        diff = len([p for p in self._collected_posts if p not in self.known_posts])
-        logger.info(f"Finished scanning. {diff} {"new " if self.known_posts else ""}posts found.")
+        logger.info(
+            "Finished scanning. ",
+            f" {self._new_posts} {"new " if self.known_posts else ""}posts found.",
+            f" {self._revisioned_posts} posts with revisions found." if self._revisioned_posts else "",
+        )
 
-        collected_posts = self._collected_posts
-        self._collected_posts = []
-
-        self.known_posts += set(collected_posts)
-        return collected_posts
+        return self._new_posts, self._revisioned_posts
 
     def _extract_all_posts(self) -> None:
         from danboorutools.models.url import GalleryUrl
@@ -112,10 +114,10 @@ class HasPosts:
             warnings.warn("Found a previously seen post.", FoundKnownPost, stacklevel=2)
             # No need to reassign, because urls are cached
 
-        if post in self._collected_posts:
+        if post in self._revisioned_posts or post in self._new_posts:
             raise NotImplementedError(post)
 
-        if not assets and not post.__dict__.get("assets"):
+        if not (old_assets := post.__dict__.get("assets", [])) and not assets:
             return
 
         post.created_at = datetime_from_string(created_at) if created_at else datetime.now(tz=UTC)
@@ -128,9 +130,16 @@ class HasPosts:
 
         for asset in assets:
             post._register_asset(asset)
+            if asset in old_assets:
+                self._revisioned_posts.append(post)
+            else:
+                self._new_posts.append(post)
 
-        self._collected_posts.append(post)
-        logger.info(f"Found {len(self._collected_posts):>4} posts so far. Last collected: {post}")
+        logger.info(
+            f"Found {len(self._new_posts):>3} posts ",
+            f"and {len(self._revisioned_posts)} revisions" if self.known_posts else "",
+            f" so far. Last collected: {post}",
+        )
 
 
 class FoundKnownPost(Warning):
