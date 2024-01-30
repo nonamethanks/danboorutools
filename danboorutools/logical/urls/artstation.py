@@ -1,8 +1,9 @@
+from collections.abc import Iterator
 from datetime import datetime
 from functools import cached_property
-from posixpath import ismount
+from itertools import count, repeat, starmap
 
-from danboorutools.logical.sessions.artstation import ArtstationArtistData, ArtstationPostData, ArtstationSession
+from danboorutools.logical.sessions.artstation import ArtstationArtistData, ArtStationFeedPostData, ArtstationPostData, ArtstationSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
 
 
@@ -21,6 +22,25 @@ class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):
     username: str
 
     normalize_template = "https://www.artstation.com/{username}"
+
+    def _extract_posts_from_each_page(self) -> Iterator[list[ArtStationFeedPostData]]:
+        return starmap(self.session.get_posts_from_artist, zip(repeat(self.username), count(1), strict=True))
+
+    def _process_post(self, post_object: ArtStationFeedPostData) -> None:
+        post = ArtStationPostUrl.build(username=self.username, post_id=post_object.hash_id)
+
+        if post_object.assets_count == 1:
+            img = Url.parse(post_object.cover["small_square_url"])
+            assert isinstance(img, ArtStationImageUrl)
+            assets = [img.full_size]
+        else:
+            assets = post._extract_assets()
+        self._register_post(
+            post=Url.parse(post_object.permalink),
+            assets=assets,
+            created_at=post_object.created_at,
+            score=post_object.likes_count,
+        )
 
     @property
     def artist_data(self) -> ArtstationArtistData:

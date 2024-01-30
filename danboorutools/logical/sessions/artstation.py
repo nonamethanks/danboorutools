@@ -5,10 +5,11 @@ import os
 import warnings
 from datetime import datetime
 
+from backoff import constant, on_exception
 from requests.adapters import HTTPAdapter
 from urllib3.exceptions import InsecureRequestWarning
 
-from danboorutools.exceptions import NotAnUrlError, UnknownUrlError
+from danboorutools.exceptions import HTTPError, MaintenanceError, NotAnUrlError, UnknownUrlError
 from danboorutools.logical.sessions import ScraperResponse, Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
@@ -22,10 +23,17 @@ class ArtstationSession(Session):
         self.cert = None
         self.trust_env = False
 
+    @on_exception(constant, MaintenanceError, max_tries=3, interval=5, jitter=None)
     def request(self, *args, verify: bool = False, **kwargs) -> ScraperResponse:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", InsecureRequestWarning)
-            return super().request(*args, verify=verify, **kwargs)
+            try:
+                return super().request(*args, verify=verify, **kwargs)
+            except HTTPError as e:
+                if e.status_code == 502 and\
+                        "ArtStation is currently undergoing maintenance and will be back online shortly!" in e.response.text:
+                    raise MaintenanceError(e.response) from e
+                raise
 
     def artist_data(self, username: str) -> ArtstationArtistData:
         response = self.get(f"https://www.artstation.com/users/{username}.json").json()
@@ -36,10 +44,10 @@ class ArtstationSession(Session):
         response = self.get(url).json()
         return ArtstationPostData(**response)
 
-    def get_posts_from_artist(self, artist: str, page: int) -> list[ArtstationPostData]:
+    def get_posts_from_artist(self, artist: str, page: int) -> list[ArtStationFeedPostData]:
         url = f"https://www.artstation.com/users/{artist}/projects.json?page={page}"
         json_data = self.get(url).json()["data"]
-        return [ArtstationPostData(**post_data) for post_data in json_data]
+        return [ArtStationFeedPostData(**post_data) for post_data in json_data]
 
     def get_post_urls_from_feed(self, page: int) -> list[str]:
         cookies = {"ArtStationSessionCookie": os.environ["ARTSTATION_SESSION_COOKIE"]}
@@ -100,3 +108,15 @@ class ArtstationPostData(BaseModel):
     likes_count: int
 
     user: dict
+
+
+class ArtStationFeedPostData(BaseModel):
+    permalink: str
+    hash_id: str
+
+    created_at: datetime
+    likes_count: int
+
+    assets_count: int
+
+    cover: dict

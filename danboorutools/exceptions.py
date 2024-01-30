@@ -77,6 +77,10 @@ class DownloadError(HTTPError):
     """A file download failed with a specific error."""
 
 
+class MaintenanceError(HTTPError):
+    """The site is undergoing maintenance."""
+
+
 class DeadUrlError(HTTPError):
     """The URL is dead."""
 
