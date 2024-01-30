@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 class HasPosts:
     _new_posts: list[PostUrl | GalleryUrl]
-    _revisioned_posts: list[PostUrl | GalleryUrl]
+    _revised_posts: list[PostUrl | GalleryUrl]
     known_posts: list[PostUrl | GalleryUrl]
 
     quit_early_page = 0
@@ -33,7 +33,7 @@ class HasPosts:
             self.known_posts = known_posts or []
 
         self._new_posts = []
-        self._revisioned_posts = []
+        self._revised_posts = []
 
         try:
             logger.info(f"Scanning {self} for posts...")
@@ -42,14 +42,10 @@ class HasPosts:
             logger.info("Found a post that's too old during a first-time scan. Quitting...")
         except (Exception, KeyboardInterrupt):
             self._new_posts = []
-            self._revisioned_posts = []
+            self._revised_posts = []
             raise
 
-        logger.info(
-            "Finished scanning. ",
-            f" {self._new_posts} {"new " if self.known_posts else ""}posts found.",
-            f" {self._revisioned_posts} posts with revisions found." if self._revisioned_posts else "",
-        )
+        self.print_progress(finished=True)
 
     def _extract_all_posts(self) -> None:
         from danboorutools.models.url import GalleryUrl
@@ -108,12 +104,7 @@ class HasPosts:
                        score: int,
                        is_deleted: bool = False,
                        ) -> None:
-        if post in self.known_posts:
-            logger.info(f"Found a previously-seen post: {post}. Rescanning.")
-            warnings.warn("Found a previously seen post.", FoundKnownPost, stacklevel=2)
-            # No need to reassign, because urls are cached
-
-        if post in self._revisioned_posts or post in self._new_posts:
+        if post in self._revised_posts or post in self._new_posts:
             raise NotImplementedError(post)
 
         post.score = score
@@ -137,20 +128,6 @@ class HasPosts:
             else:
                 has_new_assets = True
 
-        # check if it's a revision, a new post, or nothing at all
-        if has_new_assets and old_assets:
-            # has both old and new assets
-            self._revisioned_posts.append(post)
-        elif has_new_assets and not old_assets:
-            # only has new assets
-            self._new_posts.append(post)
-        elif not has_new_assets and old_assets:
-            # only has old assets
-            return
-        elif not has_new_assets and not old_assets:
-            # no post
-            return
-
         # check for removed versions
         found_asset_urls = [u if not isinstance(u, str) else post.parse(u) for u in found_assets]
         for asset in old_assets:
@@ -162,14 +139,48 @@ class HasPosts:
                 # still there
                 asset.is_deleted = False
 
-        self.print_progress(post)
+        # check if it's a revision, a new post, or nothing at all
+        if has_new_assets and old_assets:
+            # has both old and new assets
+            logger.info(f"Found new assets on a previously seen post: {post}.")
+            warnings.warn("Found a previously seen post.", FoundKnownPost, stacklevel=2)
+            self._revised_posts.append(post)
+        elif has_new_assets and not old_assets:
+            # only has new assets
+            logger.info(f"Found a new post: {post}.")
+            self._new_posts.append(post)
+        elif not has_new_assets and old_assets:
+            # only has old assets
+            return
+        elif not has_new_assets and not old_assets:
+            # no post
+            return
 
-    def print_progress(self, post: PostUrl | GalleryUrl) -> None:
-        logger.info(
-            f"Found {len(self._new_posts):>3} posts ",
-            f"and {len(self._revisioned_posts)} revisions" if self.known_posts else "",
-            f" so far. Last collected: {post}",
-        )
+        self.print_progress()
+
+    def print_progress(self, finished: bool = False) -> None:
+        message = ""
+
+        if finished:
+            message += "Finished scanning. "
+
+        message += "Found "
+
+        if self._new_posts:
+            message += f"{len(self._new_posts)} new posts"
+
+            if self._revised_posts:
+                message += " and "
+
+        if self._revised_posts:
+            message += f"{len(self._revised_posts)} revised posts"
+
+        if not finished:
+            message += " so far"
+
+        message += "."
+
+        logger.info(message)
 
 
 class FoundKnownPost(Warning):
