@@ -130,20 +130,29 @@ class HasPosts:
 
         # check for removed versions
         found_asset_urls = [u if not isinstance(u, str) else post.parse(u) for u in found_assets]
+        deletion_status_changed = False
         for asset in old_assets:
             if asset not in found_asset_urls:
                 # this asset was removed from the source
                 if not asset.__dict__.get("is_deleted", False):
                     logger.info(f"Detected that asset {asset} for post {post} was deleted at the source.")
                     asset.is_deleted = True
+                    deletion_status_changed = True
             else:
                 # still there
-                asset.is_deleted = False
+                logger.info(f"Detected that asset {asset} for post {post} was restored at the source.")
+                if asset.__dict__.get("is_deleted", False):
+                    asset.is_deleted = False
+                    deletion_status_changed = True
 
         # check if it's a revision, a new post, or nothing at all
         if has_new_assets and old_assets:
             # has both old and new assets
             logger.info(f"Found new assets on a previously seen post: {post}.")
+            warnings.warn("Found a previously seen post.", FoundKnownPost, stacklevel=2)
+            self._revised_posts.append(post)
+        elif deletion_status_changed:
+            logger.info(f"Some assets on post {post} changed deletion status.")
             warnings.warn("Found a previously seen post.", FoundKnownPost, stacklevel=2)
             self._revised_posts.append(post)
         elif has_new_assets and not old_assets:
