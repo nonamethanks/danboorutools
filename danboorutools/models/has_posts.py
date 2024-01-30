@@ -133,8 +133,9 @@ class HasPosts:
         for asset in old_assets:
             if asset not in found_asset_urls:
                 # this asset was removed from the source
-                logger.info(f"Detected that asset {asset} for post {post} was deleted at the source.")
-                asset.is_deleted = True
+                if not asset.__dict__.get("is_deleted", False):
+                    logger.info(f"Detected that asset {asset} for post {post} was deleted at the source.")
+                    asset.is_deleted = True
             else:
                 # still there
                 asset.is_deleted = False
