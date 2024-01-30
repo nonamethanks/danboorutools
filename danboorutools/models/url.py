@@ -272,7 +272,7 @@ TypeVarAsset = TypeVar("TypeVarAsset", bound=PostAssetUrl | GalleryAssetUrl)
 
 class HasAssets(Generic[TypeVarAsset]):
 
-    def _register_asset(self, asset: TypeVarAsset | str, is_deleted: bool = False) -> None:
+    def _register_asset(self, asset: TypeVarAsset | str, is_deleted: bool | None = None) -> None:
         if "assets" not in self.__dict__:
             self.__dict__["assets"] = []
 
@@ -283,7 +283,8 @@ class HasAssets(Generic[TypeVarAsset]):
         if asset in self.assets:
             raise DuplicateAssetError(self, asset, self.assets)
 
-        asset.is_deleted = is_deleted
+        if is_deleted is not None:
+            asset.is_deleted = is_deleted
 
         self.assets.append(asset)
 

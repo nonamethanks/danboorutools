@@ -122,7 +122,7 @@ class HasPosts:
         has_new_assets = False
         for asset in found_assets:
             try:
-                post._register_asset(asset)
+                post._register_asset(asset, is_deleted=False)
             except DuplicateAssetError:
                 pass
             else:
