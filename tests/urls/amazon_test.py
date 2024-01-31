@@ -2,6 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.amazon import AmazonAuthorUrl, AmazonItemUrl, AmazonShortenerUrl
 from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     AmazonAuthorUrl: {
@@ -30,3 +31,12 @@ urls = {
 )
 def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
+
+
+class TestAmazonAuthorUrl(_TestArtistUrl):
+    url_string = "https://www.amazon.co.jp/stores/author/B00J2FHN3Q"
+    url_type = AmazonAuthorUrl
+    url_properties = dict(author_id="B00J2FHN3Q", subsite="co.jp")
+    primary_names = ["森小太郎"]
+    secondary_names = []
+    related = []
