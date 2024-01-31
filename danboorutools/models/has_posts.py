@@ -110,9 +110,10 @@ class HasPosts:
         if post in self.known_posts:
             post = self.known_posts[self.known_posts.index(post)]  # fuck
 
-        post.score = score
         post.is_deleted = is_deleted
-        post.created_at = datetime_from_string(created_at) if created_at else datetime.now(tz=UTC)
+        if isinstance(post, PostUrl):
+            post.score = score
+            post.created_at = datetime_from_string(created_at) if created_at else datetime.now(tz=UTC)
 
         # skip posts that are too old for a first scan (during feed scans etc)
         if not self.known_posts and (self.max_post_age and post.created_at < datetime.now(tz=UTC) - self.max_post_age):
