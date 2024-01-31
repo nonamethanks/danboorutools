@@ -104,6 +104,9 @@ class HasPosts:
                        score: int,
                        is_deleted: bool = False,
                        ) -> None:
+
+        from danboorutools.models.url import PostUrl
+
         if post in self._revised_posts or post in self._new_posts:
             raise NotImplementedError(post)
 

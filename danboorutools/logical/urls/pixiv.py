@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from datetime import datetime
 
     from danboorutools.logical.feeds.pixiv import PixivFeed
+    from danboorutools.models.file import File
 
 
 class PixivUrl(Url):
@@ -77,6 +78,10 @@ class PixivImageUrl(PostAssetUrl, PixivUrl):
     unlisted: bool = False
 
     page_regex = re.compile(r"^p(\d+)$")
+
+    def extract_files(self) -> list[File]:
+        downloaded_file = self.session.download_file(self.normalized_url)
+        return [downloaded_file]  # don't try to extract ugoiras
 
     @classmethod
     def parse_filename(cls, filename_stem: str) -> tuple[int, int, bool]:
