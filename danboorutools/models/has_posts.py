@@ -107,6 +107,9 @@ class HasPosts:
         if post in self._revised_posts or post in self._new_posts:
             raise NotImplementedError(post)
 
+        if post in self.known_posts:
+            post = self.known_posts[self.known_posts.index(post)]  # fuck
+
         post.score = score
         post.is_deleted = is_deleted
         post.created_at = datetime_from_string(created_at) if created_at else datetime.now(tz=UTC)
@@ -138,10 +141,10 @@ class HasPosts:
                     logger.info(f"Detected that asset {asset} for post {post} was deleted at the source.")
                     asset.is_deleted = True
                     deletion_status_changed = True
-            else:
-                # still there
-                logger.info(f"Detected that asset {asset} for post {post} was restored at the source.")
+            else:  # noqa: PLR5501
                 if asset.__dict__.get("is_deleted", False):
+                    # this asset was restored at the source
+                    logger.info(f"Detected that asset {asset} for post {post} was restored at the source.")
                     asset.is_deleted = False
                     deletion_status_changed = True
 
@@ -177,7 +180,7 @@ class HasPosts:
         message += "Found "
 
         if not self._new_posts and not self._revised_posts:
-            message += "no posts"
+            message += "no posts" if not self.known_posts else "no new posts"
         else:
             if self._new_posts:
                 message += f"{len(self._new_posts)} new posts"
