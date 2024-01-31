@@ -8,6 +8,7 @@ urls = {
         "https://www.amazon.com/stores/author/B0127EHZ7W": "https://www.amazon.com/stores/author/B0127EHZ7W",
         "https://www.amazon.com/stores/Shei-Darksbane/author/B0127EHZ7W": "https://www.amazon.com/stores/author/B0127EHZ7W",
         "https://www.amazon.com/Shei-Darksbane/e/B0127EHZ7W": "https://www.amazon.com/stores/author/B0127EHZ7W",
+        "https://www.amazon.co.jp/kindle-dbs/entity/author/B00J2FHN3Q?_encoding=UTF8&offset=0&pageSize=12&searchAlias=stripbooks&sort=date-desc-rank&page=1&langFilter=default#formatSelectorHeader": "https://www.amazon.co.jp/stores/author/B00J2FHN3Q",
     },
     AmazonItemUrl: {
         "https://www.amazon.com/dp/B08BWGQ8NP/": "https://www.amazon.com/dp/B08BWGQ8NP",

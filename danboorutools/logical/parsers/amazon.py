@@ -100,6 +100,12 @@ class AmazonComParser(UrlParser):
                                        author_id=author_id,
                                        subsite=parsable_url.tld)
 
+            # https://www.amazon.co.jp/kindle-dbs/entity/author/B00J2FHN3Q?_encoding=UTF8&offset=0&pageSize=12&searchAlias=stripbooks&sort=date-desc-rank&page=1&langFilter=default#formatSelectorHeader
+            case *_, "entity", "author", author_id:
+                return AmazonAuthorUrl(parsed_url=parsable_url,
+                                       author_id=author_id,
+                                       subsite=parsable_url.tld)
+
             case _, "s":
                 raise UnparsableUrlError(parsable_url)
 
