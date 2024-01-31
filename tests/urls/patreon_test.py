@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.patreon import PatreonArtistUrl, PatreonImageUrl, PatreonPostUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import _TestArtistUrl
+from tests.helpers.scraping import _TestArtistUrl, _TestPostUrl
 
 urls = {
     PatreonArtistUrl: {
@@ -60,3 +60,10 @@ class TestPatreonArtistUrl2(_TestArtistUrl):
     secondary_names = ["teiputi"]
     related = []
     is_deleted = True
+
+
+class TestPatreonPostUrl(_TestPostUrl):
+    url_string = "https://www.patreon.com/posts/wu-xiu-zheng-ku-92745989"
+    url_type = PatreonPostUrl
+    url_properties = dict(post_id=92745989, title="wu-xiu-zheng-ku", username=None)
+    gallery = "https://www.patreon.com/TakaneNTR"

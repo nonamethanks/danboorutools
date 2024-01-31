@@ -47,7 +47,7 @@ class PatreonSession(Session):
             artist = self.artist_data(f"https://www.patreon.com/{artist_name}")
         except NotAnArtistError:
             return
-        raise NotImplementedError(self)
+        raise NotImplementedError(artist)
 
     def get_feed(self, cursor: str | None) -> PatreonCampaignResponse:
         headers = {
@@ -104,6 +104,10 @@ class PatreonArtistData(BaseModel):
     @property
     def username(self) -> str:
         return self.data["attributes"]["vanity"]
+
+    @property
+    def artist_url(self) -> str:
+        return self.data["attributes"]["url"]
 
     @property
     def related_urls(self) -> list[Url]:

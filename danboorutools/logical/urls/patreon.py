@@ -1,9 +1,14 @@
-from collections.abc import Iterator
+from __future__ import annotations
+
 from functools import cached_property
+from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import DeadUrlError, NotAnArtistError
 from danboorutools.logical.sessions.patreon import PatreonArtistData, PatreonSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 
 class PatreonUrl(Url):
@@ -22,6 +27,16 @@ class PatreonPostUrl(PostUrl, PatreonUrl):
             return f"https://www.patreon.com/posts/{title}-{post_id}"
         else:
             return f"https://www.patreon.com/posts/{post_id}"
+
+    @cached_property
+    def gallery(self) -> PatreonArtistUrl:
+        if self.username:
+            return PatreonArtistUrl.normalize(username=self.username)
+
+        artist_data = self.session.artist_data(self.normalized_url)
+        artist_url = PatreonArtistUrl.parse(artist_data.artist_url)
+        assert isinstance(artist_url, PatreonArtistUrl)
+        return artist_url
 
 
 class PatreonArtistUrl(ArtistUrl, PatreonUrl):
