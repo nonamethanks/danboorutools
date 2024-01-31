@@ -15,27 +15,28 @@ if TYPE_CHECKING:
 parsers: dict[str, type[UrlParser]] = {}
 
 UNSUPPORTED_DOMAINS = (
-    "alice-books.com",  # doujinshi store
+    "alice-books.com",      # doujinshi store
     "amebaownd.com",
-    "artmug.kr",  # not worth it, looks like a terrible site to implement
+    "artmug.kr",            # not worth it, looks like a terrible site to implement
     "coocan.jp",
-    "discord.gg",  # way too much of a pain in the ass
-    "kakao.com",  # korean chat app?
-    "interq.or.jp",  # shitty old japanese site
-    "itch.io",  # indie vidya store
-    "linkedin.com",  # i ain't gonna add fucking linkedin links lmao
+    "discord.com",          # way too much of a pain in the ass
+    "discord.gg",           # as above
+    "kakao.com",            # korean chat app?
+    "interq.or.jp",         # shitty old japanese site
+    "itch.io",              # indie vidya store
+    "linkedin.com",         # i ain't gonna add fucking linkedin links lmao
     "mbsp.jp",
     "nobody.jp",
-    "pinterest.com",  # too high chance of third-party
+    "pinterest.com",        # too high chance of third-party
     "pixnet.net",
     "ribbon.to",
     "starfree.jp",
     "webclap.com",
     "webnode.jp",
-    "wix.com",  # blogging platform, too messy
-    "wixsite.com",  # as above
+    "wix.com",              # blogging platform, too messy
+    "wixsite.com",          # as above
     "whitesnow.jp",
-    "wordpress.com",  # too many possibilities
+    "wordpress.com",        # too many possibilities
 )
 
 
