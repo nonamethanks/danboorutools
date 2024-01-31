@@ -14,8 +14,8 @@ class BilibiliSession(Session):
             "token": "",
             "platform": "web",
             "web_location": 1550101,
-            "w_rid": "32289ba23bfdf801c576934db527f3e9",
-            "wts": 1703443487,
+            "w_rid": "3eb1183559e0f52e01a4831ca0b2f1ba",
+            "wts": 1706693090,
         }
         user_data = self.get(
             "https://api.bilibili.com/x/space/wbi/acc/info",
