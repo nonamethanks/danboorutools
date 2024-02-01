@@ -94,7 +94,7 @@ class ArchiveFile(File):
         run_external_command(f"aunpack {source} -X {destination}")
 
         subpaths = natsort_array(destination.rglob("*.*"))
-        return [File.identify(subpath) for subpath in subpaths]
+        return [File.identify(subpath, md5_as_filename=True) for subpath in subpaths]
 
 
 class ImageFile(File):
