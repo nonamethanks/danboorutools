@@ -26,9 +26,6 @@ class FanboxSession(Session):
         post_json = self.get_and_parse_fanbox_json(f"https://api.fanbox.cc/post.info?postId={post_id}")
         return FanboxPostData(**post_json)
 
-    def get_posts(self, username: str, page: int) -> list[FanboxPostData]:
-        "https://api.fanbox.cc/post.listCreator?creatorId=yamadayoshinobu&limit=5"
-
     def get_and_parse_fanbox_json(self, json_url: str, *args, use_cookies: bool = False, **kwargs) -> dict:
         kwargs["headers"] = {"Origin": "https://www.fanbox.cc"} | kwargs.get("headers", {})
 

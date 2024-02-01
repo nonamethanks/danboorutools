@@ -47,7 +47,7 @@ class FanboxArtistUrl(ArtistUrl, FanboxUrl):
         return self.session.subscribe(self.username)
 
     def _extract_posts_from_each_page(self) -> Iterator[list[int]]:
-        data_url = "https://api.fanbox.cc/post.listCreator?creatorId=yamadayoshinobu&limit=5"
+        data_url = f"https://api.fanbox.cc/post.listCreator?creatorId={self.username}&limit=5"
         while True:
             page_json = self.session.get_and_parse_fanbox_json(data_url)
 
