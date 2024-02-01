@@ -36,10 +36,6 @@ class File:
                 return UnknownFile(raw_path=path)
 
     @classmethod
-    def known(cls, path: Path) -> File:
-        return cls.get_subclass_for(path)
-
-    @classmethod
     def identify(cls, path: str | Path, destination_dir: Path | None = None, md5_as_filename: bool = False) -> FileSubclass:
         path = Path(path)
         destination_dir = destination_dir or path.parent
@@ -157,4 +153,4 @@ class UnknownFile(File):
     pass
 
 
-FileSubclass = ArchiveFile | UnknownFile
+FileSubclass = ArchiveFile | UnknownFile | ImageFile
