@@ -37,7 +37,7 @@ urls = {
         # "http://img04.pixiv.net/img/aenobas/20513642_big_p48.jpg": "http://img04.pixiv.net/img/aenobas/20513642_big_p48.jpg",
     },
     p.PixivProfileImageUrl: {
-        "https://i.pximg.net/user-profile/img/2021/08/25/00/00/40/21290212_0374c372d602a6ec6b311764b0168a13_170.jpg": "https://i.pximg.net/user-profile/img/2021/08/25/00/00/40/21290212_0374c372d602a6ec6b311764b0168a13_170.jpg",
+        "https://i.pximg.net/user-profile/img/2021/08/25/00/00/40/21290212_0374c372d602a6ec6b311764b0168a13_170.jpg": "https://i.pximg.net/user-profile/img/2021/08/25/00/00/40/21290212_0374c372d602a6ec6b311764b0168a13.jpg",
         "http://i2.pixiv.net/img14/profile/muta0083/4810758.jpg": "http://i2.pixiv.net/img14/profile/muta0083/4810758.jpg",
     },
     p.PixivNovelImageUrl: {
@@ -47,8 +47,8 @@ urls = {
         "https://i.pximg.net/img96/img/masao_913555/novel/4472318.jpg": "https://i.pximg.net/img96/img/masao_913555/novel/4472318.jpg",
     },
     p.PixivGalleryAssetUrl: {
-        "https://i.pximg.net/background/img/2021/11/19/01/48/36/3767624_473f1bc024142eef43c80d2b0061b25a.jpg": "https://i.pximg.net/background/img/2021/11/19/01/48/36/3767624_473f1bc024142eef43c80d2b0061b25a.jpg",
         "https://i.pximg.net/workspace/img/2016/06/23/13/21/30/3968542_1603f967a310f7b03629b07a8f811c13.jpg": "https://i.pximg.net/workspace/img/2016/06/23/13/21/30/3968542_1603f967a310f7b03629b07a8f811c13.jpg",
+        "https://i.pximg.net/background/img/2021/11/19/01/48/36/3767624_473f1bc024142eef43c80d2b0061b25a.jpg": "https://i.pximg.net/background/img/2021/11/19/01/48/36/3767624_473f1bc024142eef43c80d2b0061b25a.jpg",
     },
     p.PixivArtistUrl: {
         "https://www.pixiv.net/u/9202877": "https://www.pixiv.net/en/users/9202877",

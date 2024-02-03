@@ -313,7 +313,7 @@ class GalleryUrl(Url, HasPosts, HasAssets[GalleryAssetUrl]):
         raise NotImplementedError(self, "hasn't implemented subscription.")
 
     def _extract_assets(self) -> list[GalleryAssetUrl]:
-        return []
+        raise NotImplementedError(self, "hasn't implemented asset extraction.")
 
 
 class ArtistUrl(GalleryUrl, InfoUrl):  # pylint: disable=abstract-method

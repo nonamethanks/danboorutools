@@ -50,6 +50,8 @@ class HasPosts:
     def _extract_all_posts(self) -> None:
         from danboorutools.models.url import GalleryUrl
         if isinstance(self, GalleryUrl) and (g_assets := self._extract_assets()):
+            for g_asset in g_assets:
+                g_asset.gallery = self
             self._register_post(
                 self,
                 assets=g_assets,

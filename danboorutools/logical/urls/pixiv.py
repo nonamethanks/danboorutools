@@ -23,8 +23,16 @@ class PixivUrl(Url):
     session = PixivSession()
 
 
-class PixivProfileImageUrl(PostAssetUrl, PixivUrl):
+class PixivProfileImageUrl(GalleryAssetUrl, PixivUrl):
     stacc: str | None = None
+
+    @property
+    def full_size(self) -> str:
+        return re.sub(r"_\d+\.(\w+)$", r".\1", self.parsed_url.raw_url)
+
+
+class PixivGalleryAssetUrl(GalleryAssetUrl, PixivUrl):
+    user_id: int
 
     @property
     def full_size(self) -> str:
@@ -60,14 +68,6 @@ class PixivNovelImageUrl(PostAssetUrl, PixivUrl):
         if "novel-cover-original" in self.parsed_url.url_parts or "novel" in self.parsed_url.url_parts:
             return self.parsed_url.raw_url
         raise NotImplementedError
-
-
-class PixivGalleryAssetUrl(GalleryAssetUrl, PixivUrl):
-    user_id: int
-
-    @property
-    def full_size(self) -> str:
-        return self.parsed_url.raw_url
 
 
 class PixivImageUrl(PostAssetUrl, PixivUrl):
@@ -143,12 +143,12 @@ class PixivPostUrl(PostUrl, PixivUrl):
         else:
             return f"https://www.pixiv.net/en/artworks/{post_id}"
 
-    def _extract_assets(self) -> list[str]:
+    def _extract_assets(self) -> list[PixivImageUrl]:
         asset_urls = [img["urls"]["original"] for img in self._pages_data]
         if "_ugoira0" in asset_urls[0]:
             asset_urls = [self.ugoira_data["originalSrc"]]
 
-        return asset_urls
+        return [Url.parse(u) for u in asset_urls]
 
     @cached_property
     def created_at(self) -> datetime:
@@ -249,6 +249,12 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
     @property
     def artist_data(self) -> PixivArtistData:
         return self.session.artist_data(self.user_id)
+
+    def _extract_assets(self) -> list[GalleryAssetUrl]:
+        imgs = [self.artist_data.profile_image_full]
+        if self.artist_data.cover_image_full:
+            imgs += [self.artist_data.cover_image_full]
+        return imgs
 
     def subscribe(self) -> None:
         self.session.subscribe(self.user_id)

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import os
+import re
 import time
 from datetime import datetime
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import ring
 from pydantic import Field
@@ -14,6 +15,9 @@ from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.pixiv_sketch import PixivSketchArtistUrl
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
+
+if TYPE_CHECKING:
+    from danboorutools.logical.urls.pixiv import PixivGalleryAssetUrl, PixivProfileImageUrl
 
 DELETION_MESSAGES = [
     "User has left pixiv or the user ID does not exist.",
@@ -104,6 +108,26 @@ class PixivArtistData(BaseModel):
     fanbox_details: dict[str, str | Literal[False]] | None   # cover_image_url can be false
     social: dict[str, dict[str, str]] | list
     user_webpage: str | None
+    profile_img: dict
+    cover_image: dict | False
+
+    @property
+    def cover_image_full(self) -> PixivProfileImageUrl | None:
+        if not self.cover_image:
+            return None
+
+        fn = self.cover_image["profile_cover_filename"].strip("/")
+        # https://i.pximg.net/background/img/2021/11/23/22/20211123220453_61028298_a2a8036378806f97b925ebed4ec39e3e.png
+        # ->
+        # https://i.pximg.net/background/img/2021/11/23/22/04/53/20211123220453_61028298_a2a8036378806f97b925ebed4ec39e3e.png
+        fn = re.sub(r"\/\d{10}(\d{2})(\d{2})_", r"\/\1\/\2\/", fn)
+
+        ext = self.cover_image["profile_cover_ext"]
+        return Url.parse(f"https://i.pximg.net/background/{fn}.{ext}")
+
+    @property
+    def profile_image_full(self) -> PixivGalleryAssetUrl:
+        return Url.parse(self.profile_img["main"])
 
     @property
     def related_urls(self) -> list[Url]:
