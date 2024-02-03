@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import inspect
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from importlib import import_module
 from typing import TYPE_CHECKING, Generic, TypeVar
 
@@ -20,7 +20,7 @@ class Feed(HasPosts):  # pylint: disable=abstract-method
     session = Session()
 
     quit_early_page = 3
-    max_post_age = datetime.timedelta(days=7)
+    max_post_age = datetime.timedelta(days=14)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}[]"
@@ -46,6 +46,16 @@ class Feed(HasPosts):  # pylint: disable=abstract-method
             return
 
         feeds.append(cls)
+
+    @cached_property
+    def site_name(self) -> str:
+        current_module = self.__module__
+        subfolder, submodule = current_module.rsplit(".", 1)
+        if not subfolder.endswith("danboorutools.logical.feeds"):
+            raise NotImplementedError("Site name unknown")
+        if not submodule:
+            raise NotImplementedError("Site name unknown")
+        return submodule
 
 
 ArtistTypeVar = TypeVar("ArtistTypeVar")
