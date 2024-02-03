@@ -44,6 +44,23 @@ class PixivSketchSession(Session):
 
         raise NotImplementedError(response)
 
+    def unsubscribe(self, username: str) -> None:
+        user_id = self.user_data(username).id
+
+        unfollow_url = f"https://sketch.pixiv.net/api/follows/{user_id}.json"
+        headers = {"Referer": f"https://sketch.pixiv.net/@{username}", "x-requested-with": unfollow_url}
+
+        response = self.delete(
+            unfollow_url,
+            headers=headers,
+            cookies={"PHPSESSID": os.environ["PIXIV_PHPSESSID_COOKIE"]},
+        ).json()
+
+        if not response["data"]["following"]:
+            return
+
+        raise NotImplementedError(response)
+
 
 class PixivSketchUserData(BaseModel):
     id: int
