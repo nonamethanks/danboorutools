@@ -190,6 +190,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
 def _process_post(self: PixivArtistUrl | PixivFeed, post_object: PixivGroupedIllustData) -> None:
     # kept separate so it can be imported by PixivFeed
     post = PixivPostUrl.build(post_id=post_object.id)
+    post.gallery = PixivArtistUrl.build(user_id=post_object.user_id)
 
     if post_object.type == 2:
         post_ugoira_data = post.ugoira_data
