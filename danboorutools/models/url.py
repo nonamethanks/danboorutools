@@ -260,7 +260,7 @@ class PostAssetUrl(_AssetUrl, Url):
 class GalleryAssetUrl(_AssetUrl, Url):
     """An asset belonging to a gallery instead of a post (such as a background image)."""
     @cached_property
-    def gallery(self) -> PostUrl | None:
+    def gallery(self) -> GalleryUrl | None:
         raise NotImplementedError(self, "hasn't implemented gallery extraction.")
 
 
@@ -328,7 +328,7 @@ class PostUrl(Url, HasAssets[PostAssetUrl]):
     asset_type = PostAssetUrl
 
     @cached_property
-    def gallery(self) -> GalleryUrl | None:
+    def gallery(self) -> GalleryUrl:
         raise NotImplementedError(self, "hasn't implemented gallery extraction.")
 
     @cached_property
