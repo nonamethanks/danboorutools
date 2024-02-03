@@ -48,6 +48,7 @@ urls = {
         "https://pixiv.pximg.net/c/400x400_90_a2_g5/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg": "https://pixiv.pximg.net/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg",
         "https://pixiv.pximg.net/c/1620x580_90_a2_g5/fanbox/public/images/creator/1566167/cover/QqxYtuWdy4XWQx1ZLIqr4wvA.jpeg": "https://pixiv.pximg.net/fanbox/public/images/creator/1566167/cover/QqxYtuWdy4XWQx1ZLIqr4wvA.jpeg",
         "https://pixiv.pximg.net/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg": "https://pixiv.pximg.net/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg",
+        "https://pixiv.pximg.net/c/160x160_90_a2_g5/fanbox/public/images/user/10013868/icon/HQBS5TrKZRZ0gEZrsbmtCX3b.jpeg": "https://pixiv.pximg.net/fanbox/public/images/user/10013868/icon/HQBS5TrKZRZ0gEZrsbmtCX3b.jpeg",
     },
 }
 

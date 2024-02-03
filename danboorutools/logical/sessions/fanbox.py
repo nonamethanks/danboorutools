@@ -79,6 +79,7 @@ class FanboxSession(Session):
 class _UserData(BaseModel):
     name: str       # display name
     userId: int     # pixiv ID
+    iconUrl: str
 
 
 class FanboxArtistData(BaseModel):
@@ -86,7 +87,8 @@ class FanboxArtistData(BaseModel):
     profileLinks: list[str]
     profileItems: list[dict]
     creatorId: str  # url username
-    model_config = ConfigDict(populate_by_name=True)
+
+    coverImageUrl: str
 
     @property
     def related_urls(self) -> list[Url]:

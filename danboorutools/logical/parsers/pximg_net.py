@@ -132,8 +132,9 @@ class PximgNetParser(UrlParser):
 
             # https://pixiv.pximg.net/c/400x400_90_a2_g5/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg
             # https://pixiv.pximg.net/c/1620x580_90_a2_g5/fanbox/public/images/creator/1566167/cover/QqxYtuWdy4XWQx1ZLIqr4wvA.jpeg
+            # https://pixiv.pximg.net/c/160x160_90_a2_g5/fanbox/public/images/user/10013868/icon/HQBS5TrKZRZ0gEZrsbmtCX3b.jpeg
             # https://pixiv.pximg.net/fanbox/public/images/creator/1566167/profile/Ix6bnJmTaOAFZhXHLbWyIY1e.jpeg",  # dead
-            case *_, "fanbox", "public", "images", "creator", pixiv_id, ("profile" | "cover") as image_type, _filename:
+            case *_, "fanbox", "public", "images", ("creator" | "user"), pixiv_id, ("profile" | "cover" | "icon") as image_type, _filename:
                 return FanboxArtistImageUrl(parsed_url=parsable_url,
                                             pixiv_id=int(pixiv_id),
                                             image_type=image_type)

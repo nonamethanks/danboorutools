@@ -72,7 +72,10 @@ class FanboxArtistUrl(ArtistUrl, FanboxUrl):
         )
 
     def _extract_assets(self) -> list[GalleryAssetUrl]:
-        return self.artist_data.featured_images
+        featured = self.artist_data.featured_images
+        cover_image = Url.parse(self.artist_data.coverImageUrl)
+        profile_image = Url.parse(self.artist_data.user.iconUrl)
+        return [featured, cover_image, profile_image]
 
 
 class FanboxPostUrl(PostUrl, FanboxUrl):
