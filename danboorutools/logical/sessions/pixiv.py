@@ -134,7 +134,7 @@ class PixivGroupedIllustData(BaseModel):
 
     upload_timestamp: datetime
 
-    rating_count: int | None  # the feed endpoint doesn't have it
+    # rating_count: int | None  # the feed endpoint doesn't have it
 
 
 class PixivSingleIllustData(BaseModel):
