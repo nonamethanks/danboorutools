@@ -26,13 +26,12 @@ class PixivSketchFeed(Feed):
 
     def _process_post(self, post_object: PixivSketchPostData) -> None:
         post = PixivSketchPostUrl.build(post_id=post_object.id)
+        post.gallery = PixivSketchArtistUrl.build(stacc=post_object.user.unique_name)
 
         if not post_object.media:
             return
 
         assets = [i["photo"]["original"]["url"] for i in post_object.media]
-
-        post.artist = PixivSketchArtistUrl.build(stacc=post_object.user["unique_name"])
 
         self._register_post(
             post=post,
@@ -40,3 +39,7 @@ class PixivSketchFeed(Feed):
             created_at=post_object.created_at,
             score=post_object.feedback_count,
         )
+
+    @property
+    def normalized_url(self) -> str:
+        return "https://sketch.pixiv.net/followings"

@@ -50,7 +50,6 @@ class PixivSketchUserData(BaseModel):
     pixiv_user_id: int
     unique_name: str
     name: str
-    description: str
 
 
 class PixivSketchPageData(BaseModel):
@@ -74,7 +73,7 @@ class PixivSketchPostData(BaseModel):
     created_at: datetime
     feedback_count: int
 
-    user: dict
+    user: PixivSketchUserData
 
     @property
     def assets(self) -> list[PixivSketchImageUrl]:

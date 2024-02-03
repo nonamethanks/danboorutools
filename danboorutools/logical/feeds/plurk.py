@@ -39,7 +39,7 @@ class PlurkFeed(Feed):
         ]
 
         artist_href = post.html.select_one(".bigplurk .avatar a")["href"]
-        post.artist = Url.parse(urljoin("https://www.plurk.com/", artist_href))
+        post.gallery = Url.parse(urljoin("https://www.plurk.com/", artist_href))
         self._register_post(
             post=post,
             assets=list(dict.fromkeys(images)),
