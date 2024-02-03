@@ -119,7 +119,7 @@ class HasPosts:
             post.created_at = datetime_from_string(created_at) if created_at else datetime.now(tz=UTC)
 
         # skip posts that are too old for a first scan (during feed scans etc)
-        if not self.known_posts and (self.max_post_age and post.created_at < datetime.now(tz=UTC) - self.max_post_age):
+        if self.max_post_age and post.created_at < datetime.now(tz=UTC) - self.max_post_age:
             raise PostTooOldError
 
         self.__insert_post(post=post, found_assets=assets)
