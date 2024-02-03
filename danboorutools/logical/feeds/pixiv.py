@@ -12,3 +12,7 @@ class PixivFeed(Feed):
         return map(self.session.get_feed, count(1))
 
     _process_post = _process_post
+
+    @property
+    def normalized_url(self) -> str:
+        return "https://www.pixiv.net/bookmark_new_illust.php"

@@ -57,6 +57,10 @@ class Feed(HasPosts):  # pylint: disable=abstract-method
             raise NotImplementedError("Site name unknown")
         return submodule
 
+    @property
+    def normalized_url(self) -> str:
+        raise NotImplementedError(self)
+
 
 ArtistTypeVar = TypeVar("ArtistTypeVar")
 
