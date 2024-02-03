@@ -109,7 +109,7 @@ class PixivArtistData(BaseModel):
     social: dict[str, dict[str, str]] | list
     user_webpage: str | None
     profile_img: dict
-    cover_image: dict | False
+    cover_image: dict | Literal[False]
 
     @property
     def cover_image_full(self) -> PixivProfileImageUrl | None:
