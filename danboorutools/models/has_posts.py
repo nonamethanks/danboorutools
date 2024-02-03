@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import warnings
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, TypeVar, final, overload
 
 from danboorutools import logger
@@ -23,7 +23,7 @@ class HasPosts:
 
     quit_early_page = 0
     check_revisions = True
-    max_post_age: datetime | None = None
+    max_post_age: timedelta | None = None
 
     @final
     def extract_posts(self, known_posts: list[PostUrl | GalleryUrl] | None = None) -> None:
