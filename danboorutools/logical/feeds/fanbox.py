@@ -32,3 +32,7 @@ class FanboxFeed(Feed):
             score=post_data.likeCount,
             created_at=post_data.publishedDatetime,
         )
+
+    @property
+    def normalized_url(self) -> str:
+        return "https://www.fanbox.cc"
