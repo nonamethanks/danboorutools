@@ -398,6 +398,6 @@ def parse_list(url_strings: list[str], url_type: type[UrlSubclass]) -> list[UrlS
     parsed_urls: list[UrlSubclass] = []
     for url_string in url_strings:
         parsed_url = Url.parse(url_string)
-        assert isinstance(url_string, url_type), (url_string, parsed_url)
+        assert isinstance(parsed_url, url_type), (url_string, parsed_url)
         parsed_urls.append(parsed_url)
     return parsed_urls
