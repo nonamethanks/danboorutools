@@ -100,14 +100,16 @@ class _TestGalleryUrl(_TestInfoUrl):
     def test_posts(self, parsed_url: GalleryUrl) -> None:
         if self.posts is not None:
             extracted_posts = parsed_url.extract_posts()
-            assert all(Url.parse(post) in extracted_posts for post in self.posts)
+            expected_posts = [Url.parse(post) for post in self.posts]
+            assert all(expected_post in extracted_posts for expected_post in expected_posts)
 
     @pytest.mark.gallery
     @pytest.mark.scraping
     def test_assets(self, parsed_url: GalleryUrl) -> None:
         if self.assets is not None:
             extracted_assets = parsed_url.assets
-            assert all(Url.parse(asset) in extracted_assets for asset in self.assets)
+            expected_assets = [Url.parse(asset) for asset in self.assets]
+            assert all(expected_asset in extracted_assets for expected_asset in expected_assets)
 
 
 @pytest.mark.artist
@@ -140,7 +142,8 @@ class _TestPostUrl(_TestUrl):
     def test_assets(self, parsed_url: PostUrl) -> None:
         if self.assets is not None:
             extracted_assets = parsed_url.assets
-            assert all(Url.parse(asset) in extracted_assets for asset in self.assets)
+            expected_assets = [Url.parse(asset) for asset in self.assets]
+            assert all(expected_asset in extracted_assets for expected_asset in expected_assets)
 
     @pytest.mark.scraping
     def test_score(self, parsed_url: PostUrl) -> None:

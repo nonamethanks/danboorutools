@@ -120,7 +120,7 @@ class PixivArtistData(BaseModel):
         # https://i.pximg.net/background/img/2021/11/23/22/20211123220453_61028298_a2a8036378806f97b925ebed4ec39e3e.png
         # ->
         # https://i.pximg.net/background/img/2021/11/23/22/04/53/20211123220453_61028298_a2a8036378806f97b925ebed4ec39e3e.png
-        fn = re.sub(r"\/\d{10}(\d{2})(\d{2})_", r"\/\1\/\2\/", fn)
+        fn = re.sub(r"\/\d{10}(\d{2})(\d{2})_", r"/\1/\2/", fn)
 
         ext = self.cover_image["profile_cover_ext"]
         return Url.parse(f"https://i.pximg.net/background/{fn}.{ext}")

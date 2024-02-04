@@ -36,7 +36,7 @@ class PixivGalleryAssetUrl(GalleryAssetUrl, PixivUrl):
 
     @property
     def full_size(self) -> str:
-        return self.parsed_url.raw_url
+        return re.sub(r"\/[cw]\/\w+\/", "/", self.parsed_url.raw_url)
 
 
 class PixivRequestUrl(ArtistAlbumUrl, PixivUrl):

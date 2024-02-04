@@ -49,6 +49,7 @@ urls = {
     p.PixivGalleryAssetUrl: {
         "https://i.pximg.net/workspace/img/2016/06/23/13/21/30/3968542_1603f967a310f7b03629b07a8f811c13.jpg": "https://i.pximg.net/workspace/img/2016/06/23/13/21/30/3968542_1603f967a310f7b03629b07a8f811c13.jpg",
         "https://i.pximg.net/background/img/2021/11/19/01/48/36/3767624_473f1bc024142eef43c80d2b0061b25a.jpg": "https://i.pximg.net/background/img/2021/11/19/01/48/36/3767624_473f1bc024142eef43c80d2b0061b25a.jpg",
+        "https://i.pximg.net/c/1920x960_80_a2_g5/background/img/2019/10/16/11/18/25/10183321_dded6b1ccd8b48a1f6b631f7e8ebbade.png": "https://i.pximg.net/background/img/2019/10/16/11/18/25/10183321_dded6b1ccd8b48a1f6b631f7e8ebbade.png",
     },
     p.PixivArtistUrl: {
         "https://www.pixiv.net/u/9202877": "https://www.pixiv.net/en/users/9202877",
@@ -122,6 +123,11 @@ class TestPixivArtistUrl(_TestArtistUrl):
                "https://sketch.pixiv.net/@2001sys"]
     # post_count = 40
     # posts = ["https://www.pixiv.net/en/artworks/95096202"]
+
+    assets = [
+        "https://i.pximg.net/user-profile/img/2020/04/21/16/32/25/18381595_18ae64643475b91426b9062eb4def5ce_170.png",
+        "https://i.pximg.net/c/1920x960_80_a2_g5/background/img/2019/10/16/11/18/25/10183321_dded6b1ccd8b48a1f6b631f7e8ebbade.png",
+    ]
 
 
 class TestPixivStaccUrl(_TestInfoUrl):
