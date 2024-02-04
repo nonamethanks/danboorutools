@@ -16,11 +16,12 @@ if TYPE_CHECKING:
 feeds: list[type[Feed]] = []
 
 
-class Feed(HasPosts):  # pylint: disable=abstract-method
+class Feed(HasPosts):
     session = Session()
 
     quit_early_page = 3
     max_post_age = datetime.timedelta(days=14)
+    first_page_must_have_posts = True
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}[]"

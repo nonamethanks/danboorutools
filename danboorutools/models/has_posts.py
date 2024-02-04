@@ -25,6 +25,8 @@ class HasPosts:
     check_revisions = True
     max_post_age: timedelta | None = None
 
+    first_page_must_have_posts = False
+
     @final
     def extract_posts(self, known_posts: list[PostUrl | GalleryUrl] | None = None) -> None:
         try:
@@ -37,9 +39,10 @@ class HasPosts:
 
         try:
             logger.info(f"Scanning {self} for posts...")
+            self.__extract_gallery_assets()
             self._extract_all_posts()
-        except PostTooOldError:
-            logger.info("Found a post that's too old during a first-time scan. Quitting...")
+        except PostTooOldError as e:
+            logger.info(f"Found a post that's too old for a first scan: {e.post}, {e.post.created_at}. Quitting...")
         except (Exception, KeyboardInterrupt):
             self._new_posts = []
             self._revised_posts = []
@@ -47,20 +50,23 @@ class HasPosts:
 
         self.print_progress(finished=True)
 
-    def _extract_all_posts(self) -> None:
+    def __extract_gallery_assets(self) -> None:
         from danboorutools.models.url import GalleryUrl
-        if isinstance(self, GalleryUrl) and (g_assets := self._extract_assets()):
-            for g_asset in g_assets:
+        if isinstance(self, GalleryUrl) and (gallery_assets := self._extract_assets()):
+            for g_asset in gallery_assets:
                 g_asset.gallery = self
             self._register_post(
                 self,
-                assets=g_assets,
+                assets=gallery_assets,
                 created_at=datetime.now(tz=UTC),
                 score=0,
             )
 
+    def _extract_all_posts(self) -> None:
         for page, post_objects in enumerate(self._extract_posts_from_each_page()):  # type: ignore[var-annotated]
             if not post_objects:
+                if page == 0 and self.first_page_must_have_posts:
+                    raise ValueError("No posts found on the first page.")
                 logger.info("No more posts found. Quitting...")
                 return
 
@@ -120,9 +126,9 @@ class HasPosts:
             post.score = score
             post.created_at = datetime_from_string(created_at) if created_at else datetime.now(tz=UTC)
 
-        # skip posts that are too old for a first scan (during feed scans etc)
-        if self.max_post_age and post.created_at < datetime.now(tz=UTC) - self.max_post_age:
-            raise PostTooOldError
+            # skip posts that are too old for a first scan (during feed scans etc)
+            if self.max_post_age and post.created_at < datetime.now(tz=UTC) - self.max_post_age:
+                raise PostTooOldError(post)
 
         self.__insert_post(post=post, found_assets=assets)
 
@@ -212,4 +218,6 @@ class FoundKnownPost(Warning):
 
 
 class PostTooOldError(Exception):
-    pass
+    def __init__(self, post: PostUrl) -> None:
+        self.post = post
+        super().__init__()

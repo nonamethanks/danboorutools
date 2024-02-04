@@ -6,8 +6,11 @@ from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import DeadUrlError, NotAnArtistError
 from danboorutools.logical.sessions.patreon import PatreonArtistData, PatreonCampaignPostData, PatreonSession
-from danboorutools.models.has_posts import HasPosts
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, PostAssetUrl, PostUrl, Url
+
+if TYPE_CHECKING:
+
+    from danboorutools.models.has_posts import HasPosts
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
