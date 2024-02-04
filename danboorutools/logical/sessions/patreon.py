@@ -2,17 +2,18 @@ from __future__ import annotations
 
 import os
 from datetime import datetime
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import ring
 from bs4 import BeautifulSoup
 
 from danboorutools.exceptions import DeadUrlError, NotAnArtistError
 from danboorutools.logical.sessions import Session
-from danboorutools.models.url import Url
+from danboorutools.models.url import Url, parsed_list
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
-# JSON_DATA_PATTERN = re.compile(r"bootstrap, ({.*?)\);\s", re.DOTALL)
+if TYPE_CHECKING:
+    from danboorutools.logical.urls.patreon import PatreonGalleryImageUrl
 
 
 class PatreonSession(Session):
@@ -93,25 +94,39 @@ class PatreonSession(Session):
         return url
 
 
+class PatreonArtistAttributes(BaseModel):
+    avatar_photo_image_urls: dict[str, str]
+    cover_photo_url_sizes: dict[str, str]
+
+    summary: str
+    name: str
+    vanity: str
+    url: str
+
+
+class _ArtistData(BaseModel):
+    attributes: PatreonArtistAttributes
+
+
 class PatreonArtistData(BaseModel):
     included: list[dict]
-    data: dict
+    data: _ArtistData
 
     @property
     def name(self) -> str:
-        return self.data["attributes"]["name"]
+        return self.data.attributes.name
 
     @property
     def username(self) -> str:
-        return self.data["attributes"]["vanity"]
+        return self.data.attributes.vanity
 
     @property
     def artist_url(self) -> str:
-        return self.data["attributes"]["url"]
+        return self.data.attributes.url
 
     @property
     def related_urls(self) -> list[Url]:
-        urls = extract_urls_from_string(self.data["attributes"]["summary"])
+        urls = extract_urls_from_string(self.data.attributes.summary)
 
         for included in self.included:
             if included["type"].startswith("reward"):
@@ -130,6 +145,24 @@ class PatreonArtistData(BaseModel):
             raise NotImplementedError(included)
 
         return [Url.parse(u) for u in urls]
+
+    @property
+    def reward_images(self) -> list[PatreonGalleryImageUrl]:
+        urls = [
+            Url.parse(image_url)
+            for i in self.included if i["type"] == "reward"
+            if (image_url := i["attributes"].get("image_url"))
+        ]
+        from danboorutools.logical.urls.patreon import PatreonGalleryImageUrl
+        return parsed_list(urls, PatreonGalleryImageUrl)
+
+    @property
+    def profile_image(self) -> PatreonGalleryImageUrl:
+        from danboorutools.logical.urls.patreon import PatreonGalleryImageUrl
+
+        profile_image = Url.parse(self.data.attributes.avatar_photo_image_urls["original"])
+        assert isinstance(profile_image, PatreonGalleryImageUrl)
+        return profile_image
 
 
 class PatreonCampaignPostDataAttrs(BaseModel):

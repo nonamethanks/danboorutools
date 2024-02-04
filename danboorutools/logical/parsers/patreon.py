@@ -1,5 +1,5 @@
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
-from danboorutools.logical.urls.patreon import PatreonArtistUrl, PatreonImageUrl, PatreonPostUrl, PatreonUrl
+from danboorutools.logical.urls.patreon import PatreonArtistUrl, PatreonGalleryImageUrl, PatreonImageUrl, PatreonPostUrl, PatreonUrl
 
 
 class PatreonComParser(UrlParser):
@@ -92,6 +92,11 @@ class PatreonusercontentComParser(UrlParser):
             case _, _, "patreon-media", "p", "post", post_id, *_:
                 return PatreonImageUrl(parsed_url=parsable_url,
                                        post_id=int(post_id))
+
+            # https://c10.patreonusercontent.com/4/patreon-media/p/campaign/5313652/bf5316fcf0474739a2b5c846d9d21d89/eyJxIjoxMDAsIndlYnAiOjB9/4.png?token-time=1708300800&token-hash=SZ76Gqg5BEz2PKpUNbRfuPoARGIOYMdhQePXytxmUSo%3D
+            # https://c10.patreonusercontent.com/4/patreon-media/p/reward/5965351/d0735f0547ac45d09bcf7dda9abf9380/eyJ3Ijo0MDB9/5.png?token-time=2145916800&token-hash=a_2MAWOmMGh9WiqG6hSmvPdlM954Px0UtvWB_HbqQjg%3D
+            case _, "patreon-media", "p", ("reward" | "campaign"), user_id, *_:
+                return PatreonGalleryImageUrl(user_id=int(user_id), parsed_url=parsable_url)
 
             # https://c10.patreonusercontent.com/3/e30%3D/patreon-posts/o2-s3ubiq-rvQgJVTMlI4-_djsAXvF_YiV2LSEKkpv9sTxqhDKo9-WboTju_sjTU.png?token-time=1506470400\u0026token-hash=htqRR_7JryCMoDqgyknNFqfRWrejuahP16JKwWnaUrA%3D
             case *_, "patreon-posts", _:

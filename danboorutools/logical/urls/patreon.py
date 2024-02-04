@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import DeadUrlError, NotAnArtistError
 from danboorutools.logical.sessions.patreon import PatreonArtistData, PatreonSession
-from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
+from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, PostAssetUrl, PostUrl, Url
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -31,7 +31,7 @@ class PatreonPostUrl(PostUrl, PatreonUrl):
     @cached_property
     def gallery(self) -> PatreonArtistUrl:
         if self.username:
-            return PatreonArtistUrl.normalize(username=self.username)
+            return PatreonArtistUrl.build(username=self.username)
 
         artist_data = self.session.artist_data(self.normalized_url)
         artist_url = PatreonArtistUrl.parse(artist_data.artist_url)
@@ -49,6 +49,12 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
         except NotAnArtistError:
             return []
         raise NotImplementedError
+
+    def _extract_assets(self) -> list[PatreonGalleryImageUrl]:
+        return [
+            self.artist_data.profile_image,
+            *self.artist_data.reward_images,
+        ]
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
@@ -115,3 +121,15 @@ class PatreonImageUrl(PostAssetUrl, PatreonUrl):
     @property
     def full_size(self) -> str:
         return self.parsed_url.raw_url  # could be a thumbnail
+
+
+class PatreonGalleryImageUrl(GalleryAssetUrl, PatreonUrl):
+    user_id: int
+
+    @property
+    def full_size(self) -> str:
+        return self.parsed_url.raw_url  # could be a thumbnail
+
+    @property
+    def gallery(self) -> PatreonArtistUrl:
+        return PatreonArtistUrl.build(user_id=self.user_id)
