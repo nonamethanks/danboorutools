@@ -313,7 +313,7 @@ class GalleryUrl(Url, HasPosts, HasAssets[GalleryAssetUrl]):
     def subscribe(self) -> None:
         raise NotImplementedError(self, "hasn't implemented subscription.")
 
-    def _extract_assets(self) -> list[GalleryAssetUrl]:
+    def _extract_assets(self) -> Sequence[GalleryAssetUrl]:
         raise NotImplementedError(self, "hasn't implemented asset extraction.")
 
 

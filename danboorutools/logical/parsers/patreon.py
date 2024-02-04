@@ -55,6 +55,14 @@ class PatreonComParser(UrlParser):
                 return PatreonArtistUrl(parsed_url=parsable_url,
                                         username=username)
 
+
+            # https://patreon.com/checkout/roxxxan?rid=5965351
+            case "checkout", username:
+                user_id = parsable_url.query.get("rid")
+                return PatreonArtistUrl(parsed_url=parsable_url,
+                                        username=username,
+                                        user_id=int(user_id) if user_id else None)
+
             # https://www.patreon.com/join/lindaroze/checkout?rid=318429\u0026redirect_uri=%2Fposts%2Fpapi-and-suu-28718113
             case "join", username, "checkout" if "redirect_uri" in parsable_url.query:
                 title, _, post_id = parsable_url.query["redirect_uri"].split("/")[-1].rpartition("-")

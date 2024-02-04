@@ -61,6 +61,17 @@ class PatreonSession(Session):
 
         return PatreonCampaignResponse(**data)
 
+    def get_posts(self, campaign_id: int, cursor: str | None) -> PatreonCampaignResponse:
+        headers = {
+            "Referer": "https://www.patreon.com/home",
+            "Content-Type": "application/vnd.api+json",
+        }
+
+        data_url = self._generate_data_url(campaign=campaign_id, cursor=cursor)
+        data = self.get(data_url, headers=headers, cookies=self.cookies_from_env).json()
+
+        return PatreonCampaignResponse(**data)
+
     def _generate_data_url(self, campaign: int | Literal["feed"], cursor: str | None = None) -> str:
         _type = "stream" if campaign == "feed" else "posts"
 
@@ -68,23 +79,26 @@ class PatreonSession(Session):
             f"https://www.patreon.com/api/{_type}"
 
             "?include=user,images,attachments,user_defined_tags,campaign,poll.choices,"
-            "poll.current_user_responses.user,poll.current_user_responses.choice,"
-            "poll.current_user_responses.poll,access_rules.tier.null"
+            "poll.current_user_responses.user,poll.current_user_responses.choice,media,"
+            "poll.current_user_responses.poll,access_rules.tier.null,audio,audio_preview.null"
 
-            "&fields[post]=change_visibility_at,comment_count,content,current_user_can_delete,"
-            "current_user_can_view,current_user_has_liked,embed,"
+            "&fields[post]=change_visibility_at,comment_count,commenter_count,content,current_user_can_delete,"
+            "current_user_can_comment,current_user_can_view,current_user_has_liked,embed,"
             "image,is_paid,like_count,min_cents_pledged_to_view,post_file,published_at,"
             "patron_count,patreon_url,post_type,pledge_url,thumbnail_url,"
             "teaser_text,title,upgrade_url,url,was_posted_by_campaign_owner"
             "&fields[user]=image_url,full_name,url"
             "&fields[campaign]=avatar_photo_url,earnings_visibility,is_nsfw,is_monthly,name,url"
             "&fields[access_rule]=access_rule_type,amount_cents"
+            "&fields[post_tag]=tag_type,value"
+            "&fields[media]=id,image_urls,download_url,metadata,file_name"
+
             "&sort=-published_at"
             "&filter[is_draft]=false"
             "&filter[contains_exclusive_posts]=true"
 
-            "&json-api-use-default-includes=false"
             "&json-api-version=1.0"
+            "&json-api-use-default-includes=false"
         )
 
         url += "&filter[is_following]=true" if campaign == "feed" else f"&filter[campaign_id]={campaign}"
@@ -106,6 +120,7 @@ class PatreonArtistAttributes(BaseModel):
 
 class _ArtistData(BaseModel):
     attributes: PatreonArtistAttributes
+    id: int
 
 
 class PatreonArtistData(BaseModel):
@@ -167,7 +182,7 @@ class PatreonArtistData(BaseModel):
 
 class PatreonCampaignPostDataAttrs(BaseModel):
     current_user_can_view: bool
-    content: str | None
+    content: str | None = None
     patreon_url: str
     published_at: datetime
     like_count: int

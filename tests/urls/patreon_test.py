@@ -12,6 +12,7 @@ urls = {
         "https://www.patreon.com/user?u=4993143": "https://www.patreon.com/user?u=4993143",
         "https://www.patreon.com/m/Alamander820": "https://www.patreon.com/Alamander820",
         "https://www.patreon.com/join/thirdphp?": "https://www.patreon.com/thirdphp",
+        "https://patreon.com/checkout/roxxxan?rid=5965351": "https://www.patreon.com/roxxxan",
     },
     PatreonPostUrl: {
         "https://patreon.com/posts/22819080": "https://www.patreon.com/posts/22819080",

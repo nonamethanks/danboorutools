@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from functools import cached_property
+from itertools import repeat
 from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import DeadUrlError, NotAnArtistError
-from danboorutools.logical.sessions.patreon import PatreonArtistData, PatreonSession
+from danboorutools.logical.sessions.patreon import PatreonArtistData, PatreonCampaignPostData, PatreonSession
+from danboorutools.models.has_posts import HasPosts
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, PostAssetUrl, PostUrl, Url
 
 if TYPE_CHECKING:
@@ -39,16 +41,57 @@ class PatreonPostUrl(PostUrl, PatreonUrl):
         return artist_url
 
 
+def _process_post(self: HasPosts, post_object: tuple[PatreonCampaignPostData, list[dict]]) -> None:
+    _post_object, included = post_object
+    if not _post_object.attributes.current_user_can_view:
+        return
+
+    if not (assets := _post_object.get_assets(included)):
+        return
+
+    post_url = _post_object.attributes.patreon_url
+    if post_url.startswith("/"):
+        post_url = "https://www.patreon.com" + post_url
+    post = Url.parse(post_url)
+    assert isinstance(post, PatreonPostUrl)
+
+    upgrade_url = _post_object.attributes.upgrade_url
+    artist_url = Url.parse("https://patreon.com" + upgrade_url)
+    assert isinstance(artist_url, PatreonArtistUrl)
+    post.gallery = artist_url
+
+    self._register_post(
+        post=post,
+        assets=assets,
+        created_at=_post_object.attributes.published_at,
+        score=_post_object.attributes.like_count,
+    )
+
+
 class PatreonArtistUrl(ArtistUrl, PatreonUrl):
     username: str | None
     user_id: int | None = None
 
-    def _extract_posts_from_each_page(self) -> Iterator:
+    def _extract_posts_from_each_page(self) -> Iterator[list[tuple[PatreonCampaignPostData, list[dict]]]]:  # fucking patreon
         try:
             _ = self.artist_data
         except NotAnArtistError:
-            return []
-        raise NotImplementedError
+            return
+
+        cursor = None
+        prev_cursor = None
+        while True:
+            page_results = self.session.get_posts(campaign_id=self.campaign_id, cursor=cursor)
+            yield list(zip(page_results.data, repeat(page_results.included)))
+            cursor = page_results.meta["pagination"]["cursors"]["next"]
+            if cursor == prev_cursor:
+                return
+
+    _process_post = _process_post
+
+    @property
+    def campaign_id(self) -> int:
+        return self.user_id or self.artist_data.data.id
 
     def _extract_assets(self) -> list[PatreonGalleryImageUrl]:
         return [
@@ -130,6 +173,6 @@ class PatreonGalleryImageUrl(GalleryAssetUrl, PatreonUrl):
     def full_size(self) -> str:
         return self.parsed_url.raw_url  # could be a thumbnail
 
-    @property
+    @cached_property
     def gallery(self) -> PatreonArtistUrl:
         return PatreonArtistUrl.build(user_id=self.user_id)
