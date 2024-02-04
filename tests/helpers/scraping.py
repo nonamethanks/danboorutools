@@ -50,12 +50,13 @@ class _TestRedirectUrl(_TestUrl):
 
     @pytest.mark.scraping
     def test_redirect_url_properties(self, parsed_url: RedirectUrl) -> None:
-        resolved_url = parsed_url.resolved
-        expected_properties = self.redirect_url_properties
+        if self.redirect_url_properties is not None:
+            resolved_url = parsed_url.resolved
+            expected_properties = self.redirect_url_properties
 
-        for property_name, expected_value in expected_properties.items():
-            actual_value = getattr(resolved_url, property_name)
-            assert actual_value == expected_value
+            for property_name, expected_value in expected_properties.items():
+                actual_value = getattr(resolved_url, property_name)
+                assert actual_value == expected_value
 
 
 class _TestInfoUrl(_TestUrl):
@@ -85,19 +86,28 @@ class _TestInfoUrl(_TestUrl):
 class _TestGalleryUrl(_TestInfoUrl):
     post_count: int | None = None
     posts: list[str] | None = None
+    assets: list[str] | None = None
 
     @pytest.mark.gallery
     @pytest.mark.scraping
     def test_post_count(self, parsed_url: GalleryUrl) -> None:
-        expected_post_count = self.post_count
-        assert len(parsed_url.known_posts) >= expected_post_count  # type: ignore[operator]
+        if self.post_count is not None:
+            expected_post_count = self.post_count
+            assert len(parsed_url.known_posts) >= expected_post_count
 
     @pytest.mark.gallery
     @pytest.mark.scraping
     def test_posts(self, parsed_url: GalleryUrl) -> None:
-        extracted_posts = parsed_url.extract_posts()
-        # pylint: disable=not-an-iterable
-        assert all(Url.parse(post) in extracted_posts for post in self.posts)  # type: ignore[operator]
+        if self.posts is not None:
+            extracted_posts = parsed_url.extract_posts()
+            assert all(Url.parse(post) in extracted_posts for post in self.posts)
+
+    @pytest.mark.gallery
+    @pytest.mark.scraping
+    def test_assets(self, parsed_url: GalleryUrl) -> None:
+        if self.assets is not None:
+            extracted_assets = parsed_url.assets
+            assert all(Url.parse(asset) in extracted_assets for asset in self.assets)
 
 
 @pytest.mark.artist
@@ -115,30 +125,33 @@ class _TestPostUrl(_TestUrl):
 
     @pytest.mark.scraping
     def test_created_at(self, parsed_url: PostUrl) -> None:
-        expected_created_at = datetime_from_string(self.created_at).astimezone(UTC)
-        actual_created_at = parsed_url.created_at.astimezone(UTC)
-        assert actual_created_at == expected_created_at
+        if self.created_at is not None:
+            expected_created_at = datetime_from_string(self.created_at).astimezone(UTC)
+            actual_created_at = parsed_url.created_at.astimezone(UTC)
+            assert actual_created_at == expected_created_at
 
     @pytest.mark.scraping
     def test_asset_count(self, parsed_url: PostUrl) -> None:
-        expected_asset_count = self.asset_count
-        assert len(parsed_url.assets) >= expected_asset_count
+        if self.asset_count is not None:
+            expected_asset_count = self.asset_count
+            assert len(parsed_url.assets) >= expected_asset_count
 
     @pytest.mark.scraping
     def test_assets(self, parsed_url: PostUrl) -> None:
-        extracted_assets = parsed_url.assets
-        # pylint: disable=not-an-iterable
-        # type: ignore[arg-type]
-        assert all(Url.parse(asset) in extracted_assets for asset in self.assets)
+        if self.assets is not None:
+            extracted_assets = parsed_url.assets
+            assert all(Url.parse(asset) in extracted_assets for asset in self.assets)
 
     @pytest.mark.scraping
     def test_score(self, parsed_url: PostUrl) -> None:
-        expected_score = self.score
-        actual_score = parsed_url.score
-        assert actual_score >= expected_score
+        if self.score is not None:
+            expected_score = self.score
+            actual_score = parsed_url.score
+            assert actual_score >= expected_score
 
     @pytest.mark.scraping
     def test_gallery(self, parsed_url: PostUrl) -> None:
-        actual_gallery = parsed_url.gallery
-        expected_gallery = Url.parse(self.gallery)
-        assert expected_gallery == actual_gallery
+        if self.gallery is not None:
+            actual_gallery = parsed_url.gallery
+            expected_gallery = Url.parse(self.gallery)
+            assert expected_gallery == actual_gallery

@@ -75,7 +75,7 @@ class FanboxArtistUrl(ArtistUrl, FanboxUrl):
         featured = self.artist_data.featured_images
         cover_image = Url.parse(self.artist_data.coverImageUrl)
         profile_image = Url.parse(self.artist_data.user.iconUrl)
-        return [featured, cover_image, profile_image]
+        return [*featured, cover_image, profile_image]
 
 
 class FanboxPostUrl(PostUrl, FanboxUrl):

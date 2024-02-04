@@ -276,7 +276,7 @@ class HasAssets(Generic[TypeVarAsset]):
         if "assets" not in self.__dict__:
             self.__dict__["assets"] = []
 
-        assert isinstance(asset, _AssetUrl | str)
+        assert isinstance(asset, _AssetUrl | str), asset
         if isinstance(asset, str):
             asset = Url.parse(asset)
 

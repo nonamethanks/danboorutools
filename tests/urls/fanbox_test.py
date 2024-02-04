@@ -2,6 +2,7 @@ import pytest
 
 from danboorutools.logical.urls import fanbox as f
 from tests.helpers.parsing import generate_parsing_test
+from tests.helpers.scraping import _TestArtistUrl
 
 urls = {
     f.FanboxArtistUrl: {
@@ -60,3 +61,20 @@ urls = {
 )
 def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
+
+
+class TestFanboxArtistUrl(_TestArtistUrl):
+    url_string = "https://omu001.fanbox.cc/"
+    url_type = f.FanboxArtistUrl
+    url_properties = dict(username="omu001")
+    primary_names = ["むっしゅ"]
+    secondary_names = ["omu001"]
+    related = ["https://www.pixiv.net/member.php?id=1566167",
+               "https://twitter.com/omu001"]
+    assets = [
+        "https://pixiv.pximg.net/c/1620x580_90_a2_g5/fanbox/public/images/creator/1566167/cover/pYOm2wWFyzffzZaty7fbHiJ1.jpeg",
+        "https://pixiv.pximg.net/c/160x160_90_a2_g5/fanbox/public/images/user/1566167/icon/PtiWRPNSaAUyLtd049upgZk3.jpeg",
+        "https://pixiv.pximg.net/fanbox/public/images/creator/1566167/profile/TlbpqbLFs249gSXg8Mfz4LTF.jpeg",
+        "https://pixiv.pximg.net/fanbox/public/images/creator/1566167/profile/lnxqhXBZyZVvKYFpgaiLr5qa.jpeg",
+        "https://pixiv.pximg.net/fanbox/public/images/creator/1566167/profile/BtxSp9MImFhnEZtjEZs2RPqL.jpeg",
+    ]
