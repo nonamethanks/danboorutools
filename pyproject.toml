@@ -188,6 +188,7 @@ disable = [
     "no-member",                    # too many stupid false positives: https://github.com/PyCQA/pylint/issues/4693
     "protected-access",
     "too-few-public-methods",
+    "too-many-ancestors",
     "too-many-arguments",
     "too-many-instance-attributes",
     "too-many-public-methods",
