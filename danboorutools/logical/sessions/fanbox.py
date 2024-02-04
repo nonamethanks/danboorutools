@@ -24,11 +24,9 @@ class FanboxSession(Session):
         post_json = self.get_and_parse_fanbox_json(f"https://api.fanbox.cc/post.info?postId={post_id}")
         return FanboxPostData(**post_json)
 
-    def get_and_parse_fanbox_json(self, json_url: str, *args, use_cookies: bool = False, **kwargs) -> dict:
+    def get_and_parse_fanbox_json(self, json_url: str, *args, **kwargs) -> dict:
         kwargs["headers"] = {"Origin": "https://www.fanbox.cc"} | kwargs.get("headers", {})
-
-        if use_cookies:
-            kwargs["cookies"] = {"FANBOXSESSID": os.environ["FANBOX_FANBOXSESSID"]} | kwargs.get("cookies", {})
+        kwargs["cookies"] = {"FANBOXSESSID": os.environ["FANBOX_FANBOXSESSID"]} | kwargs.get("cookies", {})
 
         data = self.get(json_url, *args, **kwargs).json()
         if data.get("error") == "general_error":
@@ -102,8 +100,7 @@ class FanboxArtistData(BaseModel):
 
     @property
     def featured_images(self) -> list[FanboxArtistImageUrl]:
-
-        images: list[FanboxArtistImageUrl] = []
+        images = []
         for url in self.profileItems:
             if url["type"] == "image":
                 images.append(url["imageUrl"])
@@ -117,7 +114,7 @@ class FanboxArtistData(BaseModel):
 class FanboxPostData(BaseModel):
     id: int
 
-    creatorId: str
+    creatorId: str  # actually the name, not the id
 
     likeCount: int
     publishedDatetime: datetime

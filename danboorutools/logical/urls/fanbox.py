@@ -5,15 +5,33 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 from danboorutools.logical.sessions.fanbox import FanboxArtistData, FanboxPostData, FanboxSession
-from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, PostAssetUrl, PostUrl, RedirectUrl, Url, parse_list
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
     from datetime import datetime
 
+    from danboorutools.logical.feeds.fanbox import FanboxFeed
+
 
 class FanboxUrl(Url):
     session = FanboxSession()
+
+
+def _process_post(self: FanboxFeed | FanboxArtistUrl, post_object: int) -> None:
+    post_data = self.session.post_data(post_object)
+
+    post = FanboxPostUrl.build(
+        username=post_data.creatorId,
+        post_id=post_object,
+    )
+
+    self._register_post(
+        post=post,
+        assets=post_data.assets,
+        created_at=post_data.likeCount,
+        score=post_data.publishedDatetime,
+    )
 
 
 class FanboxArtistUrl(ArtistUrl, FanboxUrl):
@@ -58,24 +76,12 @@ class FanboxArtistUrl(ArtistUrl, FanboxUrl):
             if not (data_url := page_json["nextUrl"]):
                 return
 
-    def _process_post(self, post_object: int) -> None:
-        post = FanboxPostUrl.build(
-            username=self.username,
-            post_id=post_object,
-        )
-
-        self._register_post(
-            post=post,
-            assets=post._extract_assets(),
-            created_at=post.created_at,
-            score=post.score,
-        )
+    _process_post = _process_post
 
     def _extract_assets(self) -> list[GalleryAssetUrl]:
         featured = self.artist_data.featured_images
-        cover_image = Url.parse(self.artist_data.coverImageUrl)
-        profile_image = Url.parse(self.artist_data.user.iconUrl)
-        return [*featured, cover_image, profile_image]
+        other_images = parse_list([self.artist_data.coverImageUrl, self.artist_data.user.iconUrl], GalleryAssetUrl)
+        return featured + other_images
 
 
 class FanboxPostUrl(PostUrl, FanboxUrl):
