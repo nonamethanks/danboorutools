@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
 from danboorutools.logical.sessions import Session
+from danboorutools.models.url import parse_list
 
 if TYPE_CHECKING:
     from danboorutools.logical.urls.ko_fi import KoFiArtistUrl, KoFiPostUrl
@@ -22,7 +23,9 @@ class KoFiSession(Session):
     def followed_artists(self) -> list[KoFiArtistUrl]:
         html = self.get("https://ko-fi.com/manage/following", cookies=self.cookies_from_env).html
         artists = [el.attrs["href"] for el in html.select(".person-row-name-link")]
-        return artists
+
+        from danboorutools.logical.urls.ko_fi import KoFiArtistUrl
+        return parse_list(artists, KoFiArtistUrl)
 
     def get_feed(self, page: int = 0) -> list[KoFiPostUrl]:
         followed = self.followed_artists

@@ -6,10 +6,8 @@ import os
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from pydantic import ConfigDict
-
 from danboorutools.logical.sessions import Session
-from danboorutools.models.url import Url
+from danboorutools.models.url import Url, parse_list
 from danboorutools.util.misc import BaseModel
 
 if TYPE_CHECKING:
@@ -104,18 +102,16 @@ class FanboxArtistData(BaseModel):
 
     @property
     def featured_images(self) -> list[FanboxArtistImageUrl]:
-        from danboorutools.logical.urls.fanbox import FanboxArtistImageUrl
 
         images: list[FanboxArtistImageUrl] = []
         for url in self.profileItems:
             if url["type"] == "image":
-                img = Url.parse(url["imageUrl"])
-                assert isinstance(img, FanboxArtistImageUrl)
-                images.append(img)
+                images.append(url["imageUrl"])
             else:
                 raise NotImplementedError(url, self.profileItems, self)
 
-        return images
+        from danboorutools.logical.urls.fanbox import FanboxArtistImageUrl
+        return parse_list(images, FanboxArtistImageUrl)
 
 
 class FanboxPostData(BaseModel):

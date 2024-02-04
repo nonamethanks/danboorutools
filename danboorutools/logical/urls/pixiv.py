@@ -9,7 +9,17 @@ from requests.exceptions import ProxyError
 
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.pixiv import PixivArtistData, PixivGroupedIllustData, PixivSession, PixivSingleIllustData
-from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+from danboorutools.models.url import (
+    ArtistAlbumUrl,
+    ArtistUrl,
+    GalleryAssetUrl,
+    InfoUrl,
+    PostAssetUrl,
+    PostUrl,
+    RedirectUrl,
+    Url,
+    parse_list,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -148,7 +158,7 @@ class PixivPostUrl(PostUrl, PixivUrl):
         if "_ugoira0" in asset_urls[0]:
             asset_urls = [self.ugoira_data["originalSrc"]]
 
-        return [Url.parse(u) for u in asset_urls]
+        return parse_list(asset_urls, PixivImageUrl)
 
     @cached_property
     def created_at(self) -> datetime:

@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 
 from danboorutools.exceptions import DeadUrlError, NotAnArtistError
 from danboorutools.logical.sessions import Session
-from danboorutools.models.url import Url, parsed_list
+from danboorutools.models.url import Url, parse_list
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 if TYPE_CHECKING:
@@ -144,17 +144,17 @@ class PatreonArtistData(BaseModel):
                 continue
             raise NotImplementedError(included)
 
-        return [Url.parse(u) for u in urls]
+        return parse_list(urls, Url)
 
     @property
     def reward_images(self) -> list[PatreonGalleryImageUrl]:
         urls = [
-            Url.parse(image_url)
+            image_url
             for i in self.included if i["type"] == "reward"
             if (image_url := i["attributes"].get("image_url"))
         ]
         from danboorutools.logical.urls.patreon import PatreonGalleryImageUrl
-        return parsed_list(urls, PatreonGalleryImageUrl)
+        return parse_list(urls, PatreonGalleryImageUrl)
 
     @property
     def profile_image(self) -> PatreonGalleryImageUrl:

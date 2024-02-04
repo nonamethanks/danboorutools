@@ -15,6 +15,7 @@ from danboorutools.models.has_posts import HasPosts
 from danboorutools.util.misc import PseudoDataclass
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from datetime import datetime
 
     from bs4 import BeautifulSoup
@@ -289,7 +290,7 @@ class HasAssets(Generic[TypeVarAsset]):
         self.assets.append(asset)
 
     @property
-    def assets(self) -> list[TypeVarAsset]:
+    def assets(self) -> Sequence[TypeVarAsset]:
         if "assets" not in self.__dict__:
             assets = self._extract_assets()
             if not assets:
@@ -298,7 +299,7 @@ class HasAssets(Generic[TypeVarAsset]):
                 self._register_asset(asset)
         return self.__dict__["assets"]
 
-    def _extract_assets(self) -> list[TypeVarAsset]:
+    def _extract_assets(self) -> Sequence[TypeVarAsset]:
         raise NotImplementedError(self, "hasn't implemented asset extraction.")
 
 

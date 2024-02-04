@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from pydantic import Field
 
 from danboorutools.logical.sessions import Session
-from danboorutools.models.url import Url
+from danboorutools.models.url import parse_list
 from danboorutools.util.misc import BaseModel
 
 if TYPE_CHECKING:
@@ -94,10 +94,7 @@ class PixivSketchPostData(BaseModel):
 
     @property
     def assets(self) -> list[PixivSketchImageUrl]:
-        from danboorutools.logical.urls.pixiv_sketch import PixivSketchImageUrl
-
-        assets: list[PixivSketchImageUrl] = []
-        for image_data in self.media:
-            assert isinstance(asset := Url.parse(image_data["photo"]["original"]["url"]), PixivSketchImageUrl)
-            assets += [asset]
-        return assets
+        return parse_list(
+            [image_data["photo"]["original"]["url"] for image_data in self.media],
+            PixivSketchImageUrl,
+        )

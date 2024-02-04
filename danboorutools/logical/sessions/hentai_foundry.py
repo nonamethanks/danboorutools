@@ -7,7 +7,7 @@ import ring
 
 from danboorutools.exceptions import NoCookiesForDomainError
 from danboorutools.logical.sessions import Session
-from danboorutools.models.url import Url
+from danboorutools.models.url import parse_list
 
 if TYPE_CHECKING:
     from bs4 import BeautifulSoup
@@ -51,10 +51,10 @@ class HentaiFoundrySession(Session):
         rating_filters = filter_form.select(".filter_div[class*=' rating_']")
         for rating_filter in rating_filters:
             if dropdown := rating_filter.select_one("select"):
-                rating_name = dropdown["id"]
-                rating_value = max(dropdown.select("option"), key=lambda el: int(el["value"]))["value"]
+                rating_name = dropdown.attrs["id"]
+                rating_value = max(dropdown.select("option"), key=lambda el: int(el.attrs["value"])).attrs["value"]
             elif rating_filter.select_one(".ratingCheckbox"):
-                rating_name = rating_filter.select_one("label")["for"]
+                rating_name = rating_filter.select_one("label").attrs["for"]
                 rating_value = 1
             else:
                 raise NotImplementedError(rating_filter)
@@ -84,5 +84,8 @@ class HentaiFoundrySession(Session):
         if not all_thumbs:
             raise NotImplementedError("No posts found. Check cookies.")
 
-        urls = [Url.parse("https://www.hentai-foundry.com" + thumb["href"]) for thumb in all_thumbs]
-        return urls  # type: ignore[return-value]
+        from danboorutools.logical.urls.hentai_foundry import HentaiFoundryPostUrl
+        return parse_list(
+            [("https://www.hentai-foundry.com" + thumb["href"]) for thumb in all_thumbs],
+            HentaiFoundryPostUrl,
+        )
