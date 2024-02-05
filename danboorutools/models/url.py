@@ -313,9 +313,6 @@ class GalleryUrl(Url, HasPosts, HasAssets[GalleryAssetUrl]):
     def subscribe(self) -> None:
         raise NotImplementedError(self, "hasn't implemented subscription.")
 
-    def _extract_assets(self) -> Sequence[GalleryAssetUrl]:
-        raise NotImplementedError(self, "hasn't implemented asset extraction.")
-
 
 class ArtistUrl(GalleryUrl, InfoUrl):  # pylint: disable=abstract-method
     """An artist url is a gallery but also has other extractable data."""
