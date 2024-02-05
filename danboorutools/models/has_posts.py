@@ -27,6 +27,8 @@ class HasPosts:
 
     first_page_must_have_posts = False
 
+    last_id: str | int | None = None  # for feeds with high volume of data like twitter
+
     @final
     def extract_posts(self, known_posts: list[PostUrl | GalleryUrl] | None = None) -> None:
         try:

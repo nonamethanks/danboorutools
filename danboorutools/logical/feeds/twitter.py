@@ -1,5 +1,6 @@
 from collections.abc import Iterator
 
+from danboorutools import logger
 from danboorutools.logical.sessions.twitter import TwitterSession, TwitterTimelineTweetData
 from danboorutools.logical.urls.twitter import TwitterPostUrl
 from danboorutools.models.feed import Feed
@@ -9,10 +10,28 @@ class TwitterFeed(Feed):
     session = TwitterSession()
 
     def _extract_posts_from_each_page(self) -> Iterator[list[TwitterTimelineTweetData]]:
+
         cursor = None
+        self.last_id = int(self.last_id) if self.last_id else None
+        if self.last_id:
+            logger.info(f"Getting all IDs > {self.last_id}")
+            old_last_id = self.last_id
+        else:
+            old_last_id = 0
+
         while True:
             result = self.session.get_feed(cursor=cursor)
-            yield result.tweets
+
+            if old_last_id:  # noqa: SIM108
+                new_tweets = [t for t in result.tweets if int(t.id_str) > old_last_id]
+            else:
+                new_tweets = result.tweets
+
+            self.last_id = max(self.last_id or 0, *[int(t.id_str) for t in result.tweets])
+            if not new_tweets:
+                return
+
+            yield new_tweets
             if not result.next_cursor:
                 return
             cursor = result.next_cursor
