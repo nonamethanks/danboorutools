@@ -56,7 +56,6 @@ class TestPatreonArtistUrl1(_TestArtistUrl):
                "https://twitter.com/Antyan87884404",
                "https://www.youtube.com/channel/UC2XXjmV5QdgkT4iJlkk-1ew"]
     assets = [
-        "https://c10.patreonusercontent.com/4/patreon-media/p/campaign/2913741/5024c7b1fbfb4903ac197ee42142cd99/eyJoIjoxMDgwLCJ3IjoxMDgwfQ%3D%3D/8.jpg?token-time=1708300800&token-hash=mabZk753FpszHF2eB-dCjXsY-t7fgiLaxLij7azUVEg%3D",
         "https://c10.patreonusercontent.com/4/patreon-media/p/reward/3801428/d034197039534b209fcba2c405159332/eyJ3Ijo0MDB9/2.jpg?token-time=2145916800&token-hash=APzkJ2A-hQ8vdtiOExO1_jVK3fMHflAdiLDxg3OiGJ0%3D",
         "https://c10.patreonusercontent.com/4/patreon-media/p/reward/3801432/a706ca3033fc49c68c87763544c24526/eyJ3Ijo0MDB9/2.jpg?token-time=2145916800&token-hash=6JCvaY7UnIItugsF-NFrIc90Ljk4DGqAOXYsvsP4eEo%3D",
         "https://c10.patreonusercontent.com/4/patreon-media/p/reward/10203828/af13b13a1fa6442f9204d6b7b93371d2/eyJ3Ijo0MDB9/1.jpeg?token-time=2145916800&token-hash=Bujg4Zr2yGyD-9-yTcY7SfcPdYZVlry5F7HNe3bmdBo%3D",

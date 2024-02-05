@@ -152,7 +152,6 @@ class PatreonSession(Session):
 
 
 class PatreonArtistAttributes(BaseModel):
-    avatar_photo_image_urls: dict[str, str] | None = None  # for some retarded reason only visible when not logged in
     cover_photo_url_sizes: dict[str, str]
 
     current_user_is_free_member: bool
@@ -218,14 +217,6 @@ class PatreonArtistData(BaseModel):
         ]
         from danboorutools.logical.urls.patreon import PatreonGalleryImageUrl
         return parse_list(urls, PatreonGalleryImageUrl)
-
-    @property
-    def profile_image(self) -> PatreonGalleryImageUrl:
-        from danboorutools.logical.urls.patreon import PatreonGalleryImageUrl
-
-        profile_image = Url.parse(self.data.attributes.avatar_photo_image_urls["original"])
-        assert isinstance(profile_image, PatreonGalleryImageUrl)
-        return profile_image
 
 
 class PatreonCampaignPostDataAttrs(BaseModel):

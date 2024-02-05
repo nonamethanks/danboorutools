@@ -97,10 +97,7 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
         return self.user_id or self.artist_data.data.id
 
     def _extract_assets(self) -> list[PatreonGalleryImageUrl]:
-        return [
-            self.artist_data.profile_image,
-            *self.artist_data.reward_images,
-        ]
+        return self.artist_data.reward_images
 
     @classmethod
     def normalize(cls, **kwargs) -> str:
