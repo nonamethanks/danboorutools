@@ -188,11 +188,13 @@ class PatreonArtistData(BaseModel):
     @property
     def related_urls(self) -> list[Url]:
         urls = extract_urls_from_string(self.data.attributes.summary)
+        useless_subtypes = ("user", "post_aggregation", "goal", "free_trial_configuration",
+                            "access-rule", "free-membership-subscription")
 
         for included in self.included:
             if included["type"].startswith("reward"):
                 continue
-            if included["type"] in ("user", "post_aggregation", "goal", "free_trial_configuration"):
+            if included["type"] in useless_subtypes:
                 continue
             if included["type"] == "social-connection":
                 url_string = included["attributes"]["external_profile_url"]
