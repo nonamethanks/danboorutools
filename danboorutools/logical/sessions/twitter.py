@@ -16,6 +16,32 @@ from danboorutools.util.misc import BaseModel, save_cookies_for
 from danboorutools.util.time import datetime_from_string
 
 
+def _twitter_login_through_form(self: Session) -> None:
+    logger.info("Logging in to twitter...")
+
+    username_field = self.browser.find_element("css selector", "[autocomplete='username']")
+    username_field.send_keys(os.environ["TWITTER_EMAIL"])
+    self.browser.find_element("css selector", ":has([autocomplete='username']) + div[role='button']").click()
+
+    time.sleep(1)
+
+    if self.browser.find_elements_by_text("There was unusual login activity", full_match=False):
+        username_input = self.browser.find_elements_by_text("Phone or username")[0]\
+            .find_element("xpath", "../../..").find_element("css selector", "input")
+        username_input.send_keys(os.environ["TWITTER_USERNAME"])
+        self.browser.find_elements_by_text("Next")[0].click()
+        time.sleep(1)
+
+    password_field = self.browser.find_element("css selector", "[autocomplete='current-password'][name='password']")
+    password_field.send_keys(os.environ["TWITTER_PASSWORD"])
+    self.browser.find_elements_by_text("Log in")[0].click()
+
+    time.sleep(1)
+
+    if self.browser.find_elements_by_text("Confirmation code"):
+        raise NotImplementedError("Twitter is asking for confirmation email.")
+
+
 class TwitterSession(Session):
     BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"  # noqa: S105
 
@@ -43,46 +69,23 @@ class TwitterSession(Session):
     def browser_login(self) -> None:
         try:
             self.browser.load_cookies("twitter")
+        except NoCookiesForDomainError:
+            pass
+        else:
             self.browser.get("https://twitter.com/home")
             elements = self.browser.find_elements("css selector", ".public-DraftEditorPlaceholder-inner")
-        except NoCookiesForDomainError:
-            self._do_login()
-        else:
-            if not elements:
-                self._do_login()
+            if elements:
+                return
 
-    def _do_login(self) -> None:
-        logger.info("Logging in to twitter...")
         self.browser.delete_all_cookies()
         self.browser.get("https://twitter.com/login")
-
-        username_field = self.browser.find_element("css selector", "[autocomplete='username']")
-        username_field.send_keys(os.environ["TWITTER_EMAIL"])
-        self.browser.find_element("css selector", ":has([autocomplete='username']) + div[role='button']").click()
-
-        time.sleep(1)
-
-        if self.browser.find_elements_by_text("There was unusual login activity", full_match=False):
-            username_input = self.browser.find_elements_by_text("Phone or username")[0]\
-                .find_element("xpath", "../../..").find_element("css selector", "input")
-            username_input.send_keys(os.environ["TWITTER_USERNAME"])
-            self.browser.find_elements_by_text("Next")[0].click()
-            time.sleep(1)
-
-        password_field = self.browser.find_element("css selector", "[autocomplete='current-password'][name='password']")
-        password_field.send_keys(os.environ["TWITTER_PASSWORD"])
-        self.browser.find_elements_by_text("Log in")[0].click()
-
-        time.sleep(1)
-
-        if self.browser.find_elements_by_text("Confirmation code"):
-            raise NotImplementedError("Twitter is asking for confirmation email.")
-
+        self._do_login()
         self.browser.get("https://twitter.com/home")
         self.browser.find_element("css selector", ".public-DraftEditorPlaceholder-inner")
-
         save_cookies_for("twitter", self.browser.get_cookies())
         logger.trace("Successfully logged in in to twitter.")
+
+    _do_login = _twitter_login_through_form
 
     @property
     def _twitter_headers(self) -> dict[str, str]:

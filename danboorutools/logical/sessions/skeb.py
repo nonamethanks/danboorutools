@@ -1,14 +1,11 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING
 
-import ring
-
-from danboorutools import settings
+from danboorutools import logger, settings
 from danboorutools.exceptions import HTTPError
-from danboorutools.logical.parsable_url import ParsableUrl
-from danboorutools.logical.sessions import Session
+from danboorutools.logical.sessions import ScraperResponse, Session
+from danboorutools.logical.sessions.twitter import _twitter_login_through_form
 from danboorutools.logical.urls.booth import BoothArtistUrl
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.fantia import FantiaFanclubUrl
@@ -20,21 +17,18 @@ from danboorutools.logical.urls.youtube import YoutubeChannelUrl
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
-if TYPE_CHECKING:
-    from requests import Response
-
 
 class SkebSession(Session):
-    def request(self, *args, is_retry: bool = False, **kwargs) -> Response:
-        bearer = self.try_login_and_return_bearer()
-        kwargs["headers"] = kwargs.get("headers", {}) | {"Authorization": f"Bearer {bearer}"}
+    def request(self, *args, is_retry: bool = False, **kwargs) -> ScraperResponse:
+        if is_retry:
+            self.login()
+        kwargs["headers"] = kwargs.get("headers", {}) | {"Authorization": f"Bearer {self.bearer}"}
         try:
             request = super().request(*args, **kwargs)
         except HTTPError as e:
             if e.status_code == 503:
                 if is_retry:
                     raise
-                self.try_login_and_return_bearer.storage.backend.clear()
                 self.request(*args, is_retry=True, **kwargs)
             raise
         return request
@@ -44,43 +38,72 @@ class SkebSession(Session):
 
         return SkebArtistData(**response)
 
-    @ring.lru()
-    def try_login_and_return_bearer(self) -> str:
-        try:
-            self.load_cookies()
-        except FileNotFoundError:
-            self.login()
+    @property
+    def bearer(self) -> str:
         bearer = (settings.BASE_FOLDER / "cookies" / "skeb_bearer.txt").read_text(encoding="utf-8")
         return bearer
 
     def login(self) -> None:
-        email = os.environ["TWITTER_EMAIL"]
-        password = os.environ["TWITTER_PASSWORD"]
+        browser = self.browser
+        browser.get("https://skeb.jp")
+        sign_in = browser.find_elements_by_text("Sign in")
+        sign_in[-1].click()
 
-        response = super().request("POST", "https://skeb.jp/api/auth/twitter")
-        oauth_url = response.url
-        assert oauth_url.startswith("https://api.twitter.com/oauth/authenticate?oauth_token="), oauth_url
+        username = browser.find_element("name", "session[username_or_email]")
+        password = browser.find_element("name", "session[password]")
 
-        data = {
-            "authenticity_token": response.html.select_one("input[name='authenticity_token']")["value"],
-            "redirect_after_login": oauth_url,
-            "force_login": False,
-            "oauth_token": ParsableUrl(oauth_url).query["oauth_token"],
-            "session[username_or_email]": email,
-            "session[password]": password,
-            "remember_me": "1",
-        }
-        headers = {
-            "origin": "https://api.twitter.com",
-            "referer": oauth_url,
-        }
-        response = super().request("POST", "https://api.twitter.com/oauth/authenticate", data=data, headers=headers)
-        skeb_callback = response.html.select_one("a.maintain-context")["href"]
-        response = super().request("GET", skeb_callback, skip_cache=True)
+        username.send_keys(os.environ["TWITTER_EMAIL"])
+        password.send_keys(os.environ["TWITTER_PASSWORD"])
 
-        bearer = ParsableUrl(response.history[0].headers["Location"]).query["auth_token"]
-        (settings.BASE_FOLDER / "cookies" / "skeb_bearer.txt").write_text(bearer, encoding="utf-8")
-        self.save_cookies("_interslice_session")
+        browser.find_element("css selector", "label[for='remember']").click()
+
+        browser.find_element("css selector", "[type='submit']").click()
+
+        if browser.find_elements_by_text("Sign in to X"):
+            self._twitter_login()
+
+        assert browser.current_url == "https://skeb.jp/"
+
+        for request in reversed(browser.requests):
+            if request.url.startswith("https://skeb.jp/callback?auth_token="):
+                bearer = request.params["auth_token"]
+                logger.info("Updating saved skeb bearer.")
+                (settings.BASE_FOLDER / "cookies" / "skeb_bearer.txt").write_text(bearer, encoding="utf-8")
+                break
+
+    _twitter_login = _twitter_login_through_form
+
+    # def login(self) -> None:
+    #     self.cookies.clear()
+    #     email = os.environ["TWITTER_EMAIL"]
+    #     password = os.environ["TWITTER_PASSWORD"]
+
+    #     response = super(self.__class__, self).request("POST", "https://skeb.jp/api/auth/twitter")
+    #     oauth_url = response.url
+    #     assert oauth_url.startswith("https://api.twitter.com/oauth/authenticate?oauth_token="), oauth_url
+    #     assert (auth_token_el := response.html.select_one("input[name='authenticity_token']"))
+
+    #     data = {
+    #         "authenticity_token": auth_token_el.attrs["value"],
+    #         "redirect_after_login": oauth_url,
+    #         "force_login": False,
+    #         "oauth_token": ParsableUrl(oauth_url).query["oauth_token"],
+    #         "session[username_or_email]": email,
+    #         "session[password]": password,
+    #         "remember_me": "1",
+    #     }
+    #     headers = {
+    #         "origin": "https://api.twitter.com",
+    #         "referer": oauth_url,
+    #     }
+    #     response = super(self.__class__, self).request("POST", "https://api.twitter.com/oauth/authenticate", data=data, headers=headers)
+    #     skeb_callback = response.html.select_one("a.maintain-context").attrs["href"]
+    #     response = super(self.__class__, self).request("GET", skeb_callback, skip_cache=True)
+
+    #     location = response.history[0].headers["Location"]
+    #     bearer = ParsableUrl(location).query["auth_token"]
+    #     (settings.BASE_FOLDER / "cookies" / "skeb_bearer.txt").write_text(bearer, encoding="utf-8")
+    #     self.save_cookies("_interslice_session")
 
     def get_feed(self, offset: int | None = None, limit: int | None = None) -> list[SkebPostFeedData]:
         username = os.environ["SKEB_USERNAME"]
