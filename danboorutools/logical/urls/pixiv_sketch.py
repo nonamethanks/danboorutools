@@ -35,6 +35,10 @@ class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
             else:
                 return
 
+    def _extract_assets(self) -> list:
+        # not worth it, most times same as pixiv
+        return []
+
     def _process_post(self, post_object: PixivSketchPostData) -> None:
         self._register_post(
             post=PixivSketchPostUrl.build(post_id=post_object.id),
