@@ -143,11 +143,7 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
             return []
 
     def subscribe(self) -> None:
-        try:
-            username = self.username or self.artist_data.username
-        except NotAnArtistError:
-            return
-        self.session.subscribe(username)
+        self.session.subscribe(self.normalized_url)
 
     @cached_property
     def is_deleted(self) -> bool:

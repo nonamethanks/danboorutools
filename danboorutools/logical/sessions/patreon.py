@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from datetime import datetime
 from typing import TYPE_CHECKING, Literal
@@ -23,16 +24,17 @@ class PatreonSession(Session):
 
     @ring.lru()
     def artist_data(self, url: str) -> PatreonArtistData:
-        response = self.get(url)
+        response = self.get(url, cookies=self.cookies_from_env)
         parsed_data = response.search_json(
             pattern=r"({\"props\".*})",
             selector="script#__NEXT_DATA__",
         )
 
         user_data = parsed_data["props"]["pageProps"]["bootstrapEnvelope"]["bootstrap"]
+        csrf = parsed_data["props"]["pageProps"]["bootstrapEnvelope"]["csrfSignature"]
 
         try:
-            return PatreonArtistData(**user_data["campaign"])
+            return PatreonArtistData(**user_data["campaign"], csrf_token=csrf)
         except KeyError as e:
             if user_data.get("pageUser"):
                 if user_data["pageUser"]["data"]["type"] == "user":
@@ -43,12 +45,53 @@ class PatreonSession(Session):
                 raise DeadUrlError(response) from e
             raise NotImplementedError(user_data) from e
 
-    def subscribe(self, artist_name: str) -> None:
-        try:
-            artist = self.artist_data(f"https://www.patreon.com/{artist_name}")
-        except NotAnArtistError:
+    def subscribe(self, artist_url: str) -> None:
+        artist_data = self.artist_data(artist_url)
+        if artist_data.data.attributes.current_user_is_free_member:
             return
-        raise NotImplementedError(artist)
+
+        headers = {
+            "Referer": artist_url,
+            "Content-Type": "application/vnd.api+json",
+            "x-csrf-signature": artist_data.csrf_token,
+        }
+
+        data_json = {
+            "data": {
+                "type": "free-membership-subscription",
+                "attributes": {},
+                "relationships": {
+                        "campaign": {
+                            "data": {
+                                "type": "campaign",
+                                "id": artist_data.data.id,
+                            },
+                        },
+                },
+            },
+        }
+
+        url = (
+            "https://www.patreon.com/api/free-membership-subscription"
+            "?include=campaign,reward.null"
+            "&fields[free-membership-subscription]=started_at,ended_at"
+            "&fields[campaign]=avatar_photo_url,cover_photo_url,name,pay_per_name,pledge_url,published_at,url"
+            "&fields[patron]=image_url,full_name,url"
+            "&fields[reward]=amount_cents,description,is_free_tier,requires_shipping,title,unpublished_at"
+            "&json-api-version=1.0&json-api-use-default-includes=false"
+        )
+
+        response = self.post(
+            url=url,
+            cookies=self.cookies_from_env,
+            headers=headers,
+            data=json.dumps(data_json, separators=(",", ":")),
+        )
+        try:
+            assert response.json()["data"]["attributes"]["started_at"]
+            assert response.json()["data"]["type"]["free-membership-subscription"]
+        except Exception as e:
+            raise NotImplementedError(str(response.json())) from e
 
     def get_feed(self, cursor: str | None) -> PatreonCampaignResponse:
         headers = {
@@ -109,8 +152,10 @@ class PatreonSession(Session):
 
 
 class PatreonArtistAttributes(BaseModel):
-    avatar_photo_image_urls: dict[str, str]
+    # avatar_photo_image_urls: dict[str, str] # for some retarded reason only visible when not logged in
     cover_photo_url_sizes: dict[str, str]
+
+    current_user_is_free_member: bool
 
     summary: str
     name: str
@@ -126,6 +171,7 @@ class _ArtistData(BaseModel):
 class PatreonArtistData(BaseModel):
     included: list[dict]
     data: _ArtistData
+    csrf_token: str
 
     @property
     def name(self) -> str:
