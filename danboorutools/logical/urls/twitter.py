@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator
 from functools import cached_property
+from typing import TYPE_CHECKING
 
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.twitter import TwitterSession, TwitterTimelineTweetData, TwitterUserData
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url, parse_list
+
+if TYPE_CHECKING:
+
+    from collections.abc import Iterator
 
 
 class TwitterUrl(Url):
