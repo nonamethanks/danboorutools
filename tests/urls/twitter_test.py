@@ -28,8 +28,12 @@ urls = {
     tw.TwitterArtistImageUrl: {
         "https://pbs.twimg.com/profile_banners/780804311529906176/1475001696": "https://pbs.twimg.com/profile_banners/780804311529906176/1475001696/1500x500",
         "https://pbs.twimg.com/profile_banners/780804311529906176/1475001696/600x200": "https://pbs.twimg.com/profile_banners/780804311529906176/1475001696/1500x500",
+        "https://pbs.twimg.com/profile_images/1728591086959083520/WRBg7iT5_normal.jpg": "https://pbs.twimg.com/profile_images/1728591086959083520/WRBg7iT5.jpg",
+        "https://pbs.twimg.com/profile_images/1650539849332686849/EzXpyVzB_400x400.jpg": "https://pbs.twimg.com/profile_images/1650539849332686849/EzXpyVzB.jpg",
+        "https://pbs.twimg.com/profile_images/1650539849332686849/EzXpyVzB.jpg": "https://pbs.twimg.com/profile_images/1650539849332686849/EzXpyVzB.jpg",
         "https://si0.twimg.com/profile_background_images/816078776/5691fe91c3ad0f6627cd00fa22d1f610.jpeg": "https://si0.twimg.com/profile_background_images/816078776/5691fe91c3ad0f6627cd00fa22d1f610.jpeg",
         "http://a1.twimg.com/profile_background_images/108010950/CosmicBreak09_summer.JPG": "https://a1.twimg.com/profile_background_images/108010950/CosmicBreak09_summer.JPG",
+        "http://a0.twimg.com/profile_images/1643478211/1426283i.jpg": "https://a0.twimg.com/profile_images/1643478211/1426283i.jpg",
     },
     tw.TwitterIntentUrl: {
         "https://twitter.com/i/user/889592953": "https://twitter.com/intent/user?user_id=889592953",
@@ -77,6 +81,11 @@ class TestTwitterArtistUrl1(_TestArtistUrl):
         "https://twitter.com/i/events/1390449082599018496",
         "https://twitter.com/intent/user?user_id=1283650008835743744",
         "https://www.youtube.com/channel/UCMwGHR0BTZuLsmjY_NT5Pwg",
+    ]
+
+    assets = [
+        "https://pbs.twimg.com/profile_banners/1283650008835743744/1682354351/1500x500",
+        "https://pbs.twimg.com/profile_images/1650539849332686849/EzXpyVzB.jpg",
     ]
 
 

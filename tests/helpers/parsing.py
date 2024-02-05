@@ -6,5 +6,7 @@ def generate_parsing_test(raw_url: str, normalized_url: str | None, expected_cla
 
     assert isinstance(url, expected_class)
 
+    actual_normalization = url.normalized_url
+
     if normalized_url:
-        assert url.normalized_url == normalized_url
+        assert actual_normalization == normalized_url

@@ -83,6 +83,14 @@ class TwimgComParser(UrlParser):
                 return tw.TwitterAssetUrl(parsed_url=parsable_url,
                                           file_path=f"media/{filename}")
 
+            # https://p.twimg.com/Ax7-w7ZCMAAQegx.jpg:large
+            case filename, if parsable_url.subdomain == "p":
+                filename = filename.split(":")[0]
+                if "." not in filename:
+                    filename = filename + "." + parsable_url.query["format"]
+                return tw.TwitterAssetUrl(parsed_url=parsable_url,
+                                          file_path=filename)
+
             # https://video.twimg.com/tweet_video/E_8lAMJUYAIyenr.mp4
             # https://video.twimg.com/ext_tw_video/1496554514312269828/pu/pl/Srzcr2EsBK5Mwlvf.m3u8?tag=12&container=fmp4
             # https://video.twimg.com/ext_tw_video/1496554514312269828/pu/vid/360x270/SygSrUcDpCr1AnOf.mp4?tag=12
@@ -110,13 +118,11 @@ class TwimgComParser(UrlParser):
                                                 user_id=int(user_id),
                                                 file_path="/".join(parsable_url.url_parts))
 
-            # https://p.twimg.com/Ax7-w7ZCMAAQegx.jpg:large
-            case filename, if parsable_url.subdomain == "p":
-                filename = filename.split(":")[0]
-                if "." not in filename:
-                    filename = filename + "." + parsable_url.query["format"]
-                return tw.TwitterAssetUrl(parsed_url=parsable_url,
-                                          file_path=filename)
+            # http://a0.twimg.com/profile_images/1643478211/1426283i.jpg
+            # https://pbs.twimg.com/profile_images/1650539849332686849/EzXpyVzB.jpg
+            case "profile_images", _, _:
+                return tw.TwitterArtistImageUrl(parsed_url=parsable_url,
+                                                file_path="/".join(parsable_url.url_parts))
 
             # https://pbs.twimg.com/card_img/831677993668005888/m1NfMR3R?format=jpg\u0026name=orig
             case "card_img", _, _:
@@ -125,10 +131,6 @@ class TwimgComParser(UrlParser):
             # https://o.twimg.com/1/proxy.jpg?t=FQQVBBgpaHR0cHM6Ly90d2l0cGljLmNvbS9zaG93L2xhcmdlL2MxNTU4bi5qcGcUBBYAEgA\u0026s=Ssrtv1f9v1MbLoHIO8b1p_b2lArUwWom4xLBzhDgCQc
             # https://o.twimg.com/2/proxy.jpg?t=HBgpaHR0cHM6Ly90d2l0cGljLmNvbS9zaG93L2xhcmdlL2NoYWphMy5qcGcUsAkUwAwAFgASAA\u0026s=cngq8FnWbQcMihBgX2-BwIozkcKILHzjn5Y3Vmt7LS8
             case _, "proxy.jpg":
-                raise UnparsableUrlError(parsable_url)
-
-            # http://a0.twimg.com/profile_images/1643478211/1426283i.jpg
-            case "profile_images", _, _:
                 raise UnparsableUrlError(parsable_url)
 
             case _:

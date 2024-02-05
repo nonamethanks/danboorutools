@@ -1,9 +1,12 @@
+from __future__ import annotations
+
+import re
 from collections.abc import Iterator
 from functools import cached_property
 
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.twitter import TwitterSession, TwitterTimelineTweetData, TwitterUserData
-from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url, parse_list
 
 
 class TwitterUrl(Url):
@@ -14,6 +17,12 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     username: str
 
     normalize_template = "https://twitter.com/{username}"
+
+    def _extract_assets(self) -> list[TwitterArtistImageUrl]:
+        return parse_list([
+            self.artist_data.profile_banner_url,
+            self.artist_data.profile_image_url_https,
+        ], TwitterArtistImageUrl)
 
     def _extract_posts_from_each_page(self) -> Iterator[list[TwitterTimelineTweetData]]:
         cursor = None
@@ -150,7 +159,14 @@ class TwitterArtistImageUrl(GalleryAssetUrl, TwitterUrl):
 
     @property
     def full_size(self) -> str:
+        if "profile_images" in self.file_path:
+            self.file_path = re.sub(r"_\w+\.(\w+)$", r".\1", self.file_path)
         return f"https://{self.parsed_url.hostname}/{self.file_path}"
+
+    @cached_property
+    def gallery(self) -> TwitterArtistUrl:
+        username = TwitterIntentUrl.build(user_id=self.user_id).artist_data.username
+        return TwitterArtistUrl.build(username=username)
 
 
 class TwitterShortenerUrl(RedirectUrl, TwitterUrl):

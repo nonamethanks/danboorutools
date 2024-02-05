@@ -294,6 +294,9 @@ class TwitterUserData(BaseModel):
     screen_name: str
     entities: dict[str, dict[str, list[dict]]] | None
 
+    profile_image_url_https: str
+    profile_banner_url: str
+
     @property
     def related_urls(self) -> list[Url]:
         related: list[Url] = []
