@@ -174,11 +174,11 @@ class NoPostsError(Exception):
 
 
 class NotAnArtistError(Exception):
-    """The user is not an artist."""
+    """The user is not an (active) artist."""
 
     def __init__(self, url: str) -> None:
         self.url = url
-        super().__init__(f"The user at {url} is not an artist.")
+        super().__init__(f"The user at {url} is not an (active) artist.")
 
 
 class DuplicateAssetError(Exception):

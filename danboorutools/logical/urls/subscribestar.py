@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from danboorutools import logger
+from danboorutools.exceptions import NotAnArtistError
 from danboorutools.models.url import ArtistUrl, PostUrl, Url
 
 
@@ -25,11 +25,18 @@ class SubscribestarArtistUrl(ArtistUrl, SubscribestarUrl):
     def related(self) -> list[Url]:
         return []
 
+    @property
+    def inactive_profile(self) -> bool:
+        return "profile is under review" in self.html
+
     def _extract_posts_from_each_page(self) -> Iterator[list]:
-        if "profile is under review" in self.html:
-            logger.info("Profile is under review. No posts to scrape.")
-            return
+        if self.inactive_profile:
+            raise NotAnArtistError
         raise NotImplementedError
+
+    def subscribe(self) -> None:
+        if self.inactive_profile:
+            raise NotAnArtistError
 
 
 class SubscribestarPostUrl(PostUrl, SubscribestarUrl):
