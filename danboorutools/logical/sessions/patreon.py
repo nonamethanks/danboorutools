@@ -111,7 +111,7 @@ class PatreonSession(Session):
         }
 
         data_url = self._generate_data_url(campaign=campaign_id, cursor=cursor)
-        data = self.get(data_url, headers=headers, cookies=self.cookies_from_env).json()
+        data = self.get(data_url, headers=headers).json()  # , cookies=self.cookies_from_env).json()
 
         return PatreonCampaignResponse(**data)
 
@@ -152,7 +152,7 @@ class PatreonSession(Session):
 
 
 class PatreonArtistAttributes(BaseModel):
-    # avatar_photo_image_urls: dict[str, str] # for some retarded reason only visible when not logged in
+    avatar_photo_image_urls: dict[str, str] | None = None  # for some retarded reason only visible when not logged in
     cover_photo_url_sizes: dict[str, str]
 
     current_user_is_free_member: bool

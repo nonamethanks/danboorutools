@@ -120,11 +120,9 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
         if self.is_deleted:
             return []
         try:
-            related = self.artist_data.related_urls
+            return self.artist_data.related_urls
         except NotAnArtistError:
             return []
-
-        return [r for r in related if not isinstance(r, PatreonPostUrl)]
 
     @property
     def primary_names(self) -> list[str]:
