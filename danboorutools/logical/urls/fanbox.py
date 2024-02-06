@@ -72,7 +72,7 @@ class FanboxArtistUrl(ArtistUrl, FanboxUrl):
             if not (posts_json := page_json["items"]):
                 return
 
-            yield [post_json["id"] for post_json in posts_json]
+            yield [post_json["id"] for post_json in posts_json if not int(post_json["feeRequired"])]
             if not (data_url := page_json["nextUrl"]):
                 return
 

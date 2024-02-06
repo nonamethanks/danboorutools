@@ -16,7 +16,7 @@ class FanboxFeed(Feed):
             if not (posts_json := page_json["items"]):
                 raise NotImplementedError("No results found. Check cookies.")
 
-            yield [post_json["id"] for post_json in posts_json]
+            yield [post_json["id"] for post_json in posts_json if not int(post_json["feeRequired"])]
 
             if not (data_url := page_json["nextUrl"]):
                 return
