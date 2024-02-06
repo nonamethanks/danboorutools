@@ -260,8 +260,21 @@ class TwitterSession(Session):
             params=params,
             headers=self._twitter_headers,
         )
-        timeline_instructions = response.json()["data"]["user"]["result"]["timeline_v2"]["timeline"]["instructions"]
-        return self.__parse_timeline_instructions([t["content"] | {"type": t["entryType"]} for t in timeline_instructions])
+        timeline_instructions: list[dict] = response.json()["data"]["user"]["result"]["timeline_v2"]["timeline"]["instructions"]
+        collected_instructions = []
+        for instr in timeline_instructions:
+            if instr.get("content"):
+                content = instr.get("content") | {"type": instr["entryType"]}
+            elif instr.get("type") in ["TimelineClearCache", "TimelineTerminateTimeline"]:
+                continue
+            elif instr.get("type") in ["TimelineAddEntries", "TimelineAddToModule"]:
+                content = instr
+            else:
+                raise NotImplementedError(instr)
+
+            collected_instructions.append(content)
+
+        return self.__parse_timeline_instructions(collected_instructions)
 
     def __parse_timeline_instructions(self, timeline_instructions: list[dict]) -> TwitterPageOfMediaResults:
         entries = []
