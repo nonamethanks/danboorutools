@@ -296,6 +296,8 @@ class TwitterSession(Session):
             if entry["itemType"] == "TimelineTweet":
                 tweet_data = entry["tweet_results"]["result"]["legacy"]
                 tweets.append(TwitterTimelineTweetData(**tweet_data))
+            elif entry["itemType"] == "TimelineMessagePrompt":
+                continue  # fuck off with these ads
             else:
                 raise NotImplementedError(entry)
 
