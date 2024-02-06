@@ -29,8 +29,8 @@ def _process_post(self: FanboxFeed | FanboxArtistUrl, post_object: int) -> None:
     self._register_post(
         post=post,
         assets=post_data.assets,
-        created_at=post_data.likeCount,
-        score=post_data.publishedDatetime,
+        created_at=post_data.publishedDatetime,
+        score=post_data.likeCount,
     )
 
 
