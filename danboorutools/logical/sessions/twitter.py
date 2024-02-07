@@ -338,6 +338,9 @@ class TwitterTimelineTweetData(BaseModel):
 
     @property
     def assets(self) -> list[str]:
+        if "media" not in self.entities:
+            return []
+
         extracted = []
         for entity in self.entities["media"]:
             if entity["type"] == "photo":
