@@ -22,17 +22,20 @@ class TwitterFeed(Feed):
         while True:
             result = self.session.get_feed(cursor=cursor)
 
-            if old_last_id:  # noqa: SIM108
+            if old_last_id:
                 new_tweets = [t for t in result.tweets if int(t.id_str) > old_last_id]
+                logger.info(f"{len(new_tweets)} tweets out of {len(result.tweets)} retrieved have ID > {old_last_id}.")
             else:
                 new_tweets = result.tweets
 
             self.last_id = max(self.last_id or 0, *[int(t.id_str) for t in result.tweets])
             if not new_tweets:
+                logger.info(f"No ID found > {old_last_id}")
                 return
 
             yield new_tweets
             if not result.next_cursor:
+                logger.info("No next cursor returned. Quitting...")
                 return
             cursor = result.next_cursor
 
