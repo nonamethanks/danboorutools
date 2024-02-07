@@ -363,7 +363,7 @@ class TwitterUserData(BaseModel):
     entities: dict[str, dict[str, list[dict]]] | None
 
     profile_image_url_https: str
-    profile_banner_url: str
+    profile_banner_url: str | None = None
 
     @property
     def related_urls(self) -> list[Url]:

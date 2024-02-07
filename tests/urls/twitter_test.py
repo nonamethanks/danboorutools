@@ -112,6 +112,19 @@ class TestTwitterArtistUrl3(_TestArtistUrl):
     is_deleted = True
 
 
+class TestTwitterArtistUrl4(_TestArtistUrl):  # no profile banner
+    url_string = "https://twitter.com/gunjyou_00"
+    url_type = tw.TwitterArtistUrl
+    url_properties = dict(username="gunjyou_00")
+    primary_names = ["群青"]
+    secondary_names = ["gunjyou_00", "twitter 1742358357271535616"]
+    related = [
+        "https://peing.net/gunjyou21",
+        "https://twitter.com/intent/user?user_id=1742358357271535616",
+    ]
+    assets = ["https://pbs.twimg.com/profile_images/1742358835128635392/3wAv3wVb_400x400.jpg"]
+
+
 class TestTwitterIntentUrl(_TestInfoUrl):
     url_string = "https://twitter.com/intent/user?user_id=354759129"
     url_type = tw.TwitterIntentUrl

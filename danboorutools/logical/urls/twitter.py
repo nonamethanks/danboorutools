@@ -23,10 +23,11 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
     normalize_template = "https://twitter.com/{username}"
 
     def _extract_assets(self) -> list[TwitterArtistImageUrl]:
-        return parse_list([
-            self.artist_data.profile_banner_url,
-            self.artist_data.profile_image_url_https,
-        ], TwitterArtistImageUrl)
+        assets = [self.artist_data.profile_image_url_https]
+        if self.artist_data.profile_banner_url:
+            assets.append(self.artist_data.profile_banner_url)
+
+        return parse_list(assets, TwitterArtistImageUrl)
 
     def _extract_posts_from_each_page(self) -> Iterator[list[TwitterTimelineTweetData]]:
         cursor = None
