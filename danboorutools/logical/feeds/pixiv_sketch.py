@@ -17,9 +17,6 @@ class PixivSketchFeed(Feed):
                 headers={"x-requested-with": "https://sketch.pixiv.net/api/walls/home.json"},
             )
 
-            if not feed_data.posts:
-                raise NotImplementedError(self)
-
             yield feed_data.posts
 
             json_url = feed_data.next_page

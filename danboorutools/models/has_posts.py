@@ -79,11 +79,11 @@ class HasPosts:
                 with warnings.catch_warnings(record=True, category=FoundKnownPost) as warning:
                     self._process_post(post_data)
                     if warning:
+                        seen_previous_post = True
+
                         if not self.check_revisions:
                             logger.info("Found a previously-seen post. Quitting...")
                             return
-
-                        seen_previous_post = True
 
             if not self.known_posts and self.quit_early_page > 0 and page + 1 >= self.quit_early_page:
                 logger.info("Quitting early because it's a first-time scan...")
