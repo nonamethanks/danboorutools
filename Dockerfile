@@ -3,7 +3,7 @@ FROM archlinux:latest
 ENV PYTHONUNBUFFERED 1
 
 RUN pacman -Syyuu --noconfirm base-devel git unrar unzip atool vim tmux sqlite
-RUN pacman -Syyuu --noconfirm chromium
+RUN pacman -Syyuu --noconfirm chromium optipng imagemagick
 
 RUN pacman -Syyuu --noconfirm pyenv
 

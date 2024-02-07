@@ -4,12 +4,13 @@ import hashlib
 import shutil
 import tempfile
 from functools import cached_property
+from io import BytesIO
 from pathlib import Path
 
 import filetype
 import imagehash
 import ring
-from PIL import Image
+from PIL import Image, ImageCms
 
 from danboorutools.util.misc import natsort_array, random_string
 from danboorutools.util.system import run_external_command
@@ -30,7 +31,7 @@ class File:
         match path.suffix.strip("."):
             case "rar" | "zip":
                 return ArchiveFile(raw_path=path)
-            case "jpg" | "png":
+            case "jpg" | "png" | "gif":
                 return ImageFile(raw_path=path)
             case _:
                 return UnknownFile(raw_path=path)
@@ -53,7 +54,8 @@ class File:
         if md5_as_filename:
             final_path = final_path.with_stem(_file.md5)
 
-        _file.rename(destination_dir / final_path.name)
+        if (destination_dir / final_path.name).resolve() != path.resolve():
+            _file.rename(destination_dir / final_path.name)
         return cls.get_subclass_for(_file.path)
 
     def rename(self, target: str | Path) -> None:
@@ -80,6 +82,10 @@ class File:
     @property
     def file_size(self) -> int:
         return self.path.stat().st_size
+
+    @cached_property
+    def pixel_hash(self) -> str:
+        return self.md5
 
 
 class ArchiveFile(File):
@@ -124,6 +130,50 @@ class ImageFile(File):
         """Return a long wavelet hash (16384 char) for this image."""
         return self._get_whash(128)
 
+    @property
+    def is_animated(self) -> bool:
+        with Image.open(self.path) as img:
+            try:
+                return img.n_frames > 1
+            except AttributeError:
+                return False
+            except ValueError as e:
+                if "image has no palette" in str(e):
+                    raise CorruptedMetadataError(self) from e
+                else:
+                    raise
+            except TypeError as e:
+                if "color must be int, or tuple of one, three or four elements" in str(e):
+                    raise CorruptedMetadataError(self) from e
+                else:
+                    raise
+            except OSError as e:
+                if "image file is truncated" in str(e):
+                    raise CorruptedFileError(self) from e
+                else:
+                    raise
+
+    @cached_property
+    def pixel_hash(self) -> str:
+        if self.is_animated:
+            return self.md5
+
+        try:
+            img = Image.open(self.path)
+            if (profile := img.info.get("icc_profile", "")):
+                srgb_profile = ImageCms.createProfile("sRGB")
+                img = ImageCms.profileToProfile(img, BytesIO(profile), srgb_profile)
+
+            img = img.convert("RGBA")
+
+            hash_md5 = hashlib.md5(usedforsecurity=False)
+            hash_md5.update(img.tobytes())
+            md5_hash = hash_md5.hexdigest()
+
+            return md5_hash
+        finally:
+            img.close()
+
     @ring.lru()
     def _get_whash(self, size: int) -> str:
         with Image.open(self.path) as img:
@@ -150,7 +200,19 @@ class ImageFile(File):
 
 
 class UnknownFile(File):
-    pass
+    ...
+
+
+class CorruptedFileError(Exception):
+    def __init__(self, file: File) -> None:
+        self.message = f"File {file.path} appears to be corrupted."
+        super().__init__(self.message)
+
+
+class CorruptedMetadataError(Exception):
+    def __init__(self, file: File) -> None:
+        self.message = f"File {file.path} contains corrupted metadata."
+        super().__init__(self.message)
 
 
 FileSubclass = ArchiveFile | UnknownFile | ImageFile

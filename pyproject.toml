@@ -221,6 +221,7 @@ markers = [
     "artist",
     "post",
     "info",
+    "file",
     "redirect",
     "artist_finder",
     "autoignore",

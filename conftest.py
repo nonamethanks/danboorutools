@@ -38,5 +38,6 @@ def should_perform_test(item) -> bool:
     return True
 
 
-logging.getLogger("urllib3").setLevel(logging.INFO)
+logging.getLogger("PIL").setLevel(logging.INFO)
 logging.getLogger("pyrate_limiter").setLevel(logging.INFO)
+logging.getLogger("urllib3").setLevel(logging.INFO)

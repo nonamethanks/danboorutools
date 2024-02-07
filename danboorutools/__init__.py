@@ -95,5 +95,6 @@ class InterceptHandler(logging.Handler):
 # stop spam
 backoff_logger = logging.getLogger("backoff")
 backoff_logger.handlers = [InterceptHandler()]
-logging.getLogger("urllib3").setLevel(logging.INFO)
 logging.getLogger("pyrate_limiter").setLevel(logging.INFO)
+logging.getLogger("PIL").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.INFO)
