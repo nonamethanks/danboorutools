@@ -10,11 +10,29 @@ from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
+    from danboorutools.logical.feeds.pixiv_sketch import PixivSketchFeed
     from danboorutools.logical.urls.pixiv import PixivStaccUrl
 
 
 class PixivSketchUrl(Url):
     session = PixivSketchSession()
+
+
+def _process_post(self: PixivSketchArtistUrl | PixivSketchFeed, post_object: PixivSketchPostData) -> None:
+    post = PixivSketchPostUrl.build(post_id=post_object.id)
+    post.gallery = PixivSketchArtistUrl.build(stacc=post_object.user.unique_name)
+
+    if not post_object.media:
+        return
+
+    assets = [i["photo"]["original"]["url"] for i in post_object.media]
+
+    self._register_post(
+        post=post,
+        assets=assets,
+        created_at=post_object.created_at,
+        score=post_object.feedback_count,
+    )
 
 
 class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
@@ -35,17 +53,11 @@ class PixivSketchArtistUrl(ArtistUrl, PixivSketchUrl):
             else:
                 return
 
+    _process_post = _process_post
+
     def _extract_assets(self) -> list:
         # not worth it, most times same as pixiv
         return []
-
-    def _process_post(self, post_object: PixivSketchPostData) -> None:
-        self._register_post(
-            post=PixivSketchPostUrl.build(post_id=post_object.id),
-            assets=[i["photo"]["original"]["url"] for i in post_object.media],
-            created_at=post_object.created_at,
-            score=post_object.feedback_count,
-        )
 
     @property
     def stacc_url(self) -> PixivStaccUrl:
