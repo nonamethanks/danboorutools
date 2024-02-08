@@ -307,7 +307,11 @@ class TwitterSession(Session):
         tweets = []
         for entry in entries:
             if entry["itemType"] == "TimelineTweet":
-                tweet_data = entry["tweet_results"]["result"]["legacy"]
+                try:
+                    tweet_data = entry["tweet_results"]["result"]["legacy"]
+                except KeyError as e:
+                    e.add_note(json.dumps(entry))
+                    raise
                 tweets.append(TwitterTimelineTweetData(**tweet_data))
             elif entry["itemType"] in ["TimelineMessagePrompt", "TimelineUser"]:
                 continue  # fuck off with these ads
