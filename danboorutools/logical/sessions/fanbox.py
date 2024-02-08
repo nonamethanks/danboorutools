@@ -84,7 +84,7 @@ class FanboxArtistData(BaseModel):
     profileItems: list[dict]
     creatorId: str  # url username
 
-    coverImageUrl: str
+    coverImageUrl: str | None = None
 
     @property
     def related_urls(self) -> list[Url]:
@@ -99,7 +99,7 @@ class FanboxArtistData(BaseModel):
         return results
 
     @property
-    def featured_images(self) -> list[FanboxArtistImageUrl]:
+    def featured_images(self) -> list[str]:
         images = []
         for url in self.profileItems:
             if url["type"] == "image":
@@ -107,8 +107,7 @@ class FanboxArtistData(BaseModel):
             else:
                 raise NotImplementedError(url, self.profileItems, self)
 
-        from danboorutools.logical.urls.fanbox import FanboxArtistImageUrl
-        return parse_list(images, FanboxArtistImageUrl)
+        return images
 
 
 class FanboxPostData(BaseModel):

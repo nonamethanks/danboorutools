@@ -7,6 +7,7 @@ import pykakasi
 import unidecode
 from cloudscraper.exceptions import CloudflareChallengeError
 from py_trans import PyTranslator
+from pydantic import ValidationError
 from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
@@ -198,6 +199,9 @@ class ArtistFinder:
         except RateLimitError:
             if isinstance(first_url, InstagramUrl):
                 return list(dict.fromkeys(scanned_urls))
+            raise
+        except ValidationError as e:
+            e.add_note(f"While crawling url {first_url}...")
             raise
 
         try:
