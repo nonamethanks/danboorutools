@@ -34,6 +34,7 @@ urls = {
         "https://si0.twimg.com/profile_background_images/816078776/5691fe91c3ad0f6627cd00fa22d1f610.jpeg": "https://si0.twimg.com/profile_background_images/816078776/5691fe91c3ad0f6627cd00fa22d1f610.jpeg",
         "http://a1.twimg.com/profile_background_images/108010950/CosmicBreak09_summer.JPG": "https://a1.twimg.com/profile_background_images/108010950/CosmicBreak09_summer.JPG",
         "http://a0.twimg.com/profile_images/1643478211/1426283i.jpg": "https://a0.twimg.com/profile_images/1643478211/1426283i.jpg",
+        "https://pbs.twimg.com/profile_images/1609495387181834240/k_v6QBn2_400x400.jpg": "https://pbs.twimg.com/profile_images/1609495387181834240/k_v6QBn2.jpg",
     },
     tw.TwitterIntentUrl: {
         "https://twitter.com/i/user/889592953": "https://twitter.com/intent/user?user_id=889592953",

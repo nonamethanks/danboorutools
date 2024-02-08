@@ -165,7 +165,7 @@ class TwitterArtistImageUrl(GalleryAssetUrl, TwitterUrl):
     @property
     def full_size(self) -> str:
         if "profile_images" in self.file_path:
-            self.file_path = re.sub(r"_\w+\.(\w+)$", r".\1", self.file_path)
+            self.file_path = re.sub(r"_[a-z0-9]+\.(\w+)$", r".\1", self.file_path, flags=re.IGNORECASE)
         return f"https://{self.parsed_url.hostname}/{self.file_path}"
 
     @cached_property
