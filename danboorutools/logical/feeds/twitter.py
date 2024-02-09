@@ -43,6 +43,12 @@ class TwitterFeed(Feed):
         if not post_object.assets:
             return
 
+        if post_object.retweeted_status_result:
+            if post_object.retweeted_status_result.get("result"):
+                return
+            else:
+                raise NotImplementedError(post_object.retweeted_status_result)
+
         url = TwitterPostUrl.parse(post_object.entities["media"][0]["expanded_url"])
         assert isinstance(url, TwitterPostUrl)
         username = url.username

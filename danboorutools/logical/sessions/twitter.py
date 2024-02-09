@@ -334,6 +334,8 @@ class TwitterTimelineTweetData(BaseModel):
     created_at: datetime
     entities: dict
 
+    retweeted_status_result: dict | None = None # whether something's a retweet
+
     @field_validator("created_at", mode="before")
     @classmethod
     def parse_created_at(cls, value: str) -> datetime:
