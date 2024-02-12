@@ -1,6 +1,6 @@
 from __future__ import annotations
-import os
 
+import os
 from datetime import UTC, datetime
 from functools import cached_property
 from typing import TYPE_CHECKING
@@ -87,7 +87,7 @@ class PostypePostUrl(PostUrl, PostypeUrl):
 
     @cached_property
     def post_data(self) -> BeautifulSoup:
-        data = self.session.get("https://www.postype.com/api/post/content/16144072").json()
+        data = self.session.get(f"https://www.postype.com/api/post/content/{self.post_id}").json()
         return BeautifulSoup(data["data"]["html"], "html.parser")
 
     def _extract_assets(self) -> list[PostypeImageUrl]:
