@@ -22,6 +22,7 @@ urls = {
     },
     p.PostypeImageUrl: {
         "http://i.postype.com/2016/12/27/01/52/0a88e4fef1f92974d3834511120492c8.png?w=1000": "http://i.postype.com/2016/12/27/01/52/0a88e4fef1f92974d3834511120492c8.png",
+        "https://d2ufj6gm1gtdrc.cloudfront.net/2024/01/30/14/59/11d8ec943f17a4ede8ae6c13bcc48bb3.png?w=1200&q=90": "https://d2ufj6gm1gtdrc.cloudfront.net/2024/01/30/14/59/11d8ec943f17a4ede8ae6c13bcc48bb3.png",
     },
 }
 
