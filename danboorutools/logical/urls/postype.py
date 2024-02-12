@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 
 from datetime import UTC, datetime
 from functools import cached_property
@@ -61,6 +62,14 @@ class PostypeArtistUrl(ArtistUrl, PostypeUrl):
             created_at=post.created_at,
             score=post.score,
         )
+
+    def subscribe(self) -> None:
+        blog_id = self.html.select_one("body").attrs["data-blog-id"]
+        resp = self.session.post(
+            f"https://api.postype.com/api/v1/subscriber/{blog_id}", cookies={"ps_at": os.environ["POSTYPE_PS_AT_COOKIE"]})
+        if resp.status_code == 202:
+            return
+        raise NotImplementedError(resp.status_code)
 
 
 class PostypeSeriesUrl(ArtistAlbumUrl, PostypeUrl):
