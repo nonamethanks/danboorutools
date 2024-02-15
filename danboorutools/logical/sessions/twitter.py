@@ -307,11 +307,14 @@ class TwitterSession(Session):
         tweets = []
         for entry in entries:
             if entry["itemType"] == "TimelineTweet":
+                if entry.get("promotedMetadata"):
+                    continue
+
                 tweet_result = entry["tweet_results"]["result"]
                 if "tweet" in tweet_result:
                     tweet_result = tweet_result["tweet"]
                 legacy_data = tweet_result["legacy"]
-                tweets.append(TwitterTimelineTweetData(**legacy_data))
+                tweets.append(TwitterTimelineTweetData(**legacy_data | {"__original": entry}))
             elif entry["itemType"] in ["TimelineMessagePrompt", "TimelineUser"]:
                 continue  # fuck off with these ads
             else:
@@ -334,7 +337,7 @@ class TwitterTimelineTweetData(BaseModel):
     created_at: datetime
     entities: dict
 
-    retweeted_status_result: dict | None = None # whether something's a retweet
+    retweeted_status_result: dict | None = None  # whether something's a retweet
 
     @field_validator("created_at", mode="before")
     @classmethod
