@@ -40,3 +40,9 @@ poetry run create_artist_tags {tags to search}
 ```
 poetry run sockpuppet_discord_monitor {test|production}
 ```
+
+
+#### Suggest promotable users
+```
+poetry run promotions
+```
