@@ -75,7 +75,7 @@ class FanboxSession(Session):
 class _UserData(BaseModel):
     name: str       # display name
     userId: int     # pixiv ID
-    iconUrl: str
+    iconUrl: str | None
 
 
 class FanboxArtistData(BaseModel):
