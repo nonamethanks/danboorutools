@@ -7,6 +7,8 @@ from danboorutools.models.url import UselessUrl
 class TwitterComParser(UrlParser):
     RESERVED_NAMES = ["home", "i", "intent", "search", "hashtag", "about", "twitter"]
 
+    domains = ("twitter.com", "x.com")
+
     @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> tw.TwitterUrl | UselessUrl | None:  # type: ignore[return]
         if parsable_url.subdomain not in ["www", "", "pic", "m", "mobile"]:

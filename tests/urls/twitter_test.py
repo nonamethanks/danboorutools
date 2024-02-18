@@ -45,6 +45,7 @@ urls = {
         "https://twitter.com/motty08111213": "https://twitter.com/motty08111213",
         "https://twitter.com/motty08111213/likes": "https://twitter.com/motty08111213",
         "https://mobile.twitter.com/_158161163": "https://twitter.com/_158161163",
+        "https://x.com/usa__gin": "https://twitter.com/usa__gin",
     },
     tw.TwitterPostUrl: {
         "https://twitter.com/motty08111213/status/943446161586733056": "https://twitter.com/motty08111213/status/943446161586733056",
