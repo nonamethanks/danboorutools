@@ -7,13 +7,13 @@ class CarrdUrl(InfoUrl):
     normalize_template = "https://{username}.carrd.co"
 
     @property
-    def related(self) -> list[Url]:
-        return []
-
-    @property
     def primary_names(self) -> list[str]:
         return []
 
     @property
     def secondary_names(self) -> list[str]:
         return [self.username]
+
+    @property
+    def related(self) -> list[Url]:
+        return []

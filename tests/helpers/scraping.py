@@ -68,19 +68,22 @@ class _TestInfoUrl(_TestUrl):
     @pytest.mark.scraping
     def test_primary_names(self, parsed_url: InfoUrl) -> None:
         expected_primary_names = self.primary_names
-        assert sorted(parsed_url.primary_names) == sorted(expected_primary_names)
+        actual_primary_names = parsed_url.primary_names
+        assert sorted(actual_primary_names) == sorted(expected_primary_names)
 
     @pytest.mark.info
     @pytest.mark.scraping
     def test_secondary_names(self, parsed_url: InfoUrl) -> None:
         expected_secondary_names = self.secondary_names
-        assert sorted(parsed_url.secondary_names) == sorted(expected_secondary_names)
+        actual_secondary_names = parsed_url.secondary_names
+        assert sorted(actual_secondary_names) == sorted(expected_secondary_names)
 
     @pytest.mark.info
     @pytest.mark.scraping
     def test_related(self, parsed_url: InfoUrl) -> None:
         expected_related = [Url.parse(u) for u in self.related]
-        assert sorted(parsed_url.related, key=lambda u: u.normalized_url) == sorted(expected_related, key=lambda u: u.normalized_url)
+        actual_related = parsed_url.related
+        assert sorted(actual_related, key=lambda u: u.normalized_url) == sorted(expected_related, key=lambda u: u.normalized_url)
 
 
 class _TestGalleryUrl(_TestInfoUrl):
