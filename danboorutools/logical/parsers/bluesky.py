@@ -1,5 +1,5 @@
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
-from danboorutools.logical.urls.bluesky import BlueskyArtistUrl, BlueskyPostUrl, BskyImageUrl, BskyUrl
+from danboorutools.logical.urls.bluesky import BlueskyArtistUrl, BlueskyPostUrl, BskyUrl
 
 
 class BskyAppParser(UrlParser):
