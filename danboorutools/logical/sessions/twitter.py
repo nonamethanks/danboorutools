@@ -55,14 +55,18 @@ class TwitterSession(Session):
 
         follow_button = self.browser.find_element("css selector", f"[aria-label='Follow @{username}']")
         follow_button.click()
+
+        if self.browser.find_elements_by_text("Your account is suspended", full_match=False):
+            raise NotImplementedError("Twitter account is suspended.")
         attempts = 0
         while attempts < 5:
-            follow_button = self.browser.find_elements("css selector", f"[aria-label='Following @{username}']")
-            if follow_button and follow_button[0].text == "Following":
+            following_button = self.browser.find_elements("css selector", f"[aria-label='Following @{username}']")
+            if following_button and following_button[0].text == "Following":
                 logger.info("Subscribed successfully.")
                 return
             attempts += 1
             time.sleep(1)
+
         raise NotImplementedError(follow_button.text, username)
 
     @ring.lru()
@@ -293,14 +297,20 @@ class TwitterSession(Session):
                         else:
                             raise NotImplementedError(sub_instruction)
                     elif sub_instruction["content"]["entryType"] == "TimelineTimelineModule":
-                        entries += [entry["item"]["itemContent"] for entry in sub_instruction["content"]["items"]]
+                        entries += [
+                            entry["item"]["itemContent"] | {"__original_data": entry}
+                            for entry in sub_instruction["content"]["items"]
+                        ]
                     elif sub_instruction["content"]["entryType"] == "TimelineTimelineItem":
-                        entries.append(sub_instruction["content"]["itemContent"])  # feed
+                        entries.append(sub_instruction["content"]["itemContent"] | {"__original_data": sub_instruction})  # feed
                     else:
                         raise NotImplementedError(sub_instruction)
                 continue
             elif instruction["type"] == "TimelineAddToModule":
-                entries += [entry["item"]["itemContent"] for entry in instruction["moduleItems"]]
+                entries += [
+                    entry["item"]["itemContent"] | {"__original_data": entry}
+                    for entry in instruction["moduleItems"]
+                ]
                 continue
             raise NotImplementedError(instruction)
 
@@ -310,11 +320,18 @@ class TwitterSession(Session):
                 if entry.get("promotedMetadata"):
                     continue
 
-                tweet_result = entry["tweet_results"]["result"]
+                if not entry["tweet_results"]:
+                    continue  # why the fuck would this be empty?
+
+                try:
+                    tweet_result = entry["tweet_results"]["result"]
+                except KeyError as e:
+                    raise NotImplementedError(entry) from e
+
                 if "tweet" in tweet_result:
                     tweet_result = tweet_result["tweet"]
                 legacy_data = tweet_result["legacy"]
-                tweets.append(TwitterTimelineTweetData(**legacy_data | {"__original": entry}))
+                tweets.append(TwitterTimelineTweetData(**legacy_data))
             elif entry["itemType"] in ["TimelineMessagePrompt", "TimelineUser"]:
                 continue  # fuck off with these ads
             else:
