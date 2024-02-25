@@ -22,12 +22,7 @@ class NewgroundsFeed(Feed):
 
         while True:
             posts_page = self.session.get(feed_url).html
-            thumbnails = posts_page.select(".pod-body a.portal-feed-large-title")
-
-            if not thumbnails:
-                raise NotImplementedError("No posts found. Check cookies.")
-
-            yield thumbnails
+            yield posts_page.select(".pod-body a.portal-feed-large-title")
 
             last_event = min(re.findall(r"feedselector_\w+_\w+_e(\d+)", str(posts_page)))
             feed_url = f"https://www.newgrounds.com/social/feeds/lflw/123456/lfrn/987654/last/{last_event}"

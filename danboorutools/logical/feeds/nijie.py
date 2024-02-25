@@ -23,9 +23,6 @@ class NijieFeed(Feed):
             if last_page == page:
                 return
 
-            if not posts:
-                raise NotImplementedError("No posts found.")
-
             page += 1
 
     def _process_post(self, post_object: Tag) -> None:

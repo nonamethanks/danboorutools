@@ -16,9 +16,6 @@ class NicoSeigaFeed(Feed):
         while True:
             page_data = self.session.get_nicoseiga_feed(min_id=min_id or None)
 
-            if not min_id and not page_data.data:
-                raise NotImplementedError("No posts found. Check cookies.")
-
             yield [p for p in page_data.data if p.object["url"] not in seen_ids]
             # why tf does nicovideo return dupes like this
             seen_ids += [p.object["url"] for p in page_data.data]
