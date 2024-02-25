@@ -115,15 +115,16 @@ class HasPosts:
                        is_deleted: bool = False,
                        ) -> None:
 
-        from danboorutools.models.url import PostUrl
-
         if post in self._revised_posts or post in self._new_posts:
-            raise NotImplementedError(post)
+            logger.warning(f"{post} was already extracted in this scan.")
+            return
 
         if post in self.known_posts:
             post = self.known_posts[self.known_posts.index(post)]  # fuck
 
         post.is_deleted = is_deleted
+
+        from danboorutools.models.url import PostUrl
         if isinstance(post, PostUrl):
             post.score = score
             post.created_at = datetime_from_string(created_at) if created_at else datetime.now(tz=UTC)
