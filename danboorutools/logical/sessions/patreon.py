@@ -88,8 +88,9 @@ class PatreonSession(Session):
             data=json.dumps(data_json, separators=(",", ":")),
         )
         try:
-            assert response.json()["data"]["attributes"]["started_at"]
-            assert response.json()["data"]["type"]["free-membership-subscription"]
+            data = response.json()["data"]
+            assert data["attributes"]["started_at"]
+            assert data["type"]["free-membership-subscription"]
         except Exception as e:
             raise NotImplementedError(str(response.json())) from e
 
