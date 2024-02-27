@@ -20,6 +20,7 @@ from danboorutools.logical.urls.facebook import FacebookMediaSetUrl
 from danboorutools.logical.urls.google_drive import GoogleDriveFileUrl
 from danboorutools.logical.urls.instagram import InstagramUrl
 from danboorutools.logical.urls.nicovideo import NicovideoVideoUrl
+from danboorutools.logical.urls.pixiv import PixivImageUrl
 from danboorutools.logical.urls.steamcommunity import SteamcommunityFileUrl
 from danboorutools.logical.urls.twitch import TwitchVideoUrl
 from danboorutools.logical.urls.youtube import YoutubePlaylistUrl, YoutubeVideoUrl
@@ -98,7 +99,7 @@ class ArtistFinder:
             raise
 
         tags_to_send = ["-artist_request", artist_tag]
-        if source.is_deleted:
+        if not isinstance(source, PixivImageUrl) and source.is_deleted: # could be revision
             tags_to_send += ["bad_id"]
 
         danbooru_api.update_post_tags(post, tags_to_send)
