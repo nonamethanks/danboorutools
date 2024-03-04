@@ -1,7 +1,7 @@
 import os
 import re
 
-from pydantic import ConfigDict, validator
+from pydantic import ConfigDict, Field, validator
 
 from danboorutools import logger
 from danboorutools.exceptions import DeadUrlError
@@ -51,6 +51,10 @@ class _SaucenaoBaseDataResponse(BaseModel):
 class _NotImplementedDataResponse(_SaucenaoBaseDataResponse):
     model_config = ConfigDict(extra="allow")
 
+    @property
+    def artist_result(self) -> SaucenaoArtistResult:
+        raise NotImplementedError(self)
+
 
 class _SaucenaoPixivData(_SaucenaoBaseDataResponse):
     # index 5 - pixiv
@@ -82,6 +86,7 @@ class _SaucenaoDanbooruData(_SaucenaoBaseDataResponse):
     danbooru_id: int
     gelbooru_id: int | None = None
     sankaku_id: int | None = None
+    anime_pictures_id: int | None = Field(None, alias="anime-pictures_id")
 
     creator: str
     material: str
@@ -160,7 +165,7 @@ class _SaucenaoApiResult(BaseModel):
 
     @validator("data", pre=True)
     @classmethod
-    def parse_data(cls, value: dict, values: dict) -> _SaucenaoPixivData | _SaucenaoDanbooruData:
+    def parse_data(cls, value: dict, values: dict) -> _SaucenaoBaseDataResponse:
         if values["header"].index_id == 5:
             return _SaucenaoPixivData(**value)
         elif values["header"].index_id == 9:
