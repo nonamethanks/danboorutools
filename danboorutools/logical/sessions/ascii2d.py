@@ -11,7 +11,7 @@ from danboorutools.logical.urls.amazon import AmazonItemUrl
 from danboorutools.logical.urls.dlsite import DlsiteUrl, DlsiteWorkUrl
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.fantia import FantiaFanclubUrl
-from danboorutools.logical.urls.fanza import FanzaUrl
+from danboorutools.logical.urls.fanza import FanzaDoujinWorkUrl, FanzaUrl
 from danboorutools.logical.urls.lofter import LofterPostUrl
 from danboorutools.logical.urls.melonbooks import MelonbooksProductUrl
 from danboorutools.logical.urls.nicoseiga import NicoSeigaArtistUrl
@@ -149,9 +149,9 @@ class Ascii2dArtistResult:
             elif site == "dmm":
                 self.__parse_fanza_result(link_object, data)
             elif link_object.has_attr("href"):
-                post_url = Url.parse(url_groups[0]["href"])
+                post_url = Url.parse(url_groups[0].attrs["href"])
                 try:
-                    artist_url = Url.parse(url_groups[1]["href"])
+                    artist_url = Url.parse(url_groups[1].attrs["href"])
                 except IndexError:
                     artist_url = None
                 else:
@@ -164,7 +164,9 @@ class Ascii2dArtistResult:
                     data["posts"].append(post_url)
                 elif isinstance(post_url, TwitterPostUrl) and isinstance(artist_url, TwitterArtistUrl):
                     data["secondary_names"].append(artist_name)
-                elif isinstance(post_url, DlsiteWorkUrl) and artist_url is None:  # https://ascii2d.net/search/color/82e1cf49e0418979f5a69cd279cd9948
+                elif isinstance(post_url, DlsiteWorkUrl | FanzaDoujinWorkUrl) and artist_url is None:
+                    # https://ascii2d.net/search/color/82e1cf49e0418979f5a69cd279cd9948
+                    # https://ascii2d.net/search/color/497ca528f56464ce57214a0a62f69924
                     data["posts"].append(post_url)
                 else:
                     raise NotImplementedError(link_object, self.search_url, post_url, artist_url)
