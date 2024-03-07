@@ -15,3 +15,15 @@ class BskyAppParser(UrlParser):
                                       post_id=post_id)
             case _:
                 return None
+
+
+class BskySocialParser(UrlParser):
+    @classmethod
+    def match_url(cls, parsable_url: ParsableUrl) -> BskyUrl | None:
+        match parsable_url.url_parts:
+            case [] if parsable_url.subdomain:
+                # http://halooge.bsky.social -> https://bsky.app/profile/halooge.bsky.social
+                return BlueskyArtistUrl(parsed_url=parsable_url,
+                                        username=f"{parsable_url.subdomain}.bsky.social")
+            case _:
+                return None

@@ -8,6 +8,8 @@ urls = {
     BlueskyArtistUrl: {
         "https://bsky.app/profile/torizono1024.bsky.social": "https://bsky.app/profile/torizono1024.bsky.social",
         "https://bsky.app/profile/rnarccus.art": "https://bsky.app/profile/rnarccus.art",
+        "http://halooge.bsky.social": "https://bsky.app/profile/halooge.bsky.social",
+
     },
     BlueskyPostUrl: {
         "https://bsky.app/profile/minacream.bsky.social/post/3k6mfqfio4c2b": "https://bsky.app/profile/minacream.bsky.social/post/3k6mfqfio4c2b",
