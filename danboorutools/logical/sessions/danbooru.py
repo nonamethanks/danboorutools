@@ -138,6 +138,9 @@ class DanbooruApi(Session):
     def comment_votes(self, **kwargs) -> list[models.DanbooruCommentVote]:
         return self._generic_endpoint(models.DanbooruCommentVote, **kwargs)
 
+    def dmails(self, **kwargs) -> list[models.DanbooruDmail]:
+        return self._generic_endpoint(models.DanbooruDmail, **kwargs)
+
     def feedbacks(self, **kwargs) -> list[models.DanbooruFeedback]:
         return self._generic_endpoint(models.DanbooruFeedback, **kwargs)
 

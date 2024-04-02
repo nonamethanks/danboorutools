@@ -70,6 +70,9 @@ class DanbooruModel(BaseModel):
             e.add_note(f"Match: {match}")
             raise
 
+    def __hash__(self):
+        return hash(self.url)
+
 
 class DanbooruMediaAsset(DanbooruModel):
     danbooru_model_name = "media_asset"
@@ -91,6 +94,7 @@ class DanbooruPost(DanbooruModel):
     danbooru_model_name = "post"
 
     score: int
+    uploader_id: int
 
     tag_string: str
     tag_string_character: str
@@ -315,6 +319,22 @@ class DanbooruBan(DanbooruModel):
 
     user: DanbooruUser
     banner: DanbooruUser
+
+
+class DanbooruDmail(DanbooruModel):
+    danbooru_model_name = "dmail"
+
+    from_id: int
+    to_id: int
+
+    title: str
+    body: str
+
+    is_read: bool
+    is_deleted: bool
+    is_spam: bool
+
+    key: str
 
 
 class DanbooruFeedback(DanbooruModel):

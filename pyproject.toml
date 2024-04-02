@@ -14,6 +14,7 @@ replace_ehentai_samples = "danboorutools.scripts.replace_ehentai_samples:main"
 tag_paid_rewards_on_gelbooru = "danboorutools.scripts.tag_paid_rewards_on_gelbooru:main"
 sockpuppet_discord_monitor = "danboorutools.scripts.sockpuppet_discord_monitor:main"
 promotions = "danboorutools.scripts.promotion_suggestions:main"
+raffle = "danboorutools.scripts.raffle_picker:main"
 
 create_url_template = "danboorutools.scripts.create_url_template:main"
 
