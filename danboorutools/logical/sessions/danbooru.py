@@ -50,6 +50,8 @@ class DanbooruApi(Session):
         "ban": "id,created_at,duration,reason,user,banner",
         "comment_vote": "id,created_at,score,is_deleted,user,comment",
         "media_asset": "id,created_at,md5,file_ext,file_size,image_width,image_height,duration,pixel_hash,variants,post",
+        "post_appeal": "id,created_at,post,creator,reason,status",
+        "post_flag": "id,created_at,reason,post,creator,is_resolved,status,category",
         "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
         "post_replacement": "id,created_at,post",
         "post_vote": "id,created_at,score,is_deleted,user,post",
@@ -141,6 +143,12 @@ class DanbooruApi(Session):
 
     def media_assets(self, **kwargs) -> list[models.DanbooruMediaAsset]:
         return self._generic_endpoint(models.DanbooruMediaAsset, **kwargs)
+
+    def flags(self, **kwargs) -> list[models.DanbooruFlag]:
+        return self._generic_endpoint(models.DanbooruFlag, **kwargs)
+
+    def appeals(self, **kwargs) -> list[models.DanbooruAppeal]:
+        return self._generic_endpoint(models.DanbooruAppeal, **kwargs)
 
     def post_versions(self, **kwargs) -> list[models.DanbooruPostVersion]:
         return self._generic_endpoint(models.DanbooruPostVersion, **kwargs)

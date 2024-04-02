@@ -201,6 +201,28 @@ class DanbooruCommentVote(DanbooruModel):
     score: int
 
 
+class DanbooruFlag(DanbooruModel):
+    danbooru_model_name = "post_flag"
+
+    post: DanbooruPost
+    creator: DanbooruUser
+
+    reason: str
+    status: str
+    category: str
+    is_resolved: bool
+
+
+class DanbooruAppeal(DanbooruModel):
+    danbooru_model_name = "post_appeal"
+
+    post: DanbooruPost
+    creator: DanbooruUser
+
+    reason: str
+    status: str
+
+
 class DanbooruPostVersion(DanbooruModel):
     danbooru_model_name = "post_version"
 
