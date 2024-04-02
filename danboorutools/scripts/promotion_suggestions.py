@@ -14,8 +14,8 @@ f_path = logger.log_to_file()
 
 END_DATE = datetime.now(tz=UTC)
 START_DATE = END_DATE - timedelta(days=60)
-MIN_UPLOADS_IN_RANGE = 50
 
+MIN_CONTRIBUTOR_UPLOADS_IN_RANGE = 20
 MIN_UPLOADS_WITH_EDITS = 500
 MIN_STANDALONE_UPLOADS = 700
 MIN_EDITS_WITH_UPLOADS = 3000
@@ -50,13 +50,13 @@ def main() -> None:
             pass
 
     logger.info("Contributor candidates:")
-    for candidate in [c for c in candidates if c.level == 32 and c.recent_uploads > MIN_UPLOADS_IN_RANGE]:
+    for candidate in [c for c in candidates if c.level == 32 and c.recent_uploads > MIN_CONTRIBUTOR_UPLOADS_IN_RANGE and c.active]:
         logger.info(candidate.self_string)
 
     logger.info("")
     logger.info("Builder/Contributor candidates:")
 
-    for candidate in [c for c in candidates if c.level != 32]:
+    for candidate in [c for c in candidates if c.level != 32 and c.active]:
         logger.info(candidate.self_string)
 
     logger.info("")
@@ -75,7 +75,7 @@ def main() -> None:
 
     if remaining:
         logger.info("Builder candidates:")
-        for candidate in [c for c in remaining if c.level != 32]:
+        for candidate in [c for c in remaining if c.level != 32 and c.active]:
             logger.info(candidate.self_string)
 
 
@@ -85,6 +85,8 @@ def merge_candidate(candidate: Candidate, user: DanbooruUser) -> None:
     candidate.total_edits = user.post_update_count
     candidate.level = user.level
     candidate.level_string = user.level_string
+    candidate.is_deleted = user.is_deleted
+    candidate.is_banned = user.is_banned
 
 
 def get_recent_uploaders() -> list[Candidate]:
@@ -158,11 +160,22 @@ class Candidate:
     recent_uploads: int | None
     recent_deleted: int | None
 
+    is_deleted: bool | None = None
+    is_banned: bool | None = None
+
     total_uploads: int | None = None
     total_edits: int | None = None
     id: int | None = None
     level: int | None = None
     level_string: str | None = None
+
+    @property
+    def active(self) -> bool:
+        if self.is_deleted:   # can also be None
+            return False
+        if self.is_banned:  # can also be None
+            return False
+        return True
 
     @property
     def url(self) -> str:
