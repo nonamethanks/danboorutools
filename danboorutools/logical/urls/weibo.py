@@ -52,7 +52,7 @@ class WeiboLegacyArtistUrl(RedirectUrl, WeiboUrl):
         url = self.normalized_url.replace("www.weibo.com", "m.weibo.cn")
         resolved = self.session.get(f"{url}?&jumpfrom=weibocom").url
         parsed = Url.parse(resolved)
-        assert isinstance(parsed, WeiboArtistUrl)
+        assert isinstance(parsed, WeiboArtistUrl), parsed
         if self.screen_name:
             parsed.extra_primary_names = [self.screen_name]
         if self.username:
