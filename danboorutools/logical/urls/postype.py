@@ -7,11 +7,14 @@ from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 
+from danboorutools.exceptions import DownloadError
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url, parse_list
 from danboorutools.util.misc import extract_urls_from_string
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+    from danboorutools.models.file import File
 
 
 class PostypeUrl(Url):
@@ -123,3 +126,13 @@ class PostypeImageUrl(PostAssetUrl, PostypeUrl):
     def created_at(self) -> datetime:
         year, month, day, hour, minute = map(int, self.parsed_url.url_parts[:-1])
         return datetime(year=year, month=month, day=day, hour=hour, minute=minute, tzinfo=UTC)
+
+    def extract_files(self) -> list[File]:
+        try:
+            return super().extract_files()
+        except DownloadError as e:
+            if e.status_code == 403:
+                self.normalized_url = self.parsed_url.raw_url
+                return super().extract_files()
+            else:
+                raise
