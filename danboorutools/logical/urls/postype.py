@@ -95,7 +95,7 @@ class PostypePostUrl(PostUrl, PostypeUrl):
 
     def _extract_assets(self) -> list[PostypeImageUrl]:
         els = self.post_data.select(".photoset a")
-        return parse_list([el["href"] for el in els], PostypeImageUrl)
+        return parse_list([el.attrs["href"] for el in els], PostypeImageUrl)
 
     @cached_property
     def score(self) -> int:
@@ -128,11 +128,5 @@ class PostypeImageUrl(PostAssetUrl, PostypeUrl):
         return datetime(year=year, month=month, day=day, hour=hour, minute=minute, tzinfo=UTC)
 
     def extract_files(self) -> list[File]:
-        try:
-            return super().extract_files()
-        except DownloadError as e:
-            if e.status_code == 403:
-                self.normalized_url = self.parsed_url.raw_url
-                return super().extract_files()
-            else:
-                raise
+        downloaded_file = self.session.download_file(self.normalized_url, headers={"Referer": self.post.normalized_url})
+        return [downloaded_file]
