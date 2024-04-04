@@ -7,11 +7,13 @@ from typing import TYPE_CHECKING
 
 from pydantic import field_validator
 
+from danboorutools import logger
 from danboorutools.logical.sessions import Session
 from danboorutools.util.misc import BaseModel
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
+    from bs4 import BeautifulSoup
     from requests import Response
 
 
@@ -31,13 +33,83 @@ class FantiaSession(Session):
     def get_post_data(self, post_id: int) -> FantiaPostData:
         post_url = f"https://fantia.jp/posts/{post_id}"
         html = self.get(post_url).html
-        csrf = html.select_one("meta[name='csrf-token']")["content"]
+        assert (csrf_el := html.select_one("meta[name='csrf-token']"))
 
-        api_response = self.get(f"https://fantia.jp/api/v1/posts/{post_id}", headers={"X-CSRF-Token": csrf}).json()
+        api_response = self.get(f"https://fantia.jp/api/v1/posts/{post_id}", headers={"X-CSRF-Token": csrf_el.attrs["content"]}).json()
         if not api_response.get("post"):
             raise NotImplementedError(f"Could not parse fantia api response for {post_url}: {api_response}")
 
         return FantiaPostData(**api_response["post"])
+
+    def subscribe(self, fanclub_id: int) -> None:
+        plans_url = f"https://fantia.jp/fanclubs/{fanclub_id}/plans"
+        plans_page = self.get(plans_url).html
+        if self.is_subscribed(plans_page):
+            logger.info(f"Already subscribed to fanclub #{fanclub_id}. Skipping.")
+            return
+
+        logger.info(f"Proceeding to subscribe to fanclub #{fanclub_id}.")
+
+        plan_descr = plans_page.select_one(".plan [title='Become a fan']")
+        subscribe_url = "https://fantia.jp" + plan_descr.attrs["href"]
+        auth_token_el = plans_page.select_one("meta[name='csrf-token']")
+        headers = {
+            "Referer": f"https://fantia.jp/fanclubs/{fanclub_id}/plans",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+
+        data = {
+            "method": "_post",
+            "authenticity_token": auth_token_el.attrs["content"],
+        }
+
+        response = self.post(subscribe_url, data=data, headers=headers)
+        assert response.ok, response.status_code
+
+        plans_page = self.get(plans_url, skip_cache=True).html
+        assert self.is_subscribed(plans_page)
+
+    def unsubscribe(self, fanclub_id: int) -> None:
+        plans_url = f"https://fantia.jp/fanclubs/{fanclub_id}/plans"
+
+        plans_page = self.get(plans_url).html
+        if not self.is_subscribed(plans_page):
+            logger.info(f"Not subscribed to fanclub #{fanclub_id}. Skipping.")
+            return
+
+        logger.info(f"Proceeding to unsubscribe from fanclub #{fanclub_id}.")
+
+        assert (subscribed_plan := plans_page.select_one("[title='Plan withdrawal']")), plans_url
+        plan_page = self.get("https://fantia.jp" + subscribed_plan.attrs["href"]).html
+        assert (form := plan_page.select_one("form[action^='/mypage/users/plans']"))
+        assert (auth_token_el := form.select_one("[name='authenticity_token']"))
+
+        data = {
+            "_method": "delete",
+            "authenticity_token": auth_token_el.attrs["value"],
+            "leave_reason_master_id": 11,
+            "reason_body": "",
+            "commit": "プランの退会を申請",
+        }
+
+        headers = {
+            "Referer": f"https://fantia.jp/mypage/users/plans/{fanclub_id}/orders/delete",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+
+        unsubscribe_url = "https://fantia.jp" + form.attrs["action"]
+
+        response = self.post(unsubscribe_url, data=data, headers=headers)
+        assert response.ok, response.status_code
+
+        plans_page = self.get(plans_url, skip_cache=True).html
+        assert not self.is_subscribed(plans_page)
+
+    def is_subscribed(self, page: BeautifulSoup) -> bool:
+        assert (first_plan := page.select_one(".plan"))
+        assert (plan_price := first_plan.select_one(".plan-price").text) == "0yen($0.00 USD)/Month", plan_price
+
+        return not bool(first_plan.select_one("[title='Become a fan']"))
 
 
 class FantiaPostData(BaseModel):

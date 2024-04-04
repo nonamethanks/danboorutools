@@ -51,6 +51,12 @@ class FantiaFanclubUrl(ArtistUrl, FantiaUrl):
     def secondary_names(self) -> list[str]:
         return []
 
+    def subscribe(self) -> None:
+        return self.session.subscribe(fanclub_id=self.fanclub_id)
+
+    def unsubscribe(self) -> None:
+        return self.session.unsubscribe(fanclub_id=self.fanclub_id)
+
 
 class FantiaFanclubAssetUrl(GalleryAssetUrl, FantiaUrl):
     fanclub_id: int
