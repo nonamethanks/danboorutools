@@ -8,13 +8,14 @@ from typing import TYPE_CHECKING
 from pydantic import field_validator
 
 from danboorutools import logger
-from danboorutools.logical.sessions import Session
+from danboorutools.logical.sessions import ScraperResponse, Session
 from danboorutools.util.misc import BaseModel
 from danboorutools.util.time import datetime_from_string
 
 if TYPE_CHECKING:
+    from typing import Literal
+
     from bs4 import BeautifulSoup
-    from requests import Response
 
 
 class FantiaSession(Session):
@@ -22,20 +23,25 @@ class FantiaSession(Session):
     def _cookies(self) -> dict:
         return {"_session_id": os.environ["FANTIA_SESSION_ID_COOKIE"]}
 
-    def request(self, *args, **kwargs) -> Response:
+    def request(self, *args, **kwargs) -> ScraperResponse:
         kwargs["cookies"] = self._cookies | kwargs.get("cookies", {})
         return super().request(*args, **kwargs)
 
-    def get_feed(self, page: int) -> dict:
-        page_json = self.get(f"https://fantia.jp/api/v1/me/timelines/posts?page={page}&per=24").json()
+    def get_feed(self, page: int, content_type: Literal["posts", "products"]) -> dict:
+        page_json = self.get(f"https://fantia.jp/api/v1/me/timelines/{content_type}?page={page}&per=24").json()
         return page_json
 
     def get_post_data(self, post_id: int) -> FantiaPostData:
         post_url = f"https://fantia.jp/posts/{post_id}"
-        html = self.get(post_url).html
-        assert (csrf_el := html.select_one("meta[name='csrf-token']"))
+        post_html = self.get(post_url).html
+        assert (csrf_el := post_html.select_one("meta[name='csrf-token']"))
 
-        api_response = self.get(f"https://fantia.jp/api/v1/posts/{post_id}", headers={"X-CSRF-Token": csrf_el.attrs["content"]}).json()
+        headers = {
+            "X-CSRF-Token": csrf_el.attrs["content"],
+            "x-requested-with": "XMLHttpRequest",
+        }
+
+        api_response = self.get(f"https://fantia.jp/api/v1/posts/{post_id}", headers=headers).json()
         if not api_response.get("post"):
             raise NotImplementedError(f"Could not parse fantia api response for {post_url}: {api_response}")
 
@@ -120,6 +126,8 @@ class FantiaPostData(BaseModel):
     thumb: dict
     post_contents: list[dict]
 
+    fanclub: dict
+
     @field_validator("posted_at", mode="before")
     @classmethod
     def parse_created_at(cls, value: str) -> datetime:
@@ -144,7 +152,15 @@ class FantiaPostData(BaseModel):
                 _json = json.loads(content["comment"])
                 for subjson in _json["ops"]:
                     if isinstance(subjson["insert"], dict):
-                        assets.append(subjson["insert"]["fantiaImage"]["url"])
+                        if "fantiaImage" in subjson["insert"]:
+                            image = subjson["insert"]["fantiaImage"]["url"]
+                        elif "image" in subjson["insert"]:
+                            image = subjson["insert"]["image"]
+                        else:
+                            raise NotImplementedError(subjson)
+                        assert isinstance(image, str), subjson
+                        assets.append(image)
+
             elif content["category"] in ["embed", "text"] and not content["content_type"]:
                 pass
             else:

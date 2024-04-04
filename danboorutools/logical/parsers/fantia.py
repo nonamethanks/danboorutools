@@ -1,5 +1,12 @@
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
-from danboorutools.logical.urls.fantia import FantiaFanclubAssetUrl, FantiaFanclubUrl, FantiaImageUrl, FantiaPostUrl, FantiaUrl
+from danboorutools.logical.urls.fantia import (
+    FantiaFanclubAssetUrl,
+    FantiaFanclubUrl,
+    FantiaImageUrl,
+    FantiaPostUrl,
+    FantiaProductUrl,
+    FantiaUrl,
+)
 from danboorutools.models.url import UselessUrl
 
 
@@ -45,10 +52,14 @@ class FantiaJpParser(UrlParser):
                                       image_id=int(image_id))
 
             # https://fantia.jp/posts/1148334
-            case ("posts" | "products") as post_type, post_id, *_:
+            case "posts", post_id, *_:
                 return FantiaPostUrl(parsed_url=parsable_url,
-                                     post_id=int(post_id.split("#")[0]),  # type: ignore[attr-defined]
-                                     post_type=post_type)
+                                     post_id=int(post_id.split("#")[0]))
+
+            # https://fantia.jp/products/249638
+            case "products", post_id, *_:
+                return FantiaProductUrl(parsed_url=parsable_url,
+                                        product_id=int(post_id.split("#")[0]))
 
             # https://fantia.jp/fanclubs/64496
             # https://fantia.jp/fanclubs/1654/posts

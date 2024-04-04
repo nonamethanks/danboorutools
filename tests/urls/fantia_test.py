@@ -1,6 +1,6 @@
 import pytest
 
-from danboorutools.logical.urls.fantia import FantiaFanclubAssetUrl, FantiaFanclubUrl, FantiaImageUrl, FantiaPostUrl
+from danboorutools.logical.urls.fantia import FantiaFanclubAssetUrl, FantiaFanclubUrl, FantiaImageUrl, FantiaPostUrl, FantiaProductUrl
 from tests.helpers.parsing import generate_parsing_test
 from tests.helpers.scraping import _TestArtistUrl
 
@@ -30,8 +30,10 @@ urls = {
     },
     FantiaPostUrl: {
         "https://fantia.jp/posts/1148334": "https://fantia.jp/posts/1148334",
-        "https://fantia.jp/products/249638": "https://fantia.jp/products/249638",
         "https://fantia.jp/posts/626386#post-content-id-957314": "https://fantia.jp/posts/626386",
+    },
+    FantiaProductUrl: {
+        "https://fantia.jp/products/249638": "https://fantia.jp/products/249638",
     },
     FantiaFanclubAssetUrl: {
         "https://c.fantia.jp/uploads/fanclub/cover_image/319092/main_webp_40d41997-fa92-42fa-94d4-93bd9904db32.webp": "https://c.fantia.jp/uploads/fanclub/cover_image/319092/40d41997-fa92-42fa-94d4-93bd9904db32.jpg",

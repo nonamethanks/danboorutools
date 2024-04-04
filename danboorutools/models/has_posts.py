@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import warnings
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, TypeVar, final, overload
 
@@ -31,6 +32,7 @@ class HasPosts:
 
     @final
     def extract_posts(self, known_posts: list[PostUrl | GalleryUrl] | None = None) -> None:
+
         try:
             self.known_posts += known_posts or []
         except AttributeError:
@@ -39,16 +41,20 @@ class HasPosts:
         self._new_posts = []
         self._revised_posts = []
 
-        try:
-            logger.info(f"Scanning {self} for posts...")
-            self.__extract_gallery_assets()
-            self._extract_all_posts()
-        except PostTooOldError as e:
-            logger.info(f"Found a post that's too old for a first scan: {e.post}, {e.post.created_at}. Quitting...")
-        except (Exception, KeyboardInterrupt):
-            self._new_posts = []
-            self._revised_posts = []
-            raise
+        logger.info(f"Scanning {self} for posts...")
+        self.__extract_gallery_assets()
+
+        for extraction_method in self._extraction_methods:
+            try:
+                self._generic_extraction_loop(extraction_method)
+            except PostTooOldError as e:
+                logger.info(f"Found a post that's too old for a first scan: {e.post}, {e.post.created_at}. Quitting...")
+            except (Exception, KeyboardInterrupt):
+                self._new_posts = []
+                self._revised_posts = []
+                raise
+
+            self.print_progress()
 
         self.print_progress(finished=True)
 
@@ -64,8 +70,8 @@ class HasPosts:
                 score=0,
             )
 
-    def _extract_all_posts(self) -> None:
-        for page, post_objects in enumerate(self._extract_posts_from_each_page()):  # type: ignore[var-annotated]
+    def _generic_extraction_loop(self, extracting_method: Callable[[], Iterator[list[PostT]]]) -> None:
+        for page, post_objects in enumerate(extracting_method()):
             if not post_objects:
                 if page == 0 and self.first_page_must_have_posts:
                     raise ValueError("No posts found on the first page.")
@@ -95,6 +101,10 @@ class HasPosts:
 
     def _extract_posts_from_each_page(self) -> Iterator[list[PostT]]:
         raise NotImplementedError(f"{self} hasn't implemented page extraction.")
+
+    @property
+    def _extraction_methods(self) -> list[Callable[[HasPosts], Iterator[list[PostT]]]]:
+        return [self._extract_posts_from_each_page]
 
     def _process_post(self, post_object: PostT) -> None:
         raise NotImplementedError(f"{self} hasn't implemented post object processing.")

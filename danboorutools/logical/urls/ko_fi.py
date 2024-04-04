@@ -65,7 +65,7 @@ class KoFiPostUrl(PostUrl, KoFiUrl):
     @cached_property
     def created_at(self) -> datetime:
         assert isinstance(self.assets[0], KoFiImageUrl)
-        asset_date = self.assets[0].created_at
+        asset_date = self._extract_assets()[0].created_at
         assert asset_date
         return asset_date
 
