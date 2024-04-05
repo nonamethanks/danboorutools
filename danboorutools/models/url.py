@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Generic, Self, TypeVar, final
 from backoff import expo, on_exception
 from requests.exceptions import ReadTimeout
 
+from danboorutools import logger
 from danboorutools.exceptions import DeadUrlError, DuplicateAssetError, UnknownUrlError
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.logical.sessions import Session
@@ -285,8 +286,12 @@ class HasAssets(Generic[TypeVarAsset]):
         if isinstance(asset, str):
             asset = Url.parse(asset)
 
-        if asset in self.assets:
+        logger.debug(f"Registering asset {asset} on {self}")
+        if asset._unique_url_for_hash in [a._unique_url_for_hash for a in self.assets]:
+            logger.debug(f"{asset} is already inserted on {self}.")
             raise DuplicateAssetError(self, asset, self.assets)
+
+        logger.debug(f"{asset} registered on {self}.")
 
         if is_deleted is not None:
             asset.is_deleted = is_deleted
