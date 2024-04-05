@@ -174,6 +174,10 @@ class FantiaImageUrl(PostAssetUrl, FantiaUrl):
             # FIXME: is it correct in case of https://fantia.jp/posts/343039/post_content_photo/1617547? Probably not. hmmm
 
     @property
+    def _unique_url_for_hash(self) -> str:
+        return self.parsed_url.url_without_query
+
+    @property
     def created_at(self) -> datetime:
         last_modified = self.session.head(self.full_size).headers["Last-Modified"]
         return datetime_from_string(last_modified)

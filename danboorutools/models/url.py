@@ -82,11 +82,15 @@ class Url(metaclass=PseudoDataclass):
             # sometimes type checkers really make me want to kill myself
             ...
 
-    def __repr__(self) -> str:
+    @property
+    def _unique_url_for_hash(self) -> str:
         try:
-            return f"{self.__class__.__name__}[{self.normalized_url}]"
+            return self.normalized_url
         except NotImplementedError:
-            return f"{self.__class__.__name__}[{self.parsed_url.raw_url}]"
+            return self.parsed_url.raw_url
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}[{self._unique_url_for_hash}]"
 
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, type(self)):
