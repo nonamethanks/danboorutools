@@ -93,7 +93,7 @@ class PoipikuPostUrl(PostUrl, PoipikuUrl):
         browser = self.session.browser
         if browser.current_url != self.normalized_url:
             browser.get(self.normalized_url)
-        if (expand := browser.find_elements("css selector", ".IllustItemExpandBtn")):
+        if (expand := browser.find_elements("css selector", ".IllustItemExpandBtn")) and expand[0].is_displayed():
             expand[0].click()
             browser.wait_for_request("ShowAppendFileF")
             time.sleep(1)
@@ -112,7 +112,7 @@ class PoipikuPostUrl(PostUrl, PoipikuUrl):
         return parse_list(image_els, PoipikuImageUrl)
 
     @cached_property
-    def created_at(self) -> str:
+    def created_at(self) -> datetime:
         return self._extract_assets()[0].created_at
 
     @cached_property
