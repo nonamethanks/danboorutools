@@ -17,6 +17,7 @@ urls = {
         "https://img-org.poipiku.com/user_img03/000020566/007185704_nb1cTuA1I.jpeg": "https://img-org.poipiku.com/user_img03/000020566/007185704_nb1cTuA1I.jpeg",
         "https://img.poipiku.com/user_img02/000003310/000007036.jpeg_640.jpg": "https://img-org.poipiku.com/user_img02/000003310/000007036.jpeg",
         "https://img-org.poipiku.com/user_img02/000003310/000007036.jpeg": "https://img-org.poipiku.com/user_img02/000003310/000007036.jpeg",
+        "https://img.poipiku.com/user_img03/003494202/007546288_jQ1Vjtk45.png": "https://img.poipiku.com/user_img03/003494202/007546288_jQ1Vjtk45.png",
     },
     PoipikuPostUrl: {
         "https://poipiku.com/6849873/8271386.html": "https://poipiku.com/6849873/8271386.html",

@@ -286,7 +286,6 @@ class HasAssets(Generic[TypeVarAsset]):
         if isinstance(asset, str):
             asset = Url.parse(asset)
 
-        logger.debug(f"Registering asset {asset} on {self}")
         if asset._unique_url_for_hash in [a._unique_url_for_hash for a in self.assets]:
             logger.debug(f"{asset} is already inserted on {self}.")
             raise DuplicateAssetError(self, asset, self.assets)
