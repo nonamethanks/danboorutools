@@ -14,7 +14,7 @@ def test_user_test() -> None:
 @pytest.mark.danbooru
 @pytest.mark.scraping
 def test_user_from_id_test() -> None:
-    user = DanbooruUser.from_id(508240)
+    user = DanbooruUser.get_from_id(508240)
     admin_user_t(user)
 
 
@@ -41,7 +41,7 @@ def post_test() -> None:
 @pytest.mark.danbooru
 @pytest.mark.scraping
 def post_from_id_test() -> None:
-    post = DanbooruPost.from_id(1)
+    post = DanbooruPost.get_from_id(1)
     post_t(post)
 
 

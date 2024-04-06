@@ -45,7 +45,7 @@ class DanbooruModel(BaseModel):
         admin_api.danbooru_request("DELETE", endpoint=self.model_path + ".json")
 
     @classmethod
-    def from_id(cls, model_id: int) -> Self:
+    def get_from_id(cls, model_id: int) -> Self:
         from danboorutools.logical.sessions.danbooru import danbooru_api
         json_data = danbooru_api.danbooru_request("GET", f"{cls.danbooru_model_name}s/{model_id}.json")
         assert isinstance(json_data, dict)
