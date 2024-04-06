@@ -1,6 +1,6 @@
 import pytest
 
-from danboorutools.logical.urls.poipiku import PoipikuArtistUrl, PoipikuImageUrl, PoipikuPostUrl
+from danboorutools.logical.urls.poipiku import PoipikuArtistUrl, PoipikuHeaderImageUrl, PoipikuImageUrl, PoipikuPostUrl
 from tests.helpers.parsing import generate_parsing_test
 from tests.helpers.scraping import _TestArtistUrl
 
@@ -23,6 +23,9 @@ urls = {
         "https://poipiku.com/3310/7036.html": "https://poipiku.com/3310/7036.html",
         "https://poipiku.com/20566/7204115.html": "https://poipiku.com/20566/7204115.html",
         "https://poipiku.com/20566/007185704.html": "https://poipiku.com/20566/7185704.html",
+    },
+    PoipikuHeaderImageUrl: {
+        "https://img.poipiku.com/user_img02/003494202/header_20211019122513.png_640.jpg": "https://img.poipiku.com/user_img02/003494202/header_20211019122513.png",
     },
 }
 

@@ -1,5 +1,5 @@
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
-from danboorutools.logical.urls.poipiku import PoipikuArtistUrl, PoipikuImageUrl, PoipikuPostUrl, PoipikuUrl
+from danboorutools.logical.urls.poipiku import PoipikuArtistUrl, PoipikuHeaderImageUrl, PoipikuImageUrl, PoipikuPostUrl, PoipikuUrl
 
 
 class PoipikuComParser(UrlParser):
@@ -14,13 +14,21 @@ class PoipikuComParser(UrlParser):
                 # https://img-org.poipiku.com/user_img02/006849873/008271386_016865825_S968sAh7Y.jpeg
                 if len(file_stem_parts) == 3:
                     [post_id, _, image_hash] = file_stem_parts
+
                     image_id = int(file_stem_parts[1])  # I wish I could strangle typechecking coders over the internet
 
                 # https://img.poipiku.com/user_img03/000020566/007185704_nb1cTuA1I.jpeg_640.jpg
                 # https://img-org.poipiku.com/user_img03/000020566/007185704_nb1cTuA1I.jpeg
+
+                # https://img.poipiku.com/user_img02/003494202/header_20211019122513.png_640.jpg
                 elif len(file_stem_parts) == 2:
                     post_id, image_hash = file_stem_parts
+                    if post_id == "header":
+                        return PoipikuHeaderImageUrl(parsed_url=parsable_url,
+                                                     user_id=int(user_id),
+                                                     image_hash=image_hash)
                     image_id = None
+
                 # https://img.poipiku.com/user_img02/000003310/000007036.jpeg_640.jpg
                 # https://img-org.poipiku.com/user_img02/000003310/000007036.jpeg
                 elif len(file_stem_parts) == 1:

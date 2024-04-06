@@ -42,6 +42,21 @@ class PoipikuArtistUrl(ArtistUrl, PoipikuUrl):
         self.session.unsubscribe(self.user_id)
 
 
+class PoipikuHeaderImageUrl(GalleryAssetUrl, PoipikuUrl):
+    user_id: int
+    image_hash: str
+    image_id: int
+
+    @property
+    def full_size(self) -> str:
+        original_url = re.sub(r"(\.\w+)_\d+\.\w+$", "\\1", self.parsed_url.raw_url)
+        return original_url
+
+    @property
+    def gallery(self) -> PoipikuArtistUrl:
+        return PoipikuArtistUrl.build(user_id=self.user_id)
+
+
 class PoipikuImageUrl(PostAssetUrl, PoipikuUrl):
     user_id: int
     post_id: int
