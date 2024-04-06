@@ -66,8 +66,11 @@ class Browser(Chrome):
     def load_cookies(self, domain: str) -> None:
         """Load cookies for a domain."""
         self.delete_all_cookies()
+        self.set_cookies(load_cookies_for(domain))
+
+    def set_cookies(self, cookies: list[dict[str, str]]) -> None:
         self.execute_cdp_cmd("Network.enable", {})
-        for cookie in load_cookies_for(domain):
+        for cookie in cookies:
             self.execute_cdp_cmd("Network.setCookie", cookie)
         self.execute_cdp_cmd("Network.disable", {})
 

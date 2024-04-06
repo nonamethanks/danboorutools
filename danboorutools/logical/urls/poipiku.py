@@ -1,11 +1,12 @@
 import re
 
+from danboorutools.logical.sessions.poipiku import PoipikuSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 from danboorutools.util.misc import extract_urls_from_string
 
 
 class PoipikuUrl(Url):
-    pass
+    session = PoipikuSession()
 
 
 class PoipikuPostUrl(PostUrl, PoipikuUrl):
@@ -22,7 +23,8 @@ class PoipikuArtistUrl(ArtistUrl, PoipikuUrl):
 
     @property
     def primary_names(self) -> list[str]:
-        return [self.html.select_one(".UserInfoUserName").text]
+        assert (name_el := self.html.select_one(".UserInfoUserName"))
+        return [name_el.text]
 
     @property
     def secondary_names(self) -> list[str]:
@@ -32,6 +34,12 @@ class PoipikuArtistUrl(ArtistUrl, PoipikuUrl):
     def related(self) -> list[Url]:
         user_profile = str(self.html.select_one(".UserInfoProfile"))
         return [Url.parse(u) for u in extract_urls_from_string(user_profile)]
+
+    def subscribe(self) -> None:
+        self.session.subscribe(self.user_id)
+
+    def unsubscribe(self) -> None:
+        self.session.unsubscribe(self.user_id)
 
 
 class PoipikuImageUrl(PostAssetUrl, PoipikuUrl):
