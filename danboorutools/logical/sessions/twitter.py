@@ -7,6 +7,7 @@ from datetime import datetime
 
 import ring
 from pydantic import field_validator
+from selenium.common.exceptions import NoSuchElementException
 
 from danboorutools import logger
 from danboorutools.exceptions import DeadUrlError, NoCookiesForDomainError
@@ -18,6 +19,9 @@ from danboorutools.util.time import datetime_from_string
 
 def _twitter_login_through_form(self: Session) -> None:
     logger.info("Logging in to twitter...")
+
+    if self.browser.find_elements_by_text("Something went wrong, but don't fret", full_match=False):
+        self.browser.get(self.browser.current_url)
 
     username_field = self.browser.find_element("css selector", "[autocomplete='username']")
     username_field.send_keys(os.environ["TWITTER_EMAIL"])
@@ -83,7 +87,11 @@ class TwitterSession(Session):
 
         self.browser.delete_all_cookies()
         self.browser.get("https://twitter.com/login")
-        self._do_login()
+        try:
+            self._do_login()
+        except NoSuchElementException:
+            self.browser.screenshot()
+            raise
         self.browser.get("https://twitter.com/home")
         self.browser.find_element("css selector", ".public-DraftEditorPlaceholder-inner")
         save_cookies_for("twitter", self.browser.get_cookies())

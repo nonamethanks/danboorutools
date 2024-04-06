@@ -89,7 +89,7 @@ class Browser(Chrome):
                               full_match: bool = True,
                               ) -> list[WebElement]:
         """Find an element based on its text in a page."""
-        search_string = f"//*[text()='{text}']" if full_match else f"//*[contains(text(), '{text}')]"
+        search_string = f'//*[text()="{text}"]' if full_match else f'//*[contains(text(), "{text}")]'
         element = element or self
         elements = element.find_elements("xpath", search_string)
         return elements
