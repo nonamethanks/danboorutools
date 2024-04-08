@@ -128,6 +128,8 @@ def bulk_parse(test_set: list[list[str]], resume: bool, log_urls: bool = False) 
             raise
 
     # profiler.print_stats()
+    if not results:
+        raise ValueError("No results found.")
 
     with log_file.open("a+", encoding="utf-8") as log_file_obj:
         profiler.print_stats(stream=log_file_obj)
