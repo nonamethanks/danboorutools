@@ -151,8 +151,10 @@ class SkebArtistData(BaseModel):
     pixiv_id: int | None
     skima_id: int | None
     twitter_uid: int
-    twitter_screen_name: str | None  # for some reason it can be None even if twitter_uid is not
+    # twitter_screen_name: str | None  # for some reason it can be None even if twitter_uid is not
     youtube_id: str | None
+
+    user_service_links: list[dict[str, str]]
 
     @ property
     def related_urls(self) -> list[Url]:  # pylint: disable=too-many-branches
@@ -192,14 +194,20 @@ class SkebArtistData(BaseModel):
         if self.twitter_uid:
             urls += [TwitterIntentUrl.build(intent_id=self.twitter_uid)]
 
-        if self.twitter_screen_name:
-            urls += [TwitterArtistUrl.build(username=self.twitter_screen_name)]
+        # if self.twitter_screen_name:
+        #     urls += [TwitterArtistUrl.build(username=self.twitter_screen_name)]
 
         if self.youtube_id:
             urls += [YoutubeChannelUrl.build(channel_id=self.youtube_id)]
 
         if self.url:
             urls.append(Url.parse(self.url))
+
+        for data in self.user_service_links:
+            if data["provider"] == "twitter":
+                urls += [TwitterArtistUrl.build(username=data["screen_name"])]
+            else:
+                raise NotImplementedError(data)
 
         urls += [Url.parse(u) for u in extract_urls_from_string(self.description)]
 

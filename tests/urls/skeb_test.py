@@ -9,7 +9,6 @@ urls = {
         "https://skeb.jp/OrvMZ": "https://skeb.jp/@OrvMZ",
         "https://skeb.jp/@asanagi": "https://skeb.jp/@asanagi",
         "https://skeb.jp/@okku_oxn/works": "https://skeb.jp/@okku_oxn",
-
     },
     SkebPostUrl: {
         "https://skeb.jp/@OrvMZ/works/3": "https://skeb.jp/@OrvMZ/works/3",
