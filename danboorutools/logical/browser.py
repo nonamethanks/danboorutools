@@ -26,18 +26,24 @@ if TYPE_CHECKING:
 
 
 class Browser(Chrome):
-    def __init__(self):
+    def __init__(self, use_proxy: bool = True):
 
         options = Options()
 
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--ignore-certificate-errors")
+        options.add_argument("--disable-gpu")
         options.add_argument("--single-process")
+        options.add_argument("--deny-permission-prompts")
+        options.add_argument("--disable-notifications")
+        options.add_argument("--disable-popup-blocking")
+        options.add_experimental_option("prefs",  {"profile.default_content_settings.geolocation": 2})
 
         service = Service("/usr/bin/chromedriver")
 
-        if (proxy_connection_string := os.environ.get("SELENIUM_PROXY_CONNECTION_STRING")):
+        if (use_proxy and (proxy_connection_string := os.environ.get("SELENIUM_PROXY_CONNECTION_STRING"))):
             seleniumwire_options = {
                 "proxy": {
                     "http": proxy_connection_string,
