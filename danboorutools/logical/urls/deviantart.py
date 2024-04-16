@@ -81,8 +81,6 @@ class DeviantArtPostUrl(PostUrl, DeviantArtUrl):
     username: str | None
     title: str | None
 
-    uuid: str | None = None  # useful to avoid api calls
-
     @classmethod
     def normalize(cls, **kwargs) -> str:
         deviation_id: int = kwargs["deviation_id"]
