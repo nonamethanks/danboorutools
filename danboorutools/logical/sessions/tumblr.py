@@ -9,6 +9,7 @@ import ring
 from bs4 import BeautifulSoup
 from requests_oauthlib import OAuth1
 
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
@@ -28,25 +29,50 @@ class TumblrSession(Session):
         assert response["meta"]["status"] == 200, response
         return response["response"]
 
-    @ring.lru()
+    def api_request(self, method: str, path: str, *args, **kwargs) -> dict:
+        url = f"https://api.tumblr.com/v2/{path.strip("/")}"
+
+        try:
+            response = self.request(method, url, *args, auth=self.oauth, **kwargs).json()
+        except DeadUrlError as e:
+            e.add_note(e.response.content)
+            raise
+
+        assert response["meta"]["status"] == 200, response
+        return response["response"]
+
     def blog_data(self, blog_name: str) -> TumblrBlogData:
-        params = {"api_key": os.environ["TUMBLR_CONSUMER_KEY"]}
-        response = self.get(f"https://api.tumblr.com/v2/blog/{blog_name}/info", params=params, auth=self.oauth).json()
-        response = self._validate_api_response(response)
+        response = self.api_request("GET", f"blog/{blog_name}/info")
         return TumblrBlogData(**response["blog"])
 
-    @ring.lru()
-    def get_feed(self, limit: int | None = None, offset: int | None = None) -> list[TumblrPostData]:
+    def get_feed(self, offset: int = 0) -> list[TumblrPostData]:
         params = {
-            "limit": limit or 20,
-            "offset": offset or 0,
+            "limit": 20,
+            "offset": offset,
             "reblog_info": True,
         }
-        response = self.get("https://api.tumblr.com/v2/user/dashboard", params=params, auth=self.oauth).json()
-        response = self._validate_api_response(response)
+        response = self.api_request("GET", "user/dashboard", params=params)
         if not response:
             raise NotImplementedError("No posts found.")
         return [TumblrPostData(**post) for post in response["posts"]]
+
+    def get_posts(self, blog_name: str, offset: int = 0) -> None:
+        params = {
+            "limit": 20,
+            "offset": offset,
+            "reblog_info": True,
+        }
+
+        response = self.api_request("GET", f"blog/{blog_name}.tumblr.com/posts", params=params)
+        return [TumblrPostData(**post) for post in response["posts"]]
+
+    def subscribe(self, blog_name: str) -> None:
+        response = self.api_request("POST", "user/follow", json={"url": f"{blog_name}.tumblr.com"})
+        assert response["blog"]["followed"] is True, response
+
+    def unsubscribe(self, blog_name: str) -> None:
+        response = self.api_request("POST", "user/unfollow", json={"url": f"{blog_name}.tumblr.com"})
+        assert response["blog"]["followed"] is False, response
 
 
 class TumblrPostData(BaseModel):
@@ -55,17 +81,16 @@ class TumblrPostData(BaseModel):
     timestamp: datetime
 
     type: str
-    video_type: str | None
-    video_url: str | None
-    thumbnail_url: str | None
-
-    photos: list[dict] | None
 
     blog_name: str
-    reblogged_root_name: str | None
 
     reblog: dict
-    body: str | None
+
+    body: str | None = None
+    reblogged_root_name: str | None = None
+    photos: list[dict] | None = None
+    video_type: str | None = None
+    video_url: str | None = None
 
     @property
     def assets(self) -> list[str]:
@@ -74,7 +99,7 @@ class TumblrPostData(BaseModel):
             assert self.photos
             for image_json in self.photos:
                 all_sizes = image_json["alt_sizes"] + [image_json["original_size"]]
-                highest = sorted(all_sizes, key=lambda x: x["height"] * x["width"])[-1]
+                highest = max(all_sizes, key=lambda x: x["height"] * x["width"])
                 assets.append(highest["url"])
 
         elif self.type == "video":
@@ -106,6 +131,17 @@ class TumblrBlogData(BaseModel):
     name: str
     description: str
 
+    theme: dict
+    avatar: list[dict]
+
     @property
     def related_urls(self) -> list[Url]:
         return [Url.parse(u) for u in extract_urls_from_string(self.description)]
+
+    @property
+    def header_url(self) -> str:
+        return self.theme["header_image"]
+
+    @property
+    def avatar_url(self) -> str:
+        return max(self.avatar, key=lambda x: x["width"])["url"]

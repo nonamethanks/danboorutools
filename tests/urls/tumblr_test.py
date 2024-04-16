@@ -1,6 +1,6 @@
 import pytest
 
-from danboorutools.logical.urls.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostUrl
+from danboorutools.logical.urls.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostUrl, TumblrStaticImageUrl
 from tests.helpers.parsing import generate_parsing_test
 from tests.helpers.scraping import _TestArtistUrl
 
@@ -28,19 +28,19 @@ urls = {
         "https://66.media.tumblr.com/5a2c3fe25c977e2281392752ab971c90/3dbfaec9b9e0c2e3-92/s500x750/4f92bbaaf95c0b4e7970e62b1d2e1415859dd659.png": "https://66.media.tumblr.com/5a2c3fe25c977e2281392752ab971c90/3dbfaec9b9e0c2e3-92/s21000x21000/4f92bbaaf95c0b4e7970e62b1d2e1415859dd659.png",
         "https://64.media.tumblr.com/69d9610907a11c401a1fb1082afc5c58/1ff28e90379f022e-78/s75x75_c1/a6e19624f4194d59f453b7e9d75b3ed5a3e441a1.jpg": "https://64.media.tumblr.com/69d9610907a11c401a1fb1082afc5c58/1ff28e90379f022e-78/s21000x21000/a6e19624f4194d59f453b7e9d75b3ed5a3e441a1.jpg",
         # "http://data.tumblr.com/07e7bba538046b2b586433976290ee1f/tumblr_o3gg44HcOg1r9pi29o1_raw.jpg": "http://data.tumblr.com/07e7bba538046b2b586433976290ee1f/tumblr_o3gg44HcOg1r9pi29o1_raw.jpg",
-        # "https://40.media.tumblr.com/de018501416a465d898d24ad81d76358/tumblr_nfxt7voWDX1rsd4umo1_r23_1280.jpg": "https://40.media.tumblr.com/de018501416a465d898d24ad81d76358/tumblr_nfxt7voWDX1rsd4umo1_r23_1280.jpg",
+        "https://40.media.tumblr.com/de018501416a465d898d24ad81d76358/tumblr_nfxt7voWDX1rsd4umo1_r23_1280.jpg": "https://40.media.tumblr.com/de018501416a465d898d24ad81d76358/tumblr_nfxt7voWDX1rsd4umo1_r23_1280.jpg",
         # "https://media.tumblr.com/de018501416a465d898d24ad81d76358/tumblr_nfxt7voWDX1rsd4umo1_r23_raw.jpg": "https://media.tumblr.com/de018501416a465d898d24ad81d76358/tumblr_nfxt7voWDX1rsd4umo1_r23_raw.jpg",
-        # "https://66.media.tumblr.com/2c6f55531618b4335c67e29157f5c1fc/tumblr_pz4a44xdVj1ssucdno1_1280.png": "https://66.media.tumblr.com/2c6f55531618b4335c67e29157f5c1fc/tumblr_pz4a44xdVj1ssucdno1_1280.png",
-        # "https://68.media.tumblr.com/ee02048f5578595badc95905e17154b4/tumblr_inline_ofbr4452601sk4jd9_250.gif": "https://68.media.tumblr.com/ee02048f5578595badc95905e17154b4/tumblr_inline_ofbr4452601sk4jd9_250.gif",
-        # "https://media.tumblr.com/ee02048f5578595badc95905e17154b4/tumblr_inline_ofbr4452601sk4jd9_500.gif": "https://media.tumblr.com/ee02048f5578595badc95905e17154b4/tumblr_inline_ofbr4452601sk4jd9_500.gif",
-        # "https://66.media.tumblr.com/b9395771b2d0435fe4efee926a5a7d9c/tumblr_pg2wu1L9DM1trd056o2_500h.png": "https://66.media.tumblr.com/b9395771b2d0435fe4efee926a5a7d9c/tumblr_pg2wu1L9DM1trd056o2_500h.png",
-        # "https://media.tumblr.com/701a535af224f89684d2cfcc097575ef/tumblr_pjsx70RakC1y0gqjko1_1280.pnj": "https://media.tumblr.com/701a535af224f89684d2cfcc097575ef/tumblr_pjsx70RakC1y0gqjko1_1280.pnj",
+        "https://66.media.tumblr.com/2c6f55531618b4335c67e29157f5c1fc/tumblr_pz4a44xdVj1ssucdno1_1280.png": "https://66.media.tumblr.com/2c6f55531618b4335c67e29157f5c1fc/tumblr_pz4a44xdVj1ssucdno1_1280.png",
+        "https://68.media.tumblr.com/ee02048f5578595badc95905e17154b4/tumblr_inline_ofbr4452601sk4jd9_250.gif": "https://68.media.tumblr.com/ee02048f5578595badc95905e17154b4/tumblr_inline_ofbr4452601sk4jd9_1280.gif",
+        "https://media.tumblr.com/ee02048f5578595badc95905e17154b4/tumblr_inline_ofbr4452601sk4jd9_500.gif": "https://media.tumblr.com/ee02048f5578595badc95905e17154b4/tumblr_inline_ofbr4452601sk4jd9_1280.gif",
+        "https://66.media.tumblr.com/b9395771b2d0435fe4efee926a5a7d9c/tumblr_pg2wu1L9DM1trd056o2_500h.png": "https://66.media.tumblr.com/b9395771b2d0435fe4efee926a5a7d9c/tumblr_pg2wu1L9DM1trd056o2_500h.png",
+        "https://media.tumblr.com/701a535af224f89684d2cfcc097575ef/tumblr_pjsx70RakC1y0gqjko1_1280.pnj": "https://media.tumblr.com/701a535af224f89684d2cfcc097575ef/tumblr_pjsx70RakC1y0gqjko1_1280.png",
 
-        # "https://25.media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_500.png": "https://25.media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_500.png",
-        # "https://media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_1280.png": "https://media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_1280.png",
-        # "https://media.tumblr.com/0DNBGJovY5j3smfeQs8nB53z_500.jpg": "https://media.tumblr.com/0DNBGJovY5j3smfeQs8nB53z_500.jpg",
-        # "https://media.tumblr.com/tumblr_m24kbxqKAX1rszquso1_1280.jpg": "https://media.tumblr.com/tumblr_m24kbxqKAX1rszquso1_1280.jpg",
-        # "https://va.media.tumblr.com/tumblr_pgohk0TjhS1u7mrsl.mp4": "https://va.media.tumblr.com/tumblr_pgohk0TjhS1u7mrsl.mp4",
+        "https://25.media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_500.png": "https://25.media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_1280.png",
+        "https://media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_1280.png": "https://media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_1280.png",
+        "https://media.tumblr.com/0DNBGJovY5j3smfeQs8nB53z_500.jpg": "https://media.tumblr.com/0DNBGJovY5j3smfeQs8nB53z_1280.jpg",
+        "https://media.tumblr.com/tumblr_m24kbxqKAX1rszquso1_1280.jpg": "https://media.tumblr.com/tumblr_m24kbxqKAX1rszquso1_1280.jpg",
+        "https://va.media.tumblr.com/tumblr_pgohk0TjhS1u7mrsl.mp4": "https://va.media.tumblr.com/tumblr_pgohk0TjhS1u7mrsl.mp4",
     },
     TumblrPostUrl: {
         "https://marmaladica.tumblr.com/post/188237914346/saved": "https://marmaladica.tumblr.com/post/188237914346",
@@ -56,6 +56,10 @@ urls = {
         "https://www.tumblr.com/dashboard/blog/kohirasan/136686983240": "https://kohirasan.tumblr.com/post/136686983240",
         "https://www.google.com/amp/s/making-my-fate.tumblr.com/post/180917720120/a-really-fun-commission-of-bitch-puddin-i-got/amp": "https://making-my-fate.tumblr.com/post/180917720120",
         "https://www.google.com/url?sa=i&url=https://centipedekun.tumblr.com/post/135798615368/the-return-of-black-haired-kaneki-in-tokyo-ghoul&psig=AOvVaw2X_GOq7hCJtlRCKugkd2Ag&ust=1632529106337000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCOC6p4irlvMCFQAAAAAdAAAAABAD": "https://centipedekun.tumblr.com/post/135798615368",
+    },
+    TumblrStaticImageUrl: {
+        "https://static.tumblr.com/6cc145d8dcf72d6af3a161e3ae9a06b4/c0he0wj/oFaoetjrv/tumblr_static_filename.jpg": "https://static.tumblr.com/6cc145d8dcf72d6af3a161e3ae9a06b4/c0he0wj/oFaoetjrv/tumblr_static_filename.jpg",
+        "https://64.media.tumblr.com/avatar_c57ce5d4642e_512.png": "https://64.media.tumblr.com/avatar_c57ce5d4642e_512.png",
     },
 }
 

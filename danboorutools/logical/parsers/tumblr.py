@@ -2,7 +2,7 @@ import re
 
 from danboorutools.exceptions import UnparsableUrlError
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
-from danboorutools.logical.urls.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostUrl, TumblrUrl
+from danboorutools.logical.urls.tumblr import TumblrArtistUrl, TumblrImageUrl, TumblrPostUrl, TumblrStaticImageUrl, TumblrUrl
 
 
 class TumblrComParser(UrlParser):
@@ -19,11 +19,13 @@ class TumblrComParser(UrlParser):
             return cls._match_no_subdomain(parsable_url)
         elif parsable_url.subdomain == "at":
             return cls._match_at_subdomain(parsable_url)
+        elif parsable_url.subdomain in ["static"]:
+            return cls._match_static(parsable_url)
         else:
             return cls._match_with_subdomain(parsable_url)
 
     @classmethod
-    def _match_images(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:  # type: ignore[return] # false positive
+    def _match_images(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:
         match parsable_url.url_parts:
 
             # https://66.media.tumblr.com/168dabd09d5ad69eb5fedcf94c45c31a/3dbfaec9b9e0c2e3-72/s640x960/bf33a1324f3f36d2dc64f011bfeab4867da62bc8.png
@@ -43,6 +45,9 @@ class TumblrComParser(UrlParser):
             case _, filename if filename.startswith("tumblr"):
                 return TumblrImageUrl(parsed_url=parsable_url)
 
+            case filename, if filename.startswith("avatar_"):
+                return TumblrStaticImageUrl(parsed_url=parsable_url)
+
             # https://25.media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_500.png
             # https://media.tumblr.com/tumblr_m2dxb8aOJi1rop2v0o1_1280.png
             # https://media.tumblr.com/0DNBGJovY5j3smfeQs8nB53z_500.jpg
@@ -55,7 +60,18 @@ class TumblrComParser(UrlParser):
                 return None
 
     @classmethod
-    def _match_no_subdomain(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:  # type: ignore[return]
+    def _match_static(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:
+        match parsable_url.url_parts:
+
+            # https://static.tumblr.com/6cc145d8dcf72d6af3a161e3ae9a06b4/c0he0wj/oFaoetjrv/tumblr_static_filename.jpg
+            case *_, "tumblr_static_filename.jpg":
+                return TumblrStaticImageUrl(parsed_url=parsable_url)
+
+            case _:
+                return None
+
+    @classmethod
+    def _match_no_subdomain(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:
         match parsable_url.url_parts:
             # https://tumblr.com/munespice/683613396085719040",  # new dashboard link
             # https://www.tumblr.com/yamujiburo/682910938493599744/will-tumblr-let-me-keep-this-up
@@ -107,7 +123,7 @@ class TumblrComParser(UrlParser):
                 return None
 
     @classmethod
-    def _match_at_subdomain(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:  # type: ignore[return]
+    def _match_at_subdomain(cls, parsable_url: ParsableUrl) -> TumblrUrl | None:
         match parsable_url.url_parts:
 
             # https://at.tumblr.com/pizza-and-ramen/118684413624/uqndb20nkyob

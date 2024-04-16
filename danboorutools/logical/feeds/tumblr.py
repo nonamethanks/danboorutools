@@ -10,9 +10,8 @@ class TumblrFeed(Feed):
 
     def _extract_posts_from_each_page(self) -> Iterator[list[TumblrPostData]]:
         offset = 0
-        limit = 20
         while True:
-            posts = self.session.get_feed(limit=limit, offset=offset)
+            posts = self.session.get_feed(offset=offset)
             yield posts
             offset += len(posts)
 
@@ -28,3 +27,7 @@ class TumblrFeed(Feed):
             score=post_object.note_count,
             created_at=post_object.timestamp,
         )
+
+    @property
+    def normalized_url(self) -> str:
+        return "https://www.tumblr.com/dashboard"
