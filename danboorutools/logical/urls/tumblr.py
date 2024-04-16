@@ -61,6 +61,7 @@ class TumblrArtistUrl(ArtistUrl, TumblrUrl):
             return
 
         post = TumblrPostUrl.build(blog_name=post_object.blog_name, post_id=post_object.id)
+        post.gallery = self
 
         self._register_post(
             post=post,

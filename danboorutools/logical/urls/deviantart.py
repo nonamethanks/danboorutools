@@ -67,6 +67,7 @@ class DeviantArtArtistUrl(ArtistUrl, DeviantArtUrl):
 
     def _process_post(self, post_object: DeviantartPostData) -> None:
         post = DeviantArtPostUrl.parse_and_assert(post_object.url)
+        post.gallery = self
 
         self._register_post(
             post=post,
