@@ -92,9 +92,7 @@ class EHentaiPageUrl(PostUrl, EHentaiUrl):
             get_original_el, = self.html.select("img#img")
             asset_url = get_original_el["src"]
 
-        asset_url_parsed = self.parse(asset_url)
-        if not isinstance(asset_url_parsed, EHentaiImageUrl):
-            raise UnknownUrlError(asset_url_parsed)
+        asset_url_parsed = EHentaiImageUrl.parse_and_assert(asset_url)
         return asset_url_parsed
 
     @cached_property

@@ -16,7 +16,7 @@ class PostypeFeed(Feed):
             page_number += 1
 
     def _process_post(self, post_object: str) -> None:
-        assert isinstance(post := PostypePostUrl.parse(post_object), PostypePostUrl)
+        post = PostypePostUrl.parse_and_assert(post_object)
 
         self._register_post(
             post,

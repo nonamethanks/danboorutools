@@ -30,7 +30,7 @@ class KoFiSession(Session):
     def get_feed(self, page: int = 0) -> list[KoFiPostUrl]:
         followed = self.followed_artists
 
-        from danboorutools.logical.urls.ko_fi import KoFiArtistUrl, KoFiPostUrl
+        from danboorutools.logical.urls.ko_fi import KoFiPostUrl
 
         html = self.get(f"https://ko-fi.com/Feed/LoadNewsfeedPage?pageIndex={page}", cookies=self.cookies_from_env).html
         collected: list[KoFiPostUrl] = []
@@ -39,8 +39,7 @@ class KoFiSession(Session):
             raise NotImplementedError("No posts found. Check cookie.")
         for feed_item in feed_items:
             artist_str = urljoin("https://ko-fi.com/", feed_item.select_one(".feeditem-thumbcontainer a").attrs["href"])
-            artist = KoFiPostUrl.parse(artist_str)
-            assert isinstance(artist, KoFiArtistUrl), (artist, artist_str)
+            artist = KoFiPostUrl.parse_and_assert(artist_str)
 
             if artist not in followed:
                 continue

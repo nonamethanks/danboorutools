@@ -49,6 +49,14 @@ class Url(metaclass=PseudoDataclass):
             return url
         return UrlParser.parse(url)
 
+    @classmethod
+    def parse_and_assert(cls: type[Self], url: str | Url) -> Self:
+        if isinstance(url, str):
+            url = cls.parse(url)
+
+        assert isinstance(url, cls), (url, cls)
+        return url
+
     @cached_property
     def normalized_url(self) -> str:
         if not self.normalizable:
@@ -402,7 +410,6 @@ class DeadDomainUrl(Url):
 def parse_list(url_strings: list[str], url_type: type[UrlSubclass]) -> list[UrlSubclass]:
     parsed_urls: list[UrlSubclass] = []
     for url_string in url_strings:
-        parsed_url = Url.parse(url_string)
-        assert isinstance(parsed_url, url_type), (url_string, parsed_url)
+        parsed_url = url_type.parse_and_assert(url_string)
         parsed_urls.append(parsed_url)
     return parsed_urls

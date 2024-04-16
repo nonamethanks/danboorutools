@@ -32,9 +32,8 @@ class KakuyomuArtistUrl(ArtistUrl, KakuyomuUrl):
     def related(self) -> list[Url]:
         assert (twitter_el := self.html.select_one("[class^='UserHeaderItem_twitterLink__'] a"))
         assert isinstance(twitter_url := twitter_el["href"], str)
-        parsed_url = Url.parse(twitter_url)
-        assert isinstance(parsed_url, TwitterArtistUrl)
-        return [Url.parse(twitter_url)]
+        parsed_url = TwitterArtistUrl.parse_and_assert(twitter_url)
+        return [parsed_url]
 
 
 class KakuyomuPostUrl(PostUrl, KakuyomuUrl):
@@ -47,6 +46,5 @@ class KakuyomuPostUrl(PostUrl, KakuyomuUrl):
         selector = ".NewBox_box__45ont  .partialGiftWidgetActivityName a[href^='/users/'].LinkAppearance_link__POVTP"
         assert (gallery_el := self.html.select_one(selector))
         assert isinstance(gallery_url := gallery_el["href"], str)
-        user_url = Url.parse(urljoin("https://kakuyomu.jp", gallery_url))
-        assert isinstance(user_url, KakuyomuArtistUrl), user_url
+        user_url = KakuyomuArtistUrl.parse_and_assert(urljoin("https://kakuyomu.jp", gallery_url))
         return user_url

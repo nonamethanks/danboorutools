@@ -49,8 +49,7 @@ class TwitterFeed(Feed):
             else:
                 raise NotImplementedError(post_object.retweeted_status_result)
 
-        url = TwitterPostUrl.parse(post_object.entities["media"][0]["expanded_url"])
-        assert isinstance(url, TwitterPostUrl)
+        url = TwitterPostUrl.parse_and_assert(post_object.entities["media"][0]["expanded_url"])
         username = url.username
 
         self._register_post(

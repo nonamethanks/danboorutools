@@ -24,8 +24,7 @@ class ToranoanaItemUrl(PostUrl, ToranoanaUrl):
         if len(authors) != 1:
             raise NotImplementedError(self, authors)
 
-        parsed = Url.parse(urljoin(f"https://{self.parsed_url.hostname}", authors[0]["href"]))
-        assert isinstance(parsed, ToranoanaArtistUrl)
+        parsed = ToranoanaArtistUrl.parse_and_assert(urljoin(f"https://{self.parsed_url.hostname}", authors[0]["href"]))
         return parsed
 
 

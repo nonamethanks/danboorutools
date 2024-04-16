@@ -38,10 +38,7 @@ class ClipStudioAssetPostUrl(PostUrl, ClipStudioUrl):
 
     @property
     def profile(self) -> ClipStudioProfileUrl:
-        profile_url = Url.parse(self.html.select_one(".author__moreDetail > a")["href"])
-        if not isinstance(profile_url, ClipStudioProfileUrl):
-            raise NotImplementedError(profile_url, self)
-
+        profile_url = ClipStudioProfileUrl.parse_and_assert(self.html.select_one(".author__moreDetail > a")["href"])
         return profile_url
 
 

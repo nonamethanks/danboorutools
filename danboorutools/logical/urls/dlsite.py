@@ -55,8 +55,7 @@ class DlsiteWorkUrl(PostUrl, DlsiteUrl):
     @cached_property
     def gallery(self) -> DlsiteAuthorUrl:
         maker_details = self.html.select_one("#work_maker")
-        artist_url = Url.parse(maker_details.select_one("a").attrs["href"])
-        assert isinstance(artist_url, DlsiteAuthorUrl)
+        artist_url = DlsiteAuthorUrl.parse_and_assert(maker_details.select_one("a").attrs["href"])
         return artist_url
 
 

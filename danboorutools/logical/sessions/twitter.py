@@ -86,7 +86,7 @@ class TwitterSession(Session):
                 return
 
         self.browser.delete_all_cookies()
-        self.browser.get("https://twitter.com/login")
+        self.browser.get("https://twitter.com/i/flow/login?redirect_after_login=%2Fhome")
         try:
             self._do_login()
         except NoSuchElementException:

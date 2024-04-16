@@ -137,8 +137,7 @@ class FantiaProductUrl(PostUrl, FantiaUrl):
     def gallery(self) -> FantiaFanclubUrl:
         assert (href := self.html.select_one(".fanclub-name a"))
         artist_url = "https://fantia.jp" + href.attrs["href"]
-        assert isinstance(parsed_url := FantiaFanclubUrl.parse(artist_url), FantiaFanclubUrl)
-        return parsed_url
+        return FantiaFanclubUrl.parse_and_assert(artist_url)
 
 
 class FantiaFanclubAssetUrl(GalleryAssetUrl, FantiaUrl):

@@ -46,7 +46,7 @@ class WebtoonsWebtoonUrl(ArtistAlbumUrl, WebtoonsUrl):
     @cached_property
     def gallery(self) -> WebtoonsArtistUrl:
         assert (author_el := self.html.select_one(".author_area a.author"))
-        return WebtoonsArtistUrl.parse(author_el.attrs["href"])
+        return WebtoonsArtistUrl.parse_and_assert(author_el.attrs["href"])
 
 
 class WebtoonsChapterUrl(PostUrl, WebtoonsUrl):

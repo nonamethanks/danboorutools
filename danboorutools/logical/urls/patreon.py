@@ -39,8 +39,7 @@ class PatreonPostUrl(PostUrl, PatreonUrl):
             return PatreonArtistUrl.build(username=self.username)
 
         artist_data = self.session.artist_data(self.normalized_url)
-        artist_url = PatreonArtistUrl.parse(artist_data.artist_url)
-        assert isinstance(artist_url, PatreonArtistUrl)
+        artist_url = PatreonArtistUrl.parse_and_assert(artist_data.artist_url)
         return artist_url
 
 
@@ -55,12 +54,10 @@ def _process_post(self: HasPosts, post_object: tuple[PatreonCampaignPostData, li
     post_url = _post_object.attributes.patreon_url
     if post_url.startswith("/"):
         post_url = "https://www.patreon.com" + post_url
-    post = Url.parse(post_url)
-    assert isinstance(post, PatreonPostUrl)
+    post = PatreonPostUrl.parse_and_assert(post_url)
 
     upgrade_url = _post_object.attributes.upgrade_url
-    artist_url = Url.parse("https://patreon.com" + upgrade_url)
-    assert isinstance(artist_url, PatreonArtistUrl)
+    artist_url = PatreonArtistUrl.parse_and_assert("https://patreon.com" + upgrade_url)
     post.gallery = artist_url
 
     self._register_post(

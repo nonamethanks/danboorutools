@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 from danboorutools.logical.sessions.newgrounds import NewgroundsSession
 from danboorutools.logical.urls.newgrounds import NewgroundsPostUrl
 from danboorutools.models.feed import Feed
-from danboorutools.models.url import Url
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -28,8 +27,7 @@ class NewgroundsFeed(Feed):
             feed_url = f"https://www.newgrounds.com/social/feeds/lflw/123456/lfrn/987654/last/{last_event}"
 
     def _process_post(self, post_object: Tag) -> None:
-        post = Url.parse(post_object["href"])
-        assert isinstance(post, NewgroundsPostUrl)
+        post = NewgroundsPostUrl.parse_and_assert(post_object.attrs["href"])
 
         self._register_post(
             post=post,

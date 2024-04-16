@@ -39,9 +39,7 @@ class TogetterPostUrl(PostUrl, TogetterUrl):
     def gallery(self) -> TogetterArtistUrl:
         gallery_link_el = self.html.select_one(".info_box .authour_link")
         assert gallery_link_el
-        url = Url.parse(gallery_link_el["href"])
-        if not isinstance(url, TogetterArtistUrl):
-            raise NotImplementedError(self, url)
+        url = TogetterArtistUrl.parse_and_assert(gallery_link_el["href"])
         return url
 
 

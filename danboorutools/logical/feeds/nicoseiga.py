@@ -3,7 +3,6 @@ from collections.abc import Iterator
 from danboorutools.logical.sessions.nicovideo import NicoSeigaPostData, NicovideoSession
 from danboorutools.logical.urls.nicoseiga import NicoSeigaArtistUrl, NicoSeigaIllustUrl
 from danboorutools.models.feed import Feed
-from danboorutools.models.url import Url
 
 
 class NicoSeigaFeed(Feed):
@@ -29,8 +28,7 @@ class NicoSeigaFeed(Feed):
         if post_object.object["type"] != "image":
             return
 
-        post = Url.parse(post_object.object["url"])
-        assert isinstance(post, NicoSeigaIllustUrl)
+        post = NicoSeigaIllustUrl.parse_and_assert(post_object.object["url"])
         post.gallery = NicoSeigaArtistUrl.build(user_id=int(post_object.muteContext["sender"]["id"]))
 
         image = f"https://seiga.nicovideo.jp/image/source/{post.illust_id}"

@@ -30,13 +30,13 @@ class ArtStationArtistUrl(ArtistUrl, ArtStationUrl):
         post = ArtStationPostUrl.build(username=self.username, post_id=post_object.hash_id)
 
         if post_object.assets_count == 1:
-            img = Url.parse(post_object.cover["small_square_url"])
-            assert isinstance(img, ArtStationImageUrl)
+            img = ArtStationImageUrl.parse_and_assert(post_object.cover["small_square_url"])
             assets = [img.full_size]
         else:
             assets = post._extract_assets()
+
         self._register_post(
-            post=Url.parse(post_object.permalink),
+            post=ArtStationPostUrl.parse_and_assert(post_object.permalink),
             assets=assets,
             created_at=post_object.created_at,
             score=post_object.likes_count,

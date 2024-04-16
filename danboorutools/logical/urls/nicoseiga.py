@@ -32,8 +32,7 @@ class NicoSeigaComicUrl(ArtistAlbumUrl, NicoSeigaUrl):
     @cached_property
     def gallery(self) -> NicoSeigaArtistUrl:
         user_url = self.html.select_one(".author .name a")["href"]
-        parsed = Url.parse(urljoin("https://seiga.nicovideo.jp/", user_url))
-        assert isinstance(parsed, NicoSeigaArtistUrl), parsed
+        parsed = NicoSeigaArtistUrl.parse_and_assert(urljoin("https://seiga.nicovideo.jp/", user_url))
         return parsed
 
 

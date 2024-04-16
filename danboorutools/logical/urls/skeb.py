@@ -45,11 +45,9 @@ class SkebPostUrl(PostUrl, SkebUrl):
 
         if unwatermarked := self.post_data.article_image_url:
             assets = []
-            parsed_unwatermarked = Url.parse(unwatermarked)
-            assert isinstance(parsed_unwatermarked, SkebImageUrl)
+            parsed_unwatermarked = SkebImageUrl.parse_and_assert(unwatermarked)
             for preview in previews:
-                parsed_preview = Url.parse(preview)
-                assert isinstance(parsed_preview, SkebImageUrl)
+                parsed_preview = SkebImageUrl.parse_and_assert(preview)
                 if not parsed_preview.image_uuid:
                     assets.append(preview)
                 elif parsed_preview.image_uuid != parsed_unwatermarked.image_uuid:
@@ -103,8 +101,7 @@ class SkebArtistUrl(ArtistUrl, SkebUrl):
         if post_object.private:
             return
 
-        post = SkebPostUrl.parse("https://skeb.jp" + post_object.path)
-        assert isinstance(post, SkebPostUrl)
+        post = SkebPostUrl.parse_and_assert("https://skeb.jp" + post_object.path)
 
         self._register_post(
             post=post,

@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 
-from danboorutools.exceptions import DownloadError
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url, parse_list
 from danboorutools.util.misc import extract_urls_from_string
 
@@ -57,7 +56,7 @@ class PostypeArtistUrl(ArtistUrl, PostypeUrl):
             page_number += 1
 
     def _process_post(self, post_object: str) -> None:
-        assert isinstance(post := Url.parse(post_object), PostypePostUrl)
+        post = PostypePostUrl.parse_and_assert(post_object)
 
         self._register_post(
             post,

@@ -22,8 +22,7 @@ class MelonbooksProductUrl(PostUrl, MelonbooksUrl):
         if len(artists) != 1:
             raise NotImplementedError(self, artists)
 
-        parsed = Url.parse(artists[0]["href"])
-        assert isinstance(parsed, MelonbooksAuthorUrl)
+        parsed = MelonbooksAuthorUrl.parse_and_assert(artists[0]["href"])
         return parsed
 
 

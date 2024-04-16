@@ -3,7 +3,7 @@ from collections.abc import Iterator
 
 from danboorutools.logical.sessions.mastodon import MastodonPostData, MastodonSession
 from danboorutools.models.feed import Feed
-from danboorutools.models.url import PostUrl, Url
+from danboorutools.models.url import PostUrl
 
 
 class _MastodonFeed(Feed):
@@ -20,8 +20,7 @@ class _MastodonFeed(Feed):
             max_id_for_loop = min(posts, key=lambda p: p.id).id
 
     def _process_post(self, post_object: MastodonPostData) -> None:
-        post = Url.parse(post_object.url)
-        assert isinstance(post, PostUrl), post_object
+        post = PostUrl.parse_and_assert(post_object.url)
 
         self._register_post(
             post=post,

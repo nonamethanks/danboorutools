@@ -22,8 +22,7 @@ class SkebFeed(Feed):
         if post_object.private:
             return
 
-        post = SkebPostUrl.parse("https://skeb.jp" + post_object.path)
-        assert isinstance(post, SkebPostUrl)
+        post = SkebPostUrl.parse_and_assert("https://skeb.jp" + post_object.path)
 
         self._register_post(
             post=post,

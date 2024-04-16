@@ -123,11 +123,11 @@ class PixivArtistData(BaseModel):
         fn = re.sub(r"\/\d{10}(\d{2})(\d{2})_", r"/\1/\2/", fn)
 
         ext = self.cover_image["profile_cover_ext"]
-        return Url.parse(f"https://i.pximg.net/background/{fn}.{ext}")
+        return PixivProfileImageUrl.parse_and_assert(f"https://i.pximg.net/background/{fn}.{ext}")
 
     @property
     def profile_image_full(self) -> PixivGalleryAssetUrl:
-        return Url.parse(self.profile_img["main"])
+        return PixivGalleryAssetUrl.parse_and_assert(self.profile_img["main"])
 
     @property
     def related_urls(self) -> list[Url]:

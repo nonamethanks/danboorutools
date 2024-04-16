@@ -49,8 +49,7 @@ class PoipikuArtistUrl(ArtistUrl, PoipikuUrl):
         self.session.browser.get(self.normalized_url)
         assert (style := self.session.browser.find_element("css selector", "style").get_attribute("innerHTML"))
         assert (match := re.search(r"background-image: url\('(.*?)'", style))
-        header_url = self.parse("https:" + match.groups()[0])
-        assert isinstance(header_url, PoipikuHeaderImageUrl), header_url
+        header_url = PoipikuHeaderImageUrl.parse_and_assert("https:" + match.groups()[0])
         return [header_url]
 
     def _extract_posts_from_each_page(self) -> Iterator[list[PoipikuPostUrl]]:

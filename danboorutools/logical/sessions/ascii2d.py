@@ -107,8 +107,7 @@ class Ascii2dArtistResult:
                     #     raise
                 continue
 
-            first_url = Url.parse(link_object.select("a")[0]["href"])
-            assert isinstance(first_url, PostUrl), first_url
+            first_url = PostUrl.parse_and_assert(link_object.select("a")[0]["href"])
             data["posts"].append(first_url)
             # try:
             artist_element = link_object.select("a")[1]
@@ -198,16 +197,14 @@ class Ascii2dArtistResult:
     @staticmethod
     def __parse_dlsite_result(url_element: Tag, data: dict[str, list]) -> None:
         url = url_element["href"]
-        book = Url.parse(url)
-        assert isinstance(book, DlsiteWorkUrl)
+        book = DlsiteWorkUrl.parse_and_assert(url)
         data["posts"].append(book)
         data["found_urls"].append(book.gallery)
 
     @staticmethod
     def __parse_fanza_result(url_element: Tag, data: dict[str, list]) -> None:
         url = url_element["href"]
-        book = Url.parse(url)
-        assert isinstance(book, FanzaUrl)
+        book = FanzaUrl.parse_and_assert(url)
         assert isinstance(book, PostUrl)
         data["posts"].append(book)
         data["found_urls"].append(book.gallery)
@@ -215,15 +212,13 @@ class Ascii2dArtistResult:
     @staticmethod
     def __parse_sakura_result(element: Tag, data: dict[str, list]) -> None:
         name, url = element.text.split("'")
-        sakura_url = Url.parse(url)
-        assert isinstance(sakura_url, SakuraBlogUrl)
+        sakura_url = SakuraBlogUrl.parse_and_assert(url)
         data["primary_names"].append(name)
         data["found_urls"].append(sakura_url)
 
     @staticmethod
     def __parse_lofter_result(element: Tag, data: dict[str, list]) -> None:
-        lofter_url = Url.parse(element.text)
-        assert isinstance(lofter_url, LofterPostUrl)
+        lofter_url = LofterPostUrl.parse_and_assert(element.text)
         data["posts"].append(lofter_url)
         data["found_urls"].append(lofter_url.gallery)
 
