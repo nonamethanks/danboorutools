@@ -5,7 +5,6 @@ import re
 from datetime import datetime
 from functools import cached_property
 
-import ring
 from bs4 import BeautifulSoup
 from requests_oauthlib import OAuth1
 
