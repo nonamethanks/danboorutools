@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import re
 from functools import cached_property
+from typing import TYPE_CHECKING
 
-from danboorutools.logical.sessions.skeb import SkebArtistData, SkebPostData, SkebSession
+from danboorutools.logical.sessions.skeb import SkebArtistData, SkebPostData, SkebPostFromPageData, SkebSession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 
 class SkebUrl(Url):
@@ -81,6 +85,36 @@ class SkebArtistUrl(ArtistUrl, SkebUrl):
     @property
     def artist_data(self) -> SkebArtistData:
         return self.session.artist_data(self.username)
+
+    def subscribe(self) -> None:
+        self.session.subscribe(self.username)
+
+    def unsubscribe(self) -> None:
+        self.session.unsubscribe(self.username)
+
+    def _extract_posts_from_each_page(self) -> Iterator[list[SkebPostFromPageData]]:
+        offset = 0
+        while True:
+            posts = self.session.get_posts(username=self.username, offset=offset)
+            yield posts
+            offset += len(posts)
+
+    def _process_post(self, post_object: SkebPostFromPageData) -> None:
+        if post_object.private:
+            return
+
+        post = SkebPostUrl.parse("https://skeb.jp" + post_object.path)
+        assert isinstance(post, SkebPostUrl)
+
+        self._register_post(
+            post=post,
+            assets=post._extract_assets(),
+            score=post.score,
+            created_at=post.created_at,
+        )
+
+    def _extract_assets(self) -> list:
+        return []
 
 
 class SkebImageUrl(PostAssetUrl, SkebUrl):

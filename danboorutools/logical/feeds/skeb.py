@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from danboorutools.logical.sessions.skeb import SkebPostFeedData, SkebSession
+from danboorutools.logical.sessions.skeb import SkebPostFromPageData, SkebSession
 from danboorutools.logical.urls.skeb import SkebPostUrl
 from danboorutools.models.feed import Feed
 
@@ -9,7 +9,7 @@ class SkebFeed(Feed):
     session = SkebSession()
     quit_early_page = 1
 
-    def _extract_posts_from_each_page(self) -> Iterator[list[SkebPostFeedData]]:
+    def _extract_posts_from_each_page(self) -> Iterator[list[SkebPostFromPageData]]:
         offset = 0
         limit = None
         while True:
@@ -18,7 +18,7 @@ class SkebFeed(Feed):
             limit = len(posts)
             offset += limit
 
-    def _process_post(self, post_object: SkebPostFeedData) -> None:
+    def _process_post(self, post_object: SkebPostFromPageData) -> None:
         if post_object.private:
             return
 
@@ -31,3 +31,7 @@ class SkebFeed(Feed):
             score=post.score,
             created_at=post.created_at,
         )
+
+    @property
+    def normalized_url(self) -> str:
+        return "https://skeb.jp"

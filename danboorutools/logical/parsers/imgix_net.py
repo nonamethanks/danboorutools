@@ -54,7 +54,7 @@ class ImgixNetParser(UrlParser):
     @staticmethod
     def _match_skeb(parsable_url: ParsableUrl) -> SkebImageUrl | None:
         match parsable_url.url_parts:
-            case "requests", filename:
+            case *_, "requests", filename:
                 [post_id, page] = map(int, filename.split("_"))
                 return SkebImageUrl(parsed_url=parsable_url,
                                     post_id=post_id,

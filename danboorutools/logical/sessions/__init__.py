@@ -25,7 +25,15 @@ from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import ConnectTimeout, ReadTimeout
 
 from danboorutools import logger
-from danboorutools.exceptions import CloudFrontError, DeadUrlError, DownloadError, HTTPError, JsonNotFoundError, RateLimitError
+from danboorutools.exceptions import (
+    CloudFrontError,
+    DeadUrlError,
+    DownloadError,
+    HTTPError,
+    JsonNotFoundError,
+    NotAuthenticatedError,
+    RateLimitError,
+)
 from danboorutools.logical.browser import Browser
 from danboorutools.logical.parsable_url import ParsableUrl
 from danboorutools.models.file import File, FileSubclass
@@ -174,12 +182,14 @@ class Session(_CloudScraper):
             del sys.tracebacklimit  # fucking cloudscraper
             raise
 
+        if response.status_code == 401:
+            raise NotAuthenticatedError(response)
+        if response.status_code == 403 and "The Amazon CloudFront distribution is configured to block" in response.text:
+            raise CloudFrontError(response)
         if response.status_code == 404:
             raise DeadUrlError(response)
         if response.status_code == 429:
             raise RateLimitError(response)
-        if response.status_code == 403 and "The Amazon CloudFront distribution is configured to block" in response.text:
-            raise CloudFrontError(response)
         return response
 
     def download_file(self, url: str | Url, *args, download_dir: Path | str | None = None, **kwargs) -> FileSubclass:

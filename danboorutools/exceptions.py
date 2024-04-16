@@ -85,6 +85,10 @@ class DeadUrlError(HTTPError):
     """The URL is dead."""
 
 
+class NotAuthenticatedError(HTTPError):
+    """Got 401."""
+
+
 class RateLimitError(HTTPError):
     """Got 429."""
 

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import json
 import os
 
 from danboorutools import logger, settings
-from danboorutools.exceptions import HTTPError
+from danboorutools.exceptions import NotAuthenticatedError
 from danboorutools.logical.sessions import ScraperResponse, Session
 from danboorutools.logical.sessions.twitter import _twitter_login_through_form
 from danboorutools.logical.urls.booth import BoothArtistUrl
@@ -25,13 +26,12 @@ class SkebSession(Session):
         kwargs["headers"] = kwargs.get("headers", {}) | {"Authorization": f"Bearer {self.bearer}"}
         try:
             request = super().request(*args, **kwargs)
-        except HTTPError as e:
-            if e.status_code == 503:
-                if is_retry:
-                    raise
-                self.request(*args, is_retry=True, **kwargs)
-            raise
-        return request
+        except NotAuthenticatedError:
+            if is_retry:
+                raise
+            return self.request(*args, is_retry=True, **kwargs)
+        else:
+            return request
 
     def artist_data(self, username: str) -> SkebArtistData:
         response = self.get(f"https://skeb.jp/api/users/{username}").json()
@@ -44,6 +44,7 @@ class SkebSession(Session):
         return bearer
 
     def login(self) -> None:
+        logger.info("Logging into skeb.")
         browser = self.browser
         browser.get("https://skeb.jp")
         sign_in = browser.find_elements_by_text("Sign in")
@@ -65,11 +66,13 @@ class SkebSession(Session):
         assert browser.current_url == "https://skeb.jp/"
 
         for request in reversed(browser.requests):
-            if request.url.startswith("https://skeb.jp/callback?auth_token="):
-                bearer = request.params["auth_token"]
+            if "api/auth/x" in request.url:
+                bearer = json.loads(request.response.body)["access_token"]
                 logger.info("Updating saved skeb bearer.")
                 (settings.BASE_FOLDER / "cookies" / "skeb_bearer.txt").write_text(bearer, encoding="utf-8")
                 break
+        else:
+            raise NotImplementedError("Bearer token not found.")
 
     _twitter_login = _twitter_login_through_form
 
@@ -105,7 +108,7 @@ class SkebSession(Session):
     #     (settings.BASE_FOLDER / "cookies" / "skeb_bearer.txt").write_text(bearer, encoding="utf-8")
     #     self.save_cookies("_interslice_session")
 
-    def get_feed(self, offset: int | None = None, limit: int | None = None) -> list[SkebPostFeedData]:
+    def get_feed(self, offset: int | None = None, limit: int | None = None) -> list[SkebPostFromPageData]:
         username = os.environ["SKEB_USERNAME"]
         offset = offset or 0
         limit = limit or 90
@@ -114,15 +117,30 @@ class SkebSession(Session):
             raise NotImplementedError("No posts found. Check cookies.")
         if not isinstance(feed_data, list):
             raise NotImplementedError(feed_data)
-        return [SkebPostFeedData(**post) for post in feed_data]
+        return [SkebPostFromPageData(**post) for post in feed_data]
+
+    def get_posts(self, username: str, offset: int) -> list[SkebPostData]:
+        url = f"https://skeb.jp/api/users/{username}/works?role=creator&sort=date&offset={offset}"
+        response = self.get(url).json()
+        return [SkebPostFromPageData(**post) for post in response]
 
     def get_post_data(self, /, post_id: int, username: str) -> SkebPostData:
         headers = {"Referer": f"https://skeb.jp/@{username}/works/{post_id}"}
         post_data = self.get(f"https://skeb.jp/api/users/{username}/works/{post_id}", headers=headers).json()
         return SkebPostData(**post_data)
 
+    def subscribe(self, username: str) -> None:
+        headers = {"Referer": f"https://skeb.jp/@{username}"}
+        resp = self.post(f"https://skeb.jp/api/users/{username}/follow", headers=headers).json()
+        assert resp["following"] is True, resp
 
-class SkebPostFeedData(BaseModel):
+    def unsubscribe(self, username: str) -> None:
+        headers = {"Referer": f"https://skeb.jp/@{username}"}
+        resp = self.delete(f"https://skeb.jp/api/users/{username}/unfollow", headers=headers).json()
+        assert resp["following"] is False, resp
+
+
+class SkebPostFromPageData(BaseModel):
     private: bool
     path: str
 
