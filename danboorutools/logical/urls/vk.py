@@ -33,7 +33,7 @@ class VkArtistUrl(ArtistUrl, VkUrl):
         if self.user_id:
             return VkArtistIdUrl.build(user_id=self.user_id)
         assert (url_el := self.html.select_one("meta[property='og:url']"))
-        user_id_url = VkArtistIdUrl.parse_and_assert(url_el["content"])
+        user_id_url = VkArtistIdUrl.parse_and_assert(url_el.attrs["content"])
         return user_id_url
 
 
@@ -45,7 +45,7 @@ class VkArtistIdUrl(RedirectUrl, VkUrl):
     @cached_property
     def resolved(self) -> VkArtistUrl:
         assert (mobile_link_el := self.html.select_one("link[rel='alternate'][media='only screen and (max-width: 640px)']"))
-        url = VkArtistUrl.parse_and_assert(mobile_link_el["href"])
+        url = VkArtistUrl.parse_and_assert(mobile_link_el.attrs["href"])
         return url
 
 
