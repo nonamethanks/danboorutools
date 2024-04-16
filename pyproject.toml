@@ -57,6 +57,7 @@ pykakasi = "^2.2.1"
 pyyaml = "^6.0.1"
 selenium-wire = "^5.1.0"
 py-cord = "^2.5.0"
+undetected-chromedriver = "^3.5.5"
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.31.0.20240406"

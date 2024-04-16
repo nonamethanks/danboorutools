@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from seleniumwire.webdriver import Chrome
+from seleniumwire.undetected_chromedriver import Chrome
 
 from danboorutools import logger, settings
 from danboorutools.exceptions import NoCookiesForDomainError
@@ -39,7 +39,6 @@ class Browser(Chrome):
         options.add_argument("--deny-permission-prompts")
         options.add_argument("--disable-notifications")
         options.add_argument("--disable-popup-blocking")
-        options.add_experimental_option("prefs",  {"profile.default_content_settings.geolocation": 2})
 
         service = Service("/usr/bin/chromedriver")
 
@@ -47,6 +46,7 @@ class Browser(Chrome):
             seleniumwire_options = {
                 "proxy": {
                     "http": proxy_connection_string,
+                    "https": proxy_connection_string,
                     "verify_ssl": False,
                 },
             }
