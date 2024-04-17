@@ -15,13 +15,6 @@ class TumblrUrl(Url):
     session = TumblrSession()
 
 
-class TumblrPostUrl(PostUrl, TumblrUrl):
-    post_id: int
-    blog_name: str
-
-    normalize_template = "https://{blog_name}.tumblr.com/post/{post_id}"
-
-
 class TumblrArtistUrl(ArtistUrl, TumblrUrl):
     blog_name: str
 
@@ -72,6 +65,13 @@ class TumblrArtistUrl(ArtistUrl, TumblrUrl):
 
     def _extract_assets(self) -> list[TumblrStaticImageUrl]:
         return parse_list([self.artist_data.avatar_url, self.artist_data.header_url], TumblrStaticImageUrl)
+
+
+class TumblrPostUrl(PostUrl, TumblrUrl):
+    post_id: int
+    blog_name: str
+
+    normalize_template = "https://{blog_name}.tumblr.com/post/{post_id}"
 
 
 class TumblrStaticImageUrl(GalleryAssetUrl, TumblrUrl):

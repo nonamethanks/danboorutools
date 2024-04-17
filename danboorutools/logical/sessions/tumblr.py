@@ -4,6 +4,7 @@ import os
 import re
 from datetime import datetime
 from functools import cached_property
+from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 from requests_oauthlib import OAuth1
@@ -12,6 +13,9 @@ from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
+
+if TYPE_CHECKING:
+    from danboorutools.models.file import FileSubclass
 
 
 class TumblrSession(Session):
@@ -72,6 +76,11 @@ class TumblrSession(Session):
     def unsubscribe(self, blog_name: str) -> None:
         response = self.api_request("POST", "user/unfollow", json={"url": f"{blog_name}.tumblr.com"})
         assert response["blog"]["followed"] is False, response
+
+    def download_file(self, *args, **kwargs) -> FileSubclass:
+        headers = kwargs.pop("headers", {})
+        headers["accept"] = "image/*, video/*"
+        return super().download_file(*args, headers=headers, **kwargs)
 
 
 class TumblrPostData(BaseModel):
