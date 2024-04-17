@@ -261,9 +261,9 @@ class PixivArtistUrl(ArtistUrl, PixivUrl):
         return self.session.artist_data(self.user_id)
 
     def _extract_assets(self) -> list[GalleryAssetUrl]:
-        imgs = [self.artist_data.profile_image_full]
+        imgs = [PixivProfileImageUrl.parse_and_assert(self.artist_data.profile_image_full)]
         if self.artist_data.cover_image_full:
-            imgs += [self.artist_data.cover_image_full]
+            imgs += [PixivGalleryAssetUrl.parse_and_assert(self.artist_data.cover_image_full)]
         return imgs
 
     def subscribe(self) -> None:
