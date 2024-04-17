@@ -1,11 +1,14 @@
-import re
+from functools import cached_property
 
+from atproto_client.models.app.bsky.actor.defs import ProfileViewDetailed
+
+from danboorutools.logical.sessions.bluesky import BskySession
 from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, Url
 from danboorutools.util.misc import extract_urls_from_string
 
 
 class BskyUrl(Url):
-    ...
+    session = BskySession()
 
 
 class BlueskyArtistUrl(ArtistUrl, BskyUrl):
@@ -13,11 +16,13 @@ class BlueskyArtistUrl(ArtistUrl, BskyUrl):
 
     normalize_template = "https://bsky.app/profile/{username}"
 
+    @cached_property
+    def artist_data(self) -> ProfileViewDetailed:
+        return self.session.api.get_profile(self.username)
+
     @property
     def primary_names(self) -> list[str]:
-        assert (name_el := self.html.select_one("meta[property='og:title']"))
-        assert (match := re.match(rf"^(.*)\(@{self.username}\)$", name_el.attrs["content"]))
-        return list(match.groups())
+        return [self.artist_data.display_name]
 
     @property
     def secondary_names(self) -> list[str]:
@@ -25,8 +30,9 @@ class BlueskyArtistUrl(ArtistUrl, BskyUrl):
 
     @property
     def related(self) -> list[Url]:
-        assert (description_el := self.html.select_one("meta[property='og:description']"))
-        return list(map(Url.parse, extract_urls_from_string(description_el.attrs["content"])))
+        description = self.artist_data.description
+
+        return list(map(Url.parse, extract_urls_from_string(description)))
 
 
 class BlueskyPostUrl(PostUrl, BskyUrl):
