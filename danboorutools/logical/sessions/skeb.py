@@ -159,7 +159,7 @@ class SkebArtistData(BaseModel):
     booth_id: str | None
     coconala_id: int | None
     dlsite_id: int | None
-    enty_id: int | None
+    enty_id: int | None = None
     fanbox_id: str | None
     fantia_id: int | None
     fanza_id: int | None
