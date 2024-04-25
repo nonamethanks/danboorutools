@@ -65,6 +65,7 @@ class BlueskyArtistUrl(ArtistUrl, BlueskyUrl):
         username = post.author.handle
 
         post_url = BlueskyPostUrl.build(username=username, post_id=post_id)
+        post_url.gallery = self
 
         assets = parse_list([image.fullsize for image in post.embed.images], BlueskyImageUrl)
 
@@ -81,6 +82,10 @@ class BlueskyPostUrl(PostUrl, BlueskyUrl):
     username: str
 
     normalize_template = "https://bsky.app/profile/{username}/post/{post_id}"
+
+    @cached_property
+    def gallery(self) -> BlueskyArtistUrl:
+        return BlueskyArtistUrl.build(username=self.username)
 
 
 class BlueskyImageUrl(PostAssetUrl, BlueskyUrl):

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from danboorutools.logical.sessions.bluesky import BlueskySession
-from danboorutools.logical.urls.bluesky import BlueskyImageUrl, BlueskyPostUrl
+from danboorutools.logical.urls.bluesky import BlueskyArtistUrl, BlueskyImageUrl, BlueskyPostUrl
 from danboorutools.models.feed import Feed
 from danboorutools.models.url import parse_list
 
@@ -39,6 +39,7 @@ class BlueskyFeed(Feed):
         username = post.author.handle
 
         post_url = BlueskyPostUrl.build(username=username, post_id=post_id)
+        post_url.gallery = BlueskyArtistUrl.build(username=username)
 
         assets = parse_list([image.fullsize for image in post.embed.images], BlueskyImageUrl)
 
