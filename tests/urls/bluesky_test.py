@@ -1,6 +1,6 @@
 import pytest
 
-from danboorutools.logical.urls.bluesky import BlueskyArtistUrl, BlueskyPostUrl
+from danboorutools.logical.urls.bluesky import BlueskyArtistUrl, BlueskyImageUrl, BlueskyPostUrl
 from tests.helpers.parsing import generate_parsing_test
 from tests.helpers.scraping import _TestArtistUrl
 
@@ -13,6 +13,9 @@ urls = {
     },
     BlueskyPostUrl: {
         "https://bsky.app/profile/minacream.bsky.social/post/3k6mfqfio4c2b": "https://bsky.app/profile/minacream.bsky.social/post/3k6mfqfio4c2b",
+    },
+    BlueskyImageUrl: {
+        "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:lw3bmyvvbdp7cvi2xk5s3n2h/bafkreidllzyyiqmsh3pnjftnniovdidl33svzlcih5nnsaickiglojngtq@jpeg": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:lw3bmyvvbdp7cvi2xk5s3n2h/bafkreidllzyyiqmsh3pnjftnniovdidl33svzlcih5nnsaickiglojngtq",
     },
 }
 
@@ -30,6 +33,6 @@ class TestBlueskyArtistUrl(_TestArtistUrl):
     url_string = "https://bsky.app/profile/windmill-g.bsky.social"
     url_type = BlueskyArtistUrl
     url_properties = dict(username="windmill-g.bsky.social")
-    primary_names = ["Windmill 🔞 "]
+    primary_names = ["Windmill 🔞"]
     secondary_names = ["windmill-g"]
     related = ["https://linktr.ee/windmillg"]
