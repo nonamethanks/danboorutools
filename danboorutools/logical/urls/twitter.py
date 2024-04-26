@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import re
+import time
 from functools import cached_property
 from typing import TYPE_CHECKING
 
+from danboorutools import logger
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions.twitter import TwitterSession, TwitterTimelineTweetData, TwitterUserData
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, InfoUrl, PostAssetUrl, PostUrl, RedirectUrl, Url, parse_list
@@ -31,12 +33,22 @@ class TwitterArtistUrl(ArtistUrl, TwitterUrl):
 
     def _extract_posts_from_each_page(self) -> Iterator[list[TwitterTimelineTweetData]]:
         cursor = None
+        earliest_tweet = None
         while True:
             result = self.session.get_user_media(user_id=self.artist_data.id, cursor=cursor)
+            if not result.tweets:
+                break
             yield result.tweets
             if not result.next_cursor:
-                return
+                break
+            earliest_tweet = sorted(result.tweets, key=lambda x: x.id_str)[0].id_str - 1
             cursor = result.next_cursor
+
+        logger.info("Switching to search mode extraction")
+        while True:
+            result = self.session.get_search(f"from:{self.username} filter:media max_id:{earliest_tweet}")
+            yield result.tweets
+            earliest_tweet = sorted(result.tweets, key=lambda x: x.id_str)[0].id_str - 1
 
     def _process_post(self, post_object: TwitterTimelineTweetData) -> None:
         self._register_post(

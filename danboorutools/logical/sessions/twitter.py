@@ -7,11 +7,13 @@ from datetime import datetime
 
 import ring
 from pydantic import field_validator
+from pyrate_limiter.limiter import Limiter
+from pyrate_limiter.request_rate import RequestRate
 from selenium.common.exceptions import NoSuchElementException
 
 from danboorutools import logger
 from danboorutools.exceptions import DeadUrlError, NoCookiesForDomainError
-from danboorutools.logical.sessions import Session
+from danboorutools.logical.sessions import ScraperResponse, Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, save_cookies_for
 from danboorutools.util.time import datetime_from_string
@@ -48,6 +50,8 @@ def _twitter_login_through_form(self: Session) -> None:
 
 class TwitterSession(Session):
     BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"  # noqa: S105
+
+    graphql_limiter = Limiter(RequestRate(1, 1))
 
     def subscribe(self, username: str) -> None:
         self.browser_login()
@@ -110,13 +114,36 @@ class TwitterSession(Session):
             "x-csrf-token": csrf_token,
         }
 
+    def _get_twitter_graphql(self, endpoint: str, variables: dict, features: dict) -> ScraperResponse:
+        endpoint = endpoint.strip("/")
+        params = {
+            "variables": json.dumps(variables, separators=(",", ":")),
+            "features": json.dumps(features, separators=(",", ":")),
+        }
+
+        graphql_url = f"https://twitter.com/i/api/graphql/{endpoint}"
+
+        with self.graphql_limiter.ratelimit("twitter_graphql", delay=True):
+            response = self.get(
+                graphql_url,
+                params=params,
+                headers=self._twitter_headers.copy(),
+            )
+        return response
+
     def user_data(self, user_name: str | None = None, user_id: int | None = None) -> TwitterUserData:
         if user_name:
             endpoint = "G3KGOASz96M-Qu0nwmGXNg/UserByScreenName"
-            variables = f'{{"screen_name":"{user_name}","withSafetyModeUserFields":true}}'
+            variables = {
+                "screen_name": user_name,
+                "withSafetyModeUserFields": True,
+            }
         elif user_id:
             endpoint = "QdS5LJDl99iL_KUzckdfNQ/UserByRestId"
-            variables = f'{{"userId":"{user_id}","withSafetyModeUserFields":true}}'
+            variables = {
+                "userId": user_id,
+                "withSafetyModeUserFields": True,
+            }
         else:
             raise ValueError
 
@@ -132,22 +159,9 @@ class TwitterSession(Session):
             "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
             "responsive_web_graphql_timeline_navigation_enabled": True,
         }
+        response = self._get_twitter_graphql(endpoint=endpoint, variables=variables, features=features)
 
-        params = {
-            "variables": variables,
-            "features": json.dumps(features, separators=(",", ":")),
-        }
-
-        graphql_url = f"https://twitter.com/i/api/graphql/{endpoint}"
-
-        response = self.get(
-            graphql_url,
-            params=params,
-            headers=self._twitter_headers.copy(),
-        )
-        data = response.json()
-
-        if not data:
+        if not (data := response.json()):
             raise DeadUrlError(response=response)
 
         if "user" in data:
@@ -182,6 +196,8 @@ class TwitterSession(Session):
             "latestControlAvailable": True,
             "requestContext": "ptr",
         }
+        if cursor:
+            variables["cursor"] = cursor
 
         features = {
             "responsive_web_graphql_exclude_directive_enabled": True,
@@ -206,20 +222,9 @@ class TwitterSession(Session):
             "responsive_web_media_download_video_enabled": False,
             "responsive_web_enhance_cards_enabled": False,
         }
+        endpoint = "J1AQiEIiEDyF-1zgyrXHCA/HomeLatestTimeline"
 
-        if cursor:
-            variables["cursor"] = cursor
-
-        params = {
-            "variables": json.dumps(variables, separators=(",", ":")),
-            "features": json.dumps(features, separators=(",", ":")),
-        }
-
-        response = self.get(
-            "https://twitter.com/i/api/graphql/J1AQiEIiEDyF-1zgyrXHCA/HomeLatestTimeline",
-            params=params,
-            headers=self._twitter_headers,
-        )
+        response = self._get_twitter_graphql(endpoint=endpoint, variables=variables, features=features)
 
         instructions = response.json()["data"]["home"]["home_timeline_urt"]["instructions"]
         return self.__parse_timeline_instructions(instructions)
@@ -258,20 +263,13 @@ class TwitterSession(Session):
             "withVoice": True,
             "withV2Timeline": True,
         }
-
         if cursor:
             variables["cursor"] = cursor
 
-        params = {
-            "variables": json.dumps(variables, separators=(",", ":")),
-            "features": json.dumps(features, separators=(",", ":")),
-        }
+        endpoint = "cEjpJXA15Ok78yO4TUQPeQ/UserMedia"
 
-        response = self.get(
-            "https://twitter.com/i/api/graphql/cEjpJXA15Ok78yO4TUQPeQ/UserMedia",
-            params=params,
-            headers=self._twitter_headers,
-        )
+        response = self._get_twitter_graphql(endpoint=endpoint, variables=variables, features=features)
+
         timeline_instructions: list[dict] = response.json()["data"]["user"]["result"]["timeline_v2"]["timeline"]["instructions"]
         collected_instructions = []
         for instr in timeline_instructions:
@@ -287,6 +285,48 @@ class TwitterSession(Session):
             collected_instructions.append(content)
 
         return self.__parse_timeline_instructions(collected_instructions)
+
+    def get_search(self, search: str, cursor: str | None = None) -> TwitterPageOfMediaResults:
+        variables = {
+            "rawQuery": search,
+            "count": 20,
+            "cursor": cursor,
+            "querySource": "typed_query",
+            "product": "Media",
+        }
+        features = {
+            "rweb_tipjar_consumption_enabled": True,
+            "responsive_web_graphql_exclude_directive_enabled": True,
+            "verified_phone_label_enabled": False,
+            "creator_subscriptions_tweet_preview_api_enabled": True,
+            "responsive_web_graphql_timeline_navigation_enabled": True,
+            "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
+            "communities_web_enable_tweet_community_results_fetch": True,
+            "c9s_tweet_anatomy_moderator_badge_enabled": True,
+            "articles_preview_enabled": True,
+            "tweetypie_unmention_optimization_enabled": True,
+            "responsive_web_edit_tweet_api_enabled": True,
+            "graphql_is_translatable_rweb_tweet_is_translatable_enabled": True,
+            "view_counts_everywhere_api_enabled": True,
+            "longform_notetweets_consumption_enabled": True,
+            "responsive_web_twitter_article_tweet_consumption_enabled": True,
+            "tweet_awards_web_tipping_enabled": False,
+            "creator_subscriptions_quote_tweet_preview_enabled": False,
+            "freedom_of_speech_not_reach_fetch_enabled": True,
+            "standardized_nudges_misinfo": True,
+            "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": True,
+            "tweet_with_visibility_results_prefer_gql_media_interstitial_enabled": True,
+            "rweb_video_timestamps_enabled": True,
+            "longform_notetweets_rich_text_read_enabled": True,
+            "longform_notetweets_inline_media_enabled": True,
+            "responsive_web_enhance_cards_enabled": False,
+        }
+
+        endpoint = "5yhbMCF0-WQ6M8UOAs1mAg/SearchTimeline"
+
+        response = self._get_twitter_graphql(endpoint=endpoint, variables=variables, features=features)
+        instructions = response.json()["data"]["search_by_raw_query"]["search_timeline"]["timeline"]["instructions"]
+        return self.__parse_timeline_instructions(instructions)
 
     def __parse_timeline_instructions(self, timeline_instructions: list[dict]) -> TwitterPageOfMediaResults:
         entries = []
