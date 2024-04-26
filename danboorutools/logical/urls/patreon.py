@@ -117,6 +117,8 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
             return self.artist_data.related_urls
         except NotAnArtistError:
             return []
+        except DeadUrlError:
+            return []
 
     @property
     def primary_names(self) -> list[str]:
@@ -126,6 +128,8 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
             return [self.artist_data.name]
         except NotAnArtistError:
             return []
+        except DeadUrlError:
+            return []
 
     @property
     def secondary_names(self) -> list[str]:
@@ -134,6 +138,8 @@ class PatreonArtistUrl(ArtistUrl, PatreonUrl):
         try:
             return [self.artist_data.username] if self.artist_data.username else []
         except NotAnArtistError:
+            return []
+        except DeadUrlError:
             return []
 
     def subscribe(self) -> None:
