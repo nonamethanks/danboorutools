@@ -55,7 +55,7 @@ class PoipikuComParser(UrlParser):
 
             # https://poipiku.com/IllustListPcV.jsp?ID=9056
             # https://poipiku.com/IllustListGridPcV.jsp?ID=9056
-            case ("IllustListPcV.jsp" | "IllustListGridPcV.jsp" | "ActivityListPcV.jsp"), :
+            case ("IllustListPcV.jsp" | "IllustListGridPcV.jsp" | "ActivityListPcV.jsp" | "MyIllustListPcV.jsp"), :
                 return PoipikuArtistUrl(parsed_url=parsable_url,
                                         user_id=int(parsable_url.query["ID"]))
 

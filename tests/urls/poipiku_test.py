@@ -9,6 +9,7 @@ urls = {
         "https://poipiku.com/IllustListPcV.jsp?ID=9056": "https://poipiku.com/9056/",
         "https://poipiku.com/IllustListGridPcV.jsp?ID=9056": "https://poipiku.com/9056/",
         "https://poipiku.com/6849873": "https://poipiku.com/6849873/",
+        "https://poipiku.com/MyIllustListPcV.jsp?ID=278477": "https://poipiku.com/278477/",
     },
     PoipikuImageUrl: {
         "https://img.poipiku.com/user_img02/006849873/008271386_016865825_S968sAh7Y.jpeg_640.jpg": "https://img-org.poipiku.com/user_img02/006849873/008271386_016865825_S968sAh7Y.jpeg",
