@@ -50,7 +50,12 @@ class WeiboLegacyArtistUrl(RedirectUrl, WeiboUrl):
     @property
     def resolved(self) -> WeiboArtistUrl:
         url = self.normalized_url.replace("www.weibo.com", "m.weibo.cn")
-        resolved = self.session.get(f"{url}?&jumpfrom=weibocom").url
+        resolved_resp = self.session.get(f"{url}?&jumpfrom=weibocom")
+        resolved = resolved_resp.url
+
+        if isinstance(parsed_resolved := Url.parse(resolved), WeiboLegacyArtistUrl) and parsed_resolved.username == self.username:
+            raise DeadUrlError(resolved_resp)
+
         parsed = WeiboArtistUrl.parse_and_assert(resolved)
         if self.screen_name:
             parsed.extra_primary_names = [self.screen_name]
