@@ -99,7 +99,7 @@ class ArtistFinder:
             raise
 
         tags_to_send = ["-artist_request", artist_tag]
-        if not isinstance(source, PixivImageUrl) and source.is_deleted: # could be revision
+        if not isinstance(source, PixivImageUrl) and source.is_deleted:  # could be revision
             tags_to_send += ["bad_id"]
 
         danbooru_api.update_post_tags(post, tags_to_send)
@@ -392,7 +392,7 @@ class ArtistFinder:
     @classmethod
     def is_url_worth_implementing(cls, url: UnknownUrl) -> bool:
         url_results = danbooru_api.artists(url_matches=f"*{url.parsed_url.domain}*", limit=100)
-        return len(url_results) > 40
+        return len(url_results) > 100
 
     def post_duplicate_on_forums(self, post: DanbooruPost, duplicate_url: Url, artists: list[DanbooruArtist]) -> None:
         assert len(artists) > 1  # you never know lmao
