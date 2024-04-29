@@ -38,7 +38,8 @@ class LitLinkArtistData(BaseModel):
                 case "movie":
                     urls += [profile_link["movieLink"]["url"]]
                 case "text":
-                    urls += extract_urls_from_string(profile_link["textLink"]["title"])
+                    if (title := profile_link["textLink"]["title"]):
+                        urls += extract_urls_from_string(title)
                     if (desc := profile_link["textLink"]["description"]):
                         urls += extract_urls_from_string(desc)
                 case _:
