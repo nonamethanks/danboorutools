@@ -113,11 +113,22 @@ class DeviantArtPostUrl(PostUrl, DeviantArtUrl):
     def score(self) -> int:
         return self.post_data.favorites
 
+    @cached_property
+    def gallery(self) -> DeviantArtArtistUrl:
+        return DeviantArtArtistUrl.build(username=self.username or self.post_data.user["username"])
+
 
 class DeviantArtImageUrl(PostAssetUrl, DeviantArtUrl):
     deviation_id: int | None
     title: str | None
     username: str | None
+
+    @cached_property
+    def post(self) -> DeviantArtPostUrl:
+        if self.deviation_id:
+            return DeviantArtPostUrl.build(deviation_id=self.deviation_id, username=self.username, title=self.title)
+        else:
+            raise NotImplementedError
 
     @property
     def jwt(self) -> dict:
