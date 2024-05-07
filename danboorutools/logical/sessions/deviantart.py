@@ -165,7 +165,7 @@ class DeviantartHTMLPostData(BaseModel):
             return None
 
     @property
-    def sample_token(self) -> str:
+    def sample_token(self) -> str | None:
         try:
             return self.deviation["media"]["token"][0]
         except IndexError:
