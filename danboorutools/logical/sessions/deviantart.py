@@ -7,6 +7,8 @@ from datetime import datetime
 from functools import cached_property
 
 from pydantic import Field
+from pyrate_limiter.limiter import Limiter
+from pyrate_limiter.request_rate import RequestRate
 
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.twitter import TwitterArtistUrl
@@ -16,6 +18,8 @@ from danboorutools.util.time import datetime_from_string
 
 
 class DeviantartSession(Session):
+    deviantart_api_limiter = limiter = Limiter(RequestRate(1, 4))
+
     @cached_property
     def access_token(self) -> str:
         client_id = os.environ["DEVIANTART_CLIENT_ID"]
@@ -34,12 +38,13 @@ class DeviantartSession(Session):
     def api_request(self, path: str, *args, **kwargs) -> dict:
         data = kwargs.pop("data", {}) | {"access_token": self.access_token}
 
-        response = self.post(
-            f"https://www.deviantart.com/api/v1/oauth2/{path.strip("/")}",
-            *args,
-            data=data,
-            **kwargs,
-        )
+        with self.deviantart_api_limiter.ratelimit(delay=True):
+            response = self.post(
+                f"https://www.deviantart.com/api/v1/oauth2/{path.strip("/")}",
+                *args,
+                data=data,
+                **kwargs,
+            )
         return response.json()
 
     def user_data(self, username: str, skip_cache: bool = False) -> DeviantartUserData:
