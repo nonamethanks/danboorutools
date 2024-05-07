@@ -59,6 +59,7 @@ py-cord = "^2.5.0"
 undetected-chromedriver = "^3.5.5"
 pyjwt = "^2.8.0"                                          # needed for deviantart url parsing
 atproto = "^0.0.46"                                       # needed for bluesky
+blinker = "<1.8.0"                                        # last version that works with selenium-wire
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.31.0.20240406"
