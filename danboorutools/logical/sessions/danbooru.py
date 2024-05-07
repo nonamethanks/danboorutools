@@ -215,6 +215,9 @@ class DanbooruApi(Session):
                     deleted = parsed.is_deleted if not isinstance(parsed, UnknownUrl) else (parsed.is_deleted or not url_data["is_active"])
                 except (ReadTimeout, CloudflareChallengeError, RateLimitError):
                     deleted = url_data["is_active"]
+                except Exception as e:
+                    e.add_note(f"On {parsed}")
+                    raise
 
                 normalized_urls.append(f"-{parsed.normalized_url}" if deleted else parsed.normalized_url)
 
