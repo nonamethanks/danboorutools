@@ -6,10 +6,12 @@ import re
 from datetime import datetime
 from functools import cached_property
 
+from backoff import constant, on_exception
 from pydantic import Field
 from pyrate_limiter.limiter import Limiter
 from pyrate_limiter.request_rate import RequestRate
 
+from danboorutools.exceptions import HTTPError
 from danboorutools.logical.sessions import Session
 from danboorutools.logical.urls.twitter import TwitterArtistUrl
 from danboorutools.models.url import Url
@@ -19,6 +21,7 @@ from danboorutools.util.time import datetime_from_string
 
 class DeviantartSession(Session):
     deviantart_api_limiter = limiter = Limiter(RequestRate(1, 4))
+    MAX_CALLS_PER_SECOND = 1
 
     @cached_property
     def access_token(self) -> str:
@@ -68,6 +71,7 @@ class DeviantartSession(Session):
         page_json = self.api_request("/gallery/all", params=params)
         return DeviantartPostsApiData(**page_json)
 
+    @on_exception(constant, HTTPError, max_tries=3, interval=30, jitter=None)
     def get_post_data(self, deviation_id: int) -> DeviantartHTMLPostData:
         page = self.get(f"https://www.deviantart.com/deviation/{deviation_id}")
         data = page.search_json(
