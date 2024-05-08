@@ -144,6 +144,9 @@ class Session(_CloudScraper):
             # in theory cache access is slower, but who cares, the limiter will always be the request itself anyway
             self._cached_request.delete(method, *args, **kwargs)
         response = self._cached_request(method, *args, **kwargs)
+        if response.status_code >= 400 and response.status_code not in [404]:
+            # Don't cache bad responses responses
+            self._cached_request.delete(method, *args, **kwargs)
         return ScraperResponse(response)
 
     @ring.lru()

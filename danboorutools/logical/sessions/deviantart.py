@@ -71,7 +71,7 @@ class DeviantartSession(Session):
         page_json = self.api_request("/gallery/all", params=params)
         return DeviantartPostsApiData(**page_json)
 
-    @on_exception(constant, HTTPError, max_tries=3, interval=30, jitter=None)
+    @on_exception(constant, HTTPError, max_tries=2, interval=60 * 5, jitter=None)
     def get_post_data(self, deviation_id: int) -> DeviantartHTMLPostData:
         page = self.get(f"https://www.deviantart.com/deviation/{deviation_id}")
         data = page.search_json(
