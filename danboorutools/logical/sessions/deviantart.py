@@ -21,7 +21,7 @@ from danboorutools.util.time import datetime_from_string
 
 class DeviantartSession(Session):
     deviantart_api_limiter = limiter = Limiter(RequestRate(1, 4))
-    MAX_CALLS_PER_SECOND = 1
+    MAX_CALLS_PER_SECOND = 0.3
 
     @cached_property
     def access_token(self) -> str:
