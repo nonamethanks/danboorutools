@@ -156,17 +156,16 @@ class Session(_CloudScraper):
 
         kwargs["headers"] = self.DEFAULT_HEADERS | kwargs.get("headers", {})
 
-        if kwargs.get("params"):
-            logger.trace(f"{http_method} request made to {url}?{urlencode(kwargs["params"])}")
-        else:
-            logger.trace(f"{http_method} request made to {url}")
-
         url_domain = ParsableUrl(url).domain
         kwargs.setdefault("proxies", self.proxied_domains.get(url_domain))
         kwargs.setdefault("timeout", self.DEFAULT_TIMEOUT)
 
         try:
             with self.limiter.ratelimit(url_domain, delay=True):
+                if kwargs.get("params"):
+                    logger.trace(f"{http_method} request made to {url}?{urlencode(kwargs["params"])}")
+                else:
+                    logger.trace(f"{http_method} request made to {url}")
                 response: Response = super().request(http_method, url, *args, **kwargs)
         except ConnectionError as e:
             e.add_note(f"Method: {http_method}; url: {url}")
