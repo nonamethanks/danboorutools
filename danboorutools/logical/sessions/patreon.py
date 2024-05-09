@@ -159,7 +159,7 @@ class PatreonArtistAttributes(BaseModel):
 
     summary: str
     name: str
-    vanity: str
+    vanity: str | None
     url: str
 
 
@@ -178,7 +178,7 @@ class PatreonArtistData(BaseModel):
         return self.data.attributes.name
 
     @property
-    def username(self) -> str:
+    def username(self) -> str | None:
         return self.data.attributes.vanity
 
     @property
