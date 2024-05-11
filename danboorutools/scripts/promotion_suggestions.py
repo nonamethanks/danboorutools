@@ -50,14 +50,16 @@ def main() -> None:
             pass
 
     logger.info("Contributor candidates:")
-    for candidate in [c for c in candidates if c.level == 32 and c.recent_uploads > MIN_CONTRIBUTOR_UPLOADS_IN_RANGE and c.active]:
-        logger.info(candidate.self_string)
+    for candidate in candidates:
+        if candidate.for_contributor:
+            logger.info(candidate.self_string)
 
     logger.info("")
     logger.info("Builder/Contributor candidates:")
 
-    for candidate in [c for c in candidates if c.level != 32 and c.active]:
-        logger.info(candidate.self_string)
+    for candidate in candidates:
+        if candidate.for_builder:
+            logger.info(candidate.self_string)
 
     logger.info("")
     remaining: list[Candidate] = []
@@ -176,6 +178,14 @@ class Candidate:
         if self.is_banned:  # can also be None
             return False
         return True
+
+    @property
+    def for_contributor(self) -> bool:
+        return self.active and self.level == 32 and self.recent_uploads > MIN_CONTRIBUTOR_UPLOADS_IN_RANGE
+
+    @property
+    def for_builder(self) -> bool:
+        return self.active and self.level != 32
 
     @property
     def url(self) -> str:
