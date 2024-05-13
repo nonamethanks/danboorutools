@@ -1,6 +1,6 @@
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser
 from danboorutools.logical.urls.steamcommunity import SteamcommunityFileUrl, SteamCommunityProfileUrl
-from danboorutools.models.url import UnsupportedUrl, Url
+from danboorutools.models.url import UnsupportedUrl, Url, UselessUrl
 
 
 class SteamcommunityComParser(UrlParser):
@@ -41,6 +41,9 @@ class SteamcommunityComParser(UrlParser):
             case "linkfilter", :
                 query_url = parsable_url.query["u"].removeprefix("http://url=")
                 return cls.parse(query_url)
+
+            case "tradeoffer", *_:
+                return UselessUrl(parsed_url=parsable_url)
 
             case _:
                 return None
