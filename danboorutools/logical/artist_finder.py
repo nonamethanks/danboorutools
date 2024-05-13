@@ -7,6 +7,7 @@ import pykakasi
 import unidecode
 from cloudscraper.exceptions import CloudflareChallengeError
 from py_trans import PyTranslator
+from py_trans import errors as py_trans_errors
 from pydantic import ValidationError
 from requests.exceptions import ReadTimeout
 
@@ -359,7 +360,11 @@ class ArtistFinder:
 
     @classmethod
     def romanize_tag_name(cls, potential_tag: str) -> str:
-        language = cls.translator.detect(potential_tag)
+        try:
+            language = cls.translator.detect(potential_tag)
+        except py_trans_errors.UnknownError as e:
+            e.add_note(f"On tag '{potential_tag}'")
+            raise
         translated_results = cls.kakasi.convert(potential_tag)
 
         if len(translated_results) == 1 and translated_results[0]["orig"].strip() == potential_tag.strip():
