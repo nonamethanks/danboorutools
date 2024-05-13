@@ -103,6 +103,8 @@ class PixivNetParser(UrlParser):
             # https://www.pixiv.net/member.php?id=339253
             # http://www.pixiv.net/novel/member.php?id=76567
             case *_, "member.php":
+                if not parsable_url.query:
+                    return UselessUrl(parsed_url=parsable_url)
                 return p.PixivArtistUrl(parsed_url=parsable_url,
                                         user_id=int(parsable_url.query["id"]))
 
