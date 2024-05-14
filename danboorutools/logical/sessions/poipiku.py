@@ -5,7 +5,7 @@ import os
 from ring import lru
 
 from danboorutools import logger
-from danboorutools.logical.sessions import Session
+from danboorutools.logical.sessions import ScraperResponse, Session
 
 
 class PoipikuSession(Session):
@@ -42,3 +42,8 @@ class PoipikuSession(Session):
 
         follow_button.click()
         assert follow_button.text == "☆quiet follow"
+
+    def request(self, *args, **kwargs) -> ScraperResponse:
+        headers: dict[str, str] = kwargs.pop("headers", {})
+        headers.setdefault("referer", "https://poipiku.com/")
+        return super().request(*args, headers=headers, **kwargs)
