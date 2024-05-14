@@ -8,7 +8,7 @@ import time
 from datetime import UTC
 from typing import TYPE_CHECKING
 
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from seleniumwire.undetected_chromedriver import Chrome
@@ -84,7 +84,10 @@ class Browser(Chrome):
         if not isinstance(url, str):
             url = url.normalized_url
         logger.trace(f"Browser GET request made to {url}")
-        return super().get(url)
+        try:
+            return super().get(url)
+        except TimeoutException:
+            return super().get(url)
 
     def get_next_sibling(self, element: WebElement) -> WebElement:
         return self.execute_script("return arguments[0].nextElementSibling", element)
