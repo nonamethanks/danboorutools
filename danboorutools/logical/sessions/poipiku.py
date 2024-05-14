@@ -12,7 +12,10 @@ class PoipikuSession(Session):
     @lru()
     def init_browser(self) -> None:
         self.browser.delete_all_cookies()
-        self.browser.set_cookies([{"name": "POIPIKU_LK", "value": os.environ["POIPIKU_LK_COOKIE"], "domain": ".poipiku.com"}])
+        self.browser.set_cookies([
+            {"name": "POIPIKU_LK", "value": os.environ["POIPIKU_LK_COOKIE"], "domain": ".poipiku.com"},
+            {"name": "POIPIKU_CONTENTS_VIEW_MODE", "value": "1", "domain": ".poipiku.com"},
+        ])
 
     def subscribe(self, user_id: int) -> None:
         self.init_browser()

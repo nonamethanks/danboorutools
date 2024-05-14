@@ -5,6 +5,8 @@ import time
 from functools import cached_property
 from typing import TYPE_CHECKING
 
+from danboorutools import logger
+from danboorutools.exceptions import UnknownUrlError
 from danboorutools.logical.sessions.poipiku import PoipikuSession
 from danboorutools.models.url import ArtistUrl, GalleryAssetUrl, PostAssetUrl, PostUrl, Url, parse_list
 from danboorutools.util.misc import extract_urls_from_string
@@ -67,17 +69,22 @@ class PoipikuArtistUrl(ArtistUrl, PoipikuUrl):
             page += 1
 
     def _process_post(self, post_object: PoipikuPostUrl) -> None:
+        assets = post_object._extract_assets()
+        if not assets:
+            return
         self._register_post(
             post_object,
-            assets=post_object._extract_assets(),
+            assets=assets,
             created_at=post_object.created_at,
             score=post_object.score,
         )
 
 
 DUMMY_IMGS = [
-    "https://img.poipiku.com/img/R-18.png_640.jpg",
     "https://img.poipiku.com/img/publish_t_follower.png_640.jpg",
+    "https://img.poipiku.com/img/R-18.png_640.jpg",
+    "https://img.poipiku.com/img/warning.png_640.jpg",
+    "https://img.poipiku.com/img/publish_login.png_640.jpg",
 ]
 
 
@@ -92,6 +99,16 @@ class PoipikuPostUrl(PostUrl, PoipikuUrl):
         browser = self.session.browser
         if browser.current_url != self.normalized_url:
             browser.get(self.normalized_url)
+
+        try:
+            assert browser.find_elements("css selector", ".UserInfoCmdFollow.Selected")
+        except AssertionError:
+            browser.screenshot()
+            raise
+
+        if browser.find_elements("css selector", ".IllustItemExpandPass"):
+            logger.warning(f"Could not extract assets from {self} because of password protection.")
+            return []
         if (expand := browser.find_elements("css selector", ".IllustItemExpandBtn")) and expand[0].is_displayed():
             expand[0].click()
             browser.wait_for_request("ShowAppendFileF")
@@ -108,7 +125,12 @@ class PoipikuPostUrl(PostUrl, PoipikuUrl):
         ]
         assert image_els
 
-        return parse_list(image_els, PoipikuImageUrl)
+        try:
+            return parse_list(image_els, PoipikuImageUrl)
+        except UnknownUrlError as e:  # unknown dummy images
+            screenshot_path = browser.screenshot()
+            e.add_note(f"Screenshot: {screenshot_path}")
+            raise
 
     @cached_property
     def created_at(self) -> datetime:

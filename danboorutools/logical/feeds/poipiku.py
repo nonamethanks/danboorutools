@@ -1,6 +1,7 @@
 import time
 from collections.abc import Iterator
 
+from danboorutools import logger
 from danboorutools.logical.sessions.poipiku import PoipikuSession
 from danboorutools.logical.urls.poipiku import DUMMY_IMGS, PoipikuImageUrl, PoipikuPostUrl
 from danboorutools.models.feed import Feed
@@ -21,6 +22,9 @@ class PoipikuFeed(Feed):
 
             post_urls_and_imgs: list[PoipikuPostUrl] = []
             for post_element in browser.find_elements("css selector", ".IllustItem"):
+                if post_element.find_elements("css selector", ".IllustItemExpandPass"):
+                    logger.warning("Could not extract assets from a post because of password protection.")
+                    continue
                 if (expand := post_element.find_elements("css selector", ".IllustItemExpandBtn")):
                     browser.execute_script("arguments[0].click()", expand[0])
                     browser.wait_for_request("ShowAppendFileF")
