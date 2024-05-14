@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from requests.adapters import HTTPAdapter
 from urllib3.util.ssl_ import create_urllib3_context
 
-from danboorutools.logical.sessions import Session
-
-if TYPE_CHECKING:
-    from requests import Response
+from danboorutools.logical.sessions import ScraperResponse, Session
 
 
 class CypherAdapter(HTTPAdapter):
@@ -38,6 +35,6 @@ class MelonbooksSession(Session):
         self.mount("http://www.melonbooks.co.jp", cypher_adapter)
         self.mount("https://www.melonbooks.co.jp", cypher_adapter)
 
-    def request(self, *args, **kwargs) -> Response:
+    def request(self, *args, **kwargs) -> ScraperResponse:
         cookies = {"AUTH_ADULT": "1"}
         return super().request(*args, cookies=cookies, **kwargs)

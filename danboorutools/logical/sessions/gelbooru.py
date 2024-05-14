@@ -3,9 +3,8 @@ import re
 import time
 
 import ring
-from requests import Response
 
-from danboorutools.logical.sessions import Session
+from danboorutools.logical.sessions import ScraperResponse, Session
 from danboorutools.models.gelbooru import GelbooruPost
 
 
@@ -34,7 +33,7 @@ class GelbooruApi(Session):
         response = self.gelbooru_request("POST", "/index.php?page=account&s=login&code=00", data=data)
         assert response.ok
 
-    def gelbooru_request(self, method: str, endpoint: str, *args, **kwargs) -> Response:
+    def gelbooru_request(self, method: str, endpoint: str, *args, **kwargs) -> ScraperResponse:
         kwargs["headers"] = {"User-Agent": "DanbooruTools/0.1.0"}
         if kwargs.get("params", {}).get("json") == 1:
             kwargs["headers"]["Content-Type"] = "application/json"
@@ -62,7 +61,7 @@ class GelbooruApi(Session):
         else:
             return [GelbooruPost(post_data) for post_data in data["post"]]
 
-    def get_csrf(self, response: Response) -> str:
+    def get_csrf(self, response: ScraperResponse) -> str:
         match = self.csrf_pattern.search(response.text)
         assert match
         return match.group(1)

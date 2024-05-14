@@ -1,22 +1,18 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from pydantic import field_validator
 
 from danboorutools.exceptions import DeadUrlError
-from danboorutools.logical.sessions import Session
+from danboorutools.logical.sessions import ScraperResponse, Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 from danboorutools.util.time import datetime_from_string
 
-if TYPE_CHECKING:
-    from requests import Response
-
 
 class WeiboSession(Session):
-    def request(self, *args, **kwargs) -> Response:
+    def request(self, *args, **kwargs) -> ScraperResponse:
         return super().request(*args, **kwargs)
 
     def user_data(self, artist_id: int) -> WeiboUserData:

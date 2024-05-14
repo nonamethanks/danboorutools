@@ -1,12 +1,8 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING
 
-from danboorutools.logical.sessions import Session
-
-if TYPE_CHECKING:
-    from requests import Response
+from danboorutools.logical.sessions import ScraperResponse, Session
 
 
 class MixiSession(Session):
@@ -15,7 +11,7 @@ class MixiSession(Session):
         "session":  os.environ.get("MIXI_SESSION_COOKIE"),
     }
 
-    def request(self, *args, **kwargs) -> Response:
+    def request(self, *args, **kwargs) -> ScraperResponse:
 
         kwargs.setdefault("cookies", self.COOKIES.copy())
         return super().request(*args, **kwargs)

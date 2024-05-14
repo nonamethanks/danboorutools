@@ -1,18 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from danboorutools.logical.sessions import Session
-from danboorutools.util.misc import BaseModel
-
-if TYPE_CHECKING:
-    from requests import Response
-
 import os
+
+from danboorutools.logical.sessions import ScraperResponse, Session
+from danboorutools.util.misc import BaseModel
 
 
 class FanzaSession(Session):
-    def request(self, *args, **kwargs) -> Response:
+    def request(self, *args, **kwargs) -> ScraperResponse:
         cookies = {
             "age_check_done": "1",
             "INT_SESID": os.environ["DMM_INT_SESID_COOKIE"],

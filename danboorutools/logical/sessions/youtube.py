@@ -2,21 +2,16 @@ from __future__ import annotations
 
 import json
 import re
-from typing import TYPE_CHECKING
-from urllib.parse import urljoin
 
 import ring
 
-from danboorutools.logical.sessions import Session
+from danboorutools.logical.sessions import ScraperResponse, Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
 
-if TYPE_CHECKING:
-    from requests import Response
-
 
 class YoutubeSession(Session):
-    def request(self, *args, **kwargs) -> Response:
+    def request(self, *args, **kwargs) -> ScraperResponse:
         kwargs["cookies"] = kwargs.get("cookies", {}) | {"SOCS": "CAESEwgDEgk0ODE3Nzk3MjQaAmVuIAEaBgiA_LyaBg"}
         return super().request(*args, **kwargs)
 
