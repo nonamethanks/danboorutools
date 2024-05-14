@@ -119,6 +119,16 @@ class PoipikuPostUrl(PostUrl, PoipikuUrl):
             browser.find_elements("css selector", ".IllustItemThumbImg")
         ]
 
+        if image_els == ["https://img.poipiku.com/img/warning.png_640.jpg"] and not expand:
+            # https://poipiku.com/3076546/6855175.html
+            browser.find_elements("css selector", ".IllustItemThumbImg")[0].click()
+            browser.wait_for_request("ShowIllustDetailF")
+            time.sleep(1)
+            image_els = [
+                i_e.get_attribute("src") for i_e in
+                browser.find_elements("css selector", ".DetailIllustItemImage")
+            ]
+
         image_els = [
             img for img in image_els
             if img not in DUMMY_IMGS
