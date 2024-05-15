@@ -4,6 +4,7 @@ import atexit
 import datetime
 import os
 import random
+import sys
 import time
 from datetime import UTC
 from typing import TYPE_CHECKING
@@ -62,7 +63,7 @@ class Browser(Chrome):
 
         self.set_window_size(1920, 1080)
         self.implicitly_wait(5)
-        self.set_page_load_timeout(30)
+        self.set_page_load_timeout(60)
 
         atexit.register(self.__del__)
 
@@ -87,7 +88,11 @@ class Browser(Chrome):
         try:
             return super().get(url)
         except TimeoutException:
+            self.screenshot()
             return super().get(url)
+        except Exception:
+            del sys.tracebacklimit
+            raise
 
     def get_next_sibling(self, element: WebElement) -> WebElement:
         return self.execute_script("return arguments[0].nextElementSibling", element)
