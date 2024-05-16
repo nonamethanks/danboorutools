@@ -10,6 +10,7 @@ from celery.app.task import Task
 from celery.schedules import crontab
 
 from danboorutools import logger, settings
+from danboorutools.exceptions import DanbooruHTTPError
 from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.scripts.create_artist_tags import add_artists_to_posts
 from danboorutools.scripts.rename_socks import main as rename_socks
@@ -53,6 +54,9 @@ class CustomCeleryTask(Task):  # pylint: disable=abstract-method
         # https://stackoverflow.com/a/45333231/1092940
 
         if not DESTINATION_EMAIL:
+            return
+
+        if isinstance(exc, DanbooruHTTPError) and "The database is unavailable. Try again later" in exc.error_message:
             return
 
         now = datetime.datetime.now(datetime.UTC).astimezone()
