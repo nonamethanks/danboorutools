@@ -4,9 +4,9 @@ import atexit
 import datetime
 import os
 import random
-import sys
 import time
 from datetime import UTC
+from http.client import RemoteDisconnected
 from typing import TYPE_CHECKING
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -87,12 +87,9 @@ class Browser(Chrome):
         logger.trace(f"Browser GET request made to {url}")
         try:
             return super().get(url)
-        except TimeoutException:
+        except (TimeoutException, RemoteDisconnected):
             self.screenshot()
             return super().get(url)
-        except Exception:
-            del sys.tracebacklimit
-            raise
 
     def get_next_sibling(self, element: WebElement) -> WebElement:
         return self.execute_script("return arguments[0].nextElementSibling", element)
