@@ -27,7 +27,7 @@ class PoipikuFeed(Feed):
                     continue
                 if (expand := post_element.find_elements("css selector", ".IllustItemExpandBtn")):
                     browser.execute_script("arguments[0].click()", expand[0])
-                    browser.wait_for_request("ShowAppendFileF")
+                    browser.wait_for_request("ShowAppendFileF", timeout=60)
                     time.sleep(1)
 
                 assets_urls = [
