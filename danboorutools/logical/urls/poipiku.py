@@ -111,7 +111,7 @@ class PoipikuPostUrl(PostUrl, PoipikuUrl):
             return []
         if (expand := browser.find_elements("css selector", ".IllustItemExpandBtn")) and expand[0].is_displayed():
             expand[0].click()
-            browser.wait_for_request("ShowAppendFileF")
+            browser.wait_for_request("ShowAppendFileF", timeout=60)
             time.sleep(1)
 
         image_els = [

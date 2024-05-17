@@ -90,6 +90,9 @@ class Browser(Chrome):
         except (TimeoutException, RemoteDisconnected):
             self.screenshot()
             return super().get(url)
+        except Exception:
+            self.screenshot()
+            raise
 
     def get_next_sibling(self, element: WebElement) -> WebElement:
         return self.execute_script("return arguments[0].nextElementSibling", element)
