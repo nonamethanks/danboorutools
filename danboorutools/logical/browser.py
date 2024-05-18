@@ -9,6 +9,7 @@ from datetime import UTC
 from http.client import RemoteDisconnected
 from typing import TYPE_CHECKING
 
+from backoff import constant, on_exception
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -63,7 +64,7 @@ class Browser(Chrome):
 
         self.set_window_size(1920, 1080)
         self.implicitly_wait(5)
-        self.set_page_load_timeout(60)
+        self.set_page_load_timeout(15)
 
         atexit.register(self.__del__)
 
@@ -81,14 +82,12 @@ class Browser(Chrome):
             self.execute_cdp_cmd("Network.setCookie", cookie)
         self.execute_cdp_cmd("Network.disable", {})
 
+    @on_exception(constant, TimeoutException, max_tries=3, interval=5, jitter=None)
     def get(self, url: str | Url) -> None:
         if not isinstance(url, str):
             url = url.normalized_url
         logger.trace(f"Browser GET request made to {url}")
         try:
-            return super().get(url)
-        except (TimeoutException, RemoteDisconnected):
-            self.screenshot()
             return super().get(url)
         except Exception:
             self.screenshot()
