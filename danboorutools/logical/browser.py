@@ -82,7 +82,7 @@ class Browser(Chrome):
             self.execute_cdp_cmd("Network.setCookie", cookie)
         self.execute_cdp_cmd("Network.disable", {})
 
-    @on_exception(constant, (TimeoutException, RemoteDisconnected), max_tries=3, interval=5, jitter=None)
+    @on_exception(constant, (TimeoutException, RemoteDisconnected), max_tries=3, interval=1, jitter=None)
     def get(self, url: str | Url) -> None:
         if not isinstance(url, str):
             url = url.normalized_url
@@ -90,7 +90,6 @@ class Browser(Chrome):
         try:
             return super().get(url)
         except TimeoutException:
-            self.screenshot()
             self.quit()
             self.__init__()  # pylint: disable=unnecessary-dunder-call
             raise
