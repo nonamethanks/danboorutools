@@ -15,7 +15,7 @@ from selenium.common.exceptions import (
 )
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
-from urllib3.exceptions import MaxRetryError
+from urllib3.exceptions import MaxRetryError, ProtocolError
 
 from danboorutools import logger
 from danboorutools.exceptions import UnknownUrlError
@@ -139,7 +139,7 @@ class PoipikuPostUrl(PostUrl, PoipikuUrl):
 
     @on_exception(
         constant,
-        (MustRetryError, ConnectionRefusedError, WebDriverException, MaxRetryError),
+        (MustRetryError, ConnectionRefusedError, WebDriverException, MaxRetryError, ProtocolError),
         max_tries=3,
         interval=10,
         jitter=None,
