@@ -41,7 +41,15 @@ class BlueskyFeed(Feed):
         post_url = BlueskyPostUrl.build(username=username, post_id=post_id)
         post_url.gallery = BlueskyArtistUrl.build(username=username)
 
-        assets = parse_list([image.fullsize for image in post.embed.images], BlueskyImageUrl)
+        try:
+            img_urls = [image.fullsize for image in post.embed.images]
+        except AttributeError as e:
+            if post.embed.py_type == "app.bsky.embed.external#view":
+                return
+            e.add_note(str(post.embed))
+            raise
+
+        assets = parse_list(img_urls, BlueskyImageUrl)
 
         self._register_post(
             post=post_url,
