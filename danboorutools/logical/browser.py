@@ -6,11 +6,9 @@ import os
 import random
 import time
 from datetime import UTC
-from http.client import RemoteDisconnected
 from typing import TYPE_CHECKING
 
-from backoff import constant, on_exception
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from seleniumwire.undetected_chromedriver import Chrome
@@ -33,10 +31,10 @@ class Browser(Chrome):
         options = Options()
 
         options.add_argument("--headless=new")
+        options.add_argument("--enable-automation")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--ignore-certificate-errors")
-        options.add_argument("--disable-gpu")
         options.add_argument("--single-process")
         options.add_argument("--deny-permission-prompts")
         options.add_argument("--disable-notifications")
@@ -79,23 +77,15 @@ class Browser(Chrome):
     def set_cookies(self, cookies: list[dict[str, str]]) -> None:
         self.execute_cdp_cmd("Network.enable", {})
         for cookie in cookies:
+            logger.debug(f"Inserting cookie: {cookie}")
             self.execute_cdp_cmd("Network.setCookie", cookie)
         self.execute_cdp_cmd("Network.disable", {})
 
-    @on_exception(constant, (TimeoutException, RemoteDisconnected), max_tries=3, interval=1, jitter=None)
     def get(self, url: str | Url) -> None:
         if not isinstance(url, str):
             url = url.normalized_url
         logger.trace(f"Browser GET request made to {url}")
-        try:
-            return super().get(url)
-        except TimeoutException:
-            self.quit()
-            self.__init__()  # pylint: disable=unnecessary-dunder-call
-            raise
-
-    def get_next_sibling(self, element: WebElement) -> WebElement:
-        return self.execute_script("return arguments[0].nextElementSibling", element)
+        return super().get(url)
 
     def find_elements_by_text(self,
                               text: str,

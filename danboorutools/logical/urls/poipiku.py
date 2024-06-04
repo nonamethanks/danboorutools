@@ -5,6 +5,18 @@ import time
 from functools import cached_property
 from typing import TYPE_CHECKING
 
+import ring
+from backoff import constant, on_exception
+from selenium.common.exceptions import (
+    ElementClickInterceptedException,
+    ElementNotInteractableException,
+    TimeoutException,
+    WebDriverException,
+)
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
+from urllib3.exceptions import MaxRetryError
+
 from danboorutools import logger
 from danboorutools.exceptions import UnknownUrlError
 from danboorutools.logical.sessions.poipiku import PoipikuSession
@@ -15,6 +27,8 @@ from danboorutools.util.time import datetime_from_string
 if TYPE_CHECKING:
     from collections.abc import Iterator
     from datetime import datetime
+
+    from backoff._typing import Details
 
 
 class PoipikuUrl(Url):
@@ -47,8 +61,7 @@ class PoipikuArtistUrl(ArtistUrl, PoipikuUrl):
         self.session.unsubscribe(self.user_id)
 
     def _extract_assets(self) -> list[PoipikuHeaderImageUrl]:
-        self.session.init_browser()
-        self.session.browser.get(self.normalized_url)
+        self.session.browser_get(self.normalized_url)
         assert (style := self.session.browser.find_element("css selector", "style").get_attribute("innerHTML"))
         assert (match := re.search(r"background-image: url\('(.*?)'", style))
         header_url = PoipikuHeaderImageUrl.parse_and_assert("https:" + match.groups()[0])
@@ -56,11 +69,10 @@ class PoipikuArtistUrl(ArtistUrl, PoipikuUrl):
 
     def _extract_posts_from_each_page(self) -> Iterator[list[PoipikuPostUrl]]:
         page = 0
-        self.session.init_browser()
         while True:
             page_url = f"https://poipiku.com/IllustListPcV.jsp?PG={page}&ID={self.user_id}"
 
-            self.session.browser.get(page_url)
+            self.session.browser_get(page_url)
             post_els = self.session.browser.find_elements("css selector", "#IllustThumbList .IllustThumb a.IllustInfo")
             posts_urls = parse_list([p_e.get_attribute("href") for p_e in post_els], PoipikuPostUrl)
 
@@ -88,60 +100,107 @@ DUMMY_IMGS = [
 ]
 
 
+class MustRetryError(Exception):
+    pass
+
+
+def _restart_browser_on_self(params: Details) -> None:
+    self: PoipikuPostUrl = params["args"][0]
+    logger.debug("Browser got stuck. Restarting.")
+    try:
+        self.session.browser.quit()
+    except TimeoutError:
+        pass
+    del self.session.browser
+    self.session.init_browser.storage.backend.clear()
+
+
 class PoipikuPostUrl(PostUrl, PoipikuUrl):
     user_id: int
     post_id: int
 
     normalize_template = "https://poipiku.com/{user_id}/{post_id}.html"
 
+    @ring.lru()
     def _extract_assets(self) -> list[PoipikuImageUrl]:
-        self.session.init_browser()
-        browser = self.session.browser
-        if browser.current_url != self.normalized_url:
-            browser.get(self.normalized_url)
-
         try:
-            assert browser.find_elements("css selector", ".UserInfoCmdFollow.Selected")
-        except AssertionError:
-            browser.screenshot()
+            image_els = self._extract_images_from_page()
+        except AssertionError as e:
+            screenshot_path = self.session.browser.screenshot()
+            e.add_note(f"On {self}. Screenshot: {screenshot_path}")
             raise
-
-        if browser.find_elements("css selector", ".IllustItemExpandPass"):
-            logger.warning(f"Could not extract assets from {self} because of password protection.")
-            return []
-        if (expand := browser.find_elements("css selector", ".IllustItemExpandBtn")) and expand[0].is_displayed():
-            expand[0].click()
-            browser.wait_for_request("ShowAppendFileF", timeout=60)
-            time.sleep(1)
-
-        image_els = [
-            i_e.get_attribute("src") for i_e in
-            browser.find_elements("css selector", ".IllustItemThumbImg")
-        ]
-
-        if image_els == ["https://img.poipiku.com/img/warning.png_640.jpg"] and not expand:
-            # https://poipiku.com/3076546/6855175.html
-            if not browser.find_elements("css selector", ".DetailIllustItemImage"):
-                browser.find_elements("css selector", ".IllustItemThumbImg")[0].click()
-                browser.wait_for_request("ShowIllustDetailF")
-                time.sleep(1)
-            image_els = [
-                i_e.get_attribute("src") for i_e in
-                browser.find_elements("css selector", ".DetailIllustItemImage")
-            ]
-
-        image_els = [
-            img for img in image_els
-            if img not in DUMMY_IMGS
-        ]
-        assert image_els
 
         try:
             return parse_list(image_els, PoipikuImageUrl)
         except UnknownUrlError as e:  # unknown dummy images
-            screenshot_path = browser.screenshot()
-            e.add_note(f"Screenshot: {screenshot_path}")
+            screenshot_path = self.session.browser.screenshot()
+            e.add_note(f"On {self}. Screenshot: {screenshot_path}")
             raise
+
+    @on_exception(
+        constant,
+        (MustRetryError, ConnectionRefusedError, WebDriverException, MaxRetryError),
+        max_tries=3,
+        interval=10,
+        jitter=None,
+        on_backoff=_restart_browser_on_self,
+    )
+    def _extract_images_from_page(self) -> list[str]:
+        browser = self.session.browser
+        if browser.current_url != self.normalized_url:
+            self.session.browser_get(self.normalized_url)
+
+        assert browser.find_elements("css selector", ".UserInfoCmdFollow.Selected")
+
+        if browser.find_elements("css selector", ".IllustItemExpandPass"):
+            logger.warning(f"Could not extract assets from {self} because of password protection.")
+            return []
+
+        expand = self._expand_images(".IllustItemExpandBtn", "ShowAppendFileF")
+        image_els = WebDriverWait(browser, 10)\
+            .until(ec.visibility_of_all_elements_located(("css selector", ".IllustItemThumbImg, .DetailIllustItemImage")))
+        images = [i_e.get_attribute("src") for i_e in image_els]
+
+        if images == ["https://img.poipiku.com/img/warning.png_640.jpg"] and not expand:
+            # https://poipiku.com/3076546/6855175.html
+            self._expand_images(".IllustItemThumb", "ShowIllustDetailF")
+            image_els = WebDriverWait(browser, 10)\
+                .until(ec.visibility_of_all_elements_located(("css selector", ".IllustItemThumbImg, .DetailIllustItemImage")))
+            images = [i_e.get_attribute("src") for i_e in image_els]
+
+        images = [img for img in images if img not in DUMMY_IMGS]
+
+        if not images:
+            raise MustRetryError
+        return images
+
+    def _expand_images(self, button_css: str, request_path: str) -> bool:
+        browser = self.session.browser
+
+        expand = browser.find_elements("css selector", button_css)
+
+        if not expand:
+            # logger.warning(f"Button '{button_css}' not found.")
+            return False
+
+        logger.debug(f"Clicking '{button_css}'.")
+        try:
+            expand[0].click()
+        except (ElementClickInterceptedException, ElementNotInteractableException):
+            # already clicked?
+            # fuck this gay retarded site
+            logger.warning(f"'{button_css}' was already clicked.")
+            return False
+
+        time.sleep(1)
+        logger.debug(f"Waiting for request to '{request_path}'.")
+
+        try:
+            browser.wait_for_request(request_path, timeout=5)
+        except TimeoutException:
+            logger.warning(f"Request to '{request_path}' wasn't found.")
+
+        return True
 
     @cached_property
     def created_at(self) -> datetime:

@@ -1,8 +1,10 @@
-
-
 import os
+from http.client import RemoteDisconnected
 
+from backoff import constant, on_exception
 from ring import lru
+from selenium.common.exceptions import TimeoutException
+from urllib3.exceptions import MaxRetryError
 
 from danboorutools import logger
 from danboorutools.logical.sessions import ScraperResponse, Session
@@ -17,9 +19,24 @@ class PoipikuSession(Session):
             {"name": "POIPIKU_CONTENTS_VIEW_MODE", "value": "1", "domain": ".poipiku.com"},
         ])
 
-    def subscribe(self, user_id: int) -> None:
+    @on_exception(constant, (TimeoutException, MaxRetryError, RemoteDisconnected), max_tries=3, interval=5, jitter=None)
+    def browser_get(self, url: str) -> None:
         self.init_browser()
 
+        try:
+            self.browser.get(url)
+        except TimeoutException:
+            pass
+
+        try:  # check if it's a real timeoutexception or just selenium being retarded
+            assert self.browser.current_url
+        except (TimeoutException, MaxRetryError):
+            self.browser.quit()
+            del self.browser
+            self.init_browser.storage.backend.clear()
+            raise
+
+    def subscribe(self, user_id: int) -> None:
         browser = self.browser
         browser.get(f"https://poipiku.com/{user_id}/")
         follow_button = browser.find_element("css selector", ".UserInfoCmdFollow")
@@ -31,8 +48,6 @@ class PoipikuSession(Session):
         assert follow_button.text == "★unfollow"
 
     def unsubscribe(self, user_id: int) -> None:
-        self.init_browser()
-
         browser = self.browser
         browser.get(f"https://poipiku.com/{user_id}/")
         follow_button = browser.find_element("css selector", ".UserInfoCmdFollow")
