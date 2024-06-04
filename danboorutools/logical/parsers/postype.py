@@ -15,6 +15,17 @@ class PostypeComParser(UrlParser):
     @staticmethod
     def _match_no_subdomain(parsable_url: ParsableUrl) -> p.PostypeUrl | None:
         match parsable_url.url_parts:
+            # https://www.postype.com/@luland/post/16389638
+            case username, "post", post_id if username.startswith("@"):
+                return p.PostypePostUrl(parsed_url=parsable_url,
+                                        post_id=int(post_id),
+                                        username=username)
+
+            # https://www.postype.com/@luland/
+            case username, if username.startswith("@"):
+                return p.PostypeArtistUrl(parsed_url=parsable_url,
+                                          username=username)
+
             # https://www.postype.com/profile/@6qyflt
             case "profile", user_id if user_id.startswith("@"):
                 return p.PostypeBadArtistUrl(parsed_url=parsable_url,

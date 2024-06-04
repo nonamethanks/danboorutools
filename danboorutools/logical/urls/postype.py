@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 
+from danboorutools.logical.sessions.postype import PostypeSession, PostypeUserData
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url, parse_list
 from danboorutools.util.misc import extract_urls_from_string
 
@@ -17,18 +18,21 @@ if TYPE_CHECKING:
 
 
 class PostypeUrl(Url):
-    ...
+    session = PostypeSession()
 
 
 class PostypeArtistUrl(ArtistUrl, PostypeUrl):
     username: str
 
-    normalize_template = "https://{username}.postype.com"
+    normalize_template = "https://www.postype.com/@{username}"
+
+    @property
+    def artist_data(self) -> PostypeUserData:
+        return self.session.user_data(self.username)
 
     @property
     def primary_names(self) -> list[str]:
-        assert (name_el := self.html.select_one(".ch-home-author-bio .profile-title"))
-        return [name_el.text.strip()]
+        return [self.artist_data.title]
 
     @property
     def secondary_names(self) -> list[str]:
@@ -36,11 +40,7 @@ class PostypeArtistUrl(ArtistUrl, PostypeUrl):
 
     @property
     def related(self) -> list[Url]:
-        assert (bio_el := self.html.select_one(".author-bio"))
-        if not bio_el.select("p"):
-            return []
-        assert (bio_element := bio_el.select_one("p"))
-        return list(map(Url.parse, extract_urls_from_string(bio_element.text)))
+        return self.artist_data.links
 
     def _extract_assets(self) -> list:
         return []
@@ -78,14 +78,14 @@ class PostypeSeriesUrl(ArtistAlbumUrl, PostypeUrl):
     series_id: int
     username: str
 
-    normalize_template = "https://{username}.postype.com/series/{series_id}"
+    normalize_template = "https://www.postype.com/@{username}/series/{series_id}"
 
 
 class PostypePostUrl(PostUrl, PostypeUrl):
     post_id: int
     username: str
 
-    normalize_template = "https://{username}.postype.com/post/{post_id}"
+    normalize_template = "https://www.postype.com/@{username}/post/{post_id}"
 
     @cached_property
     def post_data(self) -> BeautifulSoup:
