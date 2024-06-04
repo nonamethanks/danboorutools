@@ -1,4 +1,5 @@
 import re
+from functools import cached_property
 
 from danboorutools.models.url import ArtistUrl, Url
 
@@ -42,6 +43,10 @@ class XfolioArtistUrl(ArtistUrl, XfolioUrl):
     @property
     def secondary_names(self) -> list[str]:
         return [self.username]
+
+    @cached_property
+    def is_deleted(self) -> bool:
+        return "ページが見つかりません。" in str(self.html)
 
 
 class XfolioPostUrl(ArtistUrl, XfolioUrl):
