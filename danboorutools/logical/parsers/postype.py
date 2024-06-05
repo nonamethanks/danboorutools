@@ -19,22 +19,22 @@ class PostypeComParser(UrlParser):
             case username, "post", post_id if username.startswith("@"):
                 return p.PostypePostUrl(parsed_url=parsable_url,
                                         post_id=int(post_id),
-                                        username=username)
+                                        username=username.removeprefix("@"))
 
             # https://www.postype.com/@luland/
             case username, if username.startswith("@"):
                 return p.PostypeArtistUrl(parsed_url=parsable_url,
-                                          username=username)
+                                          username=username.removeprefix("@"))
 
             # https://www.postype.com/profile/@6qyflt
             case "profile", user_id if user_id.startswith("@"):
                 return p.PostypeBadArtistUrl(parsed_url=parsable_url,
-                                             user_id=user_id)
+                                             user_id=user_id.removeprefix("@"))
 
             # https://www.postype.com/profile/@efuki0/posts
             case "profile", user_id, "posts" if user_id.startswith("@"):
                 return p.PostypeBadArtistUrl(parsed_url=parsable_url,
-                                             user_id=user_id)
+                                             user_id=user_id.removeprefix("@"))
 
             case _:
                 return None

@@ -3,13 +3,13 @@ from __future__ import annotations
 import os
 from datetime import UTC, datetime
 from functools import cached_property
+from itertools import count, repeat, starmap
 from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 
-from danboorutools.logical.sessions.postype import PostypeSession, PostypeUserData
+from danboorutools.logical.sessions.postype import PostypePostData, PostypeSession, PostypeUserData
 from danboorutools.models.url import ArtistAlbumUrl, ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url, parse_list
-from danboorutools.util.misc import extract_urls_from_string
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -45,18 +45,11 @@ class PostypeArtistUrl(ArtistUrl, PostypeUrl):
     def _extract_assets(self) -> list:
         return []
 
-    def _extract_posts_from_each_page(self) -> Iterator[list[str]]:
-        page_template = "https://{username}.postype.com/posts/page/{page_number}"
-        page_number = 1
-        while True:
-            page = self.session.get(page_template.format(username=self.username, page_number=page_number)).html
+    def _extract_posts_from_each_page(self) -> Iterator[list[PostypePostData]]:
+        return starmap(self.session.user_posts, zip(repeat(self.username), count(1), strict=True))
 
-            yield [post.attrs["href"] for post in page.select(".post-list .post-data-thumbnail > a")]
-
-            page_number += 1
-
-    def _process_post(self, post_object: str) -> None:
-        post = PostypePostUrl.parse_and_assert(post_object)
+    def _process_post(self, post_object: PostypePostData) -> None:
+        post = PostypePostUrl.build(username=post_object.channelName, post_id=post_object.id)
 
         self._register_post(
             post,
@@ -101,18 +94,18 @@ class PostypePostUrl(PostUrl, PostypeUrl):
         return 0
 
     @cached_property
-    def created_at(self) -> str:
+    def created_at(self) -> datetime:
         return min(self._extract_assets(), key=lambda a: a.created_at).created_at
 
     @cached_property
-    def gallery(self) -> list[PostypeArtistUrl]:
+    def gallery(self) -> PostypeArtistUrl:
         return PostypeArtistUrl.build(username=self.username)
 
 
 class PostypeBadArtistUrl(RedirectUrl, PostypeUrl):
     user_id: str
 
-    normalize_template = "https://www.postype.com/profile/{user_id}"
+    normalize_template = "https://www.postype.com/profile/@{user_id}"
 
 
 class PostypeImageUrl(PostAssetUrl, PostypeUrl):
