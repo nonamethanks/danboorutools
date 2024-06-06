@@ -8,7 +8,7 @@ urls = {
     p.PostypeArtistUrl: {
         "https://muacmm.postype.com/": "https://www.postype.com/@muacmm",
         "https://peonrin.postype.com/series": "https://www.postype.com/@peonrin",
-        "https://peonrin.postype.com/@peonrin": "https://www.postype.com/@peonrin",
+        "https://www.postype.com/@peonrin": "https://www.postype.com/@peonrin",
     },
     p.PostypeSeriesUrl: {
         "https://soojaeng.postype.com/series/626542": "https://www.postype.com/@soojaeng/series/626542",
