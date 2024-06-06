@@ -90,7 +90,7 @@ class PatreonSession(Session):
         try:
             data = response.json()["data"]
             assert data["attributes"]["started_at"]
-            assert data["type"]["free-membership-subscription"]
+            assert data["type"] == "free-membership-subscription"
         except Exception as e:
             raise NotImplementedError(str(response.json())) from e
 
