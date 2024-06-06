@@ -30,7 +30,7 @@ class PatreonSession(Session):
             selector="script#__NEXT_DATA__",
         )
 
-        user_data = parsed_data["props"]["pageProps"]["bootstrapEnvelope"]["bootstrap"]
+        user_data = parsed_data["props"]["pageProps"]["bootstrapEnvelope"]["pageBootstrap"]
         csrf = parsed_data["props"]["pageProps"]["bootstrapEnvelope"]["csrfSignature"]
 
         try:

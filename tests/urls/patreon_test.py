@@ -52,9 +52,10 @@ class TestPatreonArtistUrl1(_TestArtistUrl):
     url_properties = dict(username="himetyanart")
     primary_names = ["Hime-Tyan Art"]
     secondary_names = ["himetyanart"]
-    related = ["https://www.instagram.com/tyanka6",
-               "https://twitter.com/Antyan87884404",
-               "https://www.youtube.com/channel/UC2XXjmV5QdgkT4iJlkk-1ew"]
+    related = [
+        "https://www.instagram.com/tyanka6",
+        "https://twitter.com/Antyan87884404",
+    ]
     assets = [
         "https://c10.patreonusercontent.com/4/patreon-media/p/reward/3801428/d034197039534b209fcba2c405159332/eyJ3Ijo0MDB9/2.jpg?token-time=2145916800&token-hash=APzkJ2A-hQ8vdtiOExO1_jVK3fMHflAdiLDxg3OiGJ0%3D",
         "https://c10.patreonusercontent.com/4/patreon-media/p/reward/3801432/a706ca3033fc49c68c87763544c24526/eyJ3Ijo0MDB9/2.jpg?token-time=2145916800&token-hash=6JCvaY7UnIItugsF-NFrIc90Ljk4DGqAOXYsvsP4eEo%3D",
