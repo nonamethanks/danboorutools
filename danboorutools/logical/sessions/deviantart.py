@@ -57,9 +57,10 @@ class DeviantartSession(Session):
             post_process=lambda x: x.encode("utf-8").decode("unicode_escape"),
         )
 
-        about_data, = (module for module in parsed_json["modules"].values() if module["type"] == "about")
+        modules = next(iter(parsed_json["@@gruser"]["grusers"].values()))["modules"]
+        about_data, = (module for module in modules.values() if module["name"] == "about")
 
-        return DeviantartUserData(**about_data["moduleData"] | {"session_data": parsed_json["@@publicSession"]})
+        return DeviantartUserData(**about_data["moduleData"]["about"] | {"session_data": parsed_json["@@publicSession"]})
 
     def get_posts(self, username: str, offset: int = 0) -> DeviantartPostsApiData:
         params = {
