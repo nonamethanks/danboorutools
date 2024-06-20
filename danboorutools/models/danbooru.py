@@ -219,7 +219,7 @@ class DanbooruFlag(DanbooruModel):
     danbooru_model_name = "post_flag"
 
     post: DanbooruPost
-    creator: DanbooruUser
+    creator: DanbooruUser | None = None
 
     reason: str
     status: str

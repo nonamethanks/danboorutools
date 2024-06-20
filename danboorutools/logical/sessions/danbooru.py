@@ -52,7 +52,7 @@ class DanbooruApi(Session):
         "comment": "id,created_at,is_deleted,post,creator,body,score",
         "media_asset": "id,created_at,md5,file_ext,file_size,image_width,image_height,duration,pixel_hash,variants,post",
         "post_appeal": "id,created_at,post,creator,reason,status",
-        "post_flag": "id,created_at,reason,post,creator,is_resolved,status,category",
+        "post_flag": "id,created_at,reason,post,is_resolved,status,category",
         "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
         "post_replacement": "id,created_at,post",
         "post_vote": "id,created_at,score,is_deleted,user,post",
