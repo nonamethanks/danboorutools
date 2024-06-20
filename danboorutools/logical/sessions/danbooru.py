@@ -49,6 +49,7 @@ class DanbooruApi(Session):
         "artist": "id,created_at,name,other_names,is_deleted,is_banned,tag,urls",
         "ban": "id,created_at,duration,reason,user,banner",
         "comment_vote": "id,created_at,score,is_deleted,user,comment",
+        "comment": "id,created_at,is_deleted,post,creator,body,score",
         "media_asset": "id,created_at,md5,file_ext,file_size,image_width,image_height,duration,pixel_hash,variants,post",
         "post_appeal": "id,created_at,post,creator,reason,status",
         "post_flag": "id,created_at,reason,post,creator,is_resolved,status,category",
@@ -134,6 +135,9 @@ class DanbooruApi(Session):
 
     def bans(self, **kwargs) -> list[models.DanbooruBan]:
         return self._generic_endpoint(models.DanbooruBan, **kwargs)
+
+    def comments(self, **kwargs) -> list[models.DanbooruComment]:
+        return self._generic_endpoint(models.DanbooruComment, **kwargs)
 
     def comment_votes(self, **kwargs) -> list[models.DanbooruCommentVote]:
         return self._generic_endpoint(models.DanbooruCommentVote, **kwargs)

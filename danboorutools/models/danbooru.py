@@ -183,10 +183,11 @@ class DanbooruUser(DanbooruModel):
 class DanbooruComment(DanbooruModel):
     danbooru_model_name = "comment"
 
-    user: DanbooruUser | None = None
-    user_id: int | None = None
-    post: DanbooruPost | None = None
-    post_id: int | None = None
+    post: DanbooruPost
+    creator: DanbooruUser
+
+    body: str
+    score: int
 
 
 class DanbooruPostVote(DanbooruModel):
@@ -200,9 +201,18 @@ class DanbooruPostVote(DanbooruModel):
 class DanbooruCommentVote(DanbooruModel):
     danbooru_model_name = "comment_vote"
 
-    comment: DanbooruComment
+    comment: DanbooruCommentForVote
     user: DanbooruUser
     score: int
+
+
+class DanbooruCommentForVote(DanbooruModel):
+    danbooru_model_name = "comment"
+
+    user: DanbooruUser | None = None
+    user_id: int | None = None
+    post: DanbooruPost | None = None
+    post_id: int | None = None
 
 
 class DanbooruFlag(DanbooruModel):
