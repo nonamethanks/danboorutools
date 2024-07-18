@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from danboorutools.logical.sessions import Session
+from danboorutools.logical.urls.instagram import InstagramArtistUrl
+from danboorutools.logical.urls.twitter import TwitterArtistUrl
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
@@ -22,8 +24,18 @@ class VgenArtistData(BaseModel):
     @property
     def related_urls(self) -> list[Url]:
         urls = [Url.parse(social["link"]) for social in self.socials]
-        if any(self.contactSocials.values()):
-            raise NotImplementedError(self.contactSocials)
+        for site_name, handle in self.contactSocials.items():
+            if not handle:
+                continue
+
+            if site_name == "discord":
+                pass
+            elif site_name == "twitter":
+                urls += [TwitterArtistUrl.build(username=handle)]
+            elif site_name == "instagram":
+                urls += [InstagramArtistUrl.build(username=handle)]
+            else:
+                raise NotImplementedError(site_name, handle)
 
         urls += list(map(Url.parse, extract_urls_from_string(self.bio)))
-        return urls
+        return list(set(urls))

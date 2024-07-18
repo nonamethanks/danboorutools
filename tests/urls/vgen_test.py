@@ -24,10 +24,23 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-class TestVgenArtistUrl(_TestArtistUrl):
+class TestVgenArtistUr1(_TestArtistUrl):
     url_string = "http://vgen.co/LuluSensei"
     url_type = VgenArtistUrl
     url_properties = dict(username="LuluSensei")
     primary_names = ["LuluSensei"]
     secondary_names = ["LuluSensei"]
     related = ["https://twitter.com/LuluannSensei", "https://www.artstation.com/lulusensei"]
+
+
+class TestVgenArtistUrl2(_TestArtistUrl):
+    url_string = "https://vgen.co/SharonDA12"
+    url_type = VgenArtistUrl
+    url_properties = dict(username="SharonDA12")
+    primary_names = ["SharonDA12"]
+    secondary_names = ["SharonDA12"]
+    related = ["https://twitter.com/sharondadele1",
+               "https://www.instagram.com/sharondadele1",
+               "https://www.deviantart.com/sharonda1",
+               "https://www.pixiv.net/en/users/37948000",
+               "https://sharonda.carrd.co"]
