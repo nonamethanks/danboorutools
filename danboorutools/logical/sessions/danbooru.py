@@ -50,6 +50,7 @@ class DanbooruApi(Session):
         "ban": "id,created_at,duration,reason,user,banner",
         "comment_vote": "id,created_at,score,is_deleted,user,comment",
         "comment": "id,created_at,is_deleted,post,creator,body,score",
+        "forum_post": "id,created_at,updated_at,is_deleted,creator,topic,body",
         "media_asset": "id,created_at,md5,file_ext,file_size,image_width,image_height,duration,pixel_hash,variants,post",
         "post_appeal": "id,created_at,post,creator,reason,status",
         "post_flag": "id,created_at,reason,post,is_resolved,status,category",
@@ -150,6 +151,9 @@ class DanbooruApi(Session):
 
     def media_assets(self, **kwargs) -> list[models.DanbooruMediaAsset]:
         return self._generic_endpoint(models.DanbooruMediaAsset, **kwargs)
+
+    def forum_posts(self, **kwargs) -> list[models.DanbooruForumPost]:
+        return self._generic_endpoint(models.DanbooruForumPost, **kwargs)
 
     def flags(self, **kwargs) -> list[models.DanbooruFlag]:
         return self._generic_endpoint(models.DanbooruFlag, **kwargs)

@@ -215,6 +215,26 @@ class DanbooruCommentForVote(DanbooruModel):
     post_id: int | None = None
 
 
+class DanbooruForumTopic(DanbooruModel):
+    danbooru_model_name = "forum_topic"
+
+    title: str
+    is_sticky: bool
+    is_locked: bool
+
+    min_level: int
+    category_id: int
+
+
+class DanbooruForumPost(DanbooruModel):
+    danbooru_model_name = "forum_post"
+
+    creator: DanbooruUser
+    topic: DanbooruForumTopic
+
+    body: str
+
+
 class DanbooruFlag(DanbooruModel):
     danbooru_model_name = "post_flag"
 

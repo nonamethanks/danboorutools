@@ -34,7 +34,13 @@ class SkebSession(Session):
             return request
 
     def artist_data(self, username: str) -> SkebArtistData:
-        response = self.get(f"https://skeb.jp/api/users/{username}").json()
+        response = self.get(
+            f"https://skeb.jp/api/users/{username}",
+            headers={
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin",
+            },
+        ).json()
 
         return SkebArtistData(**response)
 
