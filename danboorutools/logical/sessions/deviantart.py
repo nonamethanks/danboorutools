@@ -112,7 +112,7 @@ class DeviantartUserData(BaseModel):
             elif description["type"] == "draft":
                 data = json.loads(description["markup"])
                 for entity in data["entityMap"].values():
-                    if entity["type"] in ["DA_OFF_EMOTE", "wix-draft-plugin-image"]:
+                    if entity["type"] in ["DA_OFF_EMOTE", "DA_COMM_EMOTE", "wix-draft-plugin-image"]:
                         continue
                     if entity["type"] != "LINK":
                         raise NotImplementedError(entity)
