@@ -75,8 +75,8 @@ class ArtistFinder:
                 logger.error(f"Couldn't extract an artist for post {post}.")
                 self.skipped_posts.value = [*self.skipped_posts.value, post.id]
 
-                assert source.is_deleted
-                danbooru_api.update_post_tags(post, ["bad_id"])
+                #assert source.is_deleted
+                #danbooru_api.update_post_tags(post, ["bad_id"]) # lofter broke
                 return False
         else:
             assert artist_url
