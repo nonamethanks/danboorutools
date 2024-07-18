@@ -19,18 +19,22 @@ logger.log_to_file()
 
 
 @click.command()
-@click.option("--since", type=int, default=0)
-def main(since: int) -> None:
-    reference_post, = danbooru_api.posts(tags=[f"id:{since}"])
-    since_date = reference_post.created_at
+@click.option("--sinceid", type=int, default=0)
+@click.option("--maxid", type=int, default=0)
+def main(sinceid: int, maxid: int) -> None:
+    maxid = maxid or sinceid
 
-    flags = collect_flags(since=since_date)
+    reference_post, = danbooru_api.posts(tags=[f"id:{sinceid}"])
+    since = reference_post.created_at
+
+    flags = collect_flags(since=since)
     logger.info(f"{"#"*40} FLAGS {"#"*40}")
+    flags = [f for f in flags if f.post.id < maxid]
     for chunk in batched(flags, 500):
         logger.info(f"https://danbooru.donmai.us/posts?tags=-status:active+id:{",".join(str(flag.post.id) for flag in chunk)}")
 
-    appeals = collect_appeals(since=since_date)
-    appeals = [a for a in appeals if a.created_at > a.post.created_at + timedelta(days=7)]
+    appeals = collect_appeals(since=since)
+    appeals = [a for a in appeals if a.created_at > a.post.created_at + timedelta(days=7) and a.post.id < maxid]
     logger.info(f"{"#"*40} APPEALS {"#"*40}")
     for chunk in batched(appeals, 500):
         logger.info(f"https://danbooru.donmai.us/posts?tags=-status:active+id:{",".join(str(appeal.post.id) for appeal in chunk)}")

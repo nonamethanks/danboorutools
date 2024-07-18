@@ -30,6 +30,7 @@ class ArtstationSession(Session):
             try:
                 return super().request(*args, verify=verify, **kwargs)
             except HTTPError as e:
+                assert e.response
                 if e.status_code == 502 and\
                         "ArtStation is currently undergoing maintenance and will be back online shortly!" in e.response.text:
                     raise MaintenanceError(e.response) from e
