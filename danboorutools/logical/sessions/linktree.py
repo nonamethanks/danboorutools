@@ -25,4 +25,4 @@ class LinktreeArtistData(BaseModel):
         if self.socialLinks:
             raise NotImplementedError(self.socialLinks)
 
-        return parse_list([link["url"] for link in self.links], Url)
+        return parse_list([link["url"] for link in self.links if link["url"]], Url)
