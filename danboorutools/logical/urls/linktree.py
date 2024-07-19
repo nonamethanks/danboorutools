@@ -1,7 +1,10 @@
+from danboorutools.logical.sessions.linktree import LinktreeSession
 from danboorutools.models.url import InfoUrl, Url
 
 
 class LinktreeUrl(InfoUrl):
+    session = LinktreeSession()
+
     username: str
 
     normalize_template = "https://linktr.ee/{username}"
@@ -16,8 +19,4 @@ class LinktreeUrl(InfoUrl):
 
     @property
     def related(self) -> list[Url]:
-        url_els = self.html.select("a[data-testid='LinkButton']")
-        if not url_els:
-            raise NotImplementedError(self)
-
-        return [Url.parse(el.attrs["href"]) for el in url_els]
+        return self.session.artist_data(self.username).related

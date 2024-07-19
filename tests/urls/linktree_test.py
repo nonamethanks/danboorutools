@@ -37,6 +37,6 @@ class TestKakuyomuArtistUrl(_TestInfoUrl):
         "https://www.patreon.com/himetyanart",
         "https://discordapp.com/users/1018473584835964939/",
         "https://www.pixiv.net/en/users/91907481",
-        "https://ko-fi.com/himetyanart",
-        "https://drive.google.com/file/d/1RkuVu_WGlEmpmholNV-EKD1CcQCR62C1/view?usp=sharing",
+        "https://twitch.tv/himetyanart",
+        "https://drive.google.com/drive/folders/1GgjZXIGrhxvXnAxf4P_gxaov-QUuBX73",
     ]
