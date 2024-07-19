@@ -75,7 +75,7 @@ class UrlParser:
 
     @staticmethod
     def _parse(url: str) -> Url | None:
-        parsable_url = ParsableUrl(url)
+        parsable_url = ParsableUrl(url)  # TODO: investigate pydantic v2 AnyHttpUrl
         parser = parsers.get(parsable_url.domain.lower())
         if not parser:
             return None
