@@ -8,6 +8,7 @@ urls = {
         "https://www.instagram.com/itomugi/": "https://www.instagram.com/itomugi",
         "https://www.instagram.com/itomugi/tagged/": "https://www.instagram.com/itomugi",
         "https://www.instagram.com/stories/itomugi/": "https://www.instagram.com/itomugi",
+        "https://www.instagram.com/accounts/login/?next=https%3A%2F%2Fwww.instagram.com%2Fed_bkh%2F&is_from_rle": "https://www.instagram.com/ed_bkh"
     },
     InstagramPostUrl: {
         "https://www.instagram.com/p/CbDW9mVuEnn/": "https://www.instagram.com/p/CbDW9mVuEnn",
