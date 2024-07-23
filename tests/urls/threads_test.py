@@ -28,6 +28,6 @@ class TestThreadsArtistUrl(_TestArtistUrl):
     url_string = "https://www.threads.net/@mawari5577"
     url_type = ThreadsArtistUrl
     url_properties = dict(username="mawari5577")
-    primary_names = ["海猫まわり"]
+    primary_names = []
     secondary_names = ["mawari5577"]
-    related = ["https://www.instagram.com/mawari5577/"]
+    related = []
