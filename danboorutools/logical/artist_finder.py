@@ -13,7 +13,7 @@ from pydantic import ValidationError
 from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
-from danboorutools.exceptions import DeadUrlError, RateLimitError
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.progress_tracker import ProgressTracker
 from danboorutools.logical.sessions.ascii2d import Ascii2dArtistResult, Ascii2dSession
 from danboorutools.logical.sessions.danbooru import danbooru_api
@@ -75,8 +75,8 @@ class ArtistFinder:
                 logger.error(f"Couldn't extract an artist for post {post}.")
                 self.skipped_posts.value = [*self.skipped_posts.value, post.id]
 
-                #assert source.is_deleted
-                #danbooru_api.update_post_tags(post, ["bad_id"]) # lofter broke
+                # assert source.is_deleted
+                # danbooru_api.update_post_tags(post, ["bad_id"]) # lofter broke
                 return False
         else:
             assert artist_url
@@ -178,6 +178,7 @@ class ArtistFinder:
         if unknown := list(filter(lambda x: isinstance(x, UnknownUrl), found_artist_urls)):
             raise NotImplementedError(unknown)
 
+        found_artist_urls = list(dict.fromkeys(found_artist_urls))
         logger.debug(f"Found urls: {", ".join(map(str, found_artist_urls))}")
         return found_artist_urls  # type: ignore[return-value] # false positive
 
@@ -195,17 +196,18 @@ class ArtistFinder:
         scanned_urls += [first_url]
 
         try:
-            if first_url.is_deleted:
+            if isinstance(first_url, InstagramUrl):
+                return list(dict.fromkeys(scanned_urls))
+            elif first_url.is_deleted:
                 return list(dict.fromkeys(scanned_urls))
         except (ReadTimeout, CloudflareChallengeError):
             return list(dict.fromkeys(scanned_urls))
-        except RateLimitError:
-            if isinstance(first_url, InstagramUrl):
-                return list(dict.fromkeys(scanned_urls))
-            raise
         except ValidationError as e:
             e.add_note(f"While crawling url {first_url}...")
             raise
+
+        if isinstance(first_url, UnsupportedUrl):
+            return scanned_urls
 
         try:
             related_urls = first_url.related
