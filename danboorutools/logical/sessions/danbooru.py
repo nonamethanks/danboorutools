@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Literal, TypeVar
 
 from backoff import expo, on_exception
 from cloudscraper.exceptions import CloudflareChallengeError
+from requests import JSONDecodeError
 from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
@@ -91,9 +92,9 @@ class DanbooruApi(Session):
         if not response.ok:
             raise DanbooruHTTPError(response)
 
-        if endpoint.endswith(".json") and method not in ["PUT", "DELETE"]:
+        try:
             return response.json()
-        else:
+        except JSONDecodeError:
             return {"success": True}
 
     def posts(self, tags: list[str], page: int | str = 1) -> list[models.DanbooruPost]:
@@ -242,7 +243,7 @@ class DanbooruApi(Session):
             },
         }
         response = self.danbooru_request("PUT", f"posts/{post.id}.json", json=data)
-        assert isinstance(response, dict) and response["success"] is True
+        assert isinstance(response, dict)
 
     def replace(self,
                 post: models.DanbooruPost,
