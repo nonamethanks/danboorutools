@@ -11,6 +11,7 @@ from danboorutools.logical.urls.booth import BoothArtistUrl
 from danboorutools.logical.urls.fanbox import FanboxArtistUrl
 from danboorutools.logical.urls.fantia import FantiaFanclubUrl
 from danboorutools.logical.urls.fanza import FanzaDoujinAuthorUrl
+from danboorutools.logical.urls.misskey import MisskeyUserUrl
 from danboorutools.logical.urls.patreon import PatreonArtistUrl
 from danboorutools.logical.urls.pixiv import PixivArtistUrl
 from danboorutools.logical.urls.twitter import TwitterArtistUrl, TwitterIntentUrl
@@ -230,6 +231,8 @@ class SkebArtistData(BaseModel):
         for data in self.user_service_links:
             if data["provider"] == "twitter":
                 urls += [TwitterArtistUrl.build(username=data["screen_name"])]
+            elif data["provider"] == "misskey_io":
+                urls += [MisskeyUserUrl.build(username=data["screen_name"])]
             else:
                 raise NotImplementedError(data)
 
