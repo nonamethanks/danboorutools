@@ -45,4 +45,4 @@ class LitLinkArtistData(BaseModel):
                 case _:
                     raise NotImplementedError(profile_link)
 
-        return list({Url.parse(u) for u in urls if u})
+        return list({Url.parse(u) for u in urls if u and u.startswith("http")})
