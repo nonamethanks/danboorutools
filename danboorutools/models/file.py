@@ -162,7 +162,10 @@ class ImageFile(File):
             img = Image.open(self.path)
             if (profile := img.info.get("icc_profile", "")):
                 srgb_profile = ImageCms.createProfile("sRGB")
-                img = ImageCms.profileToProfile(img, BytesIO(profile), srgb_profile)
+                try:
+                    img = ImageCms.profileToProfile(img, BytesIO(profile), srgb_profile)
+                except ImageCms.PyCMSError:
+                    pass
 
             img = img.convert("RGBA")
 
