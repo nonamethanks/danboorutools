@@ -175,7 +175,7 @@ class SkebArtistData(BaseModel):
     patreon_id: str | None
     pixiv_id: int | None
     skima_id: int | None
-    twitter_uid: int
+    twitter_uid: int | None
     # twitter_screen_name: str | None  # for some reason it can be None even if twitter_uid is not
     youtube_id: str | None
 
