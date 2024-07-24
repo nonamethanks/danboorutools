@@ -1,4 +1,3 @@
-
 from collections.abc import Iterator
 
 from danboorutools.logical.sessions.mastodon import MastodonPostData, MastodonSession
