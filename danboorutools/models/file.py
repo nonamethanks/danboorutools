@@ -191,7 +191,7 @@ class ImageFile(File):
     def thumbnail(self, max_w: int = 100, max_h: int = 100, quality: int = 90, final_dir: str | Path = "/tmp") -> Path:  # noqa: S108
         thumb_path = Path(final_dir) / f"{self.md5}_thumb.jpg"
         with Image.open(self.path) as img:
-            if img.mode in ("RGBA", "P"):
+            if img.mode in ("RGBA", "LA", "P"):
                 img = img.convert("RGB")  # noqa: PLW2901
             img.thumbnail((max_w, max_h))
             img.save(thumb_path, quality=quality, optimize=True)
