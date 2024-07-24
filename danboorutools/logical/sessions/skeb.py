@@ -25,6 +25,11 @@ class SkebSession(Session):
         if is_retry:
             self.login()
         kwargs["headers"] = kwargs.get("headers", {}) | {"Authorization": f"Bearer {self.bearer}"}
+        if "/api/" in args[1]:
+            kwargs["headers"] |= {
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin",
+            }
         try:
             request = super().request(*args, **kwargs)
         except NotAuthenticatedError:
@@ -35,13 +40,7 @@ class SkebSession(Session):
             return request
 
     def artist_data(self, username: str) -> SkebArtistData:
-        response = self.get(
-            f"https://skeb.jp/api/users/{username}",
-            headers={
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-origin",
-            },
-        ).json()
+        response = self.get(f"https://skeb.jp/api/users/{username}").json()
 
         return SkebArtistData(**response)
 
@@ -126,7 +125,7 @@ class SkebSession(Session):
             raise NotImplementedError(feed_data)
         return [SkebPostFromPageData(**post) for post in feed_data]
 
-    def get_posts(self, username: str, offset: int) -> list[SkebPostData]:
+    def get_posts(self, username: str, offset: int) -> list[SkebPostFromPageData]:
         url = f"https://skeb.jp/api/users/{username}/works?role=creator&sort=date&offset={offset}"
         response = self.get(url).json()
         return [SkebPostFromPageData(**post) for post in response]
