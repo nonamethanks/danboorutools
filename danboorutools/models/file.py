@@ -160,12 +160,16 @@ class ImageFile(File):
 
         try:
             img = Image.open(self.path)
-            if (profile := img.info.get("icc_profile", "")):
+            if (profile_bytes := img.info.get("icc_profile", "")):
+                old_profile = ImageCms.ImageCmsProfile(BytesIO(profile_bytes))
                 srgb_profile = ImageCms.createProfile("sRGB")
                 try:
-                    img = ImageCms.profileToProfile(img, BytesIO(profile), srgb_profile)
+                    img = ImageCms.profileToProfile(img, old_profile, srgb_profile)
                 except ImageCms.PyCMSError:
-                    pass
+                    if old_profile.profile.xcolor_space == "GRAY":
+                        pass
+                    else:
+                        raise
 
             img = img.convert("RGBA")
 
