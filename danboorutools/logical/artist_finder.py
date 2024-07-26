@@ -349,6 +349,9 @@ class ArtistFinder:
 
         potential_tag = emoji.replace_emoji(potential_tag, "")
 
+        if not potential_tag:
+            return potential_tag
+
         if not re.match("^[\x00-\x7F]+$", potential_tag):
             potential_tag = cls.romanize_tag_name(potential_tag)
 
