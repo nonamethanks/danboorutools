@@ -157,9 +157,9 @@ class Url(metaclass=PseudoDataclass):
         current_module = self.__module__
         subfolder, submodule = current_module.rsplit(".", 1)
         if not subfolder.endswith("danboorutools.logical.urls"):
-            raise NotImplementedError("Site name unknown")
+            raise NotImplementedError(f"Site name unknown for '{self}'. Couldn't extract name from subfolder '{subfolder}'.")
         if not submodule:
-            raise NotImplementedError("Site name unknown")
+            raise NotImplementedError(f"Site name unknown for '{self}'. Couldn't extract name from submodule '{current_module}'.")
         return submodule
 
 
