@@ -52,8 +52,8 @@ class SkebSession(Session):
     def login(self) -> None:
         logger.info("Logging into skeb.")
         browser = self.browser
-        browser.get("https://skeb.jp")
-        sign_in = browser.find_elements_by_text("Sign in")
+        browser.get("https://skeb.jp/signin")
+        sign_in = browser.find_elements_by_text("Login with X")
         sign_in[-1].click()
 
         username = browser.find_element("name", "session[username_or_email]")
@@ -114,16 +114,23 @@ class SkebSession(Session):
     #     (settings.BASE_FOLDER / "cookies" / "skeb_bearer.txt").write_text(bearer, encoding="utf-8")
     #     self.save_cookies("_interslice_session")
 
-    def get_feed(self, offset: int | None = None, limit: int | None = None) -> list[SkebPostFromPageData]:
+    def get_feed(self, offset: int | None = None, limit: int | None = None, retry: bool = False) -> list[SkebPostFromPageData]:
         username = os.environ["SKEB_USERNAME"]
-        offset = offset or 0
-        limit = limit or 90
-        feed_data = self.get(f"https://skeb.jp/api/users/{username}/following_works?sort=date&offset={offset}&limit={limit}").json()
-        if not feed_data:
-            raise NotImplementedError("No posts found. Check cookies.")
-        if not isinstance(feed_data, list):
-            raise NotImplementedError(feed_data)
-        return [SkebPostFromPageData(**post) for post in feed_data]
+
+        params = {
+            "sort": "date",
+            "offset": offset or 0,
+            "limit": limit or 90,
+        }
+        feed_request = self.get(f"https://skeb.jp/api/users/{username}/following_works", params=params)
+
+        if not feed_request.json():
+            if retry:
+                raise NotAuthenticatedError("Could not find any posts in the feed.")
+            logger.info("Could not find any posts in the feed. Logging in and retrying.")
+            self.login()
+            return self.get_feed(offset=offset, limit=limit, retry=True)
+        return [SkebPostFromPageData(**post) for post in feed_request.json()["following_works"]]
 
     def get_posts(self, username: str, offset: int) -> list[SkebPostFromPageData]:
         url = f"https://skeb.jp/api/users/{username}/works?role=creator&sort=date&offset={offset}"
