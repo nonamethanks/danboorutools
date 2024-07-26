@@ -50,6 +50,7 @@ class SkebSession(Session):
         return bearer
 
     def login(self) -> None:
+        raise NotImplementedError("Not implemented")
         logger.info("Logging into skeb.")
         browser = self.browser
         browser.get("https://skeb.jp/signin")
@@ -122,15 +123,16 @@ class SkebSession(Session):
             "offset": offset or 0,
             "limit": limit or 90,
         }
-        feed_request = self.get(f"https://skeb.jp/api/users/{username}/following_works", params=params)
+        feed_request = self.get(f"https://skeb.jp/api/users/{username}/followings", params=params).json()
 
-        if not feed_request.json():
+        if not feed_request["following_works"]:
             if retry:
-                raise NotAuthenticatedError("Could not find any posts in the feed.")
+                raise NotImplementedError("Could not find any posts in the feed.")
             logger.info("Could not find any posts in the feed. Logging in and retrying.")
             self.login()
             return self.get_feed(offset=offset, limit=limit, retry=True)
-        return [SkebPostFromPageData(**post) for post in feed_request.json()["following_works"]]
+
+        return [SkebPostFromPageData(**post) for post in feed_request["following_works"]]
 
     def get_posts(self, username: str, offset: int) -> list[SkebPostFromPageData]:
         url = f"https://skeb.jp/api/users/{username}/works?role=creator&sort=date&offset={offset}"
