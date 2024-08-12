@@ -1,11 +1,12 @@
 from functools import cached_property
 
-from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url
+from danboorutools.logical.sessions.lofter import LofterBlogData, LofterSession
+from danboorutools.models.url import ArtistUrl, PostAssetUrl, PostUrl, RedirectUrl, Url, parse_list
 from danboorutools.util.misc import extract_urls_from_string
 
 
 class LofterUrl(Url):
-    pass
+    session = LofterSession()
 
 
 class LofterArtistUrl(ArtistUrl, LofterUrl):
@@ -14,11 +15,14 @@ class LofterArtistUrl(ArtistUrl, LofterUrl):
     normalize_template = "https://{username}.lofter.com"
 
     @property
+    def artist_data(self) -> LofterBlogData:
+        return self.session.blog_data(blog_name=self.username)
+
+    @property
     def primary_names(self) -> list[str]:
         if self.is_deleted:
             return []
-        assert (artist_name := self.html.select_one("title"))
-        return [artist_name.text]
+        return [self.artist_data.blogNickName]
 
     @property
     def secondary_names(self) -> list[str]:
@@ -28,8 +32,7 @@ class LofterArtistUrl(ArtistUrl, LofterUrl):
     def related(self) -> list[Url]:
         if self.is_deleted:
             return []
-        assert (commentary_el := self.html.select_one("meta[name='Description']"))
-        return [Url.parse(u) for u in extract_urls_from_string(commentary_el["content"])]
+        return parse_list(extract_urls_from_string(self.artist_data.selfIntro), ArtistUrl)
 
 
 class LofterPostUrl(PostUrl, LofterUrl):

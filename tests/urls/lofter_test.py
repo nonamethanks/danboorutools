@@ -24,7 +24,7 @@ urls = {
     },
     LofterRedirectArtistUrl: {
         "https://www.lofter.com/mentionredirect.do?blogId=1890789": "https://www.lofter.com/mentionredirect.do?blogId=1890789",
-    }
+    },
 }
 
 
@@ -62,6 +62,16 @@ class TestLofterArtistUrl3(_TestArtistUrl):
     primary_names = ["老祖祖"]
     secondary_names = ["chaodazu"]
     related = []
+
+
+class TestLofterArtistUrl4(_TestArtistUrl):
+    url_string = "https://asdfart.lofter.com/"
+    url_type = LofterArtistUrl
+    url_properties = dict(username="asdfart")
+    primary_names = []
+    secondary_names = ["asdfart"]
+    related = []
+    is_deleted = True
 
 
 class TestLofterRedirectArtistUrl(_TestRedirectUrl):
