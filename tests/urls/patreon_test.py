@@ -73,6 +73,16 @@ class TestPatreonArtistUrl2(_TestArtistUrl):
     is_deleted = True
 
 
+class TestPatreonArtistUrl3(_TestArtistUrl):
+    url_string = "https://www.patreon.com/kuro_gane"
+    url_type = PatreonArtistUrl
+    url_properties = dict(username="kuro_gane")
+    primary_names = []
+    secondary_names = ["kuro_gane"]
+    related = []
+    is_deleted = True
+
+
 class TestPatreonPostUrl(_TestPostUrl):
     url_string = "https://www.patreon.com/posts/wu-xiu-zheng-ku-92745989"
     url_type = PatreonPostUrl

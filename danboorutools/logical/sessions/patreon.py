@@ -43,7 +43,15 @@ class PatreonSession(Session):
                     raise NotImplementedError(user_data) from e
             if user_data["curtainType"] == "user_removed":
                 raise DeadUrlError(response) from e
-            raise NotImplementedError(user_data) from e
+
+            e.add_note(f"User data: {user_data}")
+            raise
+        except TypeError as e:
+            if user_data["curtainType"] == "campaign_removed":
+                raise DeadUrlError(response) from e
+
+            e.add_note(f"User data: {user_data}")
+            raise
 
     def subscribe(self, artist_url: str) -> None:
         artist_data = self.artist_data(artist_url)
