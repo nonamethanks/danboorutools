@@ -9,6 +9,7 @@ from danboorutools.models.gelbooru import GelbooruPost
 
 
 class GelbooruApi(Session):
+    DEFAULT_USER_AGENT = "DanbooruTools/0.1.0"
     DISABLE_AUTOMATIC_CACHE = True
 
     base_url = "https://gelbooru.com"
@@ -34,7 +35,6 @@ class GelbooruApi(Session):
         assert response.ok
 
     def gelbooru_request(self, method: str, endpoint: str, *args, **kwargs) -> ScraperResponse:
-        kwargs["headers"] = {"User-Agent": "DanbooruTools/0.1.0"}
         if kwargs.get("params", {}).get("json") == 1:
             kwargs["headers"]["Content-Type"] = "application/json"
 

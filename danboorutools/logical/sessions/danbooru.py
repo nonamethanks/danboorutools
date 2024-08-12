@@ -23,6 +23,7 @@ GenericModel = TypeVar("GenericModel", bound=models.DanbooruModel)
 
 
 class DanbooruApi(Session):
+    DEFAULT_USER_AGENT = "DanbooruTools/0.1.0"
     DISABLE_AUTOMATIC_CACHE = True
     DEFAULT_TIMEOUT = 60
 
@@ -83,8 +84,6 @@ class DanbooruApi(Session):
     def danbooru_request(self, method: str, endpoint: str, *args, **kwargs) -> list[dict] | dict:
         if method == "GET" and "params" in kwargs and endpoint not in ["posts.json", "counts/posts.json"]:
             kwargs["params"].setdefault("limit", 1000)
-
-        kwargs["headers"] = {"User-Agent": "DanbooruTools/0.1.0"}
 
         endpoint_url = self.base_url.strip("/") + "/" + endpoint.strip("/")
         response = self.request(method, endpoint_url, *args, **kwargs)

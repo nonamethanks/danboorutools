@@ -166,6 +166,17 @@ test = ["anyio[trio]", "coverage[toml] (>=7)", "exceptiongroup (>=1.2.0)", "hypo
 trio = ["trio (>=0.23)"]
 
 [[package]]
+name = "appdirs"
+version = "1.4.4"
+description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
+optional = false
+python-versions = "*"
+files = [
+    {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
+    {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},
+]
+
+[[package]]
 name = "astroid"
 version = "3.2.4"
 description = "An abstract syntax tree for Python with inference support."
@@ -919,17 +930,6 @@ files = [
 tests = ["asttokens (>=2.1.0)", "coverage", "coverage-enable-subprocess", "ipython", "littleutils", "pytest", "rich"]
 
 [[package]]
-name = "fake-useragent"
-version = "1.5.1"
-description = "Up-to-date simple useragent faker with real world database"
-optional = false
-python-versions = "*"
-files = [
-    {file = "fake-useragent-1.5.1.tar.gz", hash = "sha256:6387269f5a2196b5ba7ed8935852f75486845a1c95c50e72460e6a8e762f5c49"},
-    {file = "fake_useragent-1.5.1-py3-none-any.whl", hash = "sha256:57415096557c8a4e23b62a375c21c55af5fd4ba30549227f562d2c4f5b60e3b3"},
-]
-
-[[package]]
 name = "filetype"
 version = "1.2.0"
 description = "Infer file type and MIME type of any file/buffer. No external dependencies."
@@ -1597,6 +1597,23 @@ sqlalchemy = ["sqlalchemy (>=1.4.48,<2.1)"]
 sqs = ["boto3 (>=1.26.143)", "pycurl (>=7.43.0.5)", "urllib3 (>=1.26.16)"]
 yaml = ["PyYAML (>=3.10)"]
 zookeeper = ["kazoo (>=2.8.0)"]
+
+[[package]]
+name = "latest-user-agents"
+version = "0.0.4"
+description = "Get the latest user agent strings for major browsers and OSs"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "latest_user_agents-0.0.4.tar.gz", hash = "sha256:c560ae2a3f5beacbe6f568e1eb167b0952a8582fdf82f8d164c2cfa16824b5ae"},
+]
+
+[package.dependencies]
+appdirs = "*"
+requests = "*"
+
+[package.extras]
+test = ["flake8", "flake8-bugbear", "flake8-isort", "freezegun", "pep8-naming", "pytest", "pytest-cov", "pytest-mock"]
 
 [[package]]
 name = "libipld"
@@ -4010,4 +4027,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "b0c0c6f4de9b03c77596793cfa288bd7a65c0993d91c30d2f4fe912bd908e175"
+content-hash = "05fbc718419a4c372f626317e38b5be065b76bdb6d4dca7523931707d9447c30"

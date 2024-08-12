@@ -17,7 +17,7 @@ from backoff import constant, on_exception
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from cloudscraper import CloudScraper as _CloudScraper
 from cloudscraper.exceptions import CloudflareChallengeError
-from fake_useragent import UserAgent
+from latest_user_agents import get_latest_user_agents
 from pyrate_limiter.limiter import Limiter
 from pyrate_limiter.request_rate import RequestRate
 from requests import Response
@@ -98,12 +98,16 @@ class ScraperResponse(Response):
 
 class Session(_CloudScraper):
     DISABLE_AUTOMATIC_CACHE = False
-    DEFAULT_HEADERS = {
-        "User-Agent": UserAgent().chrome,
-        "Cache-Control": "no-cache, no-store, no-transform",
-    }
+    DEFAULT_USER_AGENT = next(u for u in get_latest_user_agents() if "Chrome/" in u)
     DEFAULT_TIMEOUT = 5
     MAX_CALLS_PER_SECOND: int | float = 3
+
+    @property
+    def default_headers(self) -> dict:
+        return {
+            "User-Agent": self.DEFAULT_USER_AGENT,
+            "Cache-Control": "no-cache, no-store, no-transform",
+        }
 
     @ring.lru()
     def __new__(cls, *args, **kwargs):  # noqa: ARG003
@@ -157,7 +161,7 @@ class Session(_CloudScraper):
         if not isinstance(url, str):
             url = url.normalized_url
 
-        kwargs["headers"] = self.DEFAULT_HEADERS | kwargs.get("headers", {})
+        kwargs["headers"] = self.default_headers | kwargs.get("headers", {})
 
         url_domain = ParsableUrl(url).domain
         kwargs.setdefault("proxies", self.proxied_domains.get(url_domain))
@@ -200,7 +204,7 @@ class Session(_CloudScraper):
         if download_dir is not None:
             download_dir = Path(download_dir)
 
-        kwargs["headers"] = self.DEFAULT_HEADERS | kwargs.get("headers", {})
+        kwargs["headers"] = self.default_headers | kwargs.get("headers", {})
 
         download_stream = self.get(url, *args, timeout=self.DEFAULT_TIMEOUT, stream=True, **kwargs)
         if not download_stream.ok:
