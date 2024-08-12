@@ -81,7 +81,7 @@ class DanbooruApi(Session):
 
     @on_exception(expo, (DanbooruHTTPError, ReadTimeout), max_tries=5)
     def danbooru_request(self, method: str, endpoint: str, *args, **kwargs) -> list[dict] | dict:
-        if method == "GET" and "params" in kwargs and endpoint != "posts.json":
+        if method == "GET" and "params" in kwargs and endpoint not in ["posts.json", "counts/posts.json"]:
             kwargs["params"].setdefault("limit", 1000)
 
         kwargs["headers"] = {"User-Agent": "DanbooruTools/0.1.0"}
@@ -98,9 +98,6 @@ class DanbooruApi(Session):
             return {"success": True}
 
     def posts(self, tags: list[str], page: int | str = 1) -> list[models.DanbooruPost]:
-        if not any(t.startswith("limit:") for t in tags):
-            tags += ["limit:200"]
-
         params = {
             "tags": " ".join(tags),
             "page": page,
@@ -108,6 +105,14 @@ class DanbooruApi(Session):
 
         response = self.danbooru_request("GET", "posts.json", params=params)
         return [models.DanbooruPost(**post_data) for post_data in response]
+
+    def post_counts(self, tags: list[str]) -> int:
+        params = {
+            "tags": " ".join(tags),
+        }
+
+        response = self.danbooru_request("GET", "counts/posts.json", params=params)
+        return response["counts"]["posts"]
 
     def all_posts(self, tags: list[str]) -> list[models.DanbooruPost]:
         posts: list[models.DanbooruPost] = []
