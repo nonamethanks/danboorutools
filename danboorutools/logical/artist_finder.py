@@ -202,7 +202,7 @@ class ArtistFinder:
                 return list(dict.fromkeys(scanned_urls))
         except (ReadTimeout, CloudflareChallengeError):
             return list(dict.fromkeys(scanned_urls))
-        except ValidationError as e:
+        except Exception as e:
             e.add_note(f"While crawling url {first_url}...")
             raise
 
