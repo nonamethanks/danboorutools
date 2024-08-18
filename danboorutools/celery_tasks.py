@@ -21,7 +21,7 @@ from danboorutools.util.mail import send_email
 tasks = Celery("tasks", broker="redis://redis:6379/1", backend="redis://redis:6379/1")
 DESTINATION_EMAIL = os.environ.get("EMAIL", None)
 if DESTINATION_EMAIL:
-    logger.info(f"Destination email sfor automatic errors: {DESTINATION_EMAIL} ")
+    logger.info(f"Destination email for automatic errors: {DESTINATION_EMAIL} ")
 else:
     logger.warning("No destination email set for automatic errors.")
 
