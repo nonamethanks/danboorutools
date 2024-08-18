@@ -21,7 +21,7 @@ def main() -> None:
         old_name = banned_user.name
         new_name = banned_user.id
 
-        if str(new_name) != old_name:
+        if not old_name.startswith(str(new_name)):
             logger.info(f"Renaming {banned_user.url} {old_name} -> {new_name}")
             assert banned_user.is_banned  # you never know man
             danbooru_api.rename_user(user_id=banned_user.id, new_name=new_name)
