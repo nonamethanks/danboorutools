@@ -53,6 +53,8 @@ class AmazonComParser(UrlParser):
                 return UselessUrl(parsed_url=parsable_url)
             case "registry", "wishlist", _wishlist_id:
                 return UselessUrl(parsed_url=parsable_url)
+            case "s", :
+                return UselessUrl(parsed_url=parsable_url)
 
             case _ if parsable_url.subdomain not in ["www", ""]:
                 raise UnparsableUrlError(parsable_url)
