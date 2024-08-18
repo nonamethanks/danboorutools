@@ -36,7 +36,7 @@ class GelbooruApi(Session):
 
     def gelbooru_request(self, method: str, endpoint: str, *args, **kwargs) -> ScraperResponse:
         if kwargs.get("params", {}).get("json") == 1:
-            kwargs["headers"]["Content-Type"] = "application/json"
+            kwargs["headers"] = kwargs.get("headers", {}) | {"Content-Type": "application/json"}
 
         endpoint_url = self.base_url.strip("/") + "/" + endpoint.strip("/")
         response = self.request(method, endpoint_url, *args, **kwargs)
