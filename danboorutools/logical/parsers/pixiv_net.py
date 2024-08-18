@@ -37,7 +37,7 @@ class PixivNetParser(UrlParser):
         # http://chat.pixiv.net/roomstepimg.php?id=988003&pos=13418 -> redirects to sketch.pixiv.net/lives
         # http://goods.pixiv.net/c76/images/bg_top5.jpg
         # http://dic.pixiv.net/a/あ～るさん
-        elif parsable_url.subdomain in ["sensei", "imgaz", "source", "dev", "chat", "goods", "dic"]:
+        elif parsable_url.subdomain in ["sensei", "imgaz", "source", "dev", "chat", "goods", "dic", "touch"]:
             raise UnparsableUrlError(parsable_url)
         else:
             return None
