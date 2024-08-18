@@ -94,7 +94,11 @@ class SockpuppetDetector:
     def detect_sockpuppets(self, *signups: DanbooruUserEvent) -> list[dict]:
         found = []
 
-        for signup in signups:
+        for index, signup in enumerate(signups):
+
+            if (index+1) % 100 == 0:
+                logger.info(f"Checking sockpuppets {index+1}/{len(signups)}")
+
             assert signup.user._raw_data["last_ip_addr"]  # for some reason it was returning empty
             if signup.user.is_banned:
                 continue
