@@ -93,6 +93,8 @@ class DanbooruMediaAsset(DanbooruModel):
 class DanbooruPost(DanbooruModel):
     danbooru_model_name = "post"
 
+    is_pending: bool
+
     score: int
     uploader_id: int
 
@@ -103,6 +105,10 @@ class DanbooruPost(DanbooruModel):
     tag_string_meta: str
 
     media_asset: DanbooruMediaAsset
+
+    @property
+    def is_active(self) -> bool:
+        return not self.is_deleted and not self.is_pending
 
     @property
     def md5(self) -> str:
