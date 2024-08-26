@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+import termios
 import textwrap
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -97,18 +99,26 @@ def main(manual: bool = False) -> None:
             logger.info(candidate.self_string)
 
     if manual:
-        manual_loop(*manual_cycle, *[c for c in remaining if c.level != 32 and c.active])
+        candidates = manual_cycle + [c for c in remaining if c.level != 32 and c.active]
+        seen = {}
+        for c in candidates:
+            if c.id not in seen:
+                seen[c.id] = c
+        candidates = list(seen.values())
+        candidates.sort(key=lambda c: c.total_uploads, reverse=True)
+        manual_loop(*candidates)
 
 
 def manual_loop(*candidates: Candidate) -> None:
     index = 0
     while True:
         candidate = candidates[index]
-        logger.info(f"Candidate {index + 1}:")
+        logger.info(f"Candidate {index + 1} of {len(candidates)}:")
         logger.info(candidate.self_presentation)
-        logger.info(f"{len(candidates) - index - 2} candidates left.")
+        logger.info(f"{len(candidates) - index - 1} candidates left.")
 
         while True:
+            termios.tcflush(sys.stdin, termios.TCIOFLUSH)
             logger.info("[N]ext / [P]rev")
             if (_input := input("").strip().lower()) in ["", "n"]:
                 index += 1
@@ -282,15 +292,20 @@ class Candidate:
 
     @property
     def self_presentation(self) -> str:
-        potential_level = "Contributor" if self.for_contributor else "Builder"
-        potential_color = "bg #ffb671" if self.for_contributor else "bg #702963"
+        if self.level == 35:
+            header = f"<{self.level_color}> User #{self.id}, {self.name}, {self.level_string} </> - Already promoted to <{self.level_color}> contributor </>."  # noqa: E501
+        else:
+            potential_level = "Contributor" if self.for_contributor else "Builder"
+            potential_color = "bg #ffb671" if self.for_contributor else "bg #702963"
+
+            header = f"<{self.level_color}> User #{self.id}, {self.name}, {self.level_string} </> - candidate for <{potential_color}> {potential_level} </>"  # noqa: E501
 
         ruc = "GREEN" if self.delete_ratio < BUILDER_MAX_DEL_PERC else "RED"
         tuc = "GREEN" if self.total_uploads > MIN_STANDALONE_UPLOADS else "YELLOW"
 
         return textwrap.dedent(f"""
 
-            <{self.level_color}> User #{self.id}, {self.name}, {self.level_string} </> - candidate for <{potential_color}> {potential_level} </>
+            {header}
 
             Url: <c>{self.url}</c>
 
@@ -317,7 +332,10 @@ class Candidate:
 
     @property
     def delete_ratio(self) -> int:
-        assert self.recent_deleted is not None
+        if self.recent_deleted is None:
+            self.refresh()
+        if self.recent_uploads == 0:
+            return 0
         return (self.recent_deleted / self.recent_uploads) * 100
 
     @property
@@ -337,12 +355,13 @@ class Candidate:
 
     @property
     def level_color(self) -> str:
-        if self.level == 32:
-            level_color = "bg #702963"
-        elif self.level == 31:
-            level_color = "WHITE"
-        elif self.level == 30:
-            level_color = "YELLOW"
-        else:
-            level_color = "CYAN"
-        return level_color
+        return level_color_for(self.level)
+
+
+def level_color_for(level_number: int) -> str:
+    return {
+        35: "bg #ffb671",           # contributor
+        32: "bg #702963",           # builder
+        31: "WHITE",                # platinum
+        30: "YELLOW",               # gold
+    }.get(level_number, "CYAN")     # member
