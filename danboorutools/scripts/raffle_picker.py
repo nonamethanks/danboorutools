@@ -58,8 +58,7 @@ def main(topicid: int, pick: int) -> None:
     logger.info(f"In total, {len(new_uploaders)} are new uploaders, "
                 f"and another {len(newish_uploaders)} had uploaded very few posts (<=10) posts before this.")
 
-    _pickable = [[c]*(c.approved+1) for c in candidates]
-    pickable = [c for sublist in _pickable for c in sublist]
+    pickable = [p for c in candidates for p in [c]*(c.approved+1)]
 
     picked: list[Candidate] = []
     for _ in range(pick):
