@@ -272,11 +272,22 @@ class DanbooruPostVersion(DanbooruModel):
     added_tags: list[str]
     removed_tags: list[str]
 
+    obsolete_added_tags: str
+    obsolete_removed_tags: str
+
     created_at: datetime | None = None
 
     @property
     def url(self) -> str:
         return f"https://danbooru.donmai.us/post_versions?search[id]={self.id}"
+
+    @property
+    def obsolete_added_tags_arr(self) -> list[str]:
+        return self.obsolete_added_tags.split(" ")
+
+    @property
+    def obsolete_removed_tags_arr(self) -> list[str]:
+        return self.obsolete_removed_tags.split(" ")
 
 
 class DanbooruArtist(DanbooruModel):
