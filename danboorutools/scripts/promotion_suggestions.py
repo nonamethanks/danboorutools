@@ -33,8 +33,9 @@ BUILDER_MAX_DEL_PERC = 15
 
 
 @click.command()
+@click.option("--skip-to", "-s", "skip_to", default=0)
 @click.option("--manual", "-m", is_flag=True, show_default=True, default=False)
-def main(manual: bool = False) -> None:
+def main(skip_to: int, manual: bool = False) -> None:
     logger.info("Gathering data...")
 
     recent_uploaders = get_recent_uploaders()
@@ -106,20 +107,19 @@ def main(manual: bool = False) -> None:
                 seen[c.id] = c
         candidates = list(seen.values())
         candidates.sort(key=lambda c: c.total_uploads, reverse=True)
-        manual_loop(*candidates)
+        manual_loop(*candidates, index=skip_to)
 
 
-def manual_loop(*candidates: Candidate) -> None:
-    index = 0
+def manual_loop(*candidates: Candidate, index: int = 0) -> None:
+    index = index - 1 if index else 0
     while True:
         candidate = candidates[index]
-        logger.info(f"Candidate {index + 1} of {len(candidates)}:")
         logger.info(candidate.self_presentation)
-        logger.info(f"{len(candidates) - index - 1} candidates left.")
+        logger.info(f"Candidate {index + 1} of {len(candidates)}. {len(candidates) - index - 1} candidates left.")
 
         while True:
             termios.tcflush(sys.stdin, termios.TCIOFLUSH)
-            logger.info("[N]ext / [P]rev")
+            logger.info("[N]ext / [P]rev / [C]alculate edits")
             if (_input := input("").strip().lower()) in ["", "n"]:
                 index += 1
                 if index >= len(candidates):
@@ -136,6 +136,9 @@ def manual_loop(*candidates: Candidate) -> None:
                     break
             elif _input in ["r"]:
                 candidate.refresh()
+                break
+            elif _input in ["c"]:
+                candidate.calculate_post_edits()
                 break
             else:
                 logger.error("Invalid output.")
@@ -231,6 +234,14 @@ class Candidate:
     level: int | None = None
     level_string: str | None = None
 
+    last_edit_date: datetime | None = None
+
+    post_edit_details = ""
+
+    @property
+    def safe_name(self) -> str:
+        return quote_plus(self.name)
+
     @property
     def active(self) -> bool:
         if self.is_deleted:   # can also be None
@@ -253,7 +264,11 @@ class Candidate:
 
     @property
     def deleted_url(self) -> str:
-        return f"https://danbooru.donmai.us/posts?tags=user:{quote_plus(self.name)}+status:deleted+age:%3C2mo"
+        return f"https://danbooru.donmai.us/posts?tags=user:{self.safe_name}+status:deleted+age:%3C2mo"
+
+    @property
+    def edits_url(self) -> str:
+        return f"https://danbooru.donmai.us/post_versions?search[updater_name]={self.safe_name}"
 
     @property
     def self_string(self) -> str:
@@ -288,7 +303,75 @@ class Candidate:
         tags = [f"user:{self.name}", date_tag]
         self.recent_uploads = danbooru_api.post_counts(tags=tags)
         self.recent_deleted = danbooru_api.post_counts(tags=[*tags, "status:deleted"])
+        self.last_edit_date = danbooru_api.post_versions(updater_name=self.name, limit=1)[0].updated_at
         logger.info("Refreshed.")
+
+    def calculate_post_edits(self) -> None:
+        if self.post_edit_details:
+            return
+
+        logger.info("Collecting post edits.")
+        page = 1
+
+        data = {}
+        total_edits = 0
+        edits_by_year = {}
+
+        while True:
+            post_edits = danbooru_api.post_versions(updater_name=self.name, is_new=False, page=page)
+            if not post_edits:
+                break
+            for post_edit in post_edits:
+                try:
+                    edits_by_year[post_edit.updated_at.year] += 1
+                except KeyError:
+                    edits_by_year[post_edit.updated_at.year] = 1
+
+                for tag in post_edit.added_tags:
+                    try:
+                        data[tag]["added"] += 1
+                    except KeyError:
+                        data[tag] = {"added": 1, "removed": 0, "revert_added": 0, "revert_removed": 0}
+                for tag in post_edit.removed_tags:
+                    try:
+                        data[tag]["removed"] += 1
+                    except KeyError:
+                        data[tag] = {"added": 0, "removed": 1, "revert_added": 0, "revert_removed": 0}
+                for tag in post_edit.obsolete_added_tags_arr:
+                    try:
+                        data[tag]["revert_added"] += 1
+                    except KeyError:
+                        data[tag] = {"added": 0, "removed": 0, "revert_added": 1, "revert_removed": 0}
+                for tag in post_edit.obsolete_removed_tags_arr:
+                    try:
+                        data[tag]["revert_removed"] += 1
+                    except KeyError:
+                        data[tag] = {"added": 0, "removed": 0, "revert_added": 0, "revert_removed": 1}
+            page += 1
+            total_edits += len(post_edits)
+
+        logger.info("Done")
+
+        real_edit_url = f"https://danbooru.donmai.us/post_versions?search[updater_name]={self.safe_name}&search[is_new]=false"
+
+        self.post_edit_details = "Actual edits: " + f"{total_edits:_}. Url: <c>{real_edit_url}</c>" + "\n"
+        self.post_edit_details += "Top 10 tags changed: " + "\n"
+        for tag, counts in sorted(data.items(), key=lambda x: x[1]["added"] + x[1]["removed"], reverse=True)[:10]:
+            perc_added_reverted = counts["revert_added"] / counts["added"] if counts["added"] else 0
+            arc = "RED" if perc_added_reverted > 0.1 and counts["added"] > 0 else "GREEN"
+            perc_added_string = f"<{arc}> {counts['revert_added']} reverted, {perc_added_reverted*100:.2f}% </>"
+            self.post_edit_details += f"- {tag}: {counts['added']} added ({perc_added_string}), "
+
+            perc_removed_reverted = counts["revert_removed"] / counts["removed"] if counts["removed"] else 0
+            rrc = "RED" if perc_removed_reverted > 0.1 and counts["removed"] > 0 else "GREEN"
+            perc_removed_string = f"<{rrc}> {counts['revert_removed']} reverted, {perc_removed_reverted*100:.2f}% </>"
+            tag_edit_url = f"{real_edit_url}&search[changed_tags]={tag}"
+
+            self.post_edit_details += f"{counts['removed']} removed ({perc_removed_string}). Url: <c>{tag_edit_url}</>" + "\n"
+
+        self.post_edit_details += "\nEdits by year: " + "\n"
+        for year, count in sorted(edits_by_year.items(), reverse=True):
+            self.post_edit_details += f"- {year}: {count:_}" + "\n"
 
     @property
     def self_presentation(self) -> str:
@@ -313,9 +396,25 @@ class Candidate:
 
             Total Uploads: <{tuc}> {self.total_uploads:_} </>. Recent uploads: <{ruc}> {self.recent_uploads:_} </>. Deleted: {self.recent_deleted_colored} ({self.delete_ratio_colored})
 
-            Total Edits: {self.total_edits:_}.
+            Total Edits: {self.total_edits:_}. Link: <c>{self.edits_url}</c>
+            {self.last_edit_string}
 
-        """)  # noqa: E501
+            {self.post_edit_details.replace("\n", "\n            ")}
+
+        """.rstrip("\n ") + "\n            ")  # noqa: E501
+
+    @property
+    def last_edit_string(self) -> str:
+        if not self.last_edit_date:
+            return "Last edit: <GREEN> less than 2 months ago. </GREEN>"
+
+        if (days_ago := (END_DATE - self.last_edit_date).days) > 365:
+            return f"Last edit: <RED> {days_ago / 365:.2f} years ago. </RED>"
+
+        if days_ago > 60:
+            return f"Last edit: <YELLOW> {days_ago // 30} months ago. </YELLOW>"
+
+        return f"<GREEN> Last edit: {days_ago} days ago. </GREEN>"
 
     @property
     def recent_deleted_colored(self) -> str:
