@@ -37,13 +37,17 @@ def main(topicid: int, pick: int) -> None:
     logger.info(f"Of these, {len(candidates)} are not new accounts.")
 
     assert forum_topic.created_at, forum_topic.updated_at
-    upload_data = {upload.id: upload.uploader_id for upload in uploads}.values()
+    upload_data = {upload.uploader_id: upload.is_active for upload in uploads}
     for candidate in candidates:
         candidate.uploaded = len([uploader_id for uploader_id in upload_data if uploader_id == candidate.user.id])
+        candidate.approved = sum(is_active for uploader_id, is_active in upload_data.items() if uploader_id == candidate.user.id)
 
-    logger.info(f"Of these, {len([c for c in candidates if c.uploaded > 0])} have uploaded at least 1 posts.")
-    logger.info(f"Of these, {len([c for c in candidates if c.uploaded >= 10])} have uploaded at least 10 posts.")
-    logger.info(f"Of these, {len([c for c in candidates if c.uploaded >= 100])} have uploaded at least 100 posts.")
+    def upload_count(x: int) -> int:
+        return len([c for c in candidates if c.uploaded > x])
+
+    logger.info(f"Of these, {upload_count(0)} have uploaded at least 1 post since the topic's creation.")
+    logger.info(f"Of these, {upload_count(10)} have uploaded at least 10 posts since the topic's creation.")
+    logger.info(f"Of these, {upload_count(100)} have uploaded at least 100 posts since the topic's creation.")
 
     new_uploaders, newish_uploaders = [], []
     for c in candidates:
@@ -54,7 +58,7 @@ def main(topicid: int, pick: int) -> None:
     logger.info(f"In total, {len(new_uploaders)} are new uploaders, "
                 f"and another {len(newish_uploaders)} had uploaded very few posts (<=10) posts before this.")
 
-    _pickable = [[c]*((c.uploaded//10)+1) for c in candidates]
+    _pickable = [[c]*(c.approved+1) for c in candidates]
     pickable = [c for sublist in _pickable for c in sublist]
 
     picked: list[Candidate] = []
@@ -70,7 +74,7 @@ def main(topicid: int, pick: int) -> None:
     logger.info("")
     logger.info("<r>Winners:</r>")
     for winner in picked:
-        logger.info(f"{winner.user.url} - {winner.user.name} - Uploaded {winner.uploaded} posts.")
+        logger.info(f"{winner.user.url} - {winner.user.name} - Uploaded {winner.uploaded} posts ({winner.approved} approved).")
 
 
 def get_forum_posts(topic_id: int) -> list[DanbooruForumPost]:
@@ -89,8 +93,7 @@ def get_uploads(start_time: datetime, end_time: datetime) -> list[DanbooruPost]:
     logger.info("Collecting posts...")
 
     tags = [
-        f"date:{start_time.strftime("%Y-%m-%dT%H:%M:%SZ")}..{end_time.strftime("%Y-%m-%dT%H:%M:%SZ")}",
-        "approver:any",
+        f"date:{start_time.strftime("%Y-%m-%dT%H:%M:%SZ00")}..{end_time.strftime("%Y-%m-%dT%H:%M:%SZ00")}",
     ]
 
     posts: list[DanbooruPost] = []
@@ -109,6 +112,7 @@ class Candidate:
     def __init__(self, user: DanbooruUser):
         self.user = user
         self.uploaded = 0
+        self.approved = 0
 
 
 # old raffle picker via nntbot dmail
