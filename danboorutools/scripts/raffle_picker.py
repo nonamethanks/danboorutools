@@ -22,6 +22,8 @@ def main(topicid: int, pick: int) -> None:
     forum_posts = get_forum_posts(topic_id=topicid)
 
     forum_topic = forum_posts[0].topic
+    assert forum_topic.created_at, forum_topic.updated_at
+
     uploads = get_uploads(start_time=forum_topic.created_at, end_time=forum_topic.updated_at)
 
     logger.info(f"{len(forum_posts)} forum posters collected.")
@@ -36,24 +38,35 @@ def main(topicid: int, pick: int) -> None:
     candidates = [candidate for candidate in candidates if candidate.user.created_at < forum_topic.created_at]
     logger.info(f"Of these, {len(candidates)} are not new accounts.")
 
-    assert forum_topic.created_at, forum_topic.updated_at
+    upload_data: dict[int, list[DanbooruPost]] = {}
+    for upload in uploads:
+        try:
+            upload_data[upload.uploader_id].append(upload)
+        except KeyError:
+            upload_data[upload.uploader_id] = [upload]
+
     for candidate in candidates:
-        candidate.uploaded = len([upload for upload in uploads if upload.uploader_id == candidate.user.id])
-        candidate.approved = sum(upload.is_active for upload in uploads if upload.uploader_id == candidate.user.id)
+        candidate.uploads = upload_data.get(candidate.user.id, [])
+        candidate.uploaded_count = len([upload for upload in candidate.uploads if upload.uploader_id == candidate.user.id])
+        candidate.approved_count = sum(upload.is_active for upload in candidate.uploads if upload.uploader_id == candidate.user.id)
 
     def upload_count(x: int) -> int:
-        return len([c for c in candidates if c.uploaded >= x])
+        return len([c for c in candidates if c.uploaded_count >= x])
 
     logger.info(f"Of these, {upload_count(1)} have uploaded at least 1 post since the topic's creation.")
     logger.info(f"Of these, {upload_count(2)} have uploaded at least 2 posts since the topic's creation.")
     logger.info(f"Of these, {upload_count(10)} have uploaded at least 10 posts since the topic's creation.")
     logger.info(f"Of these, {upload_count(100)} have uploaded at least 100 posts since the topic's creation.")
 
+    logger.info("Top 10 uploaders:")
+    for candidate in sorted(candidates, key=lambda c: c.uploaded_count, reverse=True)[:10]:
+        logger.info(f"{candidate.user.url} {candidate.user.name} - {candidate.uploaded_count} posts, {candidate.approved_count} approved.")
+
     new_uploaders, newish_uploaders = [], []
     for c in candidates:
-        if c.uploaded > 0 and c.uploaded == c.user.post_upload_count:
+        if c.uploaded_count > 0 and c.uploaded_count == c.user.post_upload_count:
             new_uploaders += [c]
-        elif c.uploaded > 0 and c.user.post_upload_count <= 10:
+        elif c.uploaded_count > 0 and c.user.post_upload_count <= 10:
             newish_uploaders += [c]
     logger.info(f"In total, {len(new_uploaders)} are new uploaders, "
                 f"and another {len(newish_uploaders)} had uploaded very few posts (<=10) posts before this.")
@@ -61,7 +74,7 @@ def main(topicid: int, pick: int) -> None:
     if not pick:
         return
 
-    pickable = [p for c in candidates for p in [c]*(c.approved+1)]
+    pickable = [p for c in candidates for p in [c]*(c.approved_count+1)]
 
     picked: list[Candidate] = []
     for _ in range(pick):
@@ -76,7 +89,7 @@ def main(topicid: int, pick: int) -> None:
     logger.info("")
     logger.info("<r>Winners:</r>")
     for winner in picked:
-        logger.info(f"{winner.user.url} - {winner.user.name} - Uploaded {winner.uploaded} posts ({winner.approved} approved).")
+        logger.info(f"{winner.user.url} - {winner.user.name} - Uploaded {winner.uploaded_count} posts ({winner.approved_count} approved).")
 
 
 def get_forum_posts(topic_id: int) -> list[DanbooruForumPost]:
@@ -114,8 +127,9 @@ def get_uploads(start_time: datetime, end_time: datetime) -> list[DanbooruPost]:
 class Candidate:
     def __init__(self, user: DanbooruUser):
         self.user = user
-        self.uploaded = 0
-        self.approved = 0
+        self.uploaded_count = 0
+        self.approved_count = 0
+        self.uploads: list[DanbooruPost] = []
 
 
 # old raffle picker via nntbot dmail
