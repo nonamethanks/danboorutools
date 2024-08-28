@@ -16,7 +16,7 @@ SOURCE_URLS_FILE = Path(settings.BASE_FOLDER / "data" / "sources.txt")
 
 @click.command()
 @click.option("--topicid", type=int, required=True)
-@click.option("--pick", type=int, required=True)
+@click.option("--pick", type=int, default=0)
 def main(topicid: int, pick: int) -> None:
 
     forum_posts = get_forum_posts(topic_id=topicid)
@@ -57,6 +57,7 @@ def main(topicid: int, pick: int) -> None:
     logger.info(f"Of these, {upload_count(2)} have uploaded at least 2 posts since the topic's creation.")
     logger.info(f"Of these, {upload_count(10)} have uploaded at least 10 posts since the topic's creation.")
     logger.info(f"Of these, {upload_count(100)} have uploaded at least 100 posts since the topic's creation.")
+    logger.info(f"In total, {sum(candidate.uploaded_count for candidate in candidates)} uploads were submitted during the entry period.")
 
     logger.info("Top 10 uploaders:")
     for candidate in sorted(candidates, key=lambda c: c.uploaded_count, reverse=True)[:10]:
