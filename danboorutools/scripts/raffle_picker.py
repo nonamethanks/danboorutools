@@ -37,15 +37,15 @@ def main(topicid: int, pick: int) -> None:
     logger.info(f"Of these, {len(candidates)} are not new accounts.")
 
     assert forum_topic.created_at, forum_topic.updated_at
-    upload_data = {upload.uploader_id: upload.is_active for upload in uploads}
     for candidate in candidates:
-        candidate.uploaded = len([uploader_id for uploader_id in upload_data if uploader_id == candidate.user.id])
-        candidate.approved = sum(is_active for uploader_id, is_active in upload_data.items() if uploader_id == candidate.user.id)
+        candidate.uploaded = len([upload for upload in uploads if upload.uploader_id == candidate.user.id])
+        candidate.approved = sum(upload.is_active for upload in uploads if upload.uploader_id == candidate.user.id)
 
     def upload_count(x: int) -> int:
-        return len([c for c in candidates if c.uploaded > x])
+        return len([c for c in candidates if c.uploaded >= x])
 
-    logger.info(f"Of these, {upload_count(0)} have uploaded at least 1 post since the topic's creation.")
+    logger.info(f"Of these, {upload_count(1)} have uploaded at least 1 post since the topic's creation.")
+    logger.info(f"Of these, {upload_count(2)} have uploaded at least 2 posts since the topic's creation.")
     logger.info(f"Of these, {upload_count(10)} have uploaded at least 10 posts since the topic's creation.")
     logger.info(f"Of these, {upload_count(100)} have uploaded at least 100 posts since the topic's creation.")
 
@@ -96,6 +96,7 @@ def get_uploads(start_time: datetime, end_time: datetime) -> list[DanbooruPost]:
 
     tags = [
         f"date:{start_time.strftime("%Y-%m-%dT%H:%M:%SZ00")}..{end_time.strftime("%Y-%m-%dT%H:%M:%SZ00")}",
+        "(approver:any or status:pending or status:deleted)",
     ]
 
     posts: list[DanbooruPost] = []
