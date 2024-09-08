@@ -12,9 +12,7 @@ import click
 
 from danboorutools import logger
 from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
-
-if TYPE_CHECKING:
-    from danboorutools.models.danbooru import DanbooruUser
+from danboorutools.models.danbooru import DanbooruUser
 
 f_path = logger.log_to_file()
 
@@ -35,7 +33,19 @@ BUILDER_MAX_DEL_PERC = 15
 @click.command()
 @click.option("--skip-to", "-s", "skip_to", default=0)
 @click.option("--manual", "-m", is_flag=True, show_default=True, default=False)
-def main(skip_to: int, manual: bool = False) -> None:
+@click.argument("user_url", required=False, nargs=1)
+def main(user_url: str | None, skip_to: int, manual: bool = False) -> None:
+    if not user_url:
+        suggest_promotions(skip_to=skip_to, manual=manual)
+    else:
+        user = DanbooruUser.get_from_id(DanbooruUser.id_from_url(user_url))
+        candidate = Candidate(name=user.name, recent_uploads=None, recent_deleted=None)
+        merge_candidate(candidate, user)
+        candidate.refresh()
+        manual_loop(candidate)
+
+
+def suggest_promotions(skip_to: int = 0, manual: bool = False) -> None:
     logger.info("Gathering data...")
 
     recent_uploaders = get_recent_uploaders()
