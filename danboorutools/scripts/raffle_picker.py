@@ -57,11 +57,9 @@ def main(topicid: int, pick: int) -> None:
     logger.info(f"Of these, {upload_count(2)} have uploaded at least 2 posts since the topic's creation.")
     logger.info(f"Of these, {upload_count(10)} have uploaded at least 10 posts since the topic's creation.")
     logger.info(f"Of these, {upload_count(100)} have uploaded at least 100 posts since the topic's creation.")
-    logger.info(f"In total, {sum(candidate.uploaded_count for candidate in candidates)} uploads were submitted during the entry period.")
-
-    logger.info("Top 10 uploaders:")
-    for candidate in sorted(candidates, key=lambda c: c.uploaded_count, reverse=True)[:10]:
-        logger.info(f"{candidate.user.url} {candidate.user.name} - {candidate.uploaded_count} posts, {candidate.approved_count} approved.")
+    logger.info(
+        f"In total, {sum(candidate.uploaded_count for candidate in candidates)} uploads were submitted during the entry period."
+        f" {sum(candidate.approved_count for candidate in candidates)} were approved.")
 
     new_uploaders, newish_uploaders = [], []
     for c in candidates:
@@ -72,6 +70,13 @@ def main(topicid: int, pick: int) -> None:
     logger.info(f"In total, {len(new_uploaders)} are new uploaders, "
                 f"and another {len(newish_uploaders)} had uploaded very few posts (<=10) posts before this.")
 
+    logger.info("")
+    logger.info("Top 10 uploaders:")
+    for candidate in sorted(candidates, key=lambda c: c.uploaded_count, reverse=True)[:10]:
+        logger.info(f"{candidate.user.url} {candidate.user.name} - {candidate.uploaded_count} posts, {candidate.approved_count} approved.")
+
+    logger.info("")
+    logger.info("")
     if not pick:
         return
 
@@ -89,7 +94,7 @@ def main(topicid: int, pick: int) -> None:
     logger.info("")
     logger.info("")
     logger.info("<r>Winners:</r>")
-    for winner in picked:
+    for winner in sorted(picked, key=lambda c: c.user.id):
         logger.info(f"{winner.user.url} - {winner.user.name} - Uploaded {winner.uploaded_count} posts ({winner.approved_count} approved).")
 
 
