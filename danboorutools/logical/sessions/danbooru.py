@@ -84,6 +84,8 @@ class DanbooruApi(Session):
     def danbooru_request(self, method: str, endpoint: str, *args, **kwargs) -> list[dict] | dict:
         if method == "GET" and "params" in kwargs and endpoint not in ["posts.json", "counts/posts.json"]:
             kwargs["params"].setdefault("limit", 1000)
+        elif endpoint == "posts.json":
+            kwargs["params"].setdefault("limit", 200)
 
         endpoint_url = self.base_url.strip("/") + "/" + endpoint.strip("/")
         response = self.request(method, endpoint_url, *args, **kwargs)
