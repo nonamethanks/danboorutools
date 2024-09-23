@@ -5,7 +5,6 @@ import termios
 import textwrap
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 import click
