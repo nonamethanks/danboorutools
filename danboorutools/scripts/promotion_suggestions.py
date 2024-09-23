@@ -52,10 +52,12 @@ ignored = Ignored.get_all()
 @click.command()
 @click.option("--skip-to", "-s", "skip_to", default=0)
 @click.option("--manual", "-m", is_flag=True, show_default=True, default=False)
+@click.option("--reverse", "-r", is_flag=True, show_default=True, default=False)
+@click.option("--min-uploads", "-u", "min_uploads", default=0)
 @click.argument("user_url", required=False, nargs=1)
-def main(user_url: str | None, skip_to: int, manual: bool = False) -> None:
+def main(user_url: str | None, skip_to: int, manual: bool = False, reverse: bool = False, min_uploads: int = 0) -> None:
     if not user_url:
-        suggest_promotions(skip_to=skip_to, manual=manual)
+        suggest_promotions(skip_to=skip_to, manual=manual, reverse=reverse, min_uploads=min_uploads)
     else:
         user = DanbooruUser.get_from_id(DanbooruUser.id_from_url(user_url))
         candidate = Candidate(name=user.name, recent_uploads=None, recent_deleted=None)
@@ -64,7 +66,7 @@ def main(user_url: str | None, skip_to: int, manual: bool = False) -> None:
         manual_loop(candidate)
 
 
-def suggest_promotions(skip_to: int = 0, manual: bool = False) -> None:
+def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = False, min_uploads: int = 0) -> None:
     logger.info("Gathering data...")
 
     recent_uploaders = get_recent_uploaders()
@@ -135,7 +137,9 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False) -> None:
             if c.id not in seen:
                 seen[c.id] = c
         candidates = list(seen.values())
-        candidates.sort(key=lambda c: c.total_uploads, reverse=True)
+        candidates.sort(key=lambda c: c.total_uploads, reverse=not reverse)
+        if min_uploads:
+            candidates = [c for c in candidates if c.total_uploads > min_uploads]
         candidates = [c for c in candidates if c.id not in ignored]
         manual_loop(candidates, index=skip_to)
 
@@ -144,7 +148,12 @@ def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
     index = index - 1 if index else 0
     while True:
         candidate = candidates[index]
-        logger.info(candidate.self_presentation)
+        try:
+            logger.info(candidate.self_presentation)
+        except NoRecentEditsError:
+            logger.error(f"No recent edits for user {candidate.id}. Skipping to the next...")
+            del candidates[index]
+            continue
         logger.info(f"Candidate {index + 1} of {len(candidates)}. {len(candidates) - index - 1} candidates left.")
 
         while True:
@@ -171,6 +180,7 @@ def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
                 candidate.calculate_post_edits()
                 break
             elif _input in ["i"]:
+                assert candidate.id
                 Ignored.add(candidate.id)
                 del candidates[index]
                 break
@@ -409,6 +419,8 @@ class Candidate:
 
     @property
     def self_presentation(self) -> str:
+        if self.last_edit_days_ago > 365:
+            raise NoRecentEditsError
         if self.level == 35:
             header = f"<{self.level_color}> User #{self.id}, {self.name}, {self.level_string} </> - Already promoted to <{self.level_color}> contributor </>."  # noqa: E501
         else:
@@ -430,7 +442,8 @@ class Candidate:
 
             Total Uploads: <{tuc}> {self.total_uploads:_} </>. Recent uploads: <{ruc}> {self.recent_uploads:_} </>. Deleted: {self.recent_deleted_colored} ({self.delete_ratio_colored})
 
-            Total Edits: {self.total_edits:_}. Link: <c>{self.edits_url}</c>
+            Total Edits: <c>{self.total_edits:_}</c>. Link: <c>{self.edits_url}</c>
+
             {self.last_edit_string}
 
             {self.post_edit_details.replace("\n", "\n            ")}
@@ -439,13 +452,13 @@ class Candidate:
 
     @property
     def last_edit_days_ago(self) -> int:
-        return (END_DATE - self.last_edit_date).days
+        if not self.last_edit_date:
+            self.refresh()
+
+        return max((END_DATE - self.last_edit_date).days, 0)  # avoid showing -1 days for edits made while the bot was running
 
     @property
     def last_edit_string(self) -> str:
-        if not self.last_edit_date:
-            return "Last edit: <GREEN> less than 2 months ago. </GREEN>"
-
         if self.last_edit_days_ago > 365:
             return f"Last edit: <RED> {self.last_edit_days_ago / 365:.2f} years ago. </RED>"
 
@@ -502,3 +515,7 @@ def level_color_for(level_number: int) -> str:
         31: "WHITE",                # platinum
         30: "YELLOW",               # gold
     }.get(level_number, "CYAN")     # member
+
+
+class NoRecentEditsError(Exception):
+    pass
