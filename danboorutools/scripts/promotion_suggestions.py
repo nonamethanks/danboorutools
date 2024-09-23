@@ -5,11 +5,12 @@ import termios
 import textwrap
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from urllib.parse import quote_plus
 
 import click
 
-from danboorutools import logger
+from danboorutools import logger, settings
 from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
 from danboorutools.models.danbooru import DanbooruUser
 
@@ -27,6 +28,25 @@ CONTRIB_RISKY_DEL_COUNT = 30
 CONTRIB_MAX_DEL_COUNT = 50
 CONTRIB_MAX_DEL_PERC = 5
 BUILDER_MAX_DEL_PERC = 15
+
+
+class Ignored:
+    file_path = Path(settings.BASE_FOLDER / "data" / "promotion_ignored.txt")
+
+    @classmethod
+    def add(cls, user_id: int) -> None:
+        with cls.file_path.open("a+", encoding="utf-8") as f:
+            f.write(f"{user_id}\n")
+
+    @classmethod
+    def get_all(cls) -> list[int]:
+        if not cls.file_path.exists():
+            return []
+        with cls.file_path.open("r+", encoding="utf-8") as f:
+            return list(map(int, [f.strip() for f in f.readlines() if f.strip()]))
+
+
+ignored = Ignored.get_all()
 
 
 @click.command()
@@ -116,10 +136,11 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False) -> None:
                 seen[c.id] = c
         candidates = list(seen.values())
         candidates.sort(key=lambda c: c.total_uploads, reverse=True)
-        manual_loop(*candidates, index=skip_to)
+        candidates = [c for c in candidates if c.id not in ignored]
+        manual_loop(candidates, index=skip_to)
 
 
-def manual_loop(*candidates: Candidate, index: int = 0) -> None:
+def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
     index = index - 1 if index else 0
     while True:
         candidate = candidates[index]
@@ -128,7 +149,7 @@ def manual_loop(*candidates: Candidate, index: int = 0) -> None:
 
         while True:
             termios.tcflush(sys.stdin, termios.TCIOFLUSH)
-            logger.info("[N]ext / [P]rev / [C]alculate edits")
+            logger.info("[N]ext / [P]rev / [C]alculate edits / [R]efresh / [I]gnore")
             if (_input := input("").strip().lower()) in ["", "n"]:
                 index += 1
                 if index >= len(candidates):
@@ -148,6 +169,10 @@ def manual_loop(*candidates: Candidate, index: int = 0) -> None:
                 break
             elif _input in ["c"]:
                 candidate.calculate_post_edits()
+                break
+            elif _input in ["i"]:
+                Ignored.add(candidate.id)
+                del candidates[index]
                 break
             else:
                 logger.error("Invalid output.")
@@ -413,17 +438,21 @@ class Candidate:
         """.rstrip("\n ") + "\n            ")  # noqa: E501
 
     @property
+    def last_edit_days_ago(self) -> int:
+        return (END_DATE - self.last_edit_date).days
+
+    @property
     def last_edit_string(self) -> str:
         if not self.last_edit_date:
             return "Last edit: <GREEN> less than 2 months ago. </GREEN>"
 
-        if (days_ago := (END_DATE - self.last_edit_date).days) > 365:
-            return f"Last edit: <RED> {days_ago / 365:.2f} years ago. </RED>"
+        if self.last_edit_days_ago > 365:
+            return f"Last edit: <RED> {self.last_edit_days_ago / 365:.2f} years ago. </RED>"
 
-        if days_ago > 60:
-            return f"Last edit: <YELLOW> {days_ago // 30} months ago. </YELLOW>"
+        if self.last_edit_days_ago > 60:
+            return f"Last edit: <YELLOW> {self.last_edit_days_ago // 30} months ago. </YELLOW>"
 
-        return f"<GREEN> Last edit: {days_ago} days ago. </GREEN>"
+        return f"<GREEN> Last edit: {self.last_edit_days_ago} days ago. </GREEN>"
 
     @property
     def recent_deleted_colored(self) -> str:
