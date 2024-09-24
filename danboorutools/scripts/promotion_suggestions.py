@@ -35,15 +35,22 @@ class Ignored:
 
     @classmethod
     def add(cls, user_id: int) -> None:
-        with cls.file_path.open("a+", encoding="utf-8") as f:
-            f.write(f"{user_id}\n")
+        data = cls.get_all()
+        data[user_id] = datetime.now(tz=UTC)
+
+        with cls.file_path.open("w", encoding="utf-8") as f:
+            f.write("\n".join(f"{user_id},{datetime.timestamp()}" for (user_id, datetime) in data.items()))
 
     @classmethod
-    def get_all(cls) -> list[int]:
+    def get_all(cls) -> dict[int, datetime]:
         if not cls.file_path.exists():
-            return []
+            return {}
         with cls.file_path.open("r+", encoding="utf-8") as f:
-            return list(map(int, [f.strip() for f in f.readlines() if f.strip()]))
+            data = {int(user_id): datetime.fromtimestamp(float(last_checked), tz=UTC)
+                    for (user_id, last_checked) in (line.strip().split(",") for line in f.readlines())}
+
+        data = {k: v for (k, v) in data.items() if v > datetime.now(tz=UTC) - timedelta(days=30)}
+        return data
 
 
 ignored = Ignored.get_all()
@@ -152,6 +159,7 @@ def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
             logger.info(candidate.self_presentation)
         except NoRecentEditsError:
             logger.error(f"No recent edits for user {candidate.id}. Skipping to the next...")
+            Ignored.add(candidate.id)
             del candidates[index]
             continue
         logger.info(f"Candidate {index + 1} of {len(candidates)}. {len(candidates) - index - 1} candidates left.")
