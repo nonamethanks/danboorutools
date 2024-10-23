@@ -34,9 +34,11 @@ class Ignored:
     file_path = Path(settings.BASE_FOLDER / "data" / "promotion_ignored.txt")
 
     @classmethod
-    def add(cls, user_id: int) -> None:
+    def add(cls, user_id: int, show_again_in_days: int) -> None:
         data = cls.get_all()
-        data[user_id] = datetime.now(tz=UTC)
+        data[user_id] = datetime.now(tz=UTC) + timedelta(days=show_again_in_days)
+
+        logger.info(f"Hiding user {user_id} for {show_again_in_days} days.")
 
         with cls.file_path.open("w", encoding="utf-8") as f:
             f.write("\n".join(f"{user_id},{datetime.timestamp()}" for (user_id, datetime) in data.items()))
@@ -46,10 +48,10 @@ class Ignored:
         if not cls.file_path.exists():
             return {}
         with cls.file_path.open("r+", encoding="utf-8") as f:
-            data = {int(user_id): datetime.fromtimestamp(float(last_checked), tz=UTC)
-                    for (user_id, last_checked) in (line.strip().split(",") for line in f.readlines())}
+            data = {int(user_id): datetime.fromtimestamp(float(show_again_on_date), tz=UTC)
+                    for (user_id, show_again_on_date) in (line.strip().split(",") for line in f.readlines())}
 
-        data = {k: v for (k, v) in data.items() if v > datetime.now(tz=UTC) - timedelta(days=30)}
+        data = {k: v for (k, v) in data.items() if v > datetime.now(tz=UTC)}
         return data
 
 
@@ -70,7 +72,7 @@ def main(user_url: str | None, skip_to: int, manual: bool = False, reverse: bool
         candidate = Candidate(name=user.name, recent_uploads=None, recent_deleted=None)
         merge_candidate(candidate, user)
         candidate.refresh()
-        manual_loop(candidate)
+        manual_loop([candidate])
 
 
 def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = False, min_uploads: int = 0) -> None:
@@ -155,19 +157,29 @@ def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
     index = index - 1 if index else 0
     while True:
         candidate = candidates[index]
+        assert candidate.id
         try:
-            logger.info(candidate.self_presentation)
+            logger.info(candidate.self_presentation(raise_on_old=len(candidates) > 1))
         except NoRecentEditsError:
             logger.error(f"No recent edits for user {candidate.id}. Skipping to the next...")
-            Ignored.add(candidate.id)
+            Ignored.add(candidate.id, show_again_in_days=60)
             del candidates[index]
             continue
         logger.info(f"Candidate {index + 1} of {len(candidates)}. {len(candidates) - index - 1} candidates left.")
 
         while True:
             termios.tcflush(sys.stdin, termios.TCIOFLUSH)
-            logger.info("[N]ext / [P]rev / [C]alculate edits / [R]efresh / [I]gnore")
+
+            days_to_hide = 90 if candidate.recent_deleted > 50 else 10
+            logger.info(f"Candidate will be hidden for {days_to_hide} days.")
+
+            logger.info("<r>[N]</>ext <r>(default)</r> / "
+                        "<r>[P]</>rev / "
+                        "<r>[C]</>alculate edits / "
+                        "<r>[R]</>efresh / "
+                        "Hide for <r>[1-9]</>0 Days")
             if (_input := input("").strip().lower()) in ["", "n"]:
+                Ignored.add(candidate.id, show_again_in_days=days_to_hide)
                 index += 1
                 if index >= len(candidates):
                     logger.info("No more candidates.")
@@ -187,10 +199,9 @@ def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
             elif _input in ["c"]:
                 candidate.calculate_post_edits()
                 break
-            elif _input in ["i"]:
-                assert candidate.id
-                Ignored.add(candidate.id)
-                del candidates[index]
+            elif _input in list(map(str, range(1, 10))):
+                Ignored.add(candidate.id, show_again_in_days=int(f"{_input}0"))
+                index += 1
                 break
             else:
                 logger.error("Invalid output.")
@@ -425,9 +436,8 @@ class Candidate:
         for year, count in sorted(edits_by_year.items(), reverse=True):
             self.post_edit_details += f"- {year}: {count:_}" + "\n"
 
-    @property
-    def self_presentation(self) -> str:
-        if self.last_edit_days_ago > 365:
+    def self_presentation(self, raise_on_old: bool = True) -> str:
+        if self.last_edit_days_ago > 365 and raise_on_old:
             raise NoRecentEditsError
         if self.level == 35:
             header = f"<{self.level_color}> User #{self.id}, {self.name}, {self.level_string} </> - Already promoted to <{self.level_color}> contributor </>."  # noqa: E501
@@ -462,6 +472,7 @@ class Candidate:
     def last_edit_days_ago(self) -> int:
         if not self.last_edit_date:
             self.refresh()
+            assert self.last_edit_date
 
         return max((END_DATE - self.last_edit_date).days, 0)  # avoid showing -1 days for edits made while the bot was running
 
