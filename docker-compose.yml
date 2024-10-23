@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     init: true  # protects from chromedriver zombie processes
-    command: poetry run watchmedo auto-restart -d /code/danboorutools -p="*" -R -- celery -- -A danboorutools.celery_tasks.tasks worker -B --loglevel=INFO -s /tmp/celerybeat-schedule
+    command: poetry run watchmedo auto-restart -d /code/danboorutools -p="*" -R -- celery -- -A danboorutools.celery_tasks.tasks worker -B --loglevel=INFO -s /tmp/celerybeat-schedule --autoscale=10,1
     volumes:
       # development
       - ./danboorutools:/code/danboorutools/:ro
