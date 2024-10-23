@@ -360,6 +360,8 @@ class TwitterSession(Session):
                     for entry in instruction["moduleItems"]
                 ]
                 continue
+            elif instruction["type"] == "TimelineShowCover":
+                continue
             raise NotImplementedError(instruction)
 
         tweets = []
