@@ -149,7 +149,8 @@ class SockpuppetDetector:
         if validate:
             assert user_to_ban.level <= 20
             assert user_to_ban.created_at
-            assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1))
+            assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1)), \
+                f"Couldn't ban user {user_to_ban}"
 
         logger.info(f"<r>BANNING USER {user_to_ban}</r>")
         danbooru_api.ban_user(user_to_ban.id, reason=SOCK_AUTOBAN_MESSAGE)
