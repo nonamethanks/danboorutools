@@ -72,7 +72,11 @@ debug = "DEBUG" if os.environ.get("DEBUG") in ["TRUE", "1"] else False
 trace = "TRACE" if os.environ.get("TRACE") in ["TRUE", "1"] else False
 logger_level = trace or debug or default_level
 
-logger.add(sys.stderr, level=logger_level)
+logger.add(
+    sys.stderr,
+    level=logger_level,
+    format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <7}</level> | <level>{message}</level>",
+)
 
 
 class InterceptHandler(logging.Handler):
