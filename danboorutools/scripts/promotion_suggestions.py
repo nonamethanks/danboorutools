@@ -56,6 +56,7 @@ class Ignored:
 
 
 ignored = Ignored.get_all()
+logger.info(f"There are {len(ignored)} ignored users.")
 
 
 @click.command()
@@ -162,7 +163,7 @@ def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
             logger.info(candidate.self_presentation(raise_on_old=len(candidates) > 1))
         except NoRecentEditsError:
             logger.error(f"No recent edits for user {candidate.id}. Skipping to the next...")
-            Ignored.add(candidate.id, show_again_in_days=60)
+            Ignored.add(candidate.id, show_again_in_days=90)
             del candidates[index]
             continue
         logger.info(f"Candidate {index + 1} of {len(candidates)}. {len(candidates) - index - 1} candidates left.")
@@ -170,8 +171,13 @@ def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
         while True:
             termios.tcflush(sys.stdin, termios.TCIOFLUSH)
 
-            days_to_hide = 90 if candidate.recent_deleted > 50 else 10
-            logger.info(f"Candidate will be hidden for {days_to_hide} days.")
+            if candidate.recent_deleted > 50:
+                days_to_hide = 60
+            elif candidate.level == 32:
+                days_to_hide = 30
+            else:
+                days_to_hide = 10
+            logger.info(f"Candidate will be hidden for <r>{days_to_hide}</r> days.")
 
             logger.info("<r>[N]</>ext <r>(default)</r> / "
                         "<r>[P]</>rev / "
@@ -194,7 +200,7 @@ def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
                 else:
                     break
             elif _input in ["r"]:
-                candidate.refresh()
+                candidate.refresh(hard_refresh=True)
                 break
             elif _input in ["c"]:
                 candidate.calculate_post_edits()
@@ -358,14 +364,14 @@ class Candidate:
 
         return string
 
-    def refresh(self) -> None:
+    def refresh(self, hard_refresh: bool = False) -> None:
         logger.info("Refreshing data...")
         user, = danbooru_api.users(id=self.id)
         merge_candidate(self, user)
         date_tag = f"date:{START_DATE.strftime("%Y-%m-%d")}..{END_DATE.strftime("%Y-%m-%d")}"
         tags = [f"user:{self.name}", date_tag]
-        self.recent_uploads = danbooru_api.post_counts(tags=tags)
-        self.recent_deleted = danbooru_api.post_counts(tags=[*tags, "status:deleted"])
+        self.recent_uploads = danbooru_api.post_counts(tags=tags, hard_refresh=hard_refresh)
+        self.recent_deleted = danbooru_api.post_counts(tags=[*tags, "status:deleted"], hard_refresh=hard_refresh)
         self.last_edit_date = danbooru_api.post_versions(updater_name=self.name, limit=1)[0].updated_at
         logger.info("Refreshed.")
 

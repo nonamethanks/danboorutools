@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import random
 from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, TypeVar
@@ -107,7 +108,11 @@ class DanbooruApi(Session):
         response = self.danbooru_request("GET", "posts.json", params=params)
         return [models.DanbooruPost(**post_data) for post_data in response]
 
-    def post_counts(self, tags: list[str]) -> int:
+    def post_counts(self, tags: list[str], hard_refresh: bool = False) -> int:
+
+        if hard_refresh:
+            tags = [t for t in tags if not t.startswith("order:")] + [f"order:{random.randint(1, int(1e10))}"]
+
         params = {
             "tags": " ".join(tags),
         }
