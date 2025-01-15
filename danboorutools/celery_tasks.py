@@ -126,6 +126,7 @@ def setup_periodic_tasks(sender: Celery, **kwargs) -> None:  # noqa: ARG001 # py
         return
 
     sender.add_periodic_task(60.0, monitor_sockpuppets.s())
+    sender.add_periodic_task(60.0 * 5, fix_vandalism.s())
 
     sender.add_periodic_task(crontab(minute="0", hour="6,20"), create_artist_tags.s())
     sender.add_periodic_task(crontab(minute="0", hour="9-18"), create_artist_tags.s())
@@ -169,3 +170,18 @@ def create_artist_tags() -> None:
 @tasks.task(base=CustomCeleryTask)
 def _tag_paid_rewards_on_gelbooru() -> None:
     tag_paid_rewards_on_gelbooru(mode="latest")
+
+
+@tasks.task(base=CustomCeleryTask)
+def fix_vandalism() -> None:
+    post_id = 5019055
+    posts = danbooru_api.posts(tags=[f"id:{post_id}", "artistic_error"])
+    if not posts:
+        logger.info(f"Fixing vandalism on post {post_id}")
+        data = {
+            "post": {
+                "tag_string": "artistic_error",
+                "old_tag_string": "",
+            },
+        }
+        danbooru_api.danbooru_request("PUT", f"posts/{post_id}.json", json=data)
