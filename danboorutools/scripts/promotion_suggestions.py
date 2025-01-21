@@ -59,6 +59,35 @@ ignored = Ignored.get_all()
 logger.info(f"There are {len(ignored)} ignored users.")
 
 
+class Notes:
+
+    file_path = Path(settings.BASE_FOLDER / "data" / "promotion_notes.txt")
+
+    @classmethod
+    def add(cls, user_id: int) -> None:
+        note = input("Enter note: \n").strip()
+        if not note:
+            logger.info("No note added.")
+            return
+        notes[user_id] = note
+
+        logger.info(f"Added note to user #{user_id}.")
+
+        with cls.file_path.open("w", encoding="utf-8") as f:
+            f.write("\n".join(f"{user_id},{note}" for (user_id, note) in notes.items()))
+
+    @classmethod
+    def get_all(cls) -> dict[int, datetime]:
+        if not cls.file_path.exists():
+            return {}
+        with cls.file_path.open("r+", encoding="utf-8") as f:
+            data = {int(user_id): note for (user_id, note) in (line.strip().split(",") for line in f.readlines())}
+        return data
+
+
+notes = Notes.get_all()
+
+
 @click.command()
 @click.option("--skip-to", "-s", "skip_to", default=0)
 @click.option("--manual", "-m", is_flag=True, show_default=True, default=False)
@@ -157,6 +186,9 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = F
 def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
     index = index - 1 if index else 0
     while True:
+        if not candidates:
+            logger.info("No candidates left. Quitting.")
+            break
         candidate = candidates[index]
         assert candidate.id
         try:
@@ -179,12 +211,13 @@ def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
                 days_to_hide = 10
             logger.info(f"Candidate will be hidden for <r>{days_to_hide}</r> days.")
 
-            logger.info("<r>[N]</>ext <r>(default)</r> / "
+            logger.info("<r>[Enter]</>Next <r>(default)</r> / "
                         "<r>[P]</>rev / "
                         "<r>[C]</>alculate edits / "
                         "<r>[R]</>efresh / "
+                        "<r>[N]</>ote / "
                         "Hide for <r>[1-9]</>0 Days")
-            if (_input := input("").strip().lower()) in ["", "n"]:
+            if (_input := input("").strip().lower()) in [""]:
                 Ignored.add(candidate.id, show_again_in_days=days_to_hide)
                 index += 1
                 if index >= len(candidates):
@@ -201,6 +234,9 @@ def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
                     break
             elif _input in ["r"]:
                 candidate.refresh(hard_refresh=True)
+                break
+            elif _input in ["n"]:
+                Notes.add(candidate.id)
                 break
             elif _input in ["c"]:
                 candidate.calculate_post_edits()
@@ -461,7 +497,7 @@ class Candidate:
             {header}
 
             Url: <c>{self.url}</c>
-
+            {f"\n            Note: <YELLOW> \"{notes.get(self.id)}\" </YELLOW>\n" if notes.get(self.id) else ""}
             Recent Deleted: <c>{self.deleted_url}</c>
 
             Total Uploads: <{tuc}> {self.total_uploads:_} </>. Recent uploads: <{ruc}> {self.recent_uploads:_} </>. Deleted: {self.recent_deleted_colored} ({self.delete_ratio_colored})
