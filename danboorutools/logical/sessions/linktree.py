@@ -7,7 +7,10 @@ from danboorutools.util.misc import BaseModel
 
 class LinktreeSession(Session):
     def artist_data(self, username: str) -> LinktreeArtistData:
-        data = self.get(f"https://linktr.ee/{username}").search_json(
+        data = self.get(
+            f"https://linktr.ee/{username}",
+            cookies={"accepted_content_warnings": f'["{username}"]'},
+        ).search_json(
             pattern=r"(.*)",
             selector="script#__NEXT_DATA__",
         )
@@ -24,5 +27,9 @@ class LinktreeArtistData(BaseModel):
     def related(self) -> list[Url]:
         if self.socialLinks:
             raise NotImplementedError(self.socialLinks)
+
+        for link in self.links:
+            if not link["url"]:
+                raise NotImplementedError(link)
 
         return parse_list([link["url"] for link in self.links if link["url"]], Url)
