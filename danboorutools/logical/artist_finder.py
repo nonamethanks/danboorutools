@@ -247,7 +247,7 @@ class ArtistFinder:
 
             if isinstance(related_url, RedirectUrl):
                 try:
-                    related_url = related_url.resolved  # noqa: PLW2901
+                    related_url = related_url.fully_resolved  # noqa: PLW2901
                     logger.debug(f"It was resolved into {related_url}...")
                 except (DeadUrlError, ReadTimeout) as e:
                     logger.debug(f"Couldn't resolve url {related_url} because of an exception ({e}), skipping...")

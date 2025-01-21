@@ -27,6 +27,7 @@ urls = {
         "http://www.dlsite.com/maniax/fsr/=/keyword_maker_name/空道へのR%20RG25050/ana_flg/all/from/work.same_maker": "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG25050",
         "http://www.dlsite.com/maniax-touch/circle/profile/=/from/work.maker/maker_id/RG36965.html": "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG36965",
         "https://www.dlsite.com/maniax/dlaf/=/link/profile/aid/sotokanda/maker/RG03905.html": "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG03905",
+        "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG37546.html/options[0]/ENG/options[1]/CHI_HANS/options[2]/NM": "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG37546",
     },
     DlsiteWorkUrl: {
         "https://www.dlsite.com/books/work/=/product_id/BJ115183": "https://www.dlsite.com/books/work/=/product_id/BJ115183",

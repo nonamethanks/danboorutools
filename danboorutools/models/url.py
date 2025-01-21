@@ -371,7 +371,6 @@ class ArtistAlbumUrl(GalleryUrl, Url):
 class RedirectUrl(Url):
     """An url that redirects somewhere else."""
     @cached_property
-    @on_exception(expo, ReadTimeout, max_tries=3)
     def resolved(self) -> Url:
         try:
             resp = self.session.get(self.normalized_url, allow_redirects=True)
@@ -379,7 +378,12 @@ class RedirectUrl(Url):
             self.is_deleted = True
             raise
 
-        if (resolved := Url.parse(resp.url)) == self:
+        if "google." in resp.url and (dlsite_trickery := [h.url for h in resp.history if "dlsite.com" in h.url]):
+            resolved_url = dlsite_trickery[-1]
+        else:
+            resolved_url = resp.url
+
+        if (resolved := Url.parse(resolved_url)) == self:
             raise DeadUrlError(response=resp)
 
         return resolved
@@ -396,6 +400,15 @@ class RedirectUrl(Url):
             return self.resolved.is_deleted
         except DeadUrlError:
             return True
+
+    @cached_property
+    def fully_resolved(self) -> Url:
+        url = self
+        while True:
+            url = url.resolved
+            logger.debug(f"{self} was resolved to {url}.")
+            if not isinstance(url, RedirectUrl):
+                return url
 
 
 ########################################################################

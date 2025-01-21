@@ -37,7 +37,7 @@ class DlsiteComParser(UrlParser):
             case _, "author", "=", "author_id", author_id:
                 return DlsiteAuthorUrl(parsed_url=parsable_url,
                                        author_id=parsable_url.stem,
-                                       subsite=subsite)  # type: ignore[arg-type]
+                                       subsite=subsite)
 
             # https://www.dlsite.com/books/work/=/product_id/BJ115183
             # https://www.dlsite.com/girls/work/=/product_id/RJ01023665.html
@@ -49,7 +49,7 @@ class DlsiteComParser(UrlParser):
                 return DlsiteWorkUrl(parsed_url=parsable_url,
                                      work_id=parsable_url.stem,
                                      status=status,
-                                     subsite=subsite)  # type: ignore[arg-type]
+                                     subsite=subsite)
 
             # https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG28852.html
             # https://www.dlsite.com/ecchi-eng/circle/profile/=/maker_id/RG12762.html
@@ -65,7 +65,13 @@ class DlsiteComParser(UrlParser):
             case _, "circle", "profile", "=", *_, "maker_id", author_id:
                 return DlsiteAuthorUrl(parsed_url=parsable_url,
                                        author_id=parsable_url.stem,
-                                       subsite=subsite)  # type: ignore[arg-type]
+                                       subsite=subsite)
+
+            # https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG37546.html/options[0]/ENG/options[1]/CHI_HANS/options[2]/NM
+            case _, "circle", "profile", "=", "maker_id", author_id, "options[0]", *_:
+                return DlsiteAuthorUrl(parsed_url=parsable_url,
+                                       author_id=author_id.removesuffix(".html"),
+                                       subsite=subsite)
 
             # http://maniax.dlsite.com/fsr/=/kw/RG06677/od/reg_d
             # https://www.dlsite.com/maniax/fsr/=/kw/RG06677/od/reg_d
@@ -73,7 +79,7 @@ class DlsiteComParser(UrlParser):
             case _, "fsr", "=", "kw", author_id, *_:
                 return DlsiteAuthorUrl(parsed_url=parsable_url,
                                        author_id=author_id,
-                                       subsite=subsite)  # type: ignore[arg-type]
+                                       subsite=subsite)
 
             case _, "fsr", "=", "keyword_maker_name", unicode_mess, *_:
                 unicode_mess = unquote(unicode_mess)
@@ -86,7 +92,7 @@ class DlsiteComParser(UrlParser):
                 if match := cls.KEYWORD_MAKER_NAME_PATTERN.search(unicode_mess):
                     return DlsiteAuthorUrl(parsed_url=parsable_url,
                                            author_id=match.groups()[0],
-                                           subsite=subsite)  # type: ignore[arg-type]
+                                           subsite=subsite)
 
                 else:
                     return None
@@ -95,7 +101,7 @@ class DlsiteComParser(UrlParser):
             case _, "dlaf", "=", "link", "profile", *_, "maker", author_id:
                 return DlsiteAuthorUrl(parsed_url=parsable_url,
                                        author_id=parsable_url.stem,
-                                       subsite=subsite)  # type: ignore[arg-type]
+                                       subsite=subsite)
 
             # http://www.dlsite.com/maniax/dlaf/=/link/work/aid/tbnb/id/RJ109634.html
             # https://www.dlsite.com/girls-pro/dlaf/=/link/work/aid/conoco01/id/BJ327214.html
@@ -103,21 +109,21 @@ class DlsiteComParser(UrlParser):
                 return DlsiteWorkUrl(parsed_url=parsable_url,
                                      work_id=parsable_url.stem,
                                      status="work",
-                                     subsite=subsite)  # type: ignore[arg-type]
+                                     subsite=subsite)
 
             # https://www.dlsite.com/maniax/dlaf/=/t/s/link/work/aid/yuen/locale/en_US/id/RJ326899.html/?locale=en_US
             case _, "dlaf", "=", "t", "s", "link", "work", *_, "id", _work_id:
-                # type: ignore[arg-type]
+
                 return DlsiteWorkUrl(parsed_url=parsable_url,
                                      work_id=parsable_url.stem,
                                      status="work",
-                                     subsite=subsite)  # type: ignore[arg-type]
+                                     subsite=subsite)
 
             # https://www.dlsite.com/maniax/fsr/=/keyword_creater/"灰葉"
             case _, "fsr", "=", "keyword_creater", keyword:
                 return DlsiteKeywordSearch(parsable_url,
                                            keyword=keyword.strip("\"'"),
-                                           subsite=subsite)  # type: ignore[arg-type]
+                                           subsite=subsite)
 
             # http://maniax.dlsite.com/modpub/images2/work/doujin/RJ032000/RJ031102_img_smp1.jpg
             case *_, "images2", ("work" | "ana") as status, "doujin", _, _filename:
@@ -167,7 +173,7 @@ class DlsiteComParser(UrlParser):
             case _:
                 return None
 
-    @ classmethod
+    @classmethod
     def _match_cien(cls, parsable_url: ParsableUrl) -> DlsiteCienUrl | None:
         match parsable_url.url_parts:
             # https://ci-en.dlsite.com/creator/3894/article/684012
@@ -196,7 +202,7 @@ class DlsiteJpParser(UrlParser):
         "howtw": "home",
     }
 
-    @ classmethod
+    @classmethod
     def match_url(cls, parsable_url: ParsableUrl) -> DlsiteUrl | None:
         match parsable_url.url_parts:
             # https://img.dlsite.jp/resize/images2/work/books/BJ007000/BJ006925_img_main_240x240.jpg
@@ -228,7 +234,7 @@ class DlsiteJpParser(UrlParser):
             # http://dlsite.jp/howtw/RJ219372
             case ("mawtw" | "howtw") as subsite, work_id:
                 return DlsiteWorkUrl(parsed_url=parsable_url,
-                                     subsite=cls.SUBSITE_ALIASES[subsite],  # type: ignore[arg-type]
+                                     subsite=cls.SUBSITE_ALIASES[subsite],
                                      work_id=work_id.removesuffix(".html"),
                                      status="work")
 
