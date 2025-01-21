@@ -36,18 +36,24 @@ class FantiaFanclubUrl(ArtistUrl, FantiaUrl):
 
     @property
     def related(self) -> list[Url]:
-        links = self.html.select_one(".fanclub-comment").parent.select("a")
+        fanclub_comment = self.html.select_one(".fanclub-comment")
+        if not fanclub_comment:
+            return []
+        links = fanclub_comment.parent.select("a")
         return [self.parse(link.attrs["href"].strip()) for link in links]
 
     @property
     def primary_names(self) -> list[str]:
-        nickname = self.html.select_one(".single-fanclub #nickname").attrs["value"]
-        assert nickname
-        return [nickname]
+        title = self.html.select_one("title").text
+        nickname = re.match(r".*? \((.*)\)｜", title)
+        assert nickname, title
+        return [nickname.groups()[0]]
 
     @property
     def secondary_names(self) -> list[str]:
-        return []
+        nickname = self.html.select_one(".single-fanclub #nickname").attrs["value"]
+        assert nickname
+        return [nickname]
 
     def subscribe(self) -> None:
         return self.session.subscribe(fanclub_id=self.fanclub_id)

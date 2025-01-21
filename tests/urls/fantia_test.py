@@ -50,10 +50,19 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-class TestFantiaFanclubUrl(_TestArtistUrl):
+class TestFantiaFanclubUrl1(_TestArtistUrl):
     url_string = "https://fantia.jp/fanclubs/483760"
     url_type = FantiaFanclubUrl
     url_properties = dict(fanclub_id=483760)
     related = ["https://twitter.com/nirvana_ppp", "https://www.pixiv.net/en/users/9654202"]
     primary_names = ["enanthate"]
-    secondary_names = []
+    secondary_names = ["enanthate"]
+
+
+class TestFantiaFanclubUrl2(_TestArtistUrl):
+    url_string = "https://fantia.jp/fanclubs/502236"
+    url_type = FantiaFanclubUrl
+    url_properties = dict(fanclub_id=502236)
+    related = []
+    primary_names = ["にわとり"]
+    secondary_names = ["973abb7b86"]
