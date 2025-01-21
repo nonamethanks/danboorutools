@@ -133,3 +133,9 @@ class FanzaImageUrl(PostAssetUrl, FanzaUrl):
             return f"{base_path}/{self.work_id}/{self.work_id}jp-{self.page:02d}.jpg"
         else:
             return f"{base_path}/{self.work_id}/{self.work_id}jp-{self.page:03d}.jpg"
+
+
+class FanzaAgeCheckUrl(RedirectUrl, FanzaUrl):
+    rurl: str
+
+    normalize_template = "https://www.dmm.co.jp/en/age_check/=/?rurl={rurl}"

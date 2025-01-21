@@ -102,6 +102,10 @@ class DmmCoJpParser(UrlParser):
             case *_, "digital", "nijigen", "mlmg_present", _, _:
                 raise UnparsableUrlError(parsable_url)
 
+            case *_, "age_check", "=":
+                return fz.FanzaAgeCheckUrl(parsed_url=parsable_url,
+                                           rurl=parsable_url.query["rurl"])
+
             case _:
                 return None
 

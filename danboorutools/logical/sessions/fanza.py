@@ -7,8 +7,9 @@ from danboorutools.util.misc import BaseModel
 
 
 class FanzaSession(Session):
-    def request(self, *args, **kwargs) -> ScraperResponse:
-        cookies = {
+    @property
+    def fanza_cookies(self) -> dict[str, str]:
+        return {
             "age_check_done": "1",
             "INT_SESID": os.environ["DMM_INT_SESID_COOKIE"],
             "INT_SESID_SECURE": os.environ["DMM_INT_SESID_COOKIE"],
@@ -19,7 +20,9 @@ class FanzaSession(Session):
             "check_done_login": "true",
             "i3_opnd": os.environ["DMM_I3_OPND_COOKIE"],
         }
-        kwargs["cookies"] = kwargs.get("cookies", {}) | cookies
+
+    def request(self, *args, **kwargs) -> ScraperResponse:
+        kwargs["cookies"] = kwargs.get("cookies", {}) | self.fanza_cookies
         return super().request(*args, **kwargs)
 
     def book_data(self, book_id: str) -> FanzaBookData:
