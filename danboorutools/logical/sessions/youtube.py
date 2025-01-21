@@ -5,6 +5,7 @@ import re
 
 import ring
 
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import ScraperResponse, Session
 from danboorutools.models.url import Url
 from danboorutools.util.misc import BaseModel
@@ -17,10 +18,18 @@ class YoutubeSession(Session):
 
     @ring.lru()
     def channel_data(self, artist_url: str) -> YoutubeChannelData:
-        starting_json = self.get(f"{artist_url}/about").search_json(pattern=r"ytInitialData = ({.*?});")
+        response = self.get(f"{artist_url}/about")
+        starting_json = response.search_json(pattern=r"ytInitialData = ({.*?});")
+
+        if (alerts := starting_json.get("alerts", [])):
+            if (error := alerts[0]["alertRenderer"]["text"]["simpleText"]) == "This channel does not exist.":
+                raise DeadUrlError(response)
+            else:
+                raise ValueError(f"Unexpected alert: {error}")
 
         result = re.findall(r'continuationCommand":{"token":"(.*?)","request":"CONTINUATION_REQUEST_TYPE_BROWSE"',
                             json.dumps(starting_json, separators=(",", ":")))
+
         continuation_token: str = result[-1]
 
         data = {

@@ -61,7 +61,7 @@ class TestYoutubeUserUrl1(_TestArtistUrl):
     url_properties = dict(username="niku_kai29")
     primary_names = ["おにくちゃん(肉斬り包丁)"]
     secondary_names = ["niku_kai29"]
-    related = ["https://twitter.com/niku_kai29",
+    related = ["https://twitter.com/niku_kai29ura",
                "https://seiga.nicovideo.jp/user/illust/59309002",
                "https://www.pixiv.net/en/users/61603554"]
 
@@ -69,8 +69,9 @@ class TestYoutubeUserUrl1(_TestArtistUrl):
 class TestYoutubeUserUrl2(_TestArtistUrl):
     url_string = "https://www.youtube.com/@user-zb6db2qg1v"
     url_type = yt.YoutubeUserUrl
+    is_deleted = True
     url_properties = dict(username="user-zb6db2qg1v")
-    primary_names = ["のんのん"]
+    primary_names = []
     secondary_names = []
     related = []
 
@@ -103,7 +104,7 @@ class TestYoutubeChannelUrl2(_TestRedirectUrl):
     url_string = "https://www.youtube.com/channel/UClcMRpGblRVpQs06Rv7tylA"
     url_type = yt.YoutubeChannelUrl
     url_properties = dict(channel_id="UClcMRpGblRVpQs06Rv7tylA")
-    redirects_to = "https://www.youtube.com/@user-zb6db2qg1v"
+    redirects_to = "https://www.youtube.com/@%E3%81%AE%E3%82%93%E3%81%AE%E3%82%93-o5f"
 
 
 class TestYoutubeChannelUrl3(_TestRedirectUrl):
@@ -111,3 +112,10 @@ class TestYoutubeChannelUrl3(_TestRedirectUrl):
     url_type = yt.YoutubeChannelUrl
     url_properties = dict(channel_id="UC8U8Tv6xSPwV8Mout7ZIZ8A")
     redirects_to = "https://www.youtube.com/@TheBrothresGreen2022Wonder"
+
+
+class TestYoutubeChannelUrl4(_TestRedirectUrl):
+    url_string = "https://www.youtube.com/channel/UCsz1g-ctVcSjvsB8MjoN13g"
+    url_type = yt.YoutubeChannelUrl
+    url_properties = dict(channel_id="UCsz1g-ctVcSjvsB8MjoN13g")
+    is_deleted = True
