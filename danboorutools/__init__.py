@@ -20,7 +20,7 @@ settings = _GlobalSettings()
 
 
 class Logger(_Logger):
-    def log_to_file(self,  # noqa: PLR0913
+    def log_to_file(self,
                     *,
                     filename: str | Path | None = None,
                     folder: str | Path | None = None,

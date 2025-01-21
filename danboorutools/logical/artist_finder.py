@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from typing import TYPE_CHECKING
 
@@ -9,7 +10,6 @@ import unidecode
 from cloudscraper.exceptions import CloudflareChallengeError
 from py_trans import PyTranslator
 from py_trans import errors as py_trans_errors
-from pydantic import ValidationError
 from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
@@ -30,6 +30,20 @@ from danboorutools.models.url import ArtistUrl, GalleryUrl, InfoUrl, RedirectUrl
 
 if TYPE_CHECKING:
     from danboorutools.models.danbooru import DanbooruArtist, DanbooruPost
+
+MANUAL_MODE = os.environ.get("MANUAL_MODE") == "true"
+
+
+def spawn_terminal() -> None:
+    if not MANUAL_MODE:
+        return
+    import inspect
+    import traceback
+
+    from ipdb import set_trace
+
+    print(traceback.format_exc())  # noqa: T201
+    set_trace(inspect.currentframe().f_back, context=20)
 
 
 class DuplicateArtistOnDanbooruError(Exception):
@@ -98,6 +112,7 @@ class ArtistFinder:
             return False
         except Exception as e:
             e.add_note(f"On post: {post}, artist: {artist_url}, archived result: {result_from_archives}")
+            spawn_terminal()
             raise
 
         tags_to_send = ["-artist_request", artist_tag]
@@ -128,6 +143,7 @@ class ArtistFinder:
                 continue
             except Exception as e:
                 e.add_note(f"While extracting primary names from {url_with_names}...")
+                spawn_terminal()
                 raise
             try:
                 url_secondary_names = url_with_names.secondary_names
@@ -204,6 +220,7 @@ class ArtistFinder:
             return list(dict.fromkeys(scanned_urls))
         except Exception as e:
             e.add_note(f"While crawling url {first_url}...")
+            spawn_terminal()
             raise
 
         if isinstance(first_url, UnsupportedUrl):
@@ -213,6 +230,7 @@ class ArtistFinder:
             related_urls = first_url.related
         except Exception as e:
             e.add_note(f"While crawling url {first_url}...")
+            spawn_terminal()
             raise
 
         assert all(isinstance(u, Url) for u in related_urls), f"{first_url} returned a string instead of an url for .related. Uh oh!"
@@ -234,6 +252,10 @@ class ArtistFinder:
                 except (DeadUrlError, ReadTimeout) as e:
                     logger.debug(f"Couldn't resolve url {related_url} because of an exception ({e}), skipping...")
                     continue
+                except Exception as e:
+                    e.add_note(f"While crawling url {related_url}...")
+                    spawn_terminal()
+                    raise
 
             if isinstance(related_url, UnknownUrl) and related_url.parsed_url.is_base_url:
                 logger.debug("Skipping because it's a basic url...")
