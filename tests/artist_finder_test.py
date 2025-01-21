@@ -32,6 +32,13 @@ def test_artist_name_translation_4() -> None:
     assert ArtistFinder.sanitize_tag_name(name) == "shen_cheng_xun_zi"
 
 
+@pytest.mark.parsing
+@pytest.mark.artist_finder
+def test_artist_name_translation_5() -> None:
+    name = "鱼呆呆呆呆呆"
+    assert ArtistFinder.sanitize_tag_name(name) == "yu_ai_ai_ai_ai_ai"
+
+
 @pytest.mark.scraping
 @pytest.mark.artist_finder
 def test_artist_url_extraction() -> None:

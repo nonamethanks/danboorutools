@@ -370,9 +370,8 @@ class ArtistFinder:
     def romanize_tag_name(cls, potential_tag: str) -> str:
         try:
             language = cls.translator.detect(potential_tag)
-        except py_trans_errors.UnknownError as e:
-            e.add_note(f"On tag '{potential_tag}'")
-            raise
+        except py_trans_errors.UnknownError:
+            return unidecode.unidecode(potential_tag)
         translated_results = cls.kakasi.convert(potential_tag)
 
         if len(translated_results) == 1 and translated_results[0]["orig"].strip() == potential_tag.strip():
