@@ -33,8 +33,8 @@ class DlsiteAuthorUrl(ArtistUrl, DlsiteUrl):
 
     @property
     def related(self) -> list[Url]:
-        # cien_id = self.session.cien_id_from_circle_id(self.author_id)
-        # return [DlsiteCienCreatorUrl.build(creator_id=cien_id)] # appears to have been disabled as a method
+        cien_id = self.session.cien_id_from_circle_id(self.author_id)
+        return [DlsiteCienCreatorUrl.build(creator_id=cien_id)]
         return []
 
     @property

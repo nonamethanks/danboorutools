@@ -25,6 +25,19 @@ class _TestUrl:
         expected_url_type = self.url_type
         assert isinstance(parsed_url, expected_url_type)
 
+        # sanity check
+        err_msg = "Dumbass, you configured the wrong type of test!"
+        if isinstance(self, _TestRedirectUrl):
+            assert isinstance(parsed_url, RedirectUrl), err_msg
+        elif isinstance(self, _TestArtistUrl):
+            assert isinstance(parsed_url, GalleryUrl), err_msg
+        elif isinstance(self, _TestPostUrl):
+            assert isinstance(parsed_url, PostUrl), err_msg
+        elif isinstance(self, _TestInfoUrl):
+            assert isinstance(parsed_url, InfoUrl), err_msg
+        elif isinstance(self, _TestGalleryUrl):
+            assert isinstance(parsed_url, GalleryUrl), err_msg
+
     @pytest.mark.parsing
     def test_correct_url_properties(self, parsed_url: Url) -> None:
         expected_properties = self.url_properties

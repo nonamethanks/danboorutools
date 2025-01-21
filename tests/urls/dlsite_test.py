@@ -2,7 +2,7 @@ import pytest
 
 from danboorutools.logical.urls.dlsite import DlsiteAuthorUrl, DlsiteImageUrl, DlsiteWorkUrl
 from tests.helpers.parsing import generate_parsing_test
-from tests.helpers.scraping import _TestPostUrl
+from tests.helpers.scraping import _TestArtistUrl, _TestPostUrl
 
 urls = {
     DlsiteAuthorUrl: {
@@ -69,3 +69,12 @@ class TestDlsiteWorkUrl(_TestPostUrl):
     url_type = DlsiteWorkUrl
     url_properties = dict(work_id="BJ115183", subsite="books")
     gallery = "https://www.dlsite.com/books/author/=/author_id/AJ002787"
+
+
+class TestDlsiteAuthorUrl(_TestArtistUrl):
+    url_string = "https://www.dlsite.com/maniax/circle/profile/=/maker_id/RG14177.html"
+    url_type = DlsiteAuthorUrl
+    url_properties = dict(author_id="RG14177")
+    primary_names = []
+    secondary_names = []
+    related = ["https://ci-en.dlsite.com/creator/2390"]
