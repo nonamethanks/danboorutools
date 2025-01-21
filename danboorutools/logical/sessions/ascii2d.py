@@ -14,7 +14,7 @@ from danboorutools.logical.urls.fantia import FantiaFanclubUrl
 from danboorutools.logical.urls.fanza import FanzaDoujinWorkUrl, FanzaUrl
 from danboorutools.logical.urls.lofter import LofterPostUrl
 from danboorutools.logical.urls.melonbooks import MelonbooksProductUrl
-from danboorutools.logical.urls.nicoseiga import NicoSeigaArtistUrl
+from danboorutools.logical.urls.nicoseiga import NicoSeigaArtistUrl, NicoSeigaIllustUrl
 from danboorutools.logical.urls.nijie import NijieArtistUrl
 from danboorutools.logical.urls.pixiv import PixivArtistUrl, PixivPostUrl
 from danboorutools.logical.urls.sakura import SakuraBlogUrl
@@ -278,6 +278,8 @@ class Ascii2dSession(Session):
             if isinstance(original_url, PostUrl):
                 if original_url.normalized_url in [url.normalized_url for url in result.posts]:
                     for post in result.posts:
+                        if isinstance(post, NicoSeigaIllustUrl):
+                            continue  # blocked outside jp
                         try:
                             result._data["found_urls"] += [post.artist]
                         except DeadUrlError:
