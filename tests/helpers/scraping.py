@@ -3,6 +3,7 @@ from typing import TypeVar
 
 import pytest
 
+from danboorutools.exceptions import DeadUrlError
 from danboorutools.models.url import GalleryUrl, InfoUrl, PostUrl, RedirectUrl, Url
 from danboorutools.util.time import datetime_from_string
 
@@ -44,7 +45,12 @@ class _TestRedirectUrl(_TestUrl):
 
     @pytest.mark.scraping
     def test_redirect_to(self, parsed_url: RedirectUrl) -> None:
-        expected_redirect = parsed_url.resolved.normalized_url
+        try:
+            expected_redirect = parsed_url.resolved.normalized_url
+        except DeadUrlError:
+            assert self.is_deleted
+            return
+
         actual_redirect = Url.parse(self.redirects_to).normalized_url
         assert actual_redirect == expected_redirect
 
