@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import re
+
 from danboorutools.exceptions import DeadUrlError
 from danboorutools.logical.sessions import Session
-from danboorutools.models.url import Url
+from danboorutools.models.url import Url, parse_list
 from danboorutools.util.misc import BaseModel, extract_urls_from_string
 
 
@@ -10,12 +12,16 @@ class LitLinkSession(Session):
     def artist_data(self, username: str) -> LitLinkArtistData:
         artist_url = f"https://lit.link/{username}"
         response = self.get(artist_url)
-        artist_data = response.search_json(pattern=r"(.*)", selector="script#__NEXT_DATA__")
-        profile_data = artist_data["props"]["pageProps"]["profile"]
 
-        if profile_data is None:
+        if response.html.select_one("title").text.strip() == "Not Found lit.link":
             raise DeadUrlError(response)
-        return LitLinkArtistData(**profile_data)
+
+        artist_data = response.search_json(
+            pattern=r"self.__next_f.push\(.*?({.*urlPath.*}).*?\)",
+            post_process=lambda x: re.sub(r'\\+"', '\\"', x.replace('\\"', '"')),
+        )
+        artist_data = artist_data["children"][-1]["profile"]
+        return LitLinkArtistData(**artist_data)
 
 
 class LitLinkArtistData(BaseModel):

@@ -21,7 +21,7 @@ def test_parsing(raw_url, normalized_url, expected_class) -> None:
     generate_parsing_test(raw_url=raw_url, normalized_url=normalized_url, expected_class=expected_class)
 
 
-class TestKakuyomuArtistUrl1(_TestInfoUrl):
+class TestLitlinkArtistUrl1(_TestInfoUrl):
     url_string = "https://lit.link/en/hayato69link"
     url_type = LitlinkUrl
     url_properties = dict(username="hayato69link")
@@ -33,7 +33,6 @@ class TestKakuyomuArtistUrl1(_TestInfoUrl):
         "https://skeb.jp/@hayato69rock",
         "https://skima.jp/profile?id=244678",
         "https://store.line.me/stickershop/author/1140847",
-        "https://twitter.com/hashtag/ガチャドロック?src=hashtag_click&f=live",
         "https://twitter.com/hayARTo_Rock",
         "https://twitter.com/hayato_Rock_YT",
         "https://www.amazon.jp/hz/wishlist/ls/1O5XMOZHKWBE8?ref_=wl_share",
@@ -41,7 +40,6 @@ class TestKakuyomuArtistUrl1(_TestInfoUrl):
         "https://www.youtube.com/channel/UCtKqZDgqH9QnxJYeF0GDReQ",
         "https://www.youtube.com/results?search_query=隼人ろっくch&sp=EgIIBA==",
         "https://xfolio.jp/portfolio/hayato69",
-        "https://www.youtube.com/playlist?list=PLcw27-K4pcr23t305PlCpIYvulr0m2Agu",
         "https://www.youtube.com/playlist?list=PLcw27-K4pcr0ThmoFSJ2kXyaT-bqP2CF_",
         "https://www.youtube.com/watch?v=Gen3viUSk24",
         "https://www.youtube.com/watch?v=N_FvhpFcFnw",
@@ -49,7 +47,7 @@ class TestKakuyomuArtistUrl1(_TestInfoUrl):
     ]
 
 
-class TestKakuyomuArtistUrl2(_TestInfoUrl):
+class TestLitlinkArtistUrl2(_TestInfoUrl):
     url_string = "https://lit.link/en/mawariartwork"
     url_type = LitlinkUrl
     url_properties = dict(username="mawariartwork")
