@@ -101,6 +101,14 @@ class CloudFrontError(HTTPError):
         return f"The request to {self.original_url} failed because this IP is being blocked by CloudFront. Consider setting a proxy."
 
 
+class CloudFlareError(HTTPError):
+    """Got 403 with cloudflare."""
+
+    @property
+    def message(self) -> str:
+        return f"The request to {self.original_url} failed because this URL uses a Cloudflare challenge."
+
+
 class EHEntaiRateLimitError(HTTPError):
     """E-Hentai is ratelimiting."""
 

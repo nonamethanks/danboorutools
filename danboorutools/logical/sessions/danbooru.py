@@ -12,7 +12,7 @@ from requests import JSONDecodeError
 from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
-from danboorutools.exceptions import DanbooruHTTPError, RateLimitError
+from danboorutools.exceptions import CloudFlareError, DanbooruHTTPError, RateLimitError
 from danboorutools.logical.sessions import Session
 from danboorutools.models import danbooru as models
 from danboorutools.models.url import UnknownUrl, Url, UselessUrl
@@ -233,7 +233,7 @@ class DanbooruApi(Session):
                     continue
                 try:
                     deleted = parsed.is_deleted if not isinstance(parsed, UnknownUrl) else (parsed.is_deleted or not url_data["is_active"])
-                except (ReadTimeout, CloudflareChallengeError, RateLimitError):
+                except (ReadTimeout, CloudflareChallengeError, CloudFlareError, RateLimitError):
                     deleted = url_data["is_active"]
                 except Exception as e:
                     e.add_note(f"On {parsed}")

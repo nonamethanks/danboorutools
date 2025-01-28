@@ -30,15 +30,16 @@ class ArtstationSession(Session):
             try:
                 return super().request(*args, verify=verify, **kwargs)
             except HTTPError as e:
-                assert e.response
+                assert e.response is not None
                 if e.status_code == 502 and\
                         "ArtStation is currently undergoing maintenance and will be back online shortly!" in e.response.text:
                     raise MaintenanceError(e.response) from e
                 raise
 
     def artist_data(self, username: str) -> ArtstationArtistData:
-        response = self.get(f"https://www.artstation.com/users/{username}.json").json()
-        return ArtstationArtistData(**response)
+        response = self.get(f"https://www.artstation.com/users/{username}.json")
+        data = response.json()
+        return ArtstationArtistData(**data)
 
     def post_data(self, post_id: str) -> ArtstationPostData:
         url = f"https://www.artstation.com/projects/{post_id}.json"
