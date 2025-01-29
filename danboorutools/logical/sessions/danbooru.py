@@ -12,7 +12,7 @@ from requests import JSONDecodeError
 from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
-from danboorutools.exceptions import CloudFlareError, DanbooruHTTPError, RateLimitError
+from danboorutools.exceptions import DanbooruHTTPError, RateLimitError, ShieldedUrlError
 from danboorutools.logical.sessions import Session
 from danboorutools.models import danbooru as models
 from danboorutools.models.url import UnknownUrl, Url, UselessUrl
@@ -225,6 +225,8 @@ class DanbooruApi(Session):
                 normalized_urls.append(f"-{url.normalized_url}" if url.is_deleted else url.normalized_url)
             except (ReadTimeout, CloudflareChallengeError, RateLimitError):
                 continue
+            except ShieldedUrlError:
+                normalized_urls.append(url.normalized_url)
 
         if artist:
             for url_data in artist._raw_data["urls"]:
@@ -233,7 +235,7 @@ class DanbooruApi(Session):
                     continue
                 try:
                     deleted = parsed.is_deleted if not isinstance(parsed, UnknownUrl) else (parsed.is_deleted or not url_data["is_active"])
-                except (ReadTimeout, CloudflareChallengeError, CloudFlareError, RateLimitError):
+                except (ReadTimeout, CloudflareChallengeError, ShieldedUrlError, RateLimitError):
                     deleted = url_data["is_active"]
                 except Exception as e:
                     e.add_note(f"On {parsed}")

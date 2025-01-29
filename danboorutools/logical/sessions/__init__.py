@@ -27,13 +27,13 @@ from requests.exceptions import ConnectTimeout, ReadTimeout
 from danboorutools import logger
 from danboorutools.exceptions import (
     CloudFlareError,
-    CloudFrontError,
     DeadUrlError,
     DownloadError,
     HTTPError,
     JsonNotFoundError,
     NotAuthenticatedError,
     RateLimitError,
+    ShieldedUrlError,
 )
 from danboorutools.logical.browser import Browser
 from danboorutools.logical.parsable_url import ParsableUrl
@@ -193,12 +193,14 @@ class Session(_CloudScraper):
             raise NotAuthenticatedError(response)
         if response.status_code == 403:
             if "The Amazon CloudFront distribution is configured to block" in response.text:
-                raise CloudFrontError(response)
+                raise ShieldedUrlError(response)
             if "Please complete a security check to continue" in response.text:
                 raise CloudFlareError(response)
         if response.status_code == 404:
             raise DeadUrlError(response)
         if response.status_code == 429:
+            if "instagram.com/accounts/login" in response.url:
+                raise ShieldedUrlError(response)
             raise RateLimitError(response)
         return response
 

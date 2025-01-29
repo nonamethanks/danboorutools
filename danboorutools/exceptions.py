@@ -93,15 +93,15 @@ class RateLimitError(HTTPError):
     """Got 429."""
 
 
-class CloudFrontError(HTTPError):
-    """Got 403 with cloudfront."""
+class ShieldedUrlError(HTTPError):
+    "The url is protected by cloudflare, cloudfront or another pain in the ass I don't care enough to break"
 
     @property
     def message(self) -> str:
-        return f"The request to {self.original_url} failed because this IP is being blocked by CloudFront. Consider setting a proxy."
+        return f"The request to {self.original_url} failed because this URL uses an anti-scraping system."
 
 
-class CloudFlareError(HTTPError):
+class CloudFlareError(ShieldedUrlError):
     """Got 403 with cloudflare."""
 
     @property
