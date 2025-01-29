@@ -176,7 +176,7 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = F
             if c.id not in seen:
                 seen[c.id] = c
         candidates = list(seen.values())
-        candidates.sort(key=lambda c: c.total_uploads, reverse=not reverse)
+        candidates.sort(key=lambda c: c.sorted_weight, reverse=not reverse)
         if min_uploads:
             candidates = [c for c in candidates if c.total_uploads > min_uploads]
         candidates = [c for c in candidates if c.id not in ignored]
@@ -354,6 +354,10 @@ class Candidate:
         if self.is_banned:  # can also be None  # noqa: SIM103
             return False
         return True
+
+    @property
+    def sorted_weight(self) -> int:
+        return self.total_uploads + (self.total_edits / 10)
 
     @property
     def for_contributor(self) -> bool:
