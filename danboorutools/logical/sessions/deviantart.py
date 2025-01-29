@@ -120,6 +120,8 @@ class DeviantartUserData(BaseModel):
                     if not entity_url.startswith("http"):
                         entity_url = f"https://{entity_url}"
                     urls += [Url.parse(entity_url)]
+            elif description["type"] == "tiptap":
+                pass
             else:
                 raise NotImplementedError(description)
 
