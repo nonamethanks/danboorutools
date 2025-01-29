@@ -25,11 +25,10 @@ class LinktreeArtistData(BaseModel):
 
     @property
     def related(self) -> list[Url]:
-        if self.socialLinks:
-            raise NotImplementedError(self.socialLinks)
+        links = self.links + self.socialLinks
 
-        for link in self.links:
+        for link in links:
             if not link["url"]:
                 raise NotImplementedError(link)
 
-        return parse_list([link["url"] for link in self.links if link["url"]], Url)
+        return parse_list([link["url"] for link in links if link["url"]], Url)
