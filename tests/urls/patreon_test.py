@@ -14,6 +14,7 @@ urls = {
         "https://www.patreon.com/join/thirdphp?": "https://www.patreon.com/thirdphp",
         "https://patreon.com/checkout/roxxxan?rid=5965351": "https://www.patreon.com/roxxxan",
         "https://www.patreon.com/c/Miyakonoh": "https://www.patreon.com/Miyakonoh",
+        "https://www.patreon.com/c/bigdog180/shop": "https://www.patreon.com/c/bigdog180",
     },
     PatreonPostUrl: {
         "https://patreon.com/posts/22819080": "https://www.patreon.com/posts/22819080",

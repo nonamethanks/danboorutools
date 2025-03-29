@@ -51,8 +51,13 @@ class PatreonComParser(UrlParser):
                                         username=None)
 
             # https://www.patreon.com/m/Alamander820
+            case "m", username:
+                return PatreonArtistUrl(parsed_url=parsable_url,
+                                        username=username)
+
             # https://www.patreon.com/c/Miyakonoh
-            case ("m" | "c"), username:
+            # https://www.patreon.com/c/bigdog180/shop
+            case "c", username, *_:
                 return PatreonArtistUrl(parsed_url=parsable_url,
                                         username=username)
 
