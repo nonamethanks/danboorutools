@@ -8,6 +8,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from urllib.parse import quote_plus
 
+import readline
 import click
 
 from danboorutools import logger, settings
@@ -29,6 +30,16 @@ CONTRIB_MAX_DEL_COUNT = 50
 CONTRIB_MAX_DEL_PERC = 5
 BUILDER_MAX_DEL_PERC = 15
 
+
+def input_with_prefill(prompt: str, text: str) -> str:
+    #  # https://stackoverflow.com/questions/8505163/is-it-possible-to-prefill-a-input-in-python-3s-command-line-interface
+    def hook():
+        readline.insert_text(text)
+        readline.redisplay()
+    readline.set_pre_input_hook(hook)
+    result = input(prompt)
+    readline.set_pre_input_hook()
+    return result
 
 class Ignored:
     file_path = Path(settings.BASE_FOLDER / "data" / "promotion_ignored.txt")
@@ -65,7 +76,7 @@ class Notes:
 
     @classmethod
     def add(cls, user_id: int) -> None:
-        note = input("Enter note: \n").strip()
+        note = input_with_prefill("Enter note: \n", notes.get(user_id, "")).strip()
         if not note:
             logger.info("No note added.")
             return
