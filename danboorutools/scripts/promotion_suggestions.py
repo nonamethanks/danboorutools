@@ -6,6 +6,7 @@ import textwrap
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Literal
 from urllib.parse import quote_plus
 
 import readline
@@ -98,16 +99,24 @@ class Notes:
 
 notes = Notes.get_all()
 
-
-@click.command()
+@click.command("cli", context_settings={'show_default': True})
 @click.option("--skip-to", "-s", "skip_to", default=0)
-@click.option("--manual", "-m", is_flag=True, show_default=True, default=False)
-@click.option("--reverse", "-r", is_flag=True, show_default=True, default=False)
+@click.option("--manual", "-m", is_flag=True, default=False)
+@click.option("--reverse", "-r", is_flag=True, default=False)
+@click.option("--ignore-ignored", "-i", is_flag=True, default=False)
 @click.option("--min-uploads", "-u", "min_uploads", default=0)
+@click.option("--level", "-l", "level", required=False, type=click.Choice(["member", "platinum", "gold", "builder", "nonbuilder", "all"], case_sensitive=False), default="all")
 @click.argument("user_url", required=False, nargs=1)
-def main(user_url: str | None, skip_to: int, manual: bool = False, reverse: bool = False, min_uploads: int = 0) -> None:
+def main(user_url: str | None,
+         skip_to: int,
+         manual: bool = False,
+         reverse: bool = False,
+         ignore_ignored: bool = False,
+         min_uploads: int = 0,
+         level: Literal["member", "platinum", "gold", "builder", "nonbuilder", "all"] = "all",
+         ) -> None:
     if not user_url:
-        suggest_promotions(skip_to=skip_to, manual=manual, reverse=reverse, min_uploads=min_uploads)
+        suggest_promotions(skip_to=skip_to, manual=manual, reverse=reverse, min_uploads=min_uploads, ignore_ignored=ignore_ignored, level=level)
     else:
         user = DanbooruUser.get_from_id(DanbooruUser.id_from_url(user_url))
         candidate = Candidate(name=user.name, recent_uploads=None, recent_deleted=None)
@@ -116,7 +125,7 @@ def main(user_url: str | None, skip_to: int, manual: bool = False, reverse: bool
         manual_loop([candidate])
 
 
-def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = False, min_uploads: int = 0) -> None:
+def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = False, min_uploads: int = 0, ignore_ignored: bool = False, level: str = "all") -> None:
     logger.info("Gathering data...")
 
     recent_uploaders = get_recent_uploaders()
@@ -190,7 +199,17 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = F
         candidates.sort(key=lambda c: c.sorted_weight, reverse=not reverse)
         if min_uploads:
             candidates = [c for c in candidates if c.total_uploads > min_uploads]
-        candidates = [c for c in candidates if c.id not in ignored]
+        if not ignore_ignored:
+            candidates = [c for c in candidates if c.id not in ignored]
+        if level:
+            candidates = [
+                c for c in candidates
+                if (
+                    level == "all"
+                    or c.level_string == level.capitalize()
+                    or (level == "nonbuilder" and c.level != 32)
+                )
+            ]
         manual_loop(candidates, index=skip_to)
 
 
