@@ -531,7 +531,7 @@ class Candidate:
             {header}
 
             Url: <c>{self.url}</c>
-            {f"\n            Note: <YELLOW> \"{notes.get(self.id)}\" </YELLOW>\n" if notes.get(self.id) else ""}
+            {f"\n            Note: <YELLOW> {notes.get(self.id)} </YELLOW>\n" if notes.get(self.id) else ""}
             Recent Deleted: <c>{self.deleted_url}</c>
 
             Total Uploads: <{tuc}> {self.total_uploads:_} </>. Recent uploads: <{ruc}> {self.recent_uploads:_} </>. Deleted: {self.recent_deleted_colored} ({self.delete_ratio_colored})
