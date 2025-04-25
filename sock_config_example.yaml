@@ -1,0 +1,11 @@
+socks:
+  - name: ban evader
+    ban_message: "Sockpuppet of user #123"
+    carrier: "My Carrier"
+    ip_prefixes:
+      - "123."
+      - "124."
+    name_patterns:
+    - ^pattern1$
+    rename_socks: false
+    ban_proxies: false # always ban if from proxies
