@@ -24,10 +24,22 @@ class BanEvader(BaseModel):
     name: str
     ban_message: str = Field(min_length=3)
     carrier: str | None = None
+    carrier_organization: str | None = None
     ip_prefixes: list[str] | None = None
     name_patterns: list[str]
     rename_socks: bool = False
     ban_proxies: bool = False
+
+    def log_intro(self) -> None:
+        logger.info(f"  <r>{self.name} ({self.ban_message})</r>")
+        logger.info(f"    <r>Carrier: {self.carrier}</r>")
+        logger.info(f"    <r>Carrier org: {self.carrier_organization}</r>")
+        logger.info(f"    <r>IP prefixes: {', '.join(self.ip_prefixes) if self.ip_prefixes else None}</r>")
+        logger.info(f"    <r>Autoban proxies: {self.ban_proxies}</r>")
+        logger.info(f"    <r>Rename socks: {self.rename_socks}</r>")
+        logger.info( "    <r>Name patterns:</r>")
+        for pattern in self.name_patterns:
+            logger.info(f"        <r>{pattern}</r>")
 
     @property
     def compiled_name_patterns(self) -> list[re.Pattern]:
@@ -42,13 +54,17 @@ class BanEvader(BaseModel):
             return False
         logger.info(f"User {signup.user} matches name regex")
 
-        if not self.ip_prefixes and not self.carrier and not self.ban_proxies:
-            raise ValueError("No IP prefixes, carrier or proxy ban configured. Please check your sock_config.yaml file.")
+        if not self.ip_prefixes and not self.carrier and not self.carrier_organization and not self.ban_proxies:
+            raise ValueError("No IP prefixes, carrier, carrier organization or proxy ban configured. "
+                             "Please check your sock_config.yaml file.")
 
         if self.ip_prefixes and not self.check_ip_prefixes(signup):
             return False
 
         if self.carrier and not self.check_sock_carrier(signup):
+            return False
+
+        if self.carrier_organization and not self.check_sock_carrier_organization(signup):
             return False
 
         if self.ban_proxies:
@@ -75,6 +91,17 @@ class BanEvader(BaseModel):
             logger.info(f"User {signup.user} does not have carrier {self.carrier}. Aborting.")
             return False
         logger.info(f"User {signup.user} matches carrier {self.carrier}")
+        return True
+
+    def check_sock_carrier_organization(self, signup: DanbooruUserEvent) -> bool:
+        last_ip_addr: str = signup.user._raw_data["last_ip_addr"]
+        ip_addr_data = danbooru_api.danbooru_request("GET", f"ip_addresses/{last_ip_addr}.json")
+        if not ip_addr_data["organization"]:
+            return False
+        if ip_addr_data["organization"].lower() != self.carrier_organization.lower():
+            logger.info(f"User {signup.user} does not have carrier org {self.carrier_organization}. Aborting.")
+            return False
+        logger.info(f"User {signup.user} matches carrier org {self.carrier_organization}")
         return True
 
     def check_proxies(self, signup: DanbooruUserEvent) -> bool:
@@ -114,14 +141,7 @@ class SockpuppetDetector:
         if ban_evaders:
             logger.info("<r>The following autobans are configured:</r>")
             for evader in ban_evaders:
-                logger.info(f"  <r>{evader.name} ({evader.ban_message})</r>")
-                logger.info(f"    <r>Carrier: {evader.carrier}</r>")
-                logger.info(f"    <r>IP prefixes: {', '.join(evader.ip_prefixes) if evader.ip_prefixes else None}</r>")
-                logger.info(f"    <r>Autoban proxies: {evader.ban_proxies}</r>")
-                logger.info(f"    <r>Rename socks: {evader.rename_socks}</r>")
-                logger.info( "    <r>Name patterns:</r>")
-                for pattern in evader.name_patterns:
-                    logger.info(f"        <r>{pattern}</r>")
+                evader.log_intro()
                 logger.info("")
 
     def detect_and_post(self) -> None:

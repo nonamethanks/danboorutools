@@ -2,6 +2,7 @@ socks:
   - name: ban evader
     ban_message: "Sockpuppet of user #123"
     carrier: "My Carrier"
+    carrier_organization: "My Carrier Organization"
     ip_prefixes:
       - "123."
       - "124."
