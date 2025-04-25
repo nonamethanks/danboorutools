@@ -13,8 +13,7 @@ from danboorutools import logger, settings
 from danboorutools.exceptions import DanbooruHTTPError
 from danboorutools.logical.sessions.danbooru import danbooru_api
 from danboorutools.scripts.create_artist_tags import add_artists_to_posts
-from danboorutools.scripts.rename_socks import main as rename_socks
-from danboorutools.scripts.sockpuppet_discord_monitor import SockpuppetDetector
+from danboorutools.scripts.sockpuppet_discord_monitor import SockpuppetDetector, delete_feedbacks, rename_socks
 from danboorutools.scripts.tag_paid_rewards_on_gelbooru import tag_paid_rewards_on_gelbooru
 from danboorutools.util.mail import send_email
 
@@ -137,17 +136,7 @@ def setup_periodic_tasks(sender: Celery, **kwargs) -> None:  # noqa: ARG001 # py
 def monitor_sockpuppets() -> None:
     SockpuppetDetector(mode="production").detect_and_post()
     rename_socks()
-    sock_reason = os.environ["DANBOORUTOOLS_SOCKPUPPET_AUTORENAME_MESSAGE"].strip()
-    if sock_reason:
-        logger.info(f"Searching for feedbacks to delete, with message '{sock_reason}'...")
-        feedbacks = danbooru_api.feedbacks(is_deleted=False, body_ilike=f"*{sock_reason}*")
-        for feedback in feedbacks[:20]:
-            if not feedback.user.is_banned:
-                continue
-            printable_fb = feedback.body.replace("<", r"\<").replace(">", r"\>")
-            logger.info(f"Deleting feedback '{printable_fb}' for user {feedback.user} because it matches the search.")
-            danbooru_api.danbooru_request("PUT", f"{feedback.model_path}.json", json={"is_deleted": True})
-        logger.info("Done.")
+    delete_feedbacks()
 
 
 @tasks.task(base=CustomCeleryTask)

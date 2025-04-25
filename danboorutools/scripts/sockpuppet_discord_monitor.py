@@ -4,7 +4,6 @@ import datetime
 import os
 import re
 import time
-from dataclasses import dataclass
 from datetime import UTC
 from pathlib import Path
 from typing import Literal
@@ -25,7 +24,7 @@ class BanEvader(BaseModel):
     name: str
     ban_message: str = Field(min_length=3)
     carrier: str | None = None
-    ip_prefixes: list[str]
+    ip_prefixes: list[str] | None = None
     name_patterns: list[str]
     rename_socks: bool = False
     ban_proxies: bool = False
@@ -116,11 +115,13 @@ class SockpuppetDetector:
             logger.info("<r>The following autobans are configured:</r>")
             for evader in ban_evaders:
                 logger.info(f"  <r>{evader.name} ({evader.ban_message})</r>")
-                logger.info(f"  <r>Carrier: {evader.carrier}</r>")
-                logger.info(f"  <r>IP prefixes: {', '.join(evader.ip_prefixes)}</r>")
-                logger.info( "    <r>Patterns:</r>")
-                for pattern in evader.compiled_name_patterns:
-                    logger.info(f"      <r>{pattern}</r>")
+                logger.info(f"    <r>Carrier: {evader.carrier}</r>")
+                logger.info(f"    <r>IP prefixes: {', '.join(evader.ip_prefixes) if evader.ip_prefixes else None}</r>")
+                logger.info(f"    <r>Autoban proxies: {evader.ban_proxies}</r>")
+                logger.info(f"    <r>Rename socks: {evader.rename_socks}</r>")
+                logger.info( "    <r>Name patterns:</r>")
+                for pattern in evader.name_patterns:
+                    logger.info(f"        <r>{pattern}</r>")
                 logger.info("")
 
     def detect_and_post(self) -> None:
@@ -188,7 +189,7 @@ class SockpuppetDetector:
             for ban_evader in ban_evaders:
                 if self._check_for_sock(signup=signup, other_users=other_users, ban_evader=ban_evader):
                     for signup in signups:  # noqa: PLW2901 # be silent machine, I know what I'm doing
-                        if signup.user.id in [user.id for user in other_users]:
+                        if signup.user.id in [user.id for user in other_users] and self.enable_autobans:
                             signup.user.is_banned = True
                     continue
 
@@ -315,6 +316,39 @@ class SockpuppetDetector:
         return True
 
 
+def rename_socks() -> None:
+    for ban_evader in ban_evaders:
+        if ban_evader.rename_socks:
+            logger.info(f"Searching for ban messages containing '{ban_evader.ban_message}'...")
+            bans = danbooru_api.bans(reason_matches=ban_evader.ban_message)
+            for ban in bans:
+                banned_user = ban.user
+                old_name = banned_user.name
+                new_name = banned_user.id
+
+                if not old_name.startswith(str(new_name)):
+                    logger.info(f"Renaming {banned_user.url} {old_name} -> {new_name}")
+                    assert banned_user.is_banned  # you never know man
+                    danbooru_api.rename_user(user_id=banned_user.id, new_name=new_name)
+                    logger.info(f"User {banned_user.url} {old_name} renamed to {new_name}")
+
+
+def delete_feedbacks() -> None:
+    for evader in ban_evaders:
+        if evader.rename_socks:
+            logger.info(f"Searching for feedbacks to delete with message '{evader.ban_message}'...")
+            feedbacks = danbooru_api.feedbacks(is_deleted=False, body_ilike=f"*{evader.ban_message}*")
+            for feedback in feedbacks[:20]:
+                if not feedback.user.is_banned:
+                    continue
+                printable_fb = feedback.body.replace("<", r"\<").replace(">", r"\>")
+                logger.info(f"Deleting feedback '{printable_fb}' for user {feedback.user} because it matches the search.")
+                danbooru_api.danbooru_request("PUT", f"{feedback.model_path}.json", json={"is_deleted": True})
+            logger.info("Done.")
+
+
+
+
 class HookEmbed(BaseModel):
     title: str
     description: str
@@ -331,7 +365,7 @@ class HookEmbed(BaseModel):
 
 
 class Hook(BaseModel):
-    id: int  # noqa: A003
+    id: int
     username: str
 
     embeds: list[HookEmbed]
