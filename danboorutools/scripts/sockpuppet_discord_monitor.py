@@ -25,6 +25,7 @@ class BanEvader(BaseModel):
     ban_message: str = Field(min_length=3)
     carrier: str | None = None
     carrier_organization: str | None = None
+    country: str | None = None
     ip_prefixes: list[str] | None = None
     name_patterns: list[str]
     rename_socks: bool = False
@@ -34,6 +35,7 @@ class BanEvader(BaseModel):
         logger.info(f"  <r>{self.name} ({self.ban_message})</r>")
         logger.info(f"    <r>Carrier: {self.carrier}</r>")
         logger.info(f"    <r>Carrier org: {self.carrier_organization}</r>")
+        logger.info(f"    <r>Country: {self.carrier_organization}</r>")
         logger.info(f"    <r>IP prefixes: {', '.join(self.ip_prefixes) if self.ip_prefixes else None}</r>")
         logger.info(f"    <r>Autoban proxies: {self.ban_proxies}</r>")
         logger.info(f"    <r>Rename socks: {self.rename_socks}</r>")
@@ -54,8 +56,8 @@ class BanEvader(BaseModel):
             return False
         logger.info(f"User {signup.user} matches name regex")
 
-        if not self.ip_prefixes and not self.carrier and not self.carrier_organization and not self.ban_proxies:
-            raise ValueError("No IP prefixes, carrier, carrier organization or proxy ban configured. "
+        if not self.ip_prefixes and not self.carrier and not self.carrier_organization and not self.ban_proxies and not self.country:
+            raise ValueError("No IP prefixes, carrier, carrier organization, country or proxy ban configured. "
                              "Please check your sock_config.yaml file.")
 
         if self.ip_prefixes and not self.check_ip_prefixes(signup):
@@ -67,8 +69,11 @@ class BanEvader(BaseModel):
         if self.carrier_organization and not self.check_sock_carrier_organization(signup):
             return False
 
-        if self.ban_proxies:
-            return self.check_proxies(signup)
+        if self.country and not self.check_sock_country(signup):
+            return False
+
+        if self.ban_proxies and not self.check_proxies(signup):  # noqa: SIM103
+            return False
 
         return True
 
@@ -102,6 +107,17 @@ class BanEvader(BaseModel):
             logger.info(f"User {signup.user} does not have carrier org {self.carrier_organization}. Aborting.")
             return False
         logger.info(f"User {signup.user} matches carrier org {self.carrier_organization}")
+        return True
+
+    def check_sock_country(self, signup: DanbooruUserEvent) -> bool:
+        last_ip_addr: str = signup.user._raw_data["last_ip_addr"]
+        ip_addr_data = danbooru_api.danbooru_request("GET", f"ip_addresses/{last_ip_addr}.json")
+        if not ip_addr_data["country"]:
+            return False
+        if ip_addr_data["country"].lower() != self.country.lower():
+            logger.info(f"User {signup.user} does not have country {self.country}. Aborting.")
+            return False
+        logger.info(f"User {signup.user} matches country {self.country}")
         return True
 
     def check_proxies(self, signup: DanbooruUserEvent) -> bool:
