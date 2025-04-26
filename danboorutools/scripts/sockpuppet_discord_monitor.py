@@ -254,19 +254,19 @@ class SockpuppetDetector:
             assert user_to_ban.level <= 20
             assert user_to_ban.created_at
             assert user_to_ban.created_at > (datetime.datetime.now(tz=UTC) - datetime.timedelta(hours=1)), \
-                f"Couldn't ban user {user_to_ban}"
+                f"Couldn't ban user {user_to_ban} '{user_to_ban.name}'"
 
-        logger.info(f"<r>BANNING USER {user_to_ban} (sockpuppet of {ban_evader.name})</r>")
+        logger.info(f"<r>BANNING USER {user_to_ban} '{user_to_ban.name}' (sockpuppet of {ban_evader.name})</r>")
         if self.enable_autobans:
             danbooru_api.ban_user(user_to_ban.id, reason=ban_evader.ban_message)
         else:
-            logger.info(f"Skipping autoban for {user_to_ban} because autobans are disabled.")
+            logger.info(f"Skipping autoban for {user_to_ban} '{user_to_ban.name}' because autobans are disabled.")
         if ban_evader.rename_socks and user_to_ban.name != str(user_to_ban.id):
-            logger.info(f"<r>RENAMING USER {user_to_ban} {user_to_ban.name} -> '{user_to_ban.id}'</r>")
+            logger.info(f"<r>RENAMING USER {user_to_ban} '{user_to_ban.name}' -> '{user_to_ban.id}'</r>")
             if self.enable_autobans:
                 danbooru_api.rename_user(user_to_ban.id, new_name=user_to_ban.id)
             else:
-                logger.info(f"Skipping rename for {user_to_ban} because autobans are disabled.")
+                logger.info(f"Skipping rename for {user_to_ban} '{user_to_ban.name}' because autobans are disabled.")
 
     def send_to_discord(self, sock: DanbooruUser, session_id: str,  other_users: list[DanbooruUser]) -> dict:
         webhook = DiscordWebhook(
