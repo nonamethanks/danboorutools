@@ -48,7 +48,7 @@ class BanEvader(BaseModel):
         return [re.compile(p, re.IGNORECASE) for p in self.name_patterns]
 
 
-    def signup_is_sock(self, signup: DanbooruUserEvent) -> bool:
+    def signup_is_sock(self, signup: DanbooruUserEvent) -> bool:  # noqa: PLR0911
         logger.info(f"Checking user {signup.user} against pattern for ban evader {self.name}...")
 
         if not any(pattern.search(signup.user.name) for pattern in self.compiled_name_patterns):
@@ -63,16 +63,16 @@ class BanEvader(BaseModel):
         if self.ip_prefixes and not self.check_ip_prefixes(signup):
             return False
 
-        if self.carrier and not self.check_sock_carrier(signup):
+        if self.carrier and not self.check_ip_data(signup, "carrier", self.carrier):
             return False
 
-        if self.carrier_organization and not self.check_sock_carrier_organization(signup):
+        if self.carrier_organization and not self.check_ip_data(signup, "organization", self.carrier_organization):
             return False
 
-        if self.country and not self.check_sock_country(signup):
+        if self.country and not self.check_ip_data(signup, "country", self.country):
             return False
 
-        if self.ban_proxies and not self.check_proxies(signup):  # noqa: SIM103
+        if self.ban_proxies and not self.check_ip_data(signup, "is_proxy", True):  # noqa: SIM103
             return False
 
         return True
@@ -87,47 +87,26 @@ class BanEvader(BaseModel):
 
         return True
 
-    def check_sock_carrier(self, signup: DanbooruUserEvent) -> bool:
+    @staticmethod
+    def check_ip_data(signup: DanbooruUserEvent, key: str, expected: str | bool) -> bool:
         last_ip_addr: str = signup.user._raw_data["last_ip_addr"]
         ip_addr_data = danbooru_api.danbooru_request("GET", f"ip_addresses/{last_ip_addr}.json")
-        if not ip_addr_data["carrier"]:
+        if (found := ip_addr_data[key]) is None:
             return False
-        if ip_addr_data["carrier"].lower() != self.carrier.lower():
-            logger.info(f"User {signup.user} does not have carrier {self.carrier}. Aborting.")
-            return False
-        logger.info(f"User {signup.user} matches carrier {self.carrier}")
-        return True
+        if isinstance(expected, str):
+            check = found.lower() != expected.lower()
+        elif isinstance(expected, bool):
+            check = found is expected
+        else:
+            raise TypeError(f"Expected value {expected} of type {type(expected)} is not a string or boolean.")
 
-    def check_sock_carrier_organization(self, signup: DanbooruUserEvent) -> bool:
-        last_ip_addr: str = signup.user._raw_data["last_ip_addr"]
-        ip_addr_data = danbooru_api.danbooru_request("GET", f"ip_addresses/{last_ip_addr}.json")
-        if not ip_addr_data["organization"]:
+        if check:
+            logger.info(f"User {signup.user} '{signup.user.name}': Value for '{key}' '{found}' does not match expected value '{expected}'.")
             return False
-        if ip_addr_data["organization"].lower() != self.carrier_organization.lower():
-            logger.info(f"User {signup.user} does not have carrier org {self.carrier_organization}. Aborting.")
-            return False
-        logger.info(f"User {signup.user} matches carrier org {self.carrier_organization}")
-        return True
-
-    def check_sock_country(self, signup: DanbooruUserEvent) -> bool:
-        last_ip_addr: str = signup.user._raw_data["last_ip_addr"]
-        ip_addr_data = danbooru_api.danbooru_request("GET", f"ip_addresses/{last_ip_addr}.json")
-        if not ip_addr_data["country"]:
-            return False
-        if ip_addr_data["country"].lower() != self.country.lower():
-            logger.info(f"User {signup.user} does not have country {self.country}. Aborting.")
-            return False
-        logger.info(f"User {signup.user} matches country {self.country}")
-        return True
-
-    def check_proxies(self, signup: DanbooruUserEvent) -> bool:
-        last_ip_addr: str = signup.user._raw_data["last_ip_addr"]
-        ip_addr_data = danbooru_api.danbooru_request("GET", f"ip_addresses/{last_ip_addr}.json")
-        if ip_addr_data["is_proxy"]:
-            logger.info(f"User {signup.user} is using a proxy.")
+        else:
+            logger.info(f"User {signup.user} '{signup.user.name}': Value for '{key}' '{found}' matches expected value '{expected}'.")
             return True
-        logger.info(f"User {signup.user} is not using a proxy. Aborting.")
-        return False
+
 
 
 
