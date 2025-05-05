@@ -172,8 +172,9 @@ ignore = [
     "ANN201", # Missing return type annotation for public function
 ]
 "danboorutools/logical/sessions/*" = [
-    "A003", # shadowing builtin variables like id can't be helped for api responsese
-    "N815", # camelCase properties from api responses
+    "A003",  # shadowing builtin variables like id can't be helped for api responsese
+    "N815",  # camelCase properties from api responses
+    "TC001", # TYPE_CHECKING suggestions, interferes with pydantic
 ]
 
 "danboorutools/logical/parsers/*" = [
