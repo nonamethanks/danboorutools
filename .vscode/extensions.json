@@ -2,7 +2,6 @@
     "recommendations": [
         "ms-python.autopep8",
         "matangover.mypy",
-        "charliermarsh.ruff",
-        "ms-python.pylint"
+        "charliermarsh.ruff"
     ]
 }
