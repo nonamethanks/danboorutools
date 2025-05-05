@@ -15,7 +15,7 @@ from pydantic import Field
 
 from danboorutools import logger, settings
 from danboorutools.logical.progress_tracker import ProgressTracker
-from danboorutools.logical.sessions.danbooru import DanbooruApi, danbooru_api
+from danboorutools.logical.sessions.danbooru import danbooru_api, testbooru_api
 from danboorutools.models.danbooru import DanbooruUser, DanbooruUserEvent
 from danboorutools.util.misc import BaseModel
 
@@ -94,14 +94,15 @@ class BanEvader(BaseModel):
         if (found := ip_addr_data[key]) is None:
             return False
         if isinstance(expected, str):
-            check = found.lower() != expected.lower()
+            check = found.lower() == expected.lower()
         elif isinstance(expected, bool):
             check = found is expected
         else:
             raise TypeError(f"Expected value {expected} of type {type(expected)} is not a string or boolean.")
 
         if check:
-            logger.info(f"User {signup.user} '{signup.user.name}': Value for '{key}' '{found}' does not match expected value '{expected}'.")
+            logger.info(f"User {signup.user} '{signup.user.name}': Value for '{key}' '{found}' (type {type(found)}) "
+                        f"does not match expected value '{expected}' (type {type(expected)}).")
             return False
         else:
             logger.info(f"User {signup.user} '{signup.user.name}': Value for '{key}' '{found}' matches expected value '{expected}'.")
@@ -122,7 +123,7 @@ class SockpuppetDetector:
             self.dapi = danbooru_api
         elif self.mode == "test":
             self.webhook_url = os.environ["DISCORD_SOCKPUPPET_CHANNEL_WEBHOOK_TEST"]
-            self.dapi = DanbooruApi(domain="testbooru")
+            self.dapi = testbooru_api
         else:
             raise ValueError(self.mode)
 
