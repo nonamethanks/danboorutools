@@ -20,8 +20,10 @@ class _GlobalSettings:
 
 settings = _GlobalSettings()
 
-def get_config(name: str) -> Path:
+
+def get_config(name: str) -> dict:
     return yaml.safe_load(Path(settings.CONFIG_FOLDER / name).read_text(encoding="utf-8"))
+
 
 class Logger(_Logger):
     def log_to_file(self,
