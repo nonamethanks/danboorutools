@@ -308,6 +308,17 @@ class DanbooruArtist(DanbooruModel):
         return urls
 
 
+class DanbooruBulkUpdateRequest(DanbooruModel):
+    danbooru_model_name = "bulk_update_request"
+
+    user_id: int
+    forum_topic_id: int
+    forum_post_id: int
+    script: str
+    status: str
+    approver_id: int | None = None
+    tags: list[str]
+
 class DanbooruWikiPage(DanbooruModel):
     danbooru_model_name = "wiki_page"
 
@@ -341,6 +352,15 @@ class DanbooruTag(DanbooruModel):
             return DanbooruWikiPage(**self._raw_data["wiki_page"])
         raise NotImplementedError  # cache?
 
+class DanbooruTagImplication(DanbooruModel):
+    danbooru_model_name = "tag_implication"
+
+    reason: str
+    creator: DanbooruUser
+    approver: DanbooruUser | None = None
+
+    antecedent_tag: DanbooruTag
+    consequent_tag: DanbooruTag
 
 class DanbooruUserEvent(DanbooruModel):
     danbooru_model_name = "user_event"

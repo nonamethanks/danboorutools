@@ -61,6 +61,7 @@ class DanbooruApi(Session):
         "post_replacement": "id,created_at,post",
         "post_vote": "id,created_at,score,is_deleted,user,post",
         "tag": "id,name,post_count,category,created_at,is_deprecated,wiki_page,artist",
+        "tag_implication": "id,reason,creator,approver,antecedent_tag,consequent_tag,created_at,updated_at",
         "user": "id,name,created_at,level,level_string,post_update_count,note_update_count,post_upload_count,is_banned,is_deleted,bans,last_ip_addr",  # noqa: E501
         "user_feedback": "id,category,body,user,creator,created_at,updated_at,is_deleted",
     }
@@ -149,6 +150,9 @@ class DanbooruApi(Session):
     def bans(self, **kwargs) -> list[models.DanbooruBan]:
         return self._generic_endpoint(models.DanbooruBan, **kwargs)
 
+    def bulk_update_requests(self, **kwargs) -> list[models.DanbooruBulkUpdateRequest]:
+        return self._generic_endpoint(models.DanbooruBulkUpdateRequest, **kwargs)
+
     def comments(self, **kwargs) -> list[models.DanbooruComment]:
         return self._generic_endpoint(models.DanbooruComment, **kwargs)
 
@@ -181,6 +185,9 @@ class DanbooruApi(Session):
 
     def tags(self, **kwargs) -> list[models.DanbooruTag]:
         return self._generic_endpoint(models.DanbooruTag, **kwargs)
+
+    def tag_implications(self, **kwargs) -> list[models.DanbooruTagImplication]:
+        return self._generic_endpoint(models.DanbooruTagImplication, **kwargs)
 
     def users(self, **kwargs) -> list[models.DanbooruUser]:
         return self._generic_endpoint(models.DanbooruUser, **kwargs)
@@ -329,9 +336,26 @@ class DanbooruApi(Session):
         assert isinstance(response, dict)
         return response
 
-    # def create_forum_post(self, topic_id: int | None, body: str) -> None:
-    #     if not topic_id:
-    #         raise NotImplementedError("Creating new topics is not supported yet.")
+    def create_forum_post(self, topic_id: int, body: str) -> None:
+        data = {
+            "forum_post": {
+                "topic_id": topic_id,
+                "body": body,
+            },
+        }
+        response = self.danbooru_request("POST", "forum_posts.json", json=data)
+        assert isinstance(response, dict) and response["id"]
+
+    def create_bur(self, topic_id: int, script: str, reason: str) -> None:
+        data = {
+            "bulk_update_request": {
+                "forum_topic_id": topic_id,
+                "script": script,
+                "reason": reason,
+            },
+        }
+        response = self.danbooru_request("POST", "bulk_update_requests.json", json=data)
+        assert isinstance(response, dict) and response["id"]
 
 
 def kwargs_to_include(**kwargs) -> dict:
@@ -361,3 +385,4 @@ def _parse_to_include(obj: str | dict) -> list[tuple[str, str]]:
 
 
 danbooru_api = DanbooruApi(domain="danbooru", mode="bot")
+testbooru_api = DanbooruApi(domain="testbooru")
