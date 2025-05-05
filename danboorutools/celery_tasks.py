@@ -46,9 +46,10 @@ class CustomCeleryTask(Task):  # pylint: disable=abstract-method
             socket_timeout=0.5,
             socket_keepalive=False,
             health_check_interval=5,
+            ssl_check_hostname=False,
         )
 
-    def on_failure(self, exc: Exception, task_id: str, args: tuple, kwargs: dict, einfo: ExceptionInfo) -> None:  # noqa: PLR0913, ARG002
+    def on_failure(self, exc: Exception, task_id: str, args: tuple, kwargs: dict, einfo: ExceptionInfo) -> None:  # noqa: ARG002
         # https://gist.github.com/darklow/c70a8d1147f05be877c3
         # https://stackoverflow.com/a/45333231/1092940
 
