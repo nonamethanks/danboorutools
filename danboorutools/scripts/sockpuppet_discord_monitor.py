@@ -9,11 +9,10 @@ from pathlib import Path
 from typing import Literal
 
 import click
-import yaml
 from discord_webhook import DiscordEmbed, DiscordWebhook
 from pydantic import Field
 
-from danboorutools import logger, settings
+from danboorutools import get_config, logger
 from danboorutools.logical.progress_tracker import ProgressTracker
 from danboorutools.logical.sessions.danbooru import danbooru_api, testbooru_api
 from danboorutools.models.danbooru import DanbooruUser, DanbooruUserEvent
@@ -111,7 +110,7 @@ class BanEvader(BaseModel):
 
 
 
-sock_config = yaml.safe_load(Path(settings.BASE_FOLDER / "sock_config.yaml").read_text(encoding="utf-8"))
+sock_config = get_config("sock_config.yaml")
 ban_evaders = [BanEvader(**evader) for evader in sock_config["socks"]]
 
 

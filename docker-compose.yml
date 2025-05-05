@@ -14,7 +14,7 @@ services:
       - ./run.sh:/code/run.sh:ro
       - ./pyproject.toml:/code/pyproject.toml:ro
       - ./poetry.lock:/code/poetry.lock:ro
-      - ./sock_config.yaml:/code/sock_config.yaml
+      - ./config:/code/config:ro
       - ./logs:/code/logs/
       - ./data:/code/data/
       - ./tests:/code/tests:ro

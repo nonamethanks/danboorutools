@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 
+import yaml
 from dotenv import load_dotenv
 from loguru._logger import Core as _Core
 from loguru._logger import Logger as _Logger
@@ -14,10 +15,13 @@ load_dotenv()
 class _GlobalSettings:
     _ENV_BASE_FOLDER = os.environ.get("BASE_FOLDER")
     BASE_FOLDER = Path(_ENV_BASE_FOLDER) if _ENV_BASE_FOLDER else Path(__file__).parent.parent
+    CONFIG_FOLDER = BASE_FOLDER / "config"
 
 
 settings = _GlobalSettings()
 
+def get_config(name: str) -> Path:
+    return yaml.safe_load(Path(settings.CONFIG_FOLDER / name).read_text(encoding="utf-8"))
 
 class Logger(_Logger):
     def log_to_file(self,
