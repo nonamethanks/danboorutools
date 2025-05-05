@@ -357,6 +357,16 @@ class DanbooruApi(Session):
         response = self.danbooru_request("POST", "bulk_update_requests.json", json=data)
         assert isinstance(response, dict) and response["id"]
 
+    def create_wiki_page(self, title: str, body: str) -> None:
+        data = {
+            "wiki_page": {
+                "title": title,
+                "body": body,
+            },
+        }
+        response = self.danbooru_request("POST", "wiki_pages.json", json=data)
+        assert isinstance(response, dict) and response["id"]
+
 
 def kwargs_to_include(**kwargs) -> dict:
     """Turn kwargs into url parameters that Rails can understand."""

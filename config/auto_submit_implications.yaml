@@ -1,3 +1,5 @@
 series:
   - name: "arknights"
     topic_id: 79
+    costume_patterns:
+      - r"(?P<base_name>\w+)_the_(.*)_(?P<series_name>arknights)"

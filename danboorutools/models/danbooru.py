@@ -319,6 +319,7 @@ class DanbooruBulkUpdateRequest(DanbooruModel):
     approver_id: int | None = None
     tags: list[str]
 
+
 class DanbooruWikiPage(DanbooruModel):
     danbooru_model_name = "wiki_page"
 
@@ -352,6 +353,7 @@ class DanbooruTag(DanbooruModel):
             return DanbooruWikiPage(**self._raw_data["wiki_page"])
         raise NotImplementedError  # cache?
 
+
 class DanbooruTagImplication(DanbooruModel):
     danbooru_model_name = "tag_implication"
 
@@ -361,6 +363,7 @@ class DanbooruTagImplication(DanbooruModel):
 
     antecedent_tag: DanbooruTag
     consequent_tag: DanbooruTag
+
 
 class DanbooruUserEvent(DanbooruModel):
     danbooru_model_name = "user_event"
