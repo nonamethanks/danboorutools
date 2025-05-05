@@ -39,7 +39,7 @@
         "refactor": "Warning",
         "info": "Warning"
     },
-    "python.analysis.typeCheckingMode": "off",
-    "mypy-type-checker.importStrategy": "fromEnvironment",
     "pylint.importStrategy": "fromEnvironment",
+    "python.analysis.typeCheckingMode": "off",
+    "mypy.runUsingActiveInterpreter": true,
 }
