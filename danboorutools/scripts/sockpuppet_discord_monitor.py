@@ -25,7 +25,7 @@ class BanEvader(BaseModel):
     carrier: str | None = None
     carrier_organization: str | None = None
     country: str | None = None
-    ip_prefixes: list[str] | None = None
+    ip_prefixes: tuple[str] | None = None
     name_patterns: list[str]
     rename_socks: bool = False
     ban_proxies: bool = False
