@@ -5,7 +5,6 @@ import os
 import re
 import time
 from datetime import UTC
-from pathlib import Path
 from typing import Literal
 
 import click
@@ -25,7 +24,7 @@ class BanEvader(BaseModel):
     carrier: str | None = None
     carrier_organization: str | None = None
     country: str | None = None
-    ip_prefixes: tuple[str] | None = None
+    ip_prefixes: list[str] | None = None
     name_patterns: list[str]
     rename_socks: bool = False
     ban_proxies: bool = False
@@ -38,14 +37,13 @@ class BanEvader(BaseModel):
         logger.info(f"    <r>IP prefixes: {', '.join(self.ip_prefixes) if self.ip_prefixes else None}</r>")
         logger.info(f"    <r>Autoban proxies: {self.ban_proxies}</r>")
         logger.info(f"    <r>Rename socks: {self.rename_socks}</r>")
-        logger.info( "    <r>Name patterns:</r>")
+        logger.info("    <r>Name patterns:</r>")
         for pattern in self.name_patterns:
             logger.info(f"        <r>{pattern}</r>")
 
     @property
     def compiled_name_patterns(self) -> list[re.Pattern]:
         return [re.compile(p, re.IGNORECASE) for p in self.name_patterns]
-
 
     def signup_is_sock(self, signup: DanbooruUserEvent) -> bool:  # noqa: PLR0911
         logger.info(f"Checking user {signup.user} against pattern for ban evader {self.name}...")
@@ -62,7 +60,7 @@ class BanEvader(BaseModel):
         if self.ip_prefixes and not self.check_ip_prefixes(signup):
             return False
 
-        if self.carrier and not self.check_ip_data(signup, "carrier", self.carrier):
+        if self.carrier and self.check_ip_data(signup, "carrier", self.carrier) is False:  # could be None
             return False
 
         if self.carrier_organization and not self.check_ip_data(signup, "organization", self.carrier_organization):
@@ -71,27 +69,31 @@ class BanEvader(BaseModel):
         if self.country and not self.check_ip_data(signup, "country", self.country):
             return False
 
-        if self.ban_proxies and not self.check_ip_data(signup, "is_proxy", True):  # noqa: SIM103
+        if self.ban_proxies and not self.check_ip_data(signup, "is_proxy", True):
             return False
 
+        logger.info(f"<r>User {signup.user} '{signup.user.name}' is likely a sockpuppet of {self.name}</r>")
         return True
 
     def check_ip_prefixes(self, signup: DanbooruUserEvent) -> bool:
-        last_ip_addr: str = signup.user._raw_data["last_ip_addr"]
-        if self.ip_prefixes:
-            if not last_ip_addr.startswith(self.ip_prefixes):
-                logger.info(f"User {signup.user} does not match IP prefixes. Aborting.")
-                return False
-            logger.info(f"User {signup.user} matches IP prefixes {self.ip_prefixes}")
+        if not self.ip_prefixes:
+            return False
 
+        last_ip_addr: str = signup.user._raw_data["last_ip_addr"]
+
+        if not last_ip_addr.startswith(tuple(self.ip_prefixes)):
+            logger.info(f"User {signup.user} does not match IP prefixes. Aborting.")
+            return False
+
+        logger.info(f"User {signup.user} matches IP prefixes {self.ip_prefixes}")
         return True
 
     @staticmethod
-    def check_ip_data(signup: DanbooruUserEvent, key: str, expected: str | bool) -> bool:
+    def check_ip_data(signup: DanbooruUserEvent, key: str, expected: str | bool) -> bool | None:
         last_ip_addr: str = signup.user._raw_data["last_ip_addr"]
         ip_addr_data = danbooru_api.danbooru_request("GET", f"ip_addresses/{last_ip_addr}.json")
         if (found := ip_addr_data[key]) is None:
-            return False
+            return None
         if isinstance(expected, str):
             check = found.lower() == expected.lower()
         elif isinstance(expected, bool):
@@ -100,14 +102,12 @@ class BanEvader(BaseModel):
             raise TypeError(f"Expected value {expected} of type {type(expected)} is not a string or boolean.")
 
         if check:
+            logger.info(f"User {signup.user} '{signup.user.name}': Value for '{key}' '{found}' matches expected value '{expected}'.")
+            return True
+        else:
             logger.info(f"User {signup.user} '{signup.user.name}': Value for '{key}' '{found}' (type {type(found)}) "
                         f"does not match expected value '{expected}' (type {type(expected)}).")
             return False
-        else:
-            logger.info(f"User {signup.user} '{signup.user.name}': Value for '{key}' '{found}' matches expected value '{expected}'.")
-            return True
-
-
 
 
 sock_config = get_config("sock_config.yaml")
@@ -362,8 +362,6 @@ def delete_feedbacks() -> None:
             logger.info("Done.")
 
 
-
-
 class HookEmbed(BaseModel):
     title: str
     description: str
@@ -387,6 +385,15 @@ class Hook(BaseModel):
 
 
 @click.command()
-@click.argument("mode", type=click.Choice(["test", "production"]))
-def main(mode: Literal["test", "production"]) -> None:
-    SockpuppetDetector(mode=mode).detect_and_post()
+@click.option("--mode", required=False, type=click.Choice(["test", "production"]), default="test")
+@click.argument("user_url", required=False)
+def main(mode: Literal["test", "production"], user_url: str | None = None) -> None:
+    if user_url:
+        sd = SockpuppetDetector(mode="production")
+        user_id = DanbooruUser.id_from_url(user_url)
+        latest_signup = sd.dapi.user_events(category="user_creation", user_id=user_id)[0]
+        for evader in ban_evaders:
+            evader.signup_is_sock(latest_signup)
+
+    else:
+        SockpuppetDetector(mode=mode).detect_and_post()
