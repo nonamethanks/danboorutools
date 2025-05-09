@@ -24,7 +24,7 @@ START_DATE = END_DATE - timedelta(days=60)
 
 MIN_CONTRIBUTOR_UPLOADS_IN_RANGE = 20
 MIN_UPLOADS_WITH_EDITS = 500
-MIN_STANDALONE_UPLOADS = 700
+MIN_STANDALONE_UPLOADS = 500
 MIN_EDITS_WITH_UPLOADS = 3000
 MIN_STANDALONE_EDITS = 5000
 CONTRIB_RISKY_DEL_COUNT = 30
@@ -231,7 +231,8 @@ def generate_html(*candidates: Candidate) -> None:
     output_from_parsed_template = template.render(
         row_header=Candidate.html_header,
         generated_on=f"{datetime.now(tz=UTC):%Y-%m-%d at %T}",
-        potential_contributors=[c for c in sorted_candidates if c.for_contributor],
+        builder_to_contributor=[c for c in sorted_candidates if c.for_contributor and c.level >= 32],
+        member_to_contributor=[c for c in sorted_candidates if c.for_contributor and c.level < 32],
         rest=[c for c in sorted_candidates if not c.for_contributor],
         contrib_max_del_perc=CONTRIB_MAX_DEL_PERC,
         builder_max_del_perc=BUILDER_MAX_DEL_PERC,
@@ -437,7 +438,10 @@ class Candidate:
 
     @property
     def for_contributor(self) -> bool:
-        return self.active and self.level == 32 and self.recent_uploads > MIN_CONTRIBUTOR_UPLOADS_IN_RANGE
+        if self.recent_uploads is None:
+            self.refresh()
+            assert self.recent_uploads is not None
+        return self.active and self.recent_uploads > MIN_CONTRIBUTOR_UPLOADS_IN_RANGE and self.total_uploads > MIN_STANDALONE_UPLOADS
 
     @property
     def for_builder(self) -> bool:
@@ -489,15 +493,20 @@ class Candidate:
         return string
 
     def refresh(self, hard_refresh: bool = False) -> None:
-        logger.info("Refreshing data...")
+        logger.info(f"Refreshing data for user {self.name}...")
+        date_tag = f"date:{START_DATE.strftime("%Y-%m-%d")}..{END_DATE.strftime("%Y-%m-%d")}"
+        tags = [f"user:{self.name}", date_tag]
+        self.last_edit_date = danbooru_api.get_last_edit_time(user_name=self.name)
+        if self.last_edit_date < START_DATE:
+            self.recent_uploads = 0
+            self.recent_deleted = 0
+        else:
+            self.recent_uploads = danbooru_api.post_counts(tags=tags, hard_refresh=hard_refresh)
+            self.recent_deleted = danbooru_api.post_counts(tags=[*tags, "status:deleted"], hard_refresh=hard_refresh)
+
         if hard_refresh or None in [self.total_notes, self.total_edits, self.total_uploads]:
             user, = danbooru_api.users(id=self.id)
             merge_candidate(self, user)
-        date_tag = f"date:{START_DATE.strftime("%Y-%m-%d")}..{END_DATE.strftime("%Y-%m-%d")}"
-        tags = [f"user:{self.name}", date_tag]
-        self.recent_uploads = danbooru_api.post_counts(tags=tags, hard_refresh=hard_refresh)
-        self.recent_deleted = danbooru_api.post_counts(tags=[*tags, "status:deleted"], hard_refresh=hard_refresh)
-        self.last_edit_date = danbooru_api.get_last_edit_time(user_name=self.name)
         logger.info("Refreshed.")
 
     def calculate_post_edits(self) -> None:
