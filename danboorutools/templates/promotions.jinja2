@@ -108,8 +108,9 @@
     </div>
 
     <h1>Promotion Candidates for week {{week}} of {{year}}</h2>
-        <p class="small">Generated on {{ generated_on }}.</p>
-        <p class="small">Recent means within the last two months.</p>
+        <p class="small" id="generatedAt" data-generated-at="{{generated_on_unix}}">Generated on {{ generated_on }}.</p>
+        <p class="small">Recent means within the last two months from generation time.</p>
+        <p class="small"><a href="/promotion_archives/" target="_blank">Click here to see the previous weeks.</a></p>
 
         <h2>Builders for Contributor</h2>
         <table id="contrib-builder">
@@ -135,7 +136,7 @@
             </tbody>
         </table>
 
-        <h2>Other users for Promotion</h2>
+        <h2>Other Users for Promotion</h2>
 
         <table id="builder">
             <thead>
@@ -172,7 +173,7 @@
             });
 
             function getDaysAgo(timestamp) {
-                const now = new Date().getTime();
+                const now = parseInt(document.querySelector("#generatedAt").getAttribute("data-generated-at"));
                 const diff = now - timestamp;
                 return Math.floor(diff / (1000 * 60 * 60 * 24));
             }

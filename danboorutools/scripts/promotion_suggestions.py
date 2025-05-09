@@ -233,6 +233,7 @@ def generate_html(*candidates: Candidate) -> None:
     output_from_parsed_template = template.render(
         row_header=Candidate.html_header,
         generated_on=f"{generation_date:%Y-%m-%d at %T}",
+        generated_on_unix=int(generation_date.timestamp() * 1000),
         builder_to_contributor=[c for c in sorted_candidates if c.for_contributor and c.level >= 32],
         member_to_contributor=[c for c in sorted_candidates if c.for_contributor and c.level < 32],
         rest=[c for c in sorted_candidates if not c.for_contributor],
