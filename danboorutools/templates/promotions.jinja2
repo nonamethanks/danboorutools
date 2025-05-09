@@ -11,11 +11,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/sorts/tablesort.number.min.js"
         integrity="sha512-dRD755QRxlybm0h3LXXIGrFcjNakuxW3reZqnPtUkMv6YsSWoJf+slPjY5v4lZvx2ss+wBZQFegepmA7a2W9eA==" crossorigin="anonymous"
         referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"
-        integrity="sha512-hUhvpC5f8cgc04OZb55j0KNGh4eh7dLxd/dPSJ5VyzqDWxsayYbojWyl5Tkcgrmb/RVKCRJI1jNlRbVP4WWC4w==" crossorigin="anonymous"
-        referrerpolicy="no-referrer"></script>
     <link href=" https://cdn.jsdelivr.net/npm/tablesort@5.6.0/tablesort.min.css " rel="stylesheet">
     <style>
+        :root {
+            --color-bad: #ffcdd2;
+            --color-warning: #ffffbf;
+            --color-ok: #BDFDBD;
+        }
+
+
         body {
             max-width: 1200px;
             margin: 0 auto;
@@ -165,18 +169,34 @@
 
             let max_ratio_for_contrib = {{ contrib_max_del_perc }};
             let max_ratio_for_builder = {{ builder_max_del_perc }};
+            let deleted_bad = {{ max_deleted_bad }};
+            let deleted_warning = {{ max_deleted_warning }};
 
-            document.querySelectorAll('table#contrib td.recentRatio').forEach(cell => {
-                if (parseFloat(cell.textContent) >= max_ratio_for_contrib) {
-                    cell.style.backgroundColor = '#ffcdd2';
+
+            document.querySelectorAll("tr.user").forEach(row => {
+                recentRatio = row.querySelector("td.recentRatio")
+                recentDeleted = row.querySelector("td.recentDeleted")
+                recentUploaded = row.querySelector("td.recentUploaded")
+
+
+                if (parseFloat(recentRatio.textContent) < max_ratio_for_contrib) {
+                    recentRatio.style.backgroundColor = 'var(--color-ok)';
+                } else if (parseFloat(recentRatio.textContent) < max_ratio_for_builder) {
+                    recentRatio.style.backgroundColor = 'var(--color-warning)';
+                } else if (recentRatio.textContent === "n/a") {
+                } else {
+                    recentRatio.style.backgroundColor = 'var(--color-bad)';
+                }
+
+                if (parseFloat(recentDeleted.textContent) > deleted_bad) {
+                    recentDeleted.style.backgroundColor = 'var(--color-bad)';
+                } else if (parseFloat(recentDeleted.textContent) > deleted_warning) {
+                    recentDeleted.style.backgroundColor = 'var(--color-warning)';
+                } else if (parseFloat(recentUploaded.textContent) !== 0) {
+                    recentDeleted.style.backgroundColor = 'var(--color-ok)';
                 }
             });
 
-            document.querySelectorAll('table#builder td.recentRatio').forEach(cell => {
-                if (parseFloat(cell.textContent) >= max_ratio_for_builder) {
-                    cell.style.backgroundColor = '#ffcdd2';
-                }
-            });
 
             function getDaysAgo(timestamp) {
                 const now = parseInt(document.querySelector("#generatedAt").getAttribute("data-generated-at"));

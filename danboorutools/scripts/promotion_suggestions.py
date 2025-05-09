@@ -27,9 +27,9 @@ MIN_UPLOADS_WITH_EDITS = 500
 MIN_STANDALONE_UPLOADS = 500
 MIN_EDITS_WITH_UPLOADS = 3000
 MIN_STANDALONE_EDITS = 5000
-CONTRIB_RISKY_DEL_COUNT = 30
+CONTRIB_RISKY_DEL_COUNT = 20
 CONTRIB_MAX_DEL_COUNT = 50
-CONTRIB_MAX_DEL_PERC = 5
+CONTRIB_MAX_DEL_PERC = 3
 BUILDER_MAX_DEL_PERC = 15
 MIN_NOTES = 2000
 
@@ -241,6 +241,8 @@ def generate_html(*candidates: Candidate) -> None:
         builder_max_del_perc=BUILDER_MAX_DEL_PERC,
         week=f"{generation_date:%U}",
         year=generation_date.year,
+        max_deleted_bad=CONTRIB_MAX_DEL_COUNT,
+        max_deleted_warning=CONTRIB_RISKY_DEL_COUNT,
     )
     Path("promotions.html").write_text(output_from_parsed_template, encoding="utf-8")
 
@@ -693,7 +695,7 @@ class Candidate:
         last_edit_timestamp = int(self.last_edit_date.timestamp())  # type: ignore[union-attr]
 
         name_string = self.name
-        classes = []
+        classes = ["user"]
         if self.is_banned:
             classes.append("banned")
             name_string = f"{self.name} (BANNED)"
