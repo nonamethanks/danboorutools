@@ -436,13 +436,14 @@ class Candidate:
 
     def refresh(self, hard_refresh: bool = False) -> None:
         logger.info("Refreshing data...")
-        user, = danbooru_api.users(id=self.id)
-        merge_candidate(self, user)
+        if hard_refresh or None in [self.total_notes, self.total_edits, self.total_uploads]:
+            user, = danbooru_api.users(id=self.id)
+            merge_candidate(self, user)
         date_tag = f"date:{START_DATE.strftime("%Y-%m-%d")}..{END_DATE.strftime("%Y-%m-%d")}"
         tags = [f"user:{self.name}", date_tag]
         self.recent_uploads = danbooru_api.post_counts(tags=tags, hard_refresh=hard_refresh)
         self.recent_deleted = danbooru_api.post_counts(tags=[*tags, "status:deleted"], hard_refresh=hard_refresh)
-        self.last_edit_date = danbooru_api.post_versions(updater_name=self.name, limit=1)[0].updated_at
+        self.last_edit_date = danbooru_api.get_last_edit_time(user_name=self.name)
         logger.info("Refreshed.")
 
     def calculate_post_edits(self) -> None:

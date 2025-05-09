@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import os
 import random
-from collections.abc import Sequence
-from pathlib import Path
+import time
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Literal, TypeVar
 
 from backoff import expo, on_exception
@@ -13,11 +13,15 @@ from requests.exceptions import ReadTimeout
 
 from danboorutools import logger
 from danboorutools.exceptions import DanbooruHTTPError, RateLimitError, ShieldedUrlError
+from danboorutools.logical.progress_tracker import ProgressTracker
 from danboorutools.logical.sessions import Session
 from danboorutools.models import danbooru as models
 from danboorutools.models.url import UnknownUrl, Url, UselessUrl
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from pathlib import Path
+
     from danboorutools.models.file import File
 
 GenericModel = TypeVar("GenericModel", bound=models.DanbooruModel)
@@ -109,17 +113,50 @@ class DanbooruApi(Session):
         response = self.danbooru_request("GET", "posts.json", params=params)
         return [models.DanbooruPost(**post_data) for post_data in response]
 
-    def post_counts(self, tags: list[str], hard_refresh: bool = False) -> int:
-
+    def post_counts(self, tags: list[str], hard_refresh: bool = False, use_cache: bool = True) -> int:
         if hard_refresh:
             tags = [t for t in tags if not t.startswith("order:")] + [f"order:{random.randint(1, int(1e10))}"]
+        elif use_cache and (cached := self._get_cached_counts(tags)) is not None:
+            logger.trace(f"Returning cached value for search {tags}: {cached}")
+            return cached
 
         params = {
             "tags": " ".join(tags),
         }
 
         response = self.danbooru_request("GET", "counts/posts.json", params=params)
-        return response["counts"]["posts"]
+        count = response["counts"]["posts"]  # type: ignore[call-overload]
+        self._save_count(tags, count)
+        return count
+
+    def _get_cached_counts(self, tags: list[str]) -> int | None:
+        tag_str = " ".join(sorted(t.strip() for t in tags))
+        val = ProgressTracker(f"DANBOORU_TAG_COUNTS_{tag_str}", ",").value
+        last_checked, count = val.split(",")
+        if self._was_saved_recently(last_checked):
+            return int(count)
+        return None
+
+    def _save_count(self, tags: list[str], count: int) -> None:
+        tag_str = " ".join(sorted(t.strip() for t in tags))
+        ProgressTracker(f"DANBOORU_TAG_COUNTS_{tag_str}", "").value = f"{time.time()},{count}"
+
+    def _was_saved_recently(self, timestamp: str, max_hours: int = 1) -> bool:
+        if not timestamp:
+            return False
+
+        return datetime.fromtimestamp(float(timestamp), tz=UTC) > datetime.now(tz=UTC) - timedelta(hours=max_hours)
+
+    def get_last_edit_time(self, user_name: str) -> datetime | None:
+        val = ProgressTracker(f"DANBOORU_USER_LAST_EDIT_{user_name}", ",")
+        last_checked, last_edit = val.value.split(",")
+        if self._was_saved_recently(last_checked, max_hours=23):
+            return datetime.fromtimestamp(float(last_edit), tz=UTC) if last_edit else None
+
+        versions = self.post_versions(updater_name=user_name, limit=1)
+        last_version_time = versions[0].updated_at if versions else None
+        val.value = f"{time.time()},{last_version_time.timestamp() if last_version_time else ""}"
+        return last_version_time
 
     def all_posts(self, tags: list[str]) -> list[models.DanbooruPost]:
         posts: list[models.DanbooruPost] = []
