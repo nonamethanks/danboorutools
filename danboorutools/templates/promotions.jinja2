@@ -5,8 +5,15 @@
 
     <meta charset="UTF-8">
     <title>Promotion Candidates</title>
-    <script src="https://cdn.jsdelivr.net/npm/tablesort@5.6.0/src/tablesort.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/sorts/tablesort.number.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"
+        integrity="sha512-F/gIMdDfda6OD2rnzt/Iyp2V9JLHlFQ+EUyixDg9+rkwjqgW1snpkpx7FD5FV1+gG2fmFj7I3r6ReQDUidHelA==" crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/sorts/tablesort.number.min.js"
+        integrity="sha512-dRD755QRxlybm0h3LXXIGrFcjNakuxW3reZqnPtUkMv6YsSWoJf+slPjY5v4lZvx2ss+wBZQFegepmA7a2W9eA==" crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"
+        integrity="sha512-hUhvpC5f8cgc04OZb55j0KNGh4eh7dLxd/dPSJ5VyzqDWxsayYbojWyl5Tkcgrmb/RVKCRJI1jNlRbVP4WWC4w==" crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
     <link href=" https://cdn.jsdelivr.net/npm/tablesort@5.6.0/tablesort.min.css " rel="stylesheet">
     <style>
         body {
@@ -93,17 +100,16 @@
 </head>
 
 <body>
-
     <div class="sticky-widget">
         <label for="minDays">Show users active within the last </label>
-        <input type="number" id="minDays" min="0" style="width: 60px;">
+        <input type="number" id="minDays" min="0" style="width: 60px;" value="60" />
         <label> days</label>
         <div id="hiddenCount" style="margin-top:8px; color:#b00; font-weight:bold; display:none;"></div>
     </div>
 
-    <h1>Promotion Candidates</h2>
-        <p class="small">Generated on {{ generated_on }}</p>
-        <p class="small">Recent means within the last two months</p>
+    <h1>Promotion Candidates for week {{week}} of {{year}}</h2>
+        <p class="small">Generated on {{ generated_on }}.</p>
+        <p class="small">Recent means within the last two months.</p>
 
         <h2>Builders for Contributor</h2>
         <table id="contrib-builder">
@@ -117,7 +123,7 @@
             </tbody>
         </table>
 
-        <h2>Members for Contributor</h2>
+        <h2>Non-Builders for Contributor</h2>
         <table id="contrib-member">
             <thead>
                 {{ row_header }}
@@ -195,6 +201,7 @@
             }
 
             document.getElementById('minDays').addEventListener('input', filterByDays);
+            filterByDays();
         </script>
 
 </html>

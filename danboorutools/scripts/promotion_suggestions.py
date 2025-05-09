@@ -227,15 +227,19 @@ def generate_html(*candidates: Candidate) -> None:
     env = Environment(loader=FileSystemLoader(settings.BASE_FOLDER / "danboorutools" / "templates"))  # noqa: S701
     template = env.get_template("promotions.jinja2")
 
+    generation_date = datetime.now(tz=UTC)
+
     sorted_candidates = sorted({user.name: user for user in candidates}.values(), key=lambda c: c.sorted_weight, reverse=True)
     output_from_parsed_template = template.render(
         row_header=Candidate.html_header,
-        generated_on=f"{datetime.now(tz=UTC):%Y-%m-%d at %T}",
+        generated_on=f"{generation_date:%Y-%m-%d at %T}",
         builder_to_contributor=[c for c in sorted_candidates if c.for_contributor and c.level >= 32],
         member_to_contributor=[c for c in sorted_candidates if c.for_contributor and c.level < 32],
         rest=[c for c in sorted_candidates if not c.for_contributor],
         contrib_max_del_perc=CONTRIB_MAX_DEL_PERC,
         builder_max_del_perc=BUILDER_MAX_DEL_PERC,
+        week=f"{generation_date:%U}",
+        year=generation_date.year,
     )
     Path("promotions.html").write_text(output_from_parsed_template, encoding="utf-8")
 
