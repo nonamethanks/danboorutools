@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import readline
 import sys
 import termios
 import textwrap
@@ -9,8 +10,8 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import quote_plus
 
-import readline
 import click
+from jinja2 import Environment, FileSystemLoader
 
 from danboorutools import logger, settings
 from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
@@ -30,17 +31,19 @@ CONTRIB_RISKY_DEL_COUNT = 30
 CONTRIB_MAX_DEL_COUNT = 50
 CONTRIB_MAX_DEL_PERC = 5
 BUILDER_MAX_DEL_PERC = 15
+MIN_NOTES = 2000
 
 
 def input_with_prefill(prompt: str, text: str) -> str:
     #  # https://stackoverflow.com/questions/8505163/is-it-possible-to-prefill-a-input-in-python-3s-command-line-interface
-    def hook():
+    def hook() -> None:
         readline.insert_text(text)
         readline.redisplay()
     readline.set_pre_input_hook(hook)
     result = input(prompt)
     readline.set_pre_input_hook()
     return result
+
 
 class Ignored:
     file_path = Path(settings.BASE_FOLDER / "data" / "promotion_ignored.txt")
@@ -52,6 +55,7 @@ class Ignored:
 
         logger.info(f"Hiding user {user_id} for {show_again_in_days} days.")
 
+        data = {k: v for (k, v) in data.items() if v > datetime.now(tz=UTC)}
         with cls.file_path.open("w", encoding="utf-8") as f:
             f.write("\n".join(f"{user_id},{datetime.timestamp()}" for (user_id, datetime) in data.items()))
 
@@ -89,7 +93,7 @@ class Notes:
             f.write("\n".join(f"{user_id},{note}" for (user_id, note) in notes.items()))
 
     @classmethod
-    def get_all(cls) -> dict[int, datetime]:
+    def get_all(cls) -> dict[int, str]:
         if not cls.file_path.exists():
             return {}
         with cls.file_path.open("r+", encoding="utf-8") as f:
@@ -99,7 +103,8 @@ class Notes:
 
 notes = Notes.get_all()
 
-@click.command("cli", context_settings={'show_default': True})
+
+@click.command("cli", context_settings={"show_default": True})
 @click.option("--skip-to", "-s", "skip_to", default=0)
 @click.option("--manual", "-m", is_flag=True, default=False)
 @click.option("--reverse", "-r", is_flag=True, default=False)
@@ -116,7 +121,8 @@ def main(user_url: str | None,
          level: Literal["member", "platinum", "gold", "builder", "nonbuilder", "all"] = "all",
          ) -> None:
     if not user_url:
-        suggest_promotions(skip_to=skip_to, manual=manual, reverse=reverse, min_uploads=min_uploads, ignore_ignored=ignore_ignored, level=level)
+        suggest_promotions(skip_to=skip_to, manual=manual, reverse=reverse,
+                           min_uploads=min_uploads, ignore_ignored=ignore_ignored, level=level)
     else:
         user = DanbooruUser.get_from_id(DanbooruUser.id_from_url(user_url))
         candidate = Candidate(name=user.name, recent_uploads=None, recent_deleted=None)
@@ -132,6 +138,8 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = F
 
     biggest_uploaders = get_biggest_non_contributor_uploaders()
     biggest_gardeners = get_biggest_non_builder_gardeners()
+    biggest_translators = get_biggest_non_builder_translators()
+    biggest_non_uploaders = biggest_gardeners | biggest_translators
 
     candidates: list[Candidate] = []
 
@@ -140,7 +148,7 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = F
             merge_candidate(uploader, match)
             candidates.append(uploader)
 
-        elif (match := biggest_gardeners.pop(uploader.name, None)):
+        elif (match := biggest_non_uploaders.pop(uploader.name, None)):
             merge_candidate(uploader, match)
             candidates.append(uploader)
 
@@ -172,10 +180,10 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = F
 
     logger.info("")
     remaining: list[Candidate] = []
-    if biggest_gardeners.values():
-        for match in biggest_gardeners.values():
+    if biggest_non_uploaders.values():
+        for match in biggest_non_uploaders.values():
             # remaining gardeners that weren't caught with the previous pop
-            if match.post_update_count > MIN_STANDALONE_EDITS:
+            if match.post_update_count > MIN_STANDALONE_EDITS or match.note_update_count > MIN_NOTES:
                 candidate = Candidate(
                     name=match.name,
                     recent_uploads=None,
@@ -183,6 +191,8 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = F
                 )
                 merge_candidate(candidate, match)
                 remaining.append(candidate)
+
+    generate_html(*candidates, *remaining)
 
     if remaining and not manual:
         logger.info("Builder candidates:")
@@ -211,6 +221,144 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = F
                 )
             ]
         manual_loop(candidates, index=skip_to)
+
+
+html_style = """
+    body {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: sans-serif;
+    }
+
+    h1, h2, .small {
+        text-align: center;
+    }
+
+    .small {
+        font-size: smaller;
+    }
+
+    table {
+        border-collapse: collapse;
+        margin: 25px auto;
+        font-size: 0.9em;
+        min-width: 400px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    }
+
+    table, th, td {
+        border:1px solid black;
+        text-align: center;
+    }
+
+    table th,
+    table td {
+        padding: 12px 15px;
+    }
+
+    .username a {
+        font-weight: bold;
+        color: black;
+    }
+
+    .builder .username {
+        background-color: #c797ff;
+    }
+
+    .builder .username a {
+        color: white;
+    }
+
+    .gold .username {
+        background-color: #ead084;
+    }
+
+    .platinum .username {
+        background-color: #ababbc;
+    }
+
+    .member .username {
+        background-color: #009be6;
+    }
+
+
+    .sticky-widget {
+        position: fixed;
+        right: 1rem;
+        top: 3rem;
+        transform: translateY(-50%);
+        z-index: 1000;
+        padding: 20px;
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+"""
+
+
+html_scripts = """
+    new Tablesort(document.querySelector('table#contrib'));
+    new Tablesort(document.querySelector('table#builder'));
+
+    document.querySelectorAll('table#contrib td.recentRatio').forEach(cell => {
+        if (parseFloat(cell.textContent) >= """ + str(CONTRIB_MAX_DEL_PERC) + """) {
+            cell.style.backgroundColor = '#ffcdd2';
+        }
+    });
+
+    document.querySelectorAll('table#builder td.recentRatio').forEach(cell => {
+        if (parseFloat(cell.textContent) >= """ + str(BUILDER_MAX_DEL_PERC) + """) {
+            cell.style.backgroundColor = '#ffcdd2';
+        }
+    });
+
+    function getDaysAgo(timestamp) {
+        const now = new Date().getTime();
+        const diff = now - timestamp;
+        return Math.floor(diff / (1000 * 60 * 60 * 24));
+    }
+
+    function filterByDays(event) {
+        const minDays = document.getElementById('minDays').value;
+        const rows = document.querySelectorAll('table tbody tr');
+        let hidden = 0;
+
+        rows.forEach(row => {
+            const lastEditCell = row.querySelector('td.lastEdit');
+            if (!lastEditCell) return;
+            const days = getDaysAgo(parseInt(lastEditCell.getAttribute('data-sort')) * 1000);
+            const show = !minDays || days <= minDays;
+            row.style.display = show ? '' : 'none';
+            if (!show) hidden++;
+        });
+
+        const counter = document.getElementById('hiddenCount');
+        if (hidden > 0) {
+            counter.textContent = `${hidden} user${hidden !== 1 ? 's' : ''} hidden`;
+            counter.style.display = '';
+        } else {
+            counter.style.display = 'none';
+        }
+    }
+
+    document.getElementById('minDays').addEventListener('input', filterByDays);
+"""
+
+
+def generate_html(*candidates: Candidate) -> None:
+    env = Environment(loader=FileSystemLoader(settings.BASE_FOLDER / "danboorutools" / "templates"))  # noqa: S701
+    template = env.get_template("promotions.jinja2")
+
+    sorted_candidates = sorted(candidates, key=lambda c: c.sorted_weight, reverse=True)
+    output_from_parsed_template = template.render(
+        row_header=Candidate.html_header,
+        generated_on=f"{datetime.now(tz=UTC):%Y-%m-%d at %T}",
+        potential_contributors=[c for c in sorted_candidates if c.for_contributor],
+        rest=[c for c in sorted_candidates if not c.for_contributor],
+        contrib_max_del_perc=CONTRIB_MAX_DEL_PERC,
+        builder_max_del_perc=BUILDER_MAX_DEL_PERC,
+    )
+    Path("promotions.html").write_text(output_from_parsed_template, encoding="utf-8")
 
 
 def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
@@ -283,6 +431,7 @@ def merge_candidate(candidate: Candidate, user: DanbooruUser) -> None:
     candidate.id = user.id
     candidate.total_uploads = user.post_upload_count
     candidate.total_edits = user.post_update_count
+    candidate.total_notes = user.note_update_count
     candidate.level = user.level
     candidate.level_string = user.level_string
     candidate.is_deleted = user.is_deleted
@@ -345,12 +494,30 @@ def get_biggest_non_builder_gardeners() -> dict[str, DanbooruUser]:
         last_fetched = danbooru_api.users(
             order="post_update_count",
             post_update_count=f">{MIN_EDITS_WITH_UPLOADS}",
-            page=page, level="<32",
+            page=page,
+            level="<32",
             is_banned=False,
         )
         if not last_fetched:
             return gardeners
         gardeners |= {user.name: user for user in last_fetched}
+        page += 1
+
+
+def get_biggest_non_builder_translators() -> dict[str, DanbooruUser]:
+    page = 1
+    translators: dict[str, DanbooruUser] = {}
+    while True:
+        last_fetched = danbooru_api.users(
+            order="note_update_count",
+            note_update_count=f">{MIN_NOTES}",
+            page=page,
+            level="<32",
+            is_banned=False,
+        )
+        if not last_fetched:
+            return translators
+        translators |= {user.name: user for user in last_fetched}
         page += 1
 
 
@@ -365,6 +532,7 @@ class Candidate:
 
     total_uploads: int | None = None
     total_edits: int | None = None
+    total_notes: int | None = None
     id: int | None = None
     level: int | None = None
     level_string: str | None = None
@@ -402,12 +570,20 @@ class Candidate:
         return f"https://danbooru.donmai.us/users/{self.id}"
 
     @property
+    def uploads_url(self) -> str:
+        return f"https://danbooru.donmai.us/posts?tags=user:{self.safe_name}+age:%3C2mo"
+
+    @property
     def deleted_url(self) -> str:
-        return f"https://danbooru.donmai.us/posts?tags=user:{self.safe_name}+status:deleted+age:%3C2mo"
+        return f"{self.uploads_url}+status:deleted"
 
     @property
     def edits_url(self) -> str:
-        return f"https://danbooru.donmai.us/post_versions?search[updater_name]={self.safe_name}"
+        return f"https://danbooru.donmai.us/post_versions?search[updater_name]={self.safe_name}&search[is_new]=false"
+
+    @property
+    def notes_url(self) -> str:
+        return f"https://danbooru.donmai.us/note_versions?search[updater_name]={self.safe_name}"
 
     @property
     def self_string(self) -> str:
@@ -602,6 +778,65 @@ class Candidate:
     @property
     def level_color(self) -> str:
         return level_color_for(self.level)
+
+    html_header = """
+        <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Uploads</th>
+            <th data-sort-default aria-sort="ascending">Recent Uploads</th>
+            <th>Recent Deleted</th>
+            <th>Recent %</th>
+            <th>Notes</th>
+            <th>Edits</th>
+            <th>Last Edit</th>
+        </tr>
+    """
+
+    @property
+    def html_properties(self) -> str:
+        days_ago = self.days_ago_html  # force refresh
+        del_ratio = f"{self.delete_ratio:.2f}" if self.recent_uploads else "n/a"
+        sort_ratio = self.delete_ratio if self.recent_uploads else 1000
+        last_edit_timestamp = int(self.last_edit_date.timestamp())  # type: ignore[union-attr]
+
+        name_string = self.name
+        classes = []
+        if self.is_banned:
+            classes.append("banned")
+            name_string = f"{self.name} (BANNED)"
+        elif self.is_deleted:
+            classes.append("deleted")
+            name_string = f"{self.name} (DELETED)"
+        classes.append(self.level_string.lower())  # type: ignore[union-attr]
+
+        return f"""
+        <tr class="{" ".join(classes)}">
+            <td class="userid">{self.id}</td>
+            <td class="username"><a href="{self.url}" target="_blank">{name_string}</a></td>
+            <td class="totalUploaded">{self.total_uploads}</td>
+            <td class="recentUploaded"><a href="{self.uploads_url}" target="_blank">{self.recent_uploads or 0}</a></td>
+            <td class="recentDeleted"><a href="{self.deleted_url}" target="_blank">{self.recent_deleted or 0}</a></td>
+            <td class="recentRatio" data-sort="{sort_ratio}">{del_ratio}</td>
+            <td class="notes">{self.total_notes}</td>
+            <td class="totalEdits"><a href="{self.edits_url}" target="_blank">{self.total_edits}</a></td>
+            <td class="lastEdit" data-sort="{last_edit_timestamp}">{days_ago}</td>
+        </tr>
+    """
+
+    @property
+    def days_ago_html(self) -> str:
+        days_ago = self.last_edit_days_ago
+        if days_ago == 0:
+            days_ago_str = "today"
+        elif days_ago > 365:
+            days_ago_str = f"{days_ago//365} years ago"
+        elif days_ago > 30:
+            days_ago_str = f"{days_ago//30} months ago"
+        else:
+            days_ago_str = f"{days_ago} days ago"
+
+        return f"{self.last_edit_date:%Y-%m-%d} ({days_ago_str})"
 
 
 def level_color_for(level_number: int) -> str:

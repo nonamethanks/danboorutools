@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Promotion Candidates</title>
+    <script src="https://cdn.jsdelivr.net/npm/tablesort@5.6.0/src/tablesort.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/sorts/tablesort.number.min.js"></script>
+    <link href=" https://cdn.jsdelivr.net/npm/tablesort@5.6.0/tablesort.min.css " rel="stylesheet">
+    <style>
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: sans-serif;
+        }
+
+        h1,
+        h2,
+        .small {
+            text-align: center;
+        }
+
+        .small {
+            font-size: smaller;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 25px auto;
+            font-size: 0.9em;
+            min-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            text-align: center;
+        }
+
+        table th,
+        table td {
+            padding: 12px 15px;
+        }
+
+        .username a {
+            font-weight: bold;
+            color: black;
+        }
+
+        .builder .username {
+            background-color: #c797ff;
+        }
+
+        .builder .username a {
+            color: white;
+        }
+
+        .gold .username {
+            background-color: #ead084;
+        }
+
+        .platinum .username {
+            background-color: #ababbc;
+        }
+
+        .member .username {
+            background-color: #009be6;
+        }
+
+        .banned {
+            background-color: lightcoral;
+        }
+
+        .deleted {
+            background-color: lightgray;
+        }
+
+        .sticky-widget {
+            position: fixed;
+            right: 1rem;
+            top: 3rem;
+            transform: translateY(-50%);
+            z-index: 1000;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sticky-widget">
+        <label for="minDays">Show users active within the last </label>
+        <input type="number" id="minDays" min="0" style="width: 60px;">
+        <label> days</label>
+        <div id="hiddenCount" style="margin-top:8px; color:#b00; font-weight:bold; display:none;"></div>
+    </div>
+
+    <h1>Promotion Candidates</h2>
+        <p class="small">Generated on {{ generated_on }}</p>
+        <p class="small">Recent means within the last two months</p>
+
+        <h2>Builders for Contributor</h2>
+        <table id="contrib">
+            <thead>
+                {{ row_header }}
+            </thead>
+            <tbody>
+                {% for c in potential_contributors %}
+                {{ c.html_properties }}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Other users for Promotion</h2>
+
+        <table id="builder">
+            <thead>
+                {{ row_header }}
+            </thead>
+
+            <tbody>
+                {% for c in rest %}
+                {{ c.html_properties }}
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+
+        <script>
+            new Tablesort(document.querySelector('table#contrib'));
+            new Tablesort(document.querySelector('table#builder'));
+
+            let max_ratio_for_contrib = {{ contrib_max_del_perc }};
+            let max_ratio_for_builder = {{ builder_max_del_perc }};
+
+            document.querySelectorAll('table#contrib td.recentRatio').forEach(cell => {
+                if (parseFloat(cell.textContent) >= max_ratio_for_contrib) {
+                    cell.style.backgroundColor = '#ffcdd2';
+                }
+            });
+
+            document.querySelectorAll('table#builder td.recentRatio').forEach(cell => {
+                if (parseFloat(cell.textContent) >= max_ratio_for_builder) {
+                    cell.style.backgroundColor = '#ffcdd2';
+                }
+            });
+
+            function getDaysAgo(timestamp) {
+                const now = new Date().getTime();
+                const diff = now - timestamp;
+                return Math.floor(diff / (1000 * 60 * 60 * 24));
+            }
+
+            function filterByDays(event) {
+                const minDays = document.getElementById('minDays').value;
+                const rows = document.querySelectorAll('table tbody tr');
+                let hidden = 0;
+
+                rows.forEach(row => {
+                    const lastEditCell = row.querySelector('td.lastEdit');
+                    if (!lastEditCell) return;
+                    const days = getDaysAgo(parseInt(lastEditCell.getAttribute('data-sort')) * 1000);
+                    const show = !minDays || days <= minDays;
+                    row.style.display = show ? '' : 'none';
+                    if (!show) hidden++;
+                });
+
+                const counter = document.getElementById('hiddenCount');
+                if (hidden > 0) {
+                    counter.textContent = `${hidden} user${hidden !== 1 ? 's' : ''} hidden`;
+                    counter.style.display = '';
+                } else {
+                    counter.style.display = 'none';
+                }
+            }
+
+            document.getElementById('minDays').addEventListener('input', filterByDays);
+        </script>
+
+</html>
