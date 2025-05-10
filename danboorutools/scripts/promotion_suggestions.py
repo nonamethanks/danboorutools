@@ -3,7 +3,6 @@ from __future__ import annotations
 import readline
 import sys
 import termios
-import textwrap
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -16,6 +15,7 @@ from jinja2 import Environment, FileSystemLoader
 from danboorutools import logger, settings
 from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
 from danboorutools.models.danbooru import DanbooruUser
+from danboorutools.util.misc import remove_indent
 
 f_path = logger.log_to_file()
 
@@ -597,7 +597,7 @@ class Candidate:
         ruc = "GREEN" if self.delete_ratio < BUILDER_MAX_DEL_PERC else "RED"
         tuc = "GREEN" if self.total_uploads > MIN_STANDALONE_UPLOADS else "YELLOW"
 
-        return textwrap.dedent(f"""
+        return remove_indent(f"""
 
             {header}
 
@@ -613,7 +613,7 @@ class Candidate:
 
             {self.post_edit_details.replace("\n", "\n            ")}
 
-        """.rstrip("\n ") + "\n            ")  # noqa: E501
+        """)  # noqa: E501
 
     @property
     def last_edit_days_ago(self) -> int:

@@ -25,6 +25,13 @@ def get_config(name: str) -> dict:
     return yaml.safe_load(Path(settings.CONFIG_FOLDER / name).read_text(encoding="utf-8"))
 
 
+def get_bool_env(name: str) -> bool:
+    env_var = os.environ.get(name)
+    if not env_var:
+        return False
+    return env_var.lower() in ["true", "1", "yes"]
+
+
 class Logger(_Logger):
     def log_to_file(self,
                     *,
@@ -74,8 +81,8 @@ logger = Logger(
 )
 
 default_level = os.environ.get("LOGURU_LEVEL") or os.environ.get("LOG_LEVEL") or "INFO"
-debug = "DEBUG" if os.environ.get("DEBUG") in ["TRUE", "1"] else False
-trace = "TRACE" if os.environ.get("TRACE") in ["TRUE", "1"] else False
+debug = "DEBUG" if get_bool_env("DEBUG") else False
+trace = "TRACE" if get_bool_env("TRACE") else False
 logger_level = trace or debug or default_level
 
 logger.add(

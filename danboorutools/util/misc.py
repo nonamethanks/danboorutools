@@ -63,6 +63,20 @@ def extract_urls_from_string(string: str, blacklist_images: bool = True) -> list
     return list(dict.fromkeys(urls))
 
 
+def remove_indent(string: str) -> str:
+    first_line = next(line for line in string.split("\n") if line)
+    spaces = 0
+    for character in first_line:
+        if character == " ":
+            spaces += 1
+        else:
+            break
+    if not spaces:
+        return string
+
+    return re.sub(rf"\n {"{" + str(spaces) + "}"}", "\n", string.strip(""))
+
+
 class BaseModel(BadBaseModel):
     _raw_data: dict[str, Any] = PrivateAttr()
 
