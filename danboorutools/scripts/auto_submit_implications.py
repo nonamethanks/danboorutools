@@ -1,19 +1,33 @@
 from __future__ import annotations
 
 import ast
+import os
 import re
 from functools import cached_property
 from itertools import groupby
 
-from danboorutools import get_config, logger
-from danboorutools.logical.sessions.danbooru import danbooru_api, testbooru_api
-from danboorutools.models.danbooru import DanbooruBulkUpdateRequest, DanbooruTag  # noqa: TC001
-from danboorutools.util.misc import BaseModel
-
-PROD = False
-db_api = danbooru_api if PROD else testbooru_api
+from danboorutools import get_bool_env, get_config, logger
+from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
+from danboorutools.models.danbooru import DanbooruBulkUpdateRequest  # noqa: TC001
+from danboorutools.util.misc import BaseModel, remove_indent
 
 logger.log_to_file()
+
+if (POST_TO_PROD := get_bool_env("AUTO_IMPLICATIONS_ENABLED")):
+    logger.info("<r>PROD MODE for implications is enabled. The implications WILL be posted.</r>")
+else:
+    logger.info("<g>PROD MODE for implications is disabled. Nothing will be posted to the site.</g>")
+
+
+class DanbooruImplicationData(BaseModel):
+    antecedent_name: str
+    consequent_name: str
+
+
+class DanbooruTagData(BaseModel):
+    name: str
+    antecedent_implications: list[DanbooruImplicationData]
+    wiki_page: dict | None = None
 
 
 class Series(BaseModel):
@@ -27,44 +41,50 @@ class Series(BaseModel):
         return f"https://danbooru.donmai.us/forum_topics/{self.topic_id}"
 
     @cached_property
-    def all_tags(self) -> list[DanbooruTag]:
+    def burs(self) -> list[DanbooruBulkUpdateRequest]:
+        series_burs = danbooru_api.bulk_update_requests(script_ilike=f"*_({self.name})*", limit=1000)
+        if not series_burs:
+            raise NotImplementedError
+        return series_burs
+
+    @cached_property
+    def all_tags(self) -> list[DanbooruTagData]:
         tag_list = []
         page = 1
         while True:
             logger.info(f"Fetching all tags for {self.name} (page {page})...")
-            results = db_api.tags(
-                name_matches=f"*_({self.name})",
-                category=4,
-                order="id",
-                limit=1000,
-                page=page,
-                hide_empty=True,
-            )
-            tag_list += results
+
+            results = danbooru_api.danbooru_request(
+                "GET",
+                "tags.json",
+                params=kwargs_to_include(
+                    name_matches=f"*_({self.name})",
+                    category=4,
+                    order="id",
+                    limit=1000,
+                    page=page,
+                    hide_empty=True,
+                    only="name,antecedent_implications,wiki_page",
+                ))
+            tag_list += [DanbooruTagData(**r) for r in results]
             if len(results) < 1000:
                 logger.info(f"Finished fetching tags for {self.name}. Total: {len(tag_list)}")
                 return tag_list
             page += 1
 
     @cached_property
-    def costume_tags(self) -> list[DanbooruTag]:
+    def costume_tags(self) -> list[DanbooruTagData]:
         return list(filter(lambda tag: any(p.match(tag.name) for p in self.costume_patterns), self.all_tags))
 
     @cached_property
-    def burs(self) -> list[DanbooruBulkUpdateRequest]:
-        series_burs = db_api.bulk_update_requests(script_ilike=f"*_({self.name})*", limit=1000)
-        if not series_burs:
-            raise NotImplementedError
-        return series_burs
-
-    @cached_property
-    def tags_without_implications(self) -> list[DanbooruTag]:
+    def tags_without_implications(self) -> list[DanbooruTagData]:
         tags_without_implications = [
             tag for tag in self.costume_tags
-            if not any(f"imply {tag.name.lower()} ->" in bur.script.lower() for bur in self.burs)
+            if not tag.antecedent_implications
+            and not any(f"imply {tag.name.lower()} ->" in bur.script.lower() for bur in self.burs)
             and not any(f"create implication {tag.name.lower()} ->" in bur.script.lower() for bur in self.burs)
         ]
-        logger.info(f"Found <r>{len(tags_without_implications)}</r> tags without an implication BUR.")
+        logger.info(f"Found <r>{len(tags_without_implications)}</r> tags without an implication (pending or otherwise).")
         return tags_without_implications
 
     def get_base_tag_name(self, name: str) -> str:
@@ -78,114 +98,133 @@ class Series(BaseModel):
 
         raise NotImplementedError(name)
 
-    def search_for_main_tag(self, subtag: DanbooruTag) -> DanbooruTag | None:
+    def search_for_main_tag(self, subtag: DanbooruTagData) -> DanbooruTagData | None:
         base_tag = self.get_base_tag_name(subtag.name)
-
-        logger.debug("")
-        logger.debug(f"Processing tag: <g>{subtag.name}</g>. Searching for potential tag: <g>{base_tag}</g>...")
         for candidate in self.all_tags:
             if candidate.name == base_tag:
-                logger.debug(f"Found potential implication <g>{subtag.name} -> {candidate.name}.</g>")
                 return candidate
 
-        logger.debug(f"<red>No main tag found for {subtag.name}.</red>")
         return None
 
     @property
     def implication_groups(self) -> list[ImplicationGroup]:
-        return [
-            ImplicationGroup(main_tag=main_tag, subtags=list(subtags), series=self)
-            for main_tag, subtags in groupby(self.tags_without_implications, key=lambda tag: self.search_for_main_tag(tag))
-            if main_tag
-        ]
+        return sorted(
+            [ImplicationGroup(main_tag=main_tag, subtags=list(subtags), series=self)
+             for main_tag, subtags in groupby(self.tags_without_implications, key=lambda tag: self.search_for_main_tag(tag))
+             if main_tag],
+            key=lambda i: i.main_tag.name,
+        )
 
 
 class ImplicationGroup(BaseModel):
-    main_tag: DanbooruTag
-    subtags: list[DanbooruTag]
+    main_tag: DanbooruTagData
+    subtags: list[DanbooruTagData]
 
     series: Series
 
     @property
     def script(self) -> str:
-        return "\n".join(f"imply {subtag.name} -> {self.main_tag.name}" for subtag in self.subtags)
+        return "\n".join(f"imply {subtag.name} -> {self.main_tag.name}" for subtag in self.tags_with_wiki)
 
     @property
-    def tags_without_wiki(self) -> list[DanbooruTag]:
-        return [tag for tag in self.subtags if tag._raw_data.get("wiki_page") is None]
-
-    def create_missing_wikis(self) -> None:
-        for tag in self.tags_without_wiki:
-            logger.info(f"Creating wiki page for {tag.name} {tag.url}")
-            db_api.create_wiki_page(title=tag.name, body=self.wiki_template)
+    def tags_with_wiki(self) -> list[DanbooruTagData]:
+        return [tag for tag in self.subtags if tag.wiki_page]
 
     @property
-    def wiki_template(self) -> str:
-        body = f"""
-        Alternate costume for [[{self.main_tag.name}]].
+    def tags_without_wiki(self) -> list[DanbooruTagData]:
+        return [tag for tag in self.subtags if not tag.wiki_page]
 
-        h4. Appearance
-        * !post #REPLACEME
-        """
+    # def create_missing_wikis(self) -> None:
+    #     for tag in self.tags_without_wiki:
+    #         logger.info(f"Creating wiki page for {tag.name} {tag.url}")
+    #         db_api.create_wiki_page(title=tag.name, body=self.wiki_template)
 
-        return re.sub(r"\n +", "\n", body)
+    # @property
+    # def wiki_template(self) -> str:
+    #     body = f"""
+    #     Alternate costume for [[{self.main_tag.name}]].
+    #
+    #     h4. Appearance
+    #     * !post #REPLACEME
+    #     """
+    #
+    #     return remove_indent(body)
 
 
-bot_forum_posts = db_api.forum_posts(body_matches="*Write a wiki page for them*", limit=1000, creator_name="nntbot")
+bot_username = os.environ["DANBOORU_BOT_USERNAME"]
+bot_forum_posts = danbooru_api.forum_posts(body_matches="*Write a wiki page for them*", limit=1000, creator_name=bot_username)
 
 
-def process_series(series: Series) -> None:
-    logger.info(f"Processing series: {series.name}. Topic: {series.topic_url}")
+def process_series(series: Series, bulk_mode: bool = False, max_per_bulk: int = 10) -> None:
+    logger.info(f"Processing series: {series.name}. Topic: {series.topic_url}. Bulk mode: {bulk_mode}")
 
-    counter = 10
+    counter = max_per_bulk
     script = ""
+    tags_with_no_wikis = []
 
     for group in series.implication_groups:
-        logger.info(f"Found implication group: {group.main_tag.name} -> {", ".join(tag.name for tag in group.subtags)}")
-        group.create_missing_wikis()
+        logger.info(f"Found implication group: {", ".join(tag.name for tag in group.subtags)} -> {group.main_tag.name} ")
+        if group.tags_without_wiki:
+            logger.info(f"There are {len(group.tags_without_wiki)} tags without a wiki.")
+            tags_with_no_wikis += group.tags_without_wiki
 
-        counter -= len(group.subtags)
-        script += group.script + "\n"
+        if not group.tags_with_wiki:
+            logger.info("<r>This group has no remaining tags with wiki. Moving on...</r>")
+            continue
 
-        if counter <= 0:
-            send_bur(series, script)
-            script = ""
-            counter = 10
+        if bulk_mode:
+            counter -= len(group.tags_with_wiki)
+            script += group.script + "\n"
+
+            if counter <= 0:
+                send_bur(series, script)
+                script = ""
+                counter = 10
+        else:
+            send_bur(series, group.script)
 
     if script:
         send_bur(series, script)
 
+    post_tags_without_wikis(tags_with_no_wikis, series.topic_id)
+
 
 def send_bur(series: Series, script: str) -> None:
     logger.info("Submitting implications:")
-    logger.info(script)
+    logger.info(f"\n<c>{script}</c>")
+    bur_reason = """
+    beep boop. I found costume tags that needs an implications. Vote on this BUR and say something if you disagree.
+    """
 
-    db_api.create_bur(
-        topic_id=series.topic_id,
-        script=script,
-        reason="beep boop. I found costume tags that needs an implications. Vote on it and say something if it's wrong.",
-    )
+    if POST_TO_PROD:
+        danbooru_api.create_bur(
+            topic_id=series.topic_id,
+            script=script,
+            reason=bur_reason,
+        )
 
 
-def post_tags_without_wikis(tags: list[DanbooruTag], topic_id: int) -> None:
-
-    missing_tags = [t for t in tags if not any(t.name in post.body for post in bot_forum_posts)]
-    if missing_tags:
+def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int) -> None:
+    unposted = [t for t in tags if not any(t.name in post.body for post in bot_forum_posts)]
+    if unposted:
         logger.info(f"Posting tags without wiki pages: {', '.join(tag.name for tag in tags)}")
     else:
         logger.info("No tags without wiki pages to post.")
         return
 
-    body = re.sub(r"\n +", "\n", f"""
+    body = remove_indent(f"""
         beep boop. I was going to submit an implication request for these tags, but they have no wiki page.
         Write a wiki page for them and I'll be able to do it next time I run.
 
         {'\n'.join(f"* [[{tag.name}]]" for tag in tags)}
     """)
-    db_api.create_forum_post(
-        topic_id=topic_id,
-        body=body,
-    )
+    logger.info("Sending forum post:")
+    logger.info(body)
+    if POST_TO_PROD:
+        danbooru_api.create_forum_post(
+            topic_id=topic_id,
+            body=body,
+        )
 
 
 def main() -> None:
@@ -195,7 +234,7 @@ def main() -> None:
 
     series_list = [
         Series(**series | {
-            "costume_patterns": [ast.literal_eval(p) for p in series["costume_patterns"]] + [default_pattern],
+            "costume_patterns": [ast.literal_eval(p) for p in series.get("costume_patterns", [])] + [default_pattern],
         })
         for series in config["series"]
     ]
