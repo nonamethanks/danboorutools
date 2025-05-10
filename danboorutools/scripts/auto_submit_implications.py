@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import os
 import re
+from datetime import UTC, datetime, timedelta
 from functools import cached_property
 from itertools import batched, groupby
 
@@ -152,11 +153,13 @@ class ImplicationGroup(BaseModel):
     #     return remove_indent(body)
 
 
+POSTED_THRESHOLD = datetime.now(UTC) - timedelta(weeks=2)
 bot_username = os.environ["DANBOORU_BOT_USERNAME"]
 bot_forum_posts = danbooru_api.forum_posts(
     body_matches="*Write a wiki page for them*",
     limit=1000,
     creator_name=bot_username,
+    created_at=f">{danbooru_api.db_datetime(POSTED_THRESHOLD)}",
 )
 
 IMPLICATIONS_PER_BULK = 10
@@ -214,7 +217,7 @@ def send_bur(series: Series, script: str) -> None:
 
 
 def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int) -> None:
-    unposted = [t for t in tags if not any(t.name in post.body for post in bot_forum_posts)]
+    unposted = [t for t in tags if not any(f"[[{t.name}]]" in post.body for post in bot_forum_posts)]
     if unposted:
         logger.info(f"Posting tags without wiki pages: {', '.join(tag.name for tag in tags)}")
     else:
@@ -227,12 +230,14 @@ def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int) -> None:
     """
 
     if len(unposted) > 10:
-        body += "\n[expand Tags without a wiki]\n"
-    body += f"{'\n'.join(f"* [[{tag.name}]]" for tag in tags)}"
+        body += "\n[expand Tags without a wiki]"
+    for tag in unposted:
+        body += f"\n* [[{tag.name}]]"
     if len(unposted) > 10:
-        body += "\n[/expand]\n"
+        body += "\n[/expand]"
 
     body += """
+
         Self-updating links to all tags without wiki from this series:
     """
     for index, tag_batch in enumerate(batched(tags, 100)):
