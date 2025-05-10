@@ -4,7 +4,7 @@ import ast
 import os
 import re
 from functools import cached_property
-from itertools import groupby
+from itertools import batched, groupby
 
 from danboorutools import get_bool_env, get_config, logger
 from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
@@ -26,6 +26,7 @@ class DanbooruImplicationData(BaseModel):
 
 class DanbooruTagData(BaseModel):
     name: str
+    id: int
     antecedent_implications: list[DanbooruImplicationData]
     wiki_page: dict | None = None
 
@@ -64,7 +65,7 @@ class Series(BaseModel):
                     limit=1000,
                     page=page,
                     hide_empty=True,
-                    only="name,antecedent_implications,wiki_page",
+                    only="id,name,antecedent_implications,wiki_page",
                 ))
             tag_list += [DanbooruTagData(**r) for r in results]
             if len(results) < 1000:
@@ -152,13 +153,21 @@ class ImplicationGroup(BaseModel):
 
 
 bot_username = os.environ["DANBOORU_BOT_USERNAME"]
-bot_forum_posts = danbooru_api.forum_posts(body_matches="*Write a wiki page for them*", limit=1000, creator_name=bot_username)
+bot_forum_posts = danbooru_api.forum_posts(
+    body_matches="*Write a wiki page for them*",
+    limit=1000,
+    creator_name=bot_username,
+)
+
+IMPLICATIONS_PER_BULK = 10
 
 
-def process_series(series: Series, bulk_mode: bool = False, max_per_bulk: int = 10) -> None:
-    logger.info(f"Processing series: {series.name}. Topic: {series.topic_url}. Bulk mode: {bulk_mode}")
+def process_series(series: Series) -> None:
+    bulk_mode = len(series.implication_groups) > 5
+    logger.info(f"Processing series: {series.name}. Topic: {series.topic_url}.")
+    logger.info(f"There are {len(series.implication_groups)} implication groups. Bulk mode: {bulk_mode}")
 
-    counter = max_per_bulk
+    counter = IMPLICATIONS_PER_BULK
     script = ""
     tags_with_no_wikis = []
 
@@ -212,12 +221,24 @@ def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int) -> None:
         logger.info("No tags without wiki pages to post.")
         return
 
-    body = remove_indent(f"""
+    body = """
         beep boop. I was going to submit an implication request for these tags, but they have no wiki page.
         Write a wiki page for them and I'll be able to do it next time I run.
+    """
 
-        {'\n'.join(f"* [[{tag.name}]]" for tag in tags)}
-    """)
+    if len(unposted) > 10:
+        body += "\n[expand Tags without a wiki]\n"
+    body += f"{'\n'.join(f"* [[{tag.name}]]" for tag in tags)}"
+    if len(unposted) > 10:
+        body += "\n[/expand]\n"
+
+    body += """
+        Self-updating links to all tags without wiki from this series:
+    """
+    for index, tag_batch in enumerate(batched(tags, 100)):
+        body += f'\n"Link #{index+1}":/tags?search[has_wiki_page]=no&limit=100&search[id]={",".join(map(str, (t.id for t in tag_batch)))}'
+
+    body = remove_indent(body)
     logger.info("Sending forum post:")
     logger.info(body)
     if POST_TO_PROD:
@@ -234,7 +255,7 @@ def main() -> None:
 
     series_list = [
         Series(**series | {
-            "costume_patterns": [ast.literal_eval(p) for p in series.get("costume_patterns", [])] + [default_pattern],
+            "costume_patterns": [ast.literal_eval(p) for p in series.get("extra_costume_patterns", [])] + [default_pattern],
         })
         for series in config["series"]
     ]

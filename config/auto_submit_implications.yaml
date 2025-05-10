@@ -1,5 +1,44 @@
 series:
   - name: "arknights"
-    topic_id: 79
-    costume_patterns:
+    topic_id: 19647
+    extra_costume_patterns:
       - r"(?P<base_name>\w+)_the_(.*)_(?P<series_name>arknights)"
+
+  - name: "azur_lane"
+    topic_id: 23519
+
+  - name: "blue_archive"
+    topic_id: 21341
+
+  - name: "fire_emblem"
+    topic_id: 22728
+
+  - name: "genshin_impact"
+    topic_id: 19285
+
+  - name: "girls'_frontline"
+    topic_id: 23293
+
+  - name: "honkai:_star_rail"
+    topic_id: 24117
+
+  - name: "kancolle"
+    topic_id: 26671
+
+  - name: "nikke"
+    topic_id: 25272
+
+  - name: "pokemon"
+    topic_id: 22703
+
+  - name: "princess_connect!"
+    topic_id: 25913
+
+  - name: "reverse:1999"
+    topic_id: 24504
+
+  - name: "umamusume"
+    topic_id: 29925
+
+  - name: "wuthering_waves"
+    topic_id: 27205

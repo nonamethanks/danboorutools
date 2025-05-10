@@ -64,7 +64,7 @@ class DanbooruApi(Session):
         "post_version": "id,updated_at,updater,post,added_tags,removed_tags,obsolete_added_tags,obsolete_removed_tags",
         "post_replacement": "id,created_at,post",
         "post_vote": "id,created_at,score,is_deleted,user,post",
-        "tag": "id,name,post_count,category,created_at,is_deprecated,wiki_page,artist",
+        "tag": "id,name,post_count,category,created_at,is_deprecated,wiki_page,artist,antecedent_implications,consequent_implications",
         "tag_implication": "id,reason,creator,approver,antecedent_tag,consequent_tag,created_at,updated_at",
         "user": "id,name,created_at,level,level_string,post_update_count,note_update_count,post_upload_count,is_banned,is_deleted,bans,last_ip_addr",  # noqa: E501
         "user_feedback": "id,category,body,user,creator,created_at,updated_at,is_deleted",
@@ -403,6 +403,10 @@ class DanbooruApi(Session):
         }
         response = self.danbooru_request("POST", "wiki_pages.json", json=data)
         assert isinstance(response, dict) and response["id"]
+
+    @staticmethod
+    def db_datetime(value: datetime) -> str:
+        return value.strftime("%Y-%m-%dT%H:%M:%SZ00")
 
 
 def kwargs_to_include(**kwargs) -> dict:

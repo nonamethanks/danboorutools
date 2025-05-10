@@ -313,7 +313,7 @@ class DanbooruBulkUpdateRequest(DanbooruModel):
 
     user_id: int
     forum_topic_id: int
-    forum_post_id: int
+    forum_post_id: int | None  # this is what happens when someone removes a BUR from a topic ORZ
     script: str
     status: str
     approver_id: int | None = None
