@@ -205,7 +205,9 @@ def send_bur(series: Series, script: str) -> None:
     logger.info("Submitting implications:")
     logger.info(f"\n<c>{script}</c>")
     bur_reason = """
-    beep boop. I found costume tags that needs an implications. Vote on this BUR and say something if you disagree.
+        beep boop. I found costume tags that needs an implications. Vote on this BUR and say something if you disagree.
+
+        [tn]This is an automatic post. Use topic #31779 to report errors/false positives or general feedback.[/tn]
     """
 
     if POST_TO_PROD:
@@ -243,6 +245,10 @@ def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int) -> None:
     for index, tag_batch in enumerate(batched(tags, 100)):
         body += f'\n"Link #{index+1}":/tags?search[has_wiki_page]=no&limit=100&search[id]={",".join(map(str, (t.id for t in tag_batch)))}'
 
+    body += """
+
+        [tn]This is an automatic post. Use topic #31779 to report errors/false positives or general feedback.[/tn]
+    """
     body = remove_indent(body)
     logger.info("Sending forum post:")
     logger.info(body)
