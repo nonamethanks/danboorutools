@@ -312,7 +312,7 @@ class DanbooruBulkUpdateRequest(DanbooruModel):
     danbooru_model_name = "bulk_update_request"
 
     user_id: int
-    forum_topic_id: int
+    forum_topic_id: int | None  # this is what happens when someone removes a BUR from a topic ORZ
     forum_post_id: int | None  # this is what happens when someone removes a BUR from a topic ORZ
     script: str
     status: str
