@@ -501,7 +501,7 @@ class Candidate:
 
     def refresh(self, hard_refresh: bool = False) -> None:
         logger.info(f"Refreshing data for user {self.name}...")
-        date_tag = f"date:{START_DATE.strftime("%Y-%m-%d")}..{END_DATE.strftime("%Y-%m-%d")}"
+        date_tag = f"date:{danbooru_api.db_datetime(START_DATE)}..{danbooru_api.db_datetime(END_DATE)}"
         tags = [f"user:{self.name}", date_tag]
         self.last_edit_date = danbooru_api.get_last_edit_time(user_name=self.name)
         if self.last_edit_date < START_DATE:

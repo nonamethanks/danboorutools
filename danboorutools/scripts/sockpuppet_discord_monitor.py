@@ -11,7 +11,7 @@ import click
 from discord_webhook import DiscordEmbed, DiscordWebhook
 from pydantic import Field
 
-from danboorutools import get_config, logger
+from danboorutools import get_bool_env, get_config, logger
 from danboorutools.logical.progress_tracker import ProgressTracker
 from danboorutools.logical.sessions.danbooru import danbooru_api, testbooru_api
 from danboorutools.models.danbooru import DanbooruUser, DanbooruUserEvent
@@ -126,7 +126,11 @@ class SockpuppetDetector:
         else:
             raise ValueError(self.mode)
 
-        self.enable_autobans = os.environ.get("SOCKPUPPET_CHECK_ENABLE_AUTOBANS", "false").lower() in ["true", "1", "yes"]
+        self.enable_autobans = get_bool_env("SOCKPUPPET_CHECK_ENABLE_AUTOBANS")
+        if self.enable_autobans:
+            logger.info("<r>Autoban is enabled</r>")
+        else:
+            logger.info("<g>Autoban is not enabled</g>")
 
         self.last_checked_session = ProgressTracker("SOCKPUPPET_DETECTOR_LAST_CHECKED_SESSION", 0)
         self.old_hooks = ProgressTracker[list[dict]]("SOCKPUPPET_DETECTOR_POSTED_HOOKS", [])

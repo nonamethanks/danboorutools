@@ -114,7 +114,7 @@ def get_uploads(start_time: datetime, end_time: datetime) -> list[DanbooruPost]:
     logger.info("Collecting posts...")
 
     tags = [
-        f"date:{start_time.strftime("%Y-%m-%dT%H:%M:%SZ00")}..{end_time.strftime("%Y-%m-%dT%H:%M:%SZ00")}",
+        f"date:{danbooru_api.db_datetime(start_time)}..{danbooru_api.db_datetime(end_time)}",
         "(approver:any or status:pending or status:deleted)",
     ]
 
