@@ -99,7 +99,6 @@ def main(topicid: int, pick: int) -> None:
 
 
 def get_forum_posts(topic_id: int) -> list[DanbooruForumPost]:
-    logger.info(f"Collecting entries from topic #{topic_id}")
     forum_posts: list[DanbooruForumPost] = []
     page = 1
     while True:
