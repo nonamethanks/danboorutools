@@ -238,12 +238,15 @@ def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int) -> None:
     if len(unposted) > 10:
         body += "\n[/expand]"
 
-    body += """
+    will_be_batched = len(tags) > 100
+    body += f"""
 
-        Self-updating links to all tags without wiki from this series:
+        Self-updating link{"s" if will_be_batched else ""} to all tags without wiki from this series:
     """
     for index, tag_batch in enumerate(batched(tags, 100)):
-        body += f'\n"Link #{index+1}":/tags?search[has_wiki_page]=no&limit=100&search[id]={",".join(map(str, (t.id for t in tag_batch)))}'
+        id_str = ",".join(map(str, (t.id for t in tag_batch)))
+        link_number = f" #{index+1}" if will_be_batched else ""
+        body += f'\n* "Link{link_number}":/tags?search[has_wiki_page]=no&limit=100&search[id]={id_str}'
 
     body += """
 
