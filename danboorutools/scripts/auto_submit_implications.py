@@ -7,6 +7,8 @@ from datetime import UTC, datetime, timedelta
 from functools import cached_property
 from itertools import batched, groupby
 
+import click
+
 from danboorutools import get_bool_env, get_config, logger
 from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
 from danboorutools.models.danbooru import DanbooruBulkUpdateRequest  # noqa: TC001
@@ -32,11 +34,18 @@ class DanbooruTagData(BaseModel):
     wiki_page: dict | None = None
 
 
+DEFAULT_PATTERN = re.compile(r"(?P<base_name>.*?)_(?P<qualifiers>\(.*\))_(?P<series_qualifier>\(.*?\))")
+
+
 class Series(BaseModel):
     name: str
     topic_id: int
 
-    costume_patterns: list[re.Pattern]
+    extra_costume_patterns: list[re.Pattern]
+
+    @cached_property
+    def costume_patterns(self) -> list[re.Pattern[str]]:
+        return [*self.extra_costume_patterns, DEFAULT_PATTERN]
 
     @property
     def topic_url(self) -> str:
@@ -76,7 +85,8 @@ class Series(BaseModel):
 
     @cached_property
     def costume_tags(self) -> list[DanbooruTagData]:
-        return list(filter(lambda tag: any(p.match(tag.name) for p in self.costume_patterns), self.all_tags))
+        filtered = list(filter(lambda tag: any(p.match(tag.name) for p in self.costume_patterns), self.all_tags))
+        return filtered
 
     @cached_property
     def tags_without_implications(self) -> list[DanbooruTagData]:
@@ -89,30 +99,45 @@ class Series(BaseModel):
         logger.info(f"Found <r>{len(tags_without_implications)}</r> tags without an implication (pending or otherwise).")
         return tags_without_implications
 
-    def get_base_tag_name(self, name: str) -> str:
-        # murasaki_shikibu_(swimsuit_rider)_(third_ascension)_(fate)
-        # tezcatlipoca_(second_ascension)_(fate)
-        # robin_(male)_(festive_tactician)_(fire_emblem)
+    def get_possible_parents(self, name: str) -> list[str]:
+        possible_parents = []
 
         for pattern in self.costume_patterns:
-            if (match := pattern.match(name)):
-                return "{base_name}_{series_name}".format(**match.groupdict())
+            if match := pattern.match(name):
+                base_name = match.groupdict()["base_name"]
+                series_qualifier = match.groupdict()["series_qualifier"]
 
-        raise NotImplementedError(name)
+                qualifiers = re.findall(r"(\(.*?\))", match.groupdict()["qualifiers"])
 
-    def search_for_main_tag(self, subtag: DanbooruTagData) -> DanbooruTagData | None:
-        base_tag = self.get_base_tag_name(subtag.name)
-        for candidate in self.all_tags:
-            if candidate.name == base_tag:
-                return candidate
+                for index in range(len(qualifiers)):
+                    partial_qualifier = "_".join(qualifiers[:index])
+                    possible_parents.append(f"{base_name}_{partial_qualifier}_{series_qualifier}")
 
+                possible_parents.append(f"{base_name}_{series_qualifier}")
+
+        return list(set(possible_parents))
+
+    def search_for_main_tag(self, subtag_name: str) -> DanbooruTagData | None:
+        possible_parents = self.get_possible_parents(subtag_name)
+        sorted_parents = sorted(possible_parents, key=lambda t: len(t), reverse=True)
+        logger.trace(f"Found potential parents for {subtag_name}: {sorted_parents}")
+        for potential_parent in sorted_parents:
+            logger.trace(f"Checking if {potential_parent} for {subtag_name} exists.")
+            for candidate in self.all_tags:
+                if candidate.name == potential_parent:
+                    logger.trace(f"> Parent tag name for {subtag_name} seems to be {candidate.name}.")
+                    return candidate
+
+            logger.trace("It did not.")
+
+        logger.info(f"Could not determine parent for {subtag_name}, skipping.")
         return None
 
     @property
     def implication_groups(self) -> list[ImplicationGroup]:
         return sorted(
             [ImplicationGroup(main_tag=main_tag, subtags=list(subtags), series=self)
-             for main_tag, subtags in groupby(self.tags_without_implications, key=lambda tag: self.search_for_main_tag(tag))
+             for main_tag, subtags in groupby(self.tags_without_implications, key=lambda tag: self.search_for_main_tag(tag.name))
              if main_tag],
             key=lambda i: i.main_tag.name,
         )
@@ -181,7 +206,7 @@ def process_series(series: Series) -> None:
             tags_with_no_wikis += group.tags_without_wiki
 
         if not group.tags_with_wiki:
-            logger.info("<r>This group has no remaining tags with wiki. Moving on...</r>")
+            logger.info("<r>This group has no tags with wiki. Moving on...</r>")
             continue
 
         if bulk_mode:
@@ -262,21 +287,26 @@ def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int) -> None:
         )
 
 
-def main() -> None:
+def series_from_config() -> list[Series]:
     config = get_config("auto_submit_implications.yaml")
-
-    default_pattern = re.compile(r"(?P<base_name>.*)_(?P<costume_name>\(.*?\))_(?P<series_name>\(.*?\))")
 
     series_list = [
         Series(**series | {
-            "costume_patterns": [ast.literal_eval(p) for p in series.get("extra_costume_patterns", [])] + [default_pattern],
+            "extra_costume_patterns": [ast.literal_eval(p) for p in series.get("extra_costume_patterns", [])],
         })
         for series in config["series"]
     ]
 
-    for series in series_list:
-        process_series(series)
+    return series_list
 
 
-if __name__ == "__main__":
-    main()
+@click.command()
+@click.option("-s", "--series", nargs=1)
+def main(series: str | None = None) -> None:
+    if series:
+        logger.info(f"<r>Running only for series {series}.</r>")
+
+    for config_series in series_from_config():
+        if series and series.lower() != config_series.name.lower():
+            continue
+        process_series(config_series)

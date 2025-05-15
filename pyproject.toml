@@ -240,4 +240,5 @@ markers = [
     "redirect",
     "artist_finder",
     "autoignore",
+    "implication_bot",
 ]
