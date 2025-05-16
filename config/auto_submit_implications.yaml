@@ -44,3 +44,6 @@ series:
 
   - name: "wuthering_waves"
     topic_id: 27205
+
+  - name: xenoblade
+    topic_id: 26163

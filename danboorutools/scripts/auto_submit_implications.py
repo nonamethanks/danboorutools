@@ -3,9 +3,11 @@ from __future__ import annotations
 import ast
 import os
 import re
+from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from functools import cached_property
 from itertools import batched, groupby
+from typing import Literal
 
 import click
 
@@ -22,6 +24,34 @@ else:
     logger.info("<g>PROD MODE for implications is disabled. Nothing will be posted to the site.</g>")
 
 
+BOT_DISCLAIMER = "[tn]This is an automatic post. Use topic #31779 to report errors/false positives or general feedback.[/tn]"
+
+BOT_IMPLICATION_REASON = f"""
+[code]beep boop.[/code] I found costume tags that need an implications. Vote on this BUR and say something if you disagree.
+
+{BOT_DISCLAIMER}
+"""
+
+BOT_WIKILESS_HEADER = """
+[code]beep boop.[/code] I was going to submit an implication request for these tags, but they have no wiki page.
+Write a wiki page for them and I'll be able to submit them next time I run.
+"""
+
+
+DEFAULT_COSTUME_PATTERN = re.compile(r"(?P<base_name>.*?)_(?P<qualifiers>\(.*\))_(?P<series_qualifier>\(.*?\))")
+
+POSTED_THRESHOLD = datetime.now(UTC) - timedelta(weeks=2)
+bot_username = os.environ["DANBOORU_BOT_USERNAME"]
+bot_forum_posts = danbooru_api.forum_posts(
+    body_matches="*Write a wiki page for them*",
+    limit=1000,
+    creator_name=bot_username,
+    created_at=f">{danbooru_api.db_datetime(POSTED_THRESHOLD)}",
+)
+
+IMPLICATIONS_PER_BULK = 10
+
+
 class DanbooruImplicationData(BaseModel):
     antecedent_name: str
     consequent_name: str
@@ -33,8 +63,8 @@ class DanbooruTagData(BaseModel):
     antecedent_implications: list[DanbooruImplicationData]
     wiki_page: dict | None = None
 
-
-DEFAULT_PATTERN = re.compile(r"(?P<base_name>.*?)_(?P<qualifiers>\(.*\))_(?P<series_qualifier>\(.*?\))")
+    def __hash__(self) -> int:
+        return hash(f"{self.id}-{self.name}")
 
 
 class Series(BaseModel):
@@ -45,7 +75,7 @@ class Series(BaseModel):
 
     @cached_property
     def costume_patterns(self) -> list[re.Pattern[str]]:
-        return [*self.extra_costume_patterns, DEFAULT_PATTERN]
+        return [*self.extra_costume_patterns, DEFAULT_COSTUME_PATTERN]
 
     @property
     def topic_url(self) -> str:
@@ -115,13 +145,12 @@ class Series(BaseModel):
 
                 possible_parents.append(f"{base_name}_{series_qualifier}")
 
-        return list(set(possible_parents))
+        return list({re.sub(r"_+", "_", p) for p in possible_parents})
 
     def search_for_main_tag(self, subtag_name: str) -> DanbooruTagData | None:
-        possible_parents = self.get_possible_parents(subtag_name)
-        sorted_parents = sorted(possible_parents, key=lambda t: len(t), reverse=True)
-        logger.trace(f"Found potential parents for {subtag_name}: {sorted_parents}")
-        for potential_parent in sorted_parents:
+        potential_parents = sorted(self.get_possible_parents(subtag_name), key=lambda t: len(t), reverse=True)
+        logger.trace(f"Found potential parents for {subtag_name}: {potential_parents}")
+        for potential_parent in potential_parents:
             logger.trace(f"Checking if {potential_parent} for {subtag_name} exists.")
             for candidate in self.all_tags:
                 if candidate.name == potential_parent:
@@ -135,12 +164,17 @@ class Series(BaseModel):
 
     @property
     def implication_groups(self) -> list[ImplicationGroup]:
-        return sorted(
-            [ImplicationGroup(main_tag=main_tag, subtags=list(subtags), series=self)
-             for main_tag, subtags in groupby(self.tags_without_implications, key=lambda tag: self.search_for_main_tag(tag.name))
-             if main_tag],
-            key=lambda i: i.main_tag.name,
-        )
+        relationships = defaultdict(list)
+        for tag in self.tags_without_implications:
+            if parent_tag := self.search_for_main_tag(tag.name):
+                relationships[parent_tag].append(tag)
+
+        implication_groups = [
+            ImplicationGroup(main_tag=main_tag, subtags=list(subtags), series=self)
+            for main_tag, subtags in relationships.items()
+        ]
+
+        return sorted(implication_groups, key=lambda i: i.main_tag.name)
 
 
 class ImplicationGroup(BaseModel):
@@ -178,20 +212,14 @@ class ImplicationGroup(BaseModel):
     #     return remove_indent(body)
 
 
-POSTED_THRESHOLD = datetime.now(UTC) - timedelta(weeks=2)
-bot_username = os.environ["DANBOORU_BOT_USERNAME"]
-bot_forum_posts = danbooru_api.forum_posts(
-    body_matches="*Write a wiki page for them*",
-    limit=1000,
-    creator_name=bot_username,
-    created_at=f">{danbooru_api.db_datetime(POSTED_THRESHOLD)}",
-)
+def process_series(series: Series, bulk_mode_cli: Literal["yes", "no", "all"]) -> None:
+    if bulk_mode_cli == "yes":
+        bulk_mode = len(series.implication_groups) > 5
+    elif bulk_mode_cli == "no":
+        bulk_mode = len(series.implication_groups) > 100_000
+    elif bulk_mode_cli == "all":
+        bulk_mode = len(series.implication_groups) > 1
 
-IMPLICATIONS_PER_BULK = 10
-
-
-def process_series(series: Series) -> None:
-    bulk_mode = len(series.implication_groups) > 5
     logger.info(f"Processing series: {series.name}. Topic: {series.topic_url}.")
     logger.info(f"There are {len(series.implication_groups)} implication groups. Bulk mode: {bulk_mode}")
 
@@ -229,17 +257,12 @@ def process_series(series: Series) -> None:
 def send_bur(series: Series, script: str) -> None:
     logger.info("Submitting implications:")
     logger.info(f"\n<c>{script}</c>")
-    bur_reason = """
-        beep boop. I found costume tags that needs an implications. Vote on this BUR and say something if you disagree.
-
-        [tn]This is an automatic post. Use topic #31779 to report errors/false positives or general feedback.[/tn]
-    """
 
     if POST_TO_PROD:
         danbooru_api.create_bur(
             topic_id=series.topic_id,
             script=script,
-            reason=bur_reason,
+            reason=BOT_IMPLICATION_REASON,
         )
 
 
@@ -251,10 +274,7 @@ def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int) -> None:
         logger.info("No tags without wiki pages to post.")
         return
 
-    body = """
-        beep boop. I was going to submit an implication request for these tags, but they have no wiki page.
-        Write a wiki page for them and I'll be able to do it next time I run.
-    """
+    body = BOT_WIKILESS_HEADER
 
     if len(unposted) > 10:
         body += "\n[expand Tags without a wiki]"
@@ -264,19 +284,15 @@ def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int) -> None:
         body += "\n[/expand]"
 
     will_be_batched = len(tags) > 100
-    body += f"""
+    body += f"\n\nSelf-updating link{"s" if will_be_batched else ""} to all tags without wiki from this series:"
 
-        Self-updating link{"s" if will_be_batched else ""} to all tags without wiki from this series:
-    """
     for index, tag_batch in enumerate(batched(tags, 100)):
         id_str = ",".join(map(str, (t.id for t in tag_batch)))
         link_number = f" #{index+1}" if will_be_batched else ""
         body += f'\n* "Link{link_number}":/tags?search[has_wiki_page]=no&limit=100&search[id]={id_str}'
 
-    body += """
+    body += f"\n\n{BOT_DISCLAIMER}"
 
-        [tn]This is an automatic post. Use topic #31779 to report errors/false positives or general feedback.[/tn]
-    """
     body = remove_indent(body)
     logger.info("Sending forum post:")
     logger.info(body)
@@ -302,11 +318,12 @@ def series_from_config() -> list[Series]:
 
 @click.command()
 @click.option("-s", "--series", nargs=1)
-def main(series: str | None = None) -> None:
+@click.option("-b", "--bulk_mode", type=click.Choice(["yes", "no", "all"]), required=True)
+def main(series: str | None = None, bulk_mode: Literal["yes", "no", "all"] = "yes") -> None:
     if series:
         logger.info(f"<r>Running only for series {series}.</r>")
 
     for config_series in series_from_config():
         if series and series.lower() != config_series.name.lower():
             continue
-        process_series(config_series)
+        process_series(config_series, bulk_mode_cli=bulk_mode)
