@@ -6,7 +6,7 @@ import re
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from functools import cached_property
-from itertools import batched, groupby
+from itertools import batched
 from typing import Literal
 
 import click
@@ -24,16 +24,18 @@ else:
     logger.info("<g>PROD MODE for implications is disabled. Nothing will be posted to the site.</g>")
 
 
-BOT_DISCLAIMER = "[tn]This is an automatic post. Use topic #31779 to report errors/false positives or general feedback.[/tn]"
+BOT_DISCLAIMER = "This is an automatic post. Use topic #31779 to report errors/false positives or general feedback."
 
 BOT_IMPLICATION_REASON = f"""
-[code]beep boop.[/code] I found costume tags that need an implications. Vote on this BUR and say something if you disagree.
+ [code]beep boop[/code]
+I found costume tags that need an implications. Vote on this BUR and say something if you disagree.
 
 {BOT_DISCLAIMER}
 """
 
 BOT_WIKILESS_HEADER = """
-[code]beep boop.[/code] I was going to submit an implication request for these tags, but they have no wiki page.
+ [code]beep boop[/code]
+I was going to submit an implication request for these tags, but they have no wiki page.
 Write a wiki page for them and I'll be able to submit them next time I run.
 """
 
@@ -227,6 +229,8 @@ def process_series(series: Series, bulk_mode_cli: Literal["yes", "no", "all"]) -
     script = ""
     tags_with_no_wikis = []
 
+    posted = 0
+
     for group in series.implication_groups:
         logger.info(f"Found implication group: {", ".join(tag.name for tag in group.subtags)} -> {group.main_tag.name} ")
         if group.tags_without_wiki:
@@ -245,13 +249,18 @@ def process_series(series: Series, bulk_mode_cli: Literal["yes", "no", "all"]) -
                 send_bur(series, script)
                 script = ""
                 counter = 10
+                posted += 1
         else:
             send_bur(series, group.script)
+            posted += 1
 
     if script:
         send_bur(series, script)
+        posted += 1
 
     post_tags_without_wikis(tags_with_no_wikis, series.topic_id)
+
+    logger.info(f"In total, {posted} BURs have been submitted.")
 
 
 def send_bur(series: Series, script: str) -> None:
