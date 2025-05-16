@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import os
 import re
+import time
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from functools import cached_property
@@ -11,18 +12,12 @@ from typing import Literal
 
 import click
 
-from danboorutools import get_bool_env, get_config, logger
+from danboorutools import get_config, logger
 from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
 from danboorutools.models.danbooru import DanbooruBulkUpdateRequest  # noqa: TC001
 from danboorutools.util.misc import BaseModel, remove_indent
 
 logger.log_to_file()
-
-if (POST_TO_PROD := get_bool_env("AUTO_IMPLICATIONS_ENABLED")):
-    logger.info("<r>PROD MODE for implications is enabled. The implications WILL be posted.</r>")
-else:
-    logger.info("<g>PROD MODE for implications is disabled. Nothing will be posted to the site.</g>")
-
 
 BOT_DISCLAIMER = "This is an automatic post. Use topic #31779 to report errors/false positives or general feedback."
 
@@ -214,13 +209,15 @@ class ImplicationGroup(BaseModel):
     #     return remove_indent(body)
 
 
-def process_series(series: Series, bulk_mode_cli: Literal["yes", "no", "all"]) -> None:
+def process_series(series: Series, bulk_mode_cli: Literal["yes", "no", "all"] = "no", post_to_danbooru: bool = False) -> None:
     if bulk_mode_cli == "yes":
         bulk_mode = len(series.implication_groups) > 5
     elif bulk_mode_cli == "no":
         bulk_mode = len(series.implication_groups) > 100_000
     elif bulk_mode_cli == "all":
         bulk_mode = len(series.implication_groups) > 1
+    else:
+        raise NotImplementedError(bulk_mode_cli)
 
     logger.info(f"Processing series: {series.name}. Topic: {series.topic_url}.")
     logger.info(f"There are {len(series.implication_groups)} implication groups. Bulk mode: {bulk_mode}")
@@ -229,12 +226,12 @@ def process_series(series: Series, bulk_mode_cli: Literal["yes", "no", "all"]) -
     script = ""
     tags_with_no_wikis = []
 
-    posted = 0
+    posted = []
 
     for group in series.implication_groups:
         logger.info(f"Found implication group: {", ".join(tag.name for tag in group.subtags)} -> {group.main_tag.name} ")
         if group.tags_without_wiki:
-            logger.info(f"There are {len(group.tags_without_wiki)} tags without a wiki.")
+            logger.info(f"There are {len(group.tags_without_wiki)} tags without a wiki here: {group.tags_without_wiki}.")
             tags_with_no_wikis += group.tags_without_wiki
 
         if not group.tags_with_wiki:
@@ -246,28 +243,30 @@ def process_series(series: Series, bulk_mode_cli: Literal["yes", "no", "all"]) -
             script += group.script + "\n"
 
             if counter <= 0:
-                send_bur(series, script)
+                send_bur(series, script, post_to_danbooru=post_to_danbooru)
+                posted += [script]
                 script = ""
                 counter = 10
-                posted += 1
         else:
-            send_bur(series, group.script)
-            posted += 1
+            send_bur(series, group.script, post_to_danbooru=post_to_danbooru)
+            posted += [group.script]
 
     if script:
-        send_bur(series, script)
-        posted += 1
+        send_bur(series, script, post_to_danbooru=post_to_danbooru)
+        posted += [script]
 
-    post_tags_without_wikis(tags_with_no_wikis, series.topic_id)
+    post_tags_without_wikis(tags_with_no_wikis, series.topic_id, post_to_danbooru=post_to_danbooru)
 
-    logger.info(f"In total, {posted} BURs have been submitted.")
+    logger.info(f"In total, {len(posted)} BURs have been submitted.")
+    for index, bur in enumerate(posted):
+        logger.info(f"BUR #{index+1}:\n{bur}\n")
 
 
-def send_bur(series: Series, script: str) -> None:
+def send_bur(series: Series, script: str, post_to_danbooru: bool) -> None:
     logger.info("Submitting implications:")
     logger.info(f"\n<c>{script}</c>")
 
-    if POST_TO_PROD:
+    if post_to_danbooru:
         danbooru_api.create_bur(
             topic_id=series.topic_id,
             script=script,
@@ -275,7 +274,7 @@ def send_bur(series: Series, script: str) -> None:
         )
 
 
-def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int) -> None:
+def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int, post_to_danbooru: bool) -> None:
     unposted = [t for t in tags if not any(f"[[{t.name}]]" in post.body for post in bot_forum_posts)]
     if unposted:
         logger.info(f"Posting tags without wiki pages: {', '.join(tag.name for tag in tags)}")
@@ -305,11 +304,12 @@ def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int) -> None:
     body = remove_indent(body)
     logger.info("Sending forum post:")
     logger.info(body)
-    if POST_TO_PROD:
+    if post_to_danbooru:
         danbooru_api.create_forum_post(
             topic_id=topic_id,
             body=body,
         )
+        time.sleep(1)
 
 
 def series_from_config() -> list[Series]:
@@ -327,12 +327,14 @@ def series_from_config() -> list[Series]:
 
 @click.command()
 @click.option("-s", "--series", nargs=1)
-@click.option("-b", "--bulk_mode", type=click.Choice(["yes", "no", "all"]), required=True)
-def main(series: str | None = None, bulk_mode: Literal["yes", "no", "all"] = "yes") -> None:
+@click.option("-b", "--bulk_mode", type=click.Choice(["yes", "no", "all"]), default="no")
+@click.option("-p", "--post_to_danbooru", type=click.Choice(["yes", "no"]), required=True)
+def main(series: str | None = None, bulk_mode: Literal["yes", "no", "all"] = "no", post_to_danbooru: Literal["yes", "no"] = "no") -> None:
+
     if series:
         logger.info(f"<r>Running only for series {series}.</r>")
 
     for config_series in series_from_config():
         if series and series.lower() != config_series.name.lower():
             continue
-        process_series(config_series, bulk_mode_cli=bulk_mode)
+        process_series(config_series, bulk_mode_cli=bulk_mode, post_to_danbooru=post_to_danbooru == "yes")

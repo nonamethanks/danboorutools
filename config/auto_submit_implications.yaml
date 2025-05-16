@@ -1,5 +1,5 @@
 series:
-  - name: "arknights"
+  - name: "arknights" # tested
     topic_id: 19647
     extra_costume_patterns:
       - r"(?P<base_name>\w+?)_(?P<qualifiers>the_.*)_(?P<series_qualifier>\(arknights\))"
@@ -27,7 +27,7 @@ series:
     extra_costume_patterns:
       - r"(?P<base_name>.*?)_(?P<qualifiers>(?:kai_ni|kai)(?:_\(.*\))?)_(?P<series_qualifier>\(kancolle\))"
 
-  - name: "nikke"
+  - name: "nikke" # tested
     topic_id: 25272
 
   - name: "pokemon"
