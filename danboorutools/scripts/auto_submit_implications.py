@@ -19,7 +19,7 @@ from danboorutools.util.misc import BaseModel, remove_indent
 
 logger.log_to_file()
 
-BOT_DISCLAIMER = "This is an automatic post. Use topic #31779 to report errors/false positives or general feedback."
+BOT_DISCLAIMER = "[tn]This is an automatic post. Use topic #31779 to report errors/false positives or general feedback.[/tn]"
 
 BOT_IMPLICATION_REASON = f"""
  [code]beep boop[/code]
