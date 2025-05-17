@@ -46,8 +46,6 @@ bot_forum_posts = danbooru_api.forum_posts(
     created_at=f">{danbooru_api.db_datetime(POSTED_THRESHOLD)}",
 )
 
-IMPLICATIONS_PER_BULK = 10
-
 
 class DanbooruImplicationData(BaseModel):
     antecedent_name: str
@@ -69,6 +67,8 @@ class Series(BaseModel):
     topic_id: int
 
     extra_costume_patterns: list[re.Pattern]
+
+    grep: str | None = None
 
     @cached_property
     def costume_patterns(self) -> list[re.Pattern[str]]:
@@ -112,8 +112,10 @@ class Series(BaseModel):
 
     @cached_property
     def costume_tags(self) -> list[DanbooruTagData]:
-        filtered = list(filter(lambda tag: any(p.match(tag.name) for p in self.costume_patterns), self.all_tags))
-        return filtered
+        filtered = filter(lambda tag: any(p.match(tag.name) for p in self.costume_patterns), self.all_tags)
+        if self.grep:
+            filtered = filter(lambda tag: self.grep in tag.name, filtered)  # type: ignore[arg-type] # stfu
+        return list(filtered)
 
     @cached_property
     def tags_without_implications(self) -> list[DanbooruTagData]:
@@ -210,19 +212,22 @@ class ImplicationGroup(BaseModel):
 
 
 def process_series(series: Series, bulk_mode_cli: Literal["yes", "no", "all"] = "no", post_to_danbooru: bool = False) -> None:
+    implications_per_bulk = 10
+
     if bulk_mode_cli == "yes":
         bulk_mode = len(series.implication_groups) > 5
     elif bulk_mode_cli == "no":
         bulk_mode = len(series.implication_groups) > 100_000
     elif bulk_mode_cli == "all":
         bulk_mode = len(series.implication_groups) > 1
+        implications_per_bulk = 100
     else:
         raise NotImplementedError(bulk_mode_cli)
 
     logger.info(f"Processing series: {series.name}. Topic: {series.topic_url}.")
     logger.info(f"There are {len(series.implication_groups)} implication groups. Bulk mode: {bulk_mode}")
 
-    counter = IMPLICATIONS_PER_BULK
+    counter = implications_per_bulk
     script = ""
     tags_with_no_wikis = []
 
@@ -260,6 +265,8 @@ def process_series(series: Series, bulk_mode_cli: Literal["yes", "no", "all"] = 
     logger.info(f"In total, {len(posted)} BURs have been submitted.")
     for index, bur in enumerate(posted):
         logger.info(f"BUR #{index+1}:\n{bur}\n")
+
+    logger.info(f"Topic of submission: {series.topic_url}")
 
 
 def send_bur(series: Series, script: str, post_to_danbooru: bool) -> None:
@@ -312,11 +319,11 @@ def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int, post_to_
         time.sleep(1)
 
 
-def series_from_config() -> list[Series]:
+def series_from_config(grep: str | None = None) -> list[Series]:
     config = get_config("auto_submit_implications.yaml")
 
     series_list = [
-        Series(**series | {
+        Series(grep=grep, **series | {
             "extra_costume_patterns": [ast.literal_eval(p) for p in series.get("extra_costume_patterns", [])],
         })
         for series in config["series"]
@@ -329,12 +336,13 @@ def series_from_config() -> list[Series]:
 @click.option("-s", "--series", nargs=1)
 @click.option("-b", "--bulk_mode", type=click.Choice(["yes", "no", "all"]), default="no")
 @click.option("-p", "--post_to_danbooru", type=click.Choice(["yes", "no"]), required=True)
-def main(series: str | None = None, bulk_mode: Literal["yes", "no", "all"] = "no", post_to_danbooru: Literal["yes", "no"] = "no") -> None:
+@click.option("-g", "--grep", nargs=1)
+def main(series: str | None = None, bulk_mode: Literal["yes", "no", "all"] = "no", post_to_danbooru: Literal["yes", "no"] = "no", grep: str | None = None) -> None:
 
     if series:
         logger.info(f"<r>Running only for series {series}.</r>")
 
-    for config_series in series_from_config():
+    for config_series in series_from_config(grep=grep):
         if series and series.lower() != config_series.name.lower():
             continue
         process_series(config_series, bulk_mode_cli=bulk_mode, post_to_danbooru=post_to_danbooru == "yes")

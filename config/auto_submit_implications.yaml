@@ -4,7 +4,7 @@ series:
     extra_costume_patterns:
       - r"(?P<base_name>\w+?)_(?P<qualifiers>the_.*)_(?P<series_qualifier>\(arknights\))"
 
-  - name: "azur_lane"
+  - name: "azur_lane" # tested
     topic_id: 23519
 
   - name: "blue_archive"
