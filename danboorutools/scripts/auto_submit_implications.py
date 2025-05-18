@@ -326,7 +326,7 @@ def wikiless_tags_to_dtext(tags: list[DanbooruTagData], only_unposted: bool = Tr
 
     will_be_batched = len(tags) > 100
 
-    body += f"\n\nSelf-updating link{"s" if will_be_batched else ""} to all found tags without wiki from this series:"
+    body += f"\n\nSelf-updating link{"s" if will_be_batched else ""} to all tags without wiki from the above list:"
 
     for index, tag_batch in enumerate(batched(tags, 100)):
         id_str = ",".join(map(str, (t.id for t in tag_batch)))
