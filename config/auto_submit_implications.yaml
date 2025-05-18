@@ -10,10 +10,10 @@ series:
   - name: "blue_archive"
     topic_id: 21341
 
-  - name: "fire_emblem"
+  - name: "fire_emblem" # tested
     topic_id: 22728
 
-  - name: "genshin_impact"
+  - name: "genshin_impact" # tested
     topic_id: 19285
 
   - name: "girls'_frontline"

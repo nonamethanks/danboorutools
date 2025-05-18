@@ -21,15 +21,15 @@ logger.log_to_file()
 
 BOT_DISCLAIMER = "[tn]This is an automatic post. Use topic #31779 to report errors/false positives or general feedback.[/tn]"
 
-BOT_IMPLICATION_REASON = f"""
+BOT_IMPLICATION_REASON = """
  [code]beep boop[/code]
-I found costume tags that need an implications. Vote on this BUR and say something if you disagree.
 
-{BOT_DISCLAIMER}
+I found costume tags that need an implications. Vote on this BUR and say something if you disagree.
 """
 
 BOT_WIKILESS_HEADER = """
  [code]beep boop[/code]
+
 I was going to submit an implication request for these tags, but they have no wiki page.
 Write a wiki page for them and I'll be able to submit them next time I run.
 """
@@ -80,10 +80,21 @@ class Series(BaseModel):
 
     @cached_property
     def burs(self) -> list[DanbooruBulkUpdateRequest]:
-        series_burs = danbooru_api.bulk_update_requests(script_ilike=f"*_({self.name})*", limit=1000)
-        if not series_burs:
-            raise NotImplementedError
-        return series_burs
+        total_burs = []
+        page = 1
+        while True:
+            burs = danbooru_api.bulk_update_requests(script_ilike=f"*_({self.name})*", limit=1000, page=page)
+            total_burs += burs
+
+            if len(burs) < 1000:
+                if not total_burs:
+                    raise NotImplementedError
+                return total_burs
+            page += 1
+
+    @cached_property
+    def tags_with_burs(self) -> set[str]:
+        return {tag for bur in self.burs for tag in bur.tags}
 
     @cached_property
     def all_tags(self) -> list[DanbooruTagData]:
@@ -122,11 +133,14 @@ class Series(BaseModel):
         tags_without_implications = [
             tag for tag in self.costume_tags
             if not tag.antecedent_implications
-            and not any(f"imply {tag.name.lower()} ->" in bur.script.lower() for bur in self.burs)
-            and not any(f"create implication {tag.name.lower()} ->" in bur.script.lower() for bur in self.burs)
+            and tag.name not in self.tags_with_burs
         ]
         logger.info(f"Found <r>{len(tags_without_implications)}</r> tags without an implication (pending or otherwise).")
         return tags_without_implications
+
+    @cached_property
+    def implicable_tags_without_wiki(self) -> list[DanbooruTagData]:
+        return [t for ig in self.implication_groups for t in ig.tags_without_wiki]
 
     def get_possible_parents(self, name: str) -> list[str]:
         possible_parents = []
@@ -175,6 +189,67 @@ class Series(BaseModel):
 
         return sorted(implication_groups, key=lambda i: i.main_tag.name)
 
+    def scan_and_post(self, bulk_mode_cli: Literal["yes", "no", "all"] = "no", post_to_danbooru: bool = False, post_wikiless_separately: bool = False) -> None:
+        implications_per_bulk = 10
+
+        if bulk_mode_cli == "yes":
+            bulk_mode = len(self.implication_groups) > 5
+        elif bulk_mode_cli == "no":
+            bulk_mode = len(self.implication_groups) > 100_000
+        elif bulk_mode_cli == "all":
+            bulk_mode = len(self.implication_groups) > 1
+            implications_per_bulk = 100
+        else:
+            raise NotImplementedError(bulk_mode_cli)
+
+        logger.info(f"Processing series: {self.name}. Topic: {self.topic_url}.")
+        logger.info(f"There are {len(self.implication_groups)} implication groups. Bulk mode: {bulk_mode}")
+
+        counter = implications_per_bulk
+        bur_script = ""
+        tags_with_no_wikis = []
+
+        posted = []
+
+        bur_reason = BOT_IMPLICATION_REASON + "\n" + wikiless_tags_to_dtext(self.implicable_tags_without_wiki) + "\n" + BOT_DISCLAIMER
+
+        for group in self.implication_groups:
+            logger.info(f"Found implication group: {", ".join(tag.name for tag in group.subtags)} -> {group.main_tag.name} ")
+            if group.tags_without_wiki:
+                logger.info(f"There are {len(group.tags_without_wiki)} tags without a wiki here: {group.tags_without_wiki}.")
+                tags_with_no_wikis += group.tags_without_wiki
+
+            if not group.tags_with_wiki:
+                logger.info("<r>This group has no tags with wiki. Moving on...</r>")
+                continue
+
+            if bulk_mode:
+                counter -= len(group.tags_with_wiki)
+                bur_script += group.script + "\n"
+
+                if counter <= 0:
+                    send_bur(self, bur_script, bur_reason, post_to_danbooru=post_to_danbooru)
+                    posted += [bur_script]
+                    bur_script = ""
+                    counter = 10
+            else:
+                send_bur(self, group.script, bur_reason, post_to_danbooru=post_to_danbooru)
+                posted += [group.script]
+
+        if bur_script:
+            send_bur(self, bur_script, bur_reason, post_to_danbooru=post_to_danbooru)
+            posted += [bur_script]
+
+        if post_wikiless_separately:
+            post_tags_without_wikis(tags_with_no_wikis, self.topic_id, post_to_danbooru=post_to_danbooru)
+
+        logger.info(f"In total, {len(posted)} BURs have been submitted.")
+        for index, bur in enumerate(posted):
+            logger.info(f"BUR #{index+1}:\n{bur}\n")
+
+        logger.info(f"Topic of submission: {self.topic_url}")
+        logger.info(f"Reason for BURs: {bur_reason}")
+
 
 class ImplicationGroup(BaseModel):
     main_tag: DanbooruTagData
@@ -211,65 +286,7 @@ class ImplicationGroup(BaseModel):
     #     return remove_indent(body)
 
 
-def process_series(series: Series, bulk_mode_cli: Literal["yes", "no", "all"] = "no", post_to_danbooru: bool = False) -> None:
-    implications_per_bulk = 10
-
-    if bulk_mode_cli == "yes":
-        bulk_mode = len(series.implication_groups) > 5
-    elif bulk_mode_cli == "no":
-        bulk_mode = len(series.implication_groups) > 100_000
-    elif bulk_mode_cli == "all":
-        bulk_mode = len(series.implication_groups) > 1
-        implications_per_bulk = 100
-    else:
-        raise NotImplementedError(bulk_mode_cli)
-
-    logger.info(f"Processing series: {series.name}. Topic: {series.topic_url}.")
-    logger.info(f"There are {len(series.implication_groups)} implication groups. Bulk mode: {bulk_mode}")
-
-    counter = implications_per_bulk
-    script = ""
-    tags_with_no_wikis = []
-
-    posted = []
-
-    for group in series.implication_groups:
-        logger.info(f"Found implication group: {", ".join(tag.name for tag in group.subtags)} -> {group.main_tag.name} ")
-        if group.tags_without_wiki:
-            logger.info(f"There are {len(group.tags_without_wiki)} tags without a wiki here: {group.tags_without_wiki}.")
-            tags_with_no_wikis += group.tags_without_wiki
-
-        if not group.tags_with_wiki:
-            logger.info("<r>This group has no tags with wiki. Moving on...</r>")
-            continue
-
-        if bulk_mode:
-            counter -= len(group.tags_with_wiki)
-            script += group.script + "\n"
-
-            if counter <= 0:
-                send_bur(series, script, post_to_danbooru=post_to_danbooru)
-                posted += [script]
-                script = ""
-                counter = 10
-        else:
-            send_bur(series, group.script, post_to_danbooru=post_to_danbooru)
-            posted += [group.script]
-
-    if script:
-        send_bur(series, script, post_to_danbooru=post_to_danbooru)
-        posted += [script]
-
-    post_tags_without_wikis(tags_with_no_wikis, series.topic_id, post_to_danbooru=post_to_danbooru)
-
-    logger.info(f"In total, {len(posted)} BURs have been submitted.")
-    for index, bur in enumerate(posted):
-        logger.info(f"BUR #{index+1}:\n{bur}\n")
-
-    logger.info(f"Topic of submission: {series.topic_url}")
-
-
-def send_bur(series: Series, script: str, post_to_danbooru: bool) -> None:
+def send_bur(series: Series, script: str, reason: str, post_to_danbooru: bool) -> None:
     logger.info("Submitting implications:")
     logger.info(f"\n<c>{script}</c>")
 
@@ -277,46 +294,46 @@ def send_bur(series: Series, script: str, post_to_danbooru: bool) -> None:
         danbooru_api.create_bur(
             topic_id=series.topic_id,
             script=script,
-            reason=BOT_IMPLICATION_REASON,
+            reason=reason,
         )
 
 
-def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int, post_to_danbooru: bool) -> None:
-    unposted = [t for t in tags if not any(f"[[{t.name}]]" in post.body for post in bot_forum_posts)]
-    if unposted:
-        logger.info(f"Posting tags without wiki pages: {', '.join(tag.name for tag in tags)}")
-    else:
-        logger.info("No tags without wiki pages to post.")
-        return
-
+def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int, post_to_danbooru: bool = False) -> None:
     body = BOT_WIKILESS_HEADER
-
-    if len(unposted) > 10:
-        body += "\n[expand Tags without a wiki]"
-    for tag in unposted:
-        body += f"\n* [[{tag.name}]]"
-    if len(unposted) > 10:
-        body += "\n[/expand]"
-
-    will_be_batched = len(tags) > 100
-    body += f"\n\nSelf-updating link{"s" if will_be_batched else ""} to all tags without wiki from this series:"
-
-    for index, tag_batch in enumerate(batched(tags, 100)):
-        id_str = ",".join(map(str, (t.id for t in tag_batch)))
-        link_number = f" #{index+1}" if will_be_batched else ""
-        body += f'\n* "Link{link_number}":/tags?search[has_wiki_page]=no&limit=100&search[id]={id_str}'
-
+    body += wikiless_tags_to_dtext(tags)
     body += f"\n\n{BOT_DISCLAIMER}"
 
     body = remove_indent(body)
     logger.info("Sending forum post:")
     logger.info(body)
+
     if post_to_danbooru:
         danbooru_api.create_forum_post(
             topic_id=topic_id,
             body=body,
         )
         time.sleep(1)
+
+
+def wikiless_tags_to_dtext(tags: list[DanbooruTagData], only_unposted: bool = True) -> str:
+    if only_unposted:
+        tags = [t for t in tags if not any(f"[[{t.name}]]" in post.body for post in bot_forum_posts)]
+
+    body = "\n[expand Tags without a wiki that couldn't be submitted]"
+    for tag in tags:
+        body += f"\n* [[{tag.name}]]"
+    body += "\n[/expand]"
+
+    will_be_batched = len(tags) > 100
+
+    body += f"\n\nSelf-updating link{"s" if will_be_batched else ""} to all found tags without wiki from this series:"
+
+    for index, tag_batch in enumerate(batched(tags, 100)):
+        id_str = ",".join(map(str, (t.id for t in tag_batch)))
+        link_number = f" #{index+1}" if will_be_batched else ""
+        body += f'\n* "Link{link_number}":/tags?search[has_wiki_page]=no&limit=100&search[id]={id_str}'
+
+    return body
 
 
 def series_from_config(grep: str | None = None) -> list[Series]:
@@ -335,9 +352,14 @@ def series_from_config(grep: str | None = None) -> list[Series]:
 @click.command()
 @click.option("-s", "--series", nargs=1)
 @click.option("-b", "--bulk_mode", type=click.Choice(["yes", "no", "all"]), default="no")
-@click.option("-p", "--post_to_danbooru", type=click.Choice(["yes", "no"]), required=True)
+@click.option("-p", "--post_to_danbooru", is_flag=True, default=False)
+@click.option("-pw", "--post_wikiless_separately", is_flag=True, default=False)
 @click.option("-g", "--grep", nargs=1)
-def main(series: str | None = None, bulk_mode: Literal["yes", "no", "all"] = "no", post_to_danbooru: Literal["yes", "no"] = "no", grep: str | None = None) -> None:
+def main(series: str | None = None,
+         bulk_mode: Literal["yes", "no", "all"] = "no",
+         post_to_danbooru: bool = False,
+         post_wikiless_separately: bool = False,
+         grep: str | None = None) -> None:
 
     if series:
         logger.info(f"<r>Running only for series {series}.</r>")
@@ -345,4 +367,6 @@ def main(series: str | None = None, bulk_mode: Literal["yes", "no", "all"] = "no
     for config_series in series_from_config(grep=grep):
         if series and series.lower() != config_series.name.lower():
             continue
-        process_series(config_series, bulk_mode_cli=bulk_mode, post_to_danbooru=post_to_danbooru == "yes")
+        config_series.scan_and_post(bulk_mode_cli=bulk_mode,
+                                    post_to_danbooru=post_to_danbooru,
+                                    post_wikiless_separately=post_wikiless_separately)
