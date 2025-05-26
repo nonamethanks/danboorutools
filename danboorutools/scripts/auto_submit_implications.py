@@ -224,7 +224,7 @@ class Series(BaseModel):
             if qualifier_map[group]:
                 qualifier_map[group].pop()
 
-        return grouped_by_qualified + grouped_by_character
+        return grouped_by_qualified + sorted(grouped_by_character, key=lambda g: g[0].main_tag.name)
 
     def scan_and_post(self, max_lines_per_bur: int = 1, post_to_danbooru: bool = False) -> None:
         logger.info(f"Processing series: {self.name}. Topic: {self.topic_url}.")
