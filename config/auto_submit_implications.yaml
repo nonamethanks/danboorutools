@@ -16,13 +16,16 @@ series:
   - name: "genshin_impact" # tested
     topic_id: 19285
 
-  - name: "girls'_frontline"
+  - name: "girls'_frontline*"  # not tested, try with the wildcard first
     topic_id: 23293
 
-  - name: "honkai:_star_rail"
+  - name: "neural_cloud"  # tested
+    topic_id: 23293
+
+  - name: "honkai:_star_rail" # tested
     topic_id: 24117
 
-  - name: "kancolle"
+  - name: "kancolle" # tested
     topic_id: 26671
     extra_costume_patterns:
       - r"(?P<base_name>.*?)_(?P<qualifiers>(?:kai_ni|kai)(?:_\(.*\))?)_(?P<series_qualifier>\(kancolle\))"

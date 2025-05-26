@@ -8,7 +8,6 @@ from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from functools import cached_property
 from itertools import batched
-from typing import Literal
 
 import click
 
@@ -23,8 +22,6 @@ BOT_DISCLAIMER = "[tn]This is an automatic post. Use topic #31779 to report erro
 
 BOT_IMPLICATION_REASON = """
  [code]beep boop[/code]
-
-I found costume tags that need an implications. Vote on this BUR and say something if you disagree.
 """
 
 BOT_WIKILESS_HEADER = """
@@ -61,6 +58,10 @@ class DanbooruTagData(BaseModel):
     def __hash__(self) -> int:
         return hash(f"{self.id}-{self.name}")
 
+    @property
+    def qualifiers(self) -> list[str]:
+        return re.findall(r"\((.*?)\)", self.name)
+
 
 class Series(BaseModel):
     name: str
@@ -69,6 +70,9 @@ class Series(BaseModel):
     extra_costume_patterns: list[re.Pattern]
 
     grep: str | None = None
+
+    def __hash__(self) -> int:
+        return hash(f"{self.topic_id}-{self.name}")
 
     @cached_property
     def costume_patterns(self) -> list[re.Pattern[str]]:
@@ -189,23 +193,44 @@ class Series(BaseModel):
 
         return sorted(implication_groups, key=lambda i: i.main_tag.name)
 
-    def scan_and_post(self, bulk_mode_cli: Literal["yes", "no", "all"] = "no", post_to_danbooru: bool = False, post_wikiless_separately: bool = False) -> None:
-        implications_per_bulk = 10
+    @property
+    def grouped_groups(self) -> list[list[ImplicationGroup]]:
+        # attempt to group implication groups by qualifier if they're single-tag groups
+        grouped_by_qualified: list[list[ImplicationGroup]] = []
+        grouped_by_character: list[list[ImplicationGroup]] = []
 
-        if bulk_mode_cli == "yes":
-            bulk_mode = len(self.implication_groups) > 5
-        elif bulk_mode_cli == "no":
-            bulk_mode = len(self.implication_groups) > 100_000
-        elif bulk_mode_cli == "all":
-            bulk_mode = len(self.implication_groups) > 1
-            implications_per_bulk = 100
-        else:
-            raise NotImplementedError(bulk_mode_cli)
+        qualifier_map = defaultdict(list)
+        qualifier_count: defaultdict[str, int] = defaultdict(int)
 
+        for group in self.implication_groups:
+            if len(group.subtags) > 1:
+                grouped_by_character += [[group]]
+                continue
+
+            for qualifier in group.subtags[0].qualifiers:
+                if qualifier == self.name:
+                    continue
+
+                qualifier_map[group].append(qualifier)
+                qualifier_count[qualifier] += 1
+
+        for qualifier, _ in sorted(qualifier_count.items(), key=lambda item: item[1], reverse=True):
+            by_qualifier = [group for group in qualifier_map if qualifier in qualifier_map[group]]
+            if len(by_qualifier) > 1:
+                grouped_by_qualified += [by_qualifier]
+            else:
+                grouped_by_character += [by_qualifier]
+
+            if qualifier_map[group]:
+                qualifier_map[group].pop()
+
+        return grouped_by_qualified + grouped_by_character
+
+    def scan_and_post(self, max_lines_per_bur: int = 1, post_to_danbooru: bool = False) -> None:
         logger.info(f"Processing series: {self.name}. Topic: {self.topic_url}.")
-        logger.info(f"There are {len(self.implication_groups)} implication groups. Bulk mode: {bulk_mode}")
+        logger.info(f"There are {len(self.implication_groups)} implication groups. Max lines per BUR: {max_lines_per_bur}")
 
-        counter = implications_per_bulk
+        counter = max_lines_per_bur
         bur_script = ""
         tags_with_no_wikis = []
 
@@ -213,39 +238,34 @@ class Series(BaseModel):
 
         bur_reason = BOT_IMPLICATION_REASON + "\n" + wikiless_tags_to_dtext(self.implicable_tags_without_wiki) + "\n" + BOT_DISCLAIMER
 
-        for group in self.implication_groups:
-            logger.info(f"Found implication group: {", ".join(tag.name for tag in group.subtags)} -> {group.main_tag.name} ")
-            if group.tags_without_wiki:
-                logger.info(f"There are {len(group.tags_without_wiki)} tags without a wiki here: {group.tags_without_wiki}.")
-                tags_with_no_wikis += group.tags_without_wiki
+        for groups in self.grouped_groups:
+            for group in groups:
+                logger.debug(f"Found implication group: {", ".join(tag.name for tag in group.subtags)} -> {group.main_tag.name} ")
+                if group.tags_without_wiki:
+                    logger.debug(f"There are {len(group.tags_without_wiki)} tags without a wiki here: {group.tags_without_wiki}.")
+                    tags_with_no_wikis += group.tags_without_wiki
 
-            if not group.tags_with_wiki:
-                logger.info("<r>This group has no tags with wiki. Moving on...</r>")
-                continue
+                if not group.tags_with_wiki:
+                    logger.debug("<r>This group has no tags with wiki. Moving on...</r>")
+                    continue
 
-            if bulk_mode:
                 counter -= len(group.tags_with_wiki)
                 bur_script += group.script + "\n"
 
-                if counter <= 0:
-                    send_bur(self, bur_script, bur_reason, post_to_danbooru=post_to_danbooru)
-                    posted += [bur_script]
-                    bur_script = ""
-                    counter = 10
-            else:
-                send_bur(self, group.script, bur_reason, post_to_danbooru=post_to_danbooru)
-                posted += [group.script]
+            if counter <= 0:
+                send_bur(self, bur_script, bur_reason, post_to_danbooru=post_to_danbooru)
+                posted += [bur_script]
+                bur_script = ""
+                counter = max_lines_per_bur
 
         if bur_script:
             send_bur(self, bur_script, bur_reason, post_to_danbooru=post_to_danbooru)
             posted += [bur_script]
 
-        if post_wikiless_separately:
-            post_tags_without_wikis(tags_with_no_wikis, self.topic_id, post_to_danbooru=post_to_danbooru)
-
         logger.info(f"In total, {len(posted)} BURs have been submitted.")
-        for index, bur in enumerate(posted):
-            logger.info(f"BUR #{index+1}:\n{bur}\n")
+        if len(posted):
+            for index, bur in enumerate(posted):
+                logger.info(f"BUR #{index+1}:\n{"\n".join(sorted(bur.splitlines()))}\n")
 
         logger.info(f"Topic of submission: {self.topic_url}")
         logger.info(f"Reason for BURs: {bur_reason}")
@@ -256,6 +276,9 @@ class ImplicationGroup(BaseModel):
     subtags: list[DanbooruTagData]
 
     series: Series
+
+    def __hash__(self) -> int:
+        return hash(f"{self.main_tag}-{self.subtags}")
 
     @property
     def script(self) -> str:
@@ -288,6 +311,9 @@ class ImplicationGroup(BaseModel):
 
 def send_bur(series: Series, script: str, reason: str, post_to_danbooru: bool) -> None:
     logger.info("Submitting implications:")
+
+    script = "\n".join(sorted(script.splitlines()))
+
     logger.info(f"\n<c>{script}</c>")
 
     if post_to_danbooru:
@@ -315,23 +341,22 @@ def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int, post_to_
         time.sleep(1)
 
 
-def wikiless_tags_to_dtext(tags: list[DanbooruTagData], only_unposted: bool = True) -> str:
-    if only_unposted:
-        tags = [t for t in tags if not any(f"[[{t.name}]]" in post.body for post in bot_forum_posts)]
+def wikiless_tags_to_dtext(tags: list[DanbooruTagData]) -> str:
+    if not tags:
+        return ""
 
     body = "\n[expand Tags without a wiki that couldn't be submitted]"
     for tag in tags:
         body += f"\n* [[{tag.name}]]"
-    body += "\n[/expand]"
+    body += "\n[/expand]\n"
 
     will_be_batched = len(tags) > 100
 
-    body += f"\n\nSelf-updating link{"s" if will_be_batched else ""} to all tags without wiki from the above list:"
-
     for index, tag_batch in enumerate(batched(tags, 100)):
-        id_str = ",".join(map(str, (t.id for t in tag_batch)))
+        link = f"/tags?search[has_wiki_page]=no&limit=100&search[id]={",".join(map(str, (t.id for t in tag_batch)))}"
         link_number = f" #{index+1}" if will_be_batched else ""
-        body += f'\n* "Link{link_number}":/tags?search[has_wiki_page]=no&limit=100&search[id]={id_str}'
+        link_description = f"Link{link_number} to tags that couldn't be submitted"
+        body += f'\n* "{link_description}":{link}'
 
     return body
 
@@ -351,14 +376,12 @@ def series_from_config(grep: str | None = None) -> list[Series]:
 
 @click.command()
 @click.option("-s", "--series", nargs=1)
-@click.option("-b", "--bulk_mode", type=click.Choice(["yes", "no", "all"]), default="no")
+@click.option("-m", "--max-lines-per-bur", nargs=1, default=1, type=click.IntRange(1, 100))
 @click.option("-p", "--post_to_danbooru", is_flag=True, default=False)
-@click.option("-pw", "--post_wikiless_separately", is_flag=True, default=False)
 @click.option("-g", "--grep", nargs=1)
 def main(series: str | None = None,
-         bulk_mode: Literal["yes", "no", "all"] = "no",
+         max_lines_per_bur: int = 1,
          post_to_danbooru: bool = False,
-         post_wikiless_separately: bool = False,
          grep: str | None = None) -> None:
 
     if series:
@@ -367,6 +390,5 @@ def main(series: str | None = None,
     for config_series in series_from_config(grep=grep):
         if series and series.lower() != config_series.name.lower():
             continue
-        config_series.scan_and_post(bulk_mode_cli=bulk_mode,
-                                    post_to_danbooru=post_to_danbooru,
-                                    post_wikiless_separately=post_wikiless_separately)
+        config_series.scan_and_post(max_lines_per_bur=max_lines_per_bur,
+                                    post_to_danbooru=post_to_danbooru)
