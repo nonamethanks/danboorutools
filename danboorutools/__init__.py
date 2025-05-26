@@ -80,14 +80,14 @@ logger = Logger(
     extra={},
 )
 
-default_level = os.environ.get("LOGURU_LEVEL") or os.environ.get("LOG_LEVEL") or "INFO"
+default_level = os.environ.get("LOG_LEVEL") or os.environ.get("LOGURU_LEVEL") or "INFO"
 debug = "DEBUG" if get_bool_env("DEBUG") else False
 trace = "TRACE" if get_bool_env("TRACE") else False
 logger_level = trace or debug or default_level
 
 logger.add(
     sys.stderr,
-    level=logger_level,
+    level=logger_level.upper(),  # type: ignore[union-attr] # shut the fuck up
     format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <7}</level> | <level>{message}</level>",
 )
 
