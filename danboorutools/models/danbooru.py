@@ -289,6 +289,14 @@ class DanbooruPostVersion(DanbooruModel):
     def obsolete_removed_tags_arr(self) -> list[str]:
         return self.obsolete_removed_tags.split(" ")
 
+    @property
+    def tags_after_edit(self) -> list[str]:
+        return sorted((set(self.added_tags) | set(self.post.tags)) - set(self.removed_tags))
+
+    @property
+    def tags_before_edit(self) -> list[str]:
+        return sorted((set(self.removed_tags) | set(self.post.tags)) - set(self.added_tags))
+
 
 class DanbooruArtist(DanbooruModel):
     danbooru_model_name = "artist"
