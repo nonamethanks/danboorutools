@@ -45,6 +45,10 @@ bot_forum_posts = danbooru_api.forum_posts(
 )
 
 
+class TooManyBursError(Exception):
+    ...
+
+
 class DanbooruImplicationData(BaseModel):
     antecedent_name: str
     consequent_name: str
@@ -75,6 +79,9 @@ class Series(BaseModel):
 
     grep: str | None = None
 
+    MAX_BURS_PER_TOPIC: int = 10
+    POSTED_BURS: int = 0
+
     def __hash__(self) -> int:
         return hash(f"{self.topic_id}-{self.name}")
 
@@ -87,7 +94,7 @@ class Series(BaseModel):
         return f"https://danbooru.donmai.us/forum_topics/{self.topic_id}"
 
     @cached_property
-    def burs(self) -> list[DanbooruBulkUpdateRequest]:
+    def series_burs(self) -> list[DanbooruBulkUpdateRequest]:
         total_burs = []
         page = 1
         while True:
@@ -100,9 +107,20 @@ class Series(BaseModel):
                 return total_burs
             page += 1
 
+    @property
+    def remaining_bur_slots(self) -> int:
+        return self.MAX_BURS_PER_TOPIC - self.topic_bur_count - self.POSTED_BURS
+
+    @cached_property
+    def topic_bur_count(self) -> int:
+        burs = danbooru_api.bulk_update_requests(forum_topic_id=self.topic_id,
+                                                 limit=self.MAX_BURS_PER_TOPIC,
+                                                 status="pending")
+        return len(burs)
+
     @cached_property
     def existing_tag_scripts(self) -> str:
-        return "\n".join(re.sub(r" +", " ", bur.script.lower()) for bur in self.burs)
+        return "\n".join(re.sub(r" +", " ", bur.script.lower()) for bur in self.series_burs)
 
     @cached_property
     def all_tags(self) -> list[DanbooruTagData]:
@@ -251,7 +269,8 @@ class Series(BaseModel):
 
     def scan_and_post(self, max_lines_per_bur: int = 1, post_to_danbooru: bool = False) -> None:
         logger.info(f"Processing series: {self.name}. Topic: {self.topic_url}.")
-        logger.info(f"There are {len(self.implication_groups)} implication groups. Max lines per BUR: {max_lines_per_bur}")
+        logger.info(f"There are {len(self.implication_groups)} implication groups. Max lines per BUR: {max_lines_per_bur}.")
+        logger.info(f"Remaining amount of BURs that can be posted {self.topic_url}: {self.remaining_bur_slots}.")
 
         counter = max_lines_per_bur
         bur_script = ""
@@ -333,6 +352,7 @@ class ImplicationGroup(BaseModel):
 
 
 def send_bur(series: Series, script: str, reason: str, post_to_danbooru: bool) -> None:
+
     logger.info("Submitting implications:")
 
     script = "\n".join(sorted(script.splitlines()))
@@ -340,11 +360,14 @@ def send_bur(series: Series, script: str, reason: str, post_to_danbooru: bool) -
     logger.info(f"\n<c>{script}</c>")
 
     if post_to_danbooru:
+        if series.remaining_bur_slots <= 0:
+            raise TooManyBursError
         danbooru_api.create_bur(
             topic_id=series.topic_id,
             script=script,
             reason=reason,
         )
+        series.POSTED_BURS += 1
 
 
 def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int, post_to_danbooru: bool = False) -> None:
@@ -413,5 +436,9 @@ def main(series: str | None = None,
     for config_series in series_from_config(grep=grep):
         if series and series.lower() != config_series.name.lower().strip("*"):
             continue
-        config_series.scan_and_post(max_lines_per_bur=max_lines_per_bur,
-                                    post_to_danbooru=post_to_danbooru)
+
+        try:
+            config_series.scan_and_post(max_lines_per_bur=max_lines_per_bur,
+                                        post_to_danbooru=post_to_danbooru)
+        except TooManyBursError:
+            logger.error(f"Too many BURs for '{config_series.name}' in {config_series.topic_url}. Stopping now. Go approve some!")
