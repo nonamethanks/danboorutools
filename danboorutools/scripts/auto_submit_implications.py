@@ -54,6 +54,7 @@ class DanbooruTagData(BaseModel):
     id: int
     antecedent_implications: list[DanbooruImplicationData]
     wiki_page: dict | None = None
+    is_deprecated: bool
 
     def __hash__(self) -> int:
         return hash(f"{self.id}-{self.name}")
@@ -97,8 +98,8 @@ class Series(BaseModel):
             page += 1
 
     @cached_property
-    def tags_with_burs(self) -> set[str]:
-        return {tag for bur in self.burs for tag in bur.tags}
+    def existing_tag_scripts(self) -> str:
+        return "\n".join(re.sub(r" +", " ", bur.script.lower()) for bur in self.burs)
 
     @cached_property
     def all_tags(self) -> list[DanbooruTagData]:
@@ -117,7 +118,7 @@ class Series(BaseModel):
                     limit=1000,
                     page=page,
                     hide_empty=True,
-                    only="id,name,antecedent_implications,wiki_page",
+                    only="id,name,antecedent_implications,wiki_page,is_deprecated",
                 ))
             tag_list += [DanbooruTagData(**r) for r in results]
             if len(results) < 1000:
@@ -137,7 +138,6 @@ class Series(BaseModel):
         tags_without_implications = [
             tag for tag in self.costume_tags
             if not tag.antecedent_implications
-            and tag.name not in self.tags_with_burs
         ]
         logger.info(f"Found <r>{len(tags_without_implications)}</r> tags without an implication (pending or otherwise).")
         return tags_without_implications
@@ -171,6 +171,8 @@ class Series(BaseModel):
             logger.trace(f"Checking if {potential_parent} for {subtag_name} exists.")
             for candidate in self.all_tags:
                 if candidate.name == potential_parent:
+                    if candidate.is_deprecated:
+                        continue
                     logger.trace(f"> Parent tag name for {subtag_name} seems to be {candidate.name}.")
                     return candidate
 
@@ -184,6 +186,8 @@ class Series(BaseModel):
         relationships = defaultdict(list)
         for tag in self.tags_without_implications:
             if parent_tag := self.search_for_main_tag(tag.name):
+                if f"{tag.name} -> {parent_tag.name}" in self.existing_tag_scripts:
+                    continue  # this implication was already requested at some point
                 relationships[parent_tag].append(tag)
 
         implication_groups = [
@@ -199,7 +203,7 @@ class Series(BaseModel):
         grouped_by_qualified: list[list[ImplicationGroup]] = []
         grouped_by_character: list[list[ImplicationGroup]] = []
 
-        qualifier_map = defaultdict(list)
+        qualifier_map: defaultdict[ImplicationGroup, list[str]] = defaultdict(list)
         qualifier_count: defaultdict[str, int] = defaultdict(int)
 
         for group in self.implication_groups:
@@ -207,24 +211,36 @@ class Series(BaseModel):
                 grouped_by_character += [[group]]
                 continue
 
+            inserted = False
             for qualifier in group.subtags[0].qualifiers:
                 if qualifier == self.name:
                     continue
 
                 qualifier_map[group].append(qualifier)
                 qualifier_count[qualifier] += 1
+                inserted = True
+
+            if not inserted:
+                grouped_by_character += [[group]]
 
         for qualifier, _ in sorted(qualifier_count.items(), key=lambda item: item[1], reverse=True):
             by_qualifier = [group for group in qualifier_map if qualifier in qualifier_map[group]]
             if len(by_qualifier) > 1:
                 grouped_by_qualified += [by_qualifier]
-            else:
+            elif by_qualifier:
                 grouped_by_character += [by_qualifier]
 
-            if qualifier_map[group]:
-                qualifier_map[group].pop()
+            for group in by_qualifier:
+                del qualifier_map[group]
 
-        return grouped_by_qualified + sorted(grouped_by_character, key=lambda g: g[0].main_tag.name)
+        if len(qualifier_map) > 0:
+            for ig, leftover_qualifiers in qualifier_map.items():
+                subtags = [subtag.name for subtag in ig.subtags]
+                logger.warning(f"Leftover qualifier {leftover_qualifiers} -> {subtags}. This should not happen.")
+            raise NotImplementedError("Shouldn't be anything else left.")
+
+        total = grouped_by_qualified + sorted(grouped_by_character, key=lambda g: g[0].main_tag.name)
+        return total
 
     def scan_and_post(self, max_lines_per_bur: int = 1, post_to_danbooru: bool = False) -> None:
         logger.info(f"Processing series: {self.name}. Topic: {self.topic_url}.")
@@ -238,8 +254,8 @@ class Series(BaseModel):
 
         bur_reason = BOT_IMPLICATION_REASON + "\n" + wikiless_tags_to_dtext(self.implicable_tags_without_wiki) + "\n" + BOT_DISCLAIMER
 
-        for groups in self.grouped_groups:
-            for group in groups:
+        for grouped_groups in self.grouped_groups:
+            for group in grouped_groups:
                 logger.debug(f"Found implication group: {", ".join(tag.name for tag in group.subtags)} -> {group.main_tag.name} ")
                 if group.tags_without_wiki:
                     logger.debug(f"There are {len(group.tags_without_wiki)} tags without a wiki here: {group.tags_without_wiki}.")
