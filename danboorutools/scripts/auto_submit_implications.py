@@ -10,6 +10,7 @@ from functools import cached_property
 from itertools import batched
 
 import click
+from pydantic import Field
 
 from danboorutools import get_config, logger
 from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
@@ -69,6 +70,8 @@ class Series(BaseModel):
     topic_id: int
 
     extra_costume_patterns: list[re.Pattern]
+
+    blacklist: dict[str, list[str]] = Field(default_factory=dict)
 
     grep: str | None = None
 
@@ -173,6 +176,10 @@ class Series(BaseModel):
                 if candidate.name == potential_parent:
                     if candidate.is_deprecated:
                         continue
+
+                    if candidate.name in self.blacklist.get(subtag_name, []):
+                        continue
+
                     logger.trace(f"> Parent tag name for {subtag_name} seems to be {candidate.name}.")
                     return candidate
 

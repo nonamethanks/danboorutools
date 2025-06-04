@@ -7,8 +7,10 @@ series:
   - name: "azur_lane" # tested
     topic_id: 23519
 
-  - name: "blue_archive"
+  - name: "blue_archive" # tested
     topic_id: 21341
+    blacklist:
+      "kei_(amas)_(blue_archive)": ["kei_(blue_archive)"]
 
   - name: "fire_emblem" # tested
     topic_id: 22728
