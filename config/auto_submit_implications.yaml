@@ -12,11 +12,13 @@ series:
     blacklist:
       "kei_(amas)_(blue_archive)": ["kei_(blue_archive)"]
 
-  - name: "fire_emblem" # tested
+  - name: "fire_emblem*" # tested
     topic_id: 22728
 
   - name: "genshin_impact" # tested
     topic_id: 19285
+    blacklist:
+      "nadia_(melusine)_(genshin_impact)": ["nadia_(genshin_impact)"]
 
   - name: "girls'_frontline*"  # not tested, try with the wildcard first
     topic_id: 23293

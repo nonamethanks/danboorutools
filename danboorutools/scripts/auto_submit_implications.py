@@ -220,7 +220,7 @@ class Series(BaseModel):
 
             inserted = False
             for qualifier in group.subtags[0].qualifiers:
-                if qualifier == self.name:
+                if self.name.strip("*") in qualifier:
                     continue
 
                 qualifier_map[group].append(qualifier)
@@ -411,7 +411,7 @@ def main(series: str | None = None,
         logger.info(f"<r>Running only for series {series}.</r>")
 
     for config_series in series_from_config(grep=grep):
-        if series and series.lower() != config_series.name.lower():
+        if series and series.lower() != config_series.name.lower().strip("*"):
             continue
         config_series.scan_and_post(max_lines_per_bur=max_lines_per_bur,
                                     post_to_danbooru=post_to_danbooru)
