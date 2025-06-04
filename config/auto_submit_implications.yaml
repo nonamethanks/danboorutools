@@ -29,6 +29,9 @@ series:
   - name: "honkai:_star_rail" # tested
     topic_id: 24117
 
+  - name: "identity_v"
+    topic_id: 32035
+
   - name: "kancolle" # tested
     topic_id: 26671
     extra_costume_patterns:
