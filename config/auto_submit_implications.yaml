@@ -42,6 +42,8 @@ series:
 
   - name: "pokemon"
     topic_id: 22703
+    blacklist:
+      "hex_maniac_(prototype)_(pokemon)": ["hex_maniac_(pokemon)"]
 
   - name: "princess_connect!"
     topic_id: 25913
