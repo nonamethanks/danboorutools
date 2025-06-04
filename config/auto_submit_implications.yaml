@@ -1,43 +1,43 @@
 series:
-  - name: "arknights" # tested
+  - name: "arknights"
     topic_id: 19647
     extra_costume_patterns:
       - r"(?P<base_name>\w+?)_(?P<qualifiers>the_.*)_(?P<series_qualifier>\(arknights\))"
 
-  - name: "azur_lane" # tested
+  - name: "azur_lane"
     topic_id: 23519
 
-  - name: "blue_archive" # tested
+  - name: "blue_archive"
     topic_id: 21341
     blacklist:
       "kei_(amas)_(blue_archive)": ["kei_(blue_archive)"]
 
-  - name: "fire_emblem*" # tested
+  - name: "fire_emblem*"
     topic_id: 22728
 
-  - name: "genshin_impact" # tested
+  - name: "genshin_impact"
     topic_id: 19285
     blacklist:
       "nadia_(melusine)_(genshin_impact)": ["nadia_(genshin_impact)"]
 
-  - name: "girls'_frontline*"  # not tested, try with the wildcard first
+  - name: "girls'_frontline*"
     topic_id: 23293
 
-  - name: "neural_cloud"  # tested
+  - name: "neural_cloud"
     topic_id: 23293
 
-  - name: "honkai:_star_rail" # tested
+  - name: "honkai:_star_rail"
     topic_id: 24117
 
   - name: "identity_v"
     topic_id: 32035
 
-  - name: "kancolle" # tested
+  - name: "kancolle"
     topic_id: 26671
     extra_costume_patterns:
       - r"(?P<base_name>.*?)_(?P<qualifiers>(?:kai_ni|kai)(?:_\(.*\))?)_(?P<series_qualifier>\(kancolle\))"
 
-  - name: "nikke" # tested
+  - name: "nikke"
     topic_id: 25272
 
   - name: "pokemon"
@@ -57,5 +57,5 @@ series:
   - name: "wuthering_waves"
     topic_id: 27205
 
-  - name: xenoblade
+  - name: "xenoblade"
     topic_id: 26163
