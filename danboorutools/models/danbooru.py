@@ -336,6 +336,12 @@ class DanbooruWikiPage(DanbooruModel):
     is_locked: bool
     other_names: list[str]
 
+    def get_linked_tags(self, pattern: re.Pattern | str | None = None) -> list[str]:
+        pattern = re.compile(pattern or r"\[\[([^|\[\]]+)(?:\|(.*))?\]\]")
+
+        tags = [t[0].strip() for t in pattern.findall(self.body)]
+        return [t.replace(" ", "_").lower() for t in tags]
+
 
 class DanbooruTag(DanbooruModel):
     danbooru_model_name = "tag"

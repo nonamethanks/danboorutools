@@ -1,20 +1,24 @@
 from __future__ import annotations
 
 import ast
+import operator
 import os
 import re
 import time
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
-from functools import cached_property
+from functools import cached_property, reduce
 from itertools import batched
+from typing import Literal
 
 import click
+from peewee import BooleanField, CharField, DateTimeField, IntegerField, Model, SqliteDatabase
 from pydantic import Field
 
-from danboorutools import get_config, logger
+from danboorutools import get_config, logger, settings
 from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
-from danboorutools.models.danbooru import DanbooruBulkUpdateRequest  # noqa: TC001
+from danboorutools.models.danbooru import DanbooruBulkUpdateRequest, DanbooruTag
+from danboorutools.util.bigquery import clone_bigquery_table
 from danboorutools.util.misc import BaseModel, remove_indent
 
 logger.log_to_file()
@@ -33,7 +37,7 @@ Write a wiki page for them and I'll be able to submit them next time I run.
 """
 
 
-DEFAULT_COSTUME_PATTERN = re.compile(r"(?P<base_name>.*?)_(?P<qualifiers>\(.*\))_(?P<series_qualifier>\(.*?\))")
+DEFAULT_COSTUME_PATTERN = re.compile(r"(?P<base_name>[^(]+)(?P<qualifiers>(?:_\(.*\)))")
 
 POSTED_THRESHOLD = datetime.now(UTC) - timedelta(weeks=2)
 bot_username = os.environ["DANBOORU_BOT_USERNAME"]
@@ -57,6 +61,7 @@ class DanbooruImplicationData(BaseModel):
 class DanbooruTagData(BaseModel):
     name: str
     id: int
+    post_count: int
     antecedent_implications: list[DanbooruImplicationData]
     wiki_page: dict | None = None
     is_deprecated: bool
@@ -64,16 +69,110 @@ class DanbooruTagData(BaseModel):
     def __hash__(self) -> int:
         return hash(f"{self.id}-{self.name}")
 
-    @property
+    def __repr__(self) -> str:
+        return f"DanbooruTagData[id={self.id} name={self.name}]"
+
+    @cached_property
     def qualifiers(self) -> list[str]:
         return re.findall(r"\((.*?)\)", self.name)
+
+    def has_series_qualifier(self, qualifiers: list[str]) -> bool:
+        return bool(self.qualifiers and self.qualifiers[-1] in qualifiers)
+
+    def belongs_to_series(self, series: Series, known_saved: dict[str, list[str]]) -> bool:
+        if self.has_series_qualifier(series.series_qualifiers):
+            return True
+
+        if self.post_count < 5:
+            return False  # don't bother trying for small tags
+
+        if not (known_copyrights := known_saved.get(self.name)):
+            logger.debug(f"Copyrights for tag {self.name} are not known. Searching...")
+            tag_series = self.related_copyrights
+            assert tag_series, self
+            saved = TagCopyright(name=self.name, copyrights=",".join(tag_series))
+            logger.debug("Saving to DB...")
+            saved.save()
+            known_copyrights = saved.copyrights.split(",")  # type: ignore[attr-defined]
+            assert known_copyrights
+
+        return any(qualifier in known_copyrights for qualifier in series.series_qualifiers)
+
+    def possible_parents(self, series: Series) -> list[str] | Literal[False]:
+        all_possible_parents: list[str] = []
+
+        matched_count = 0
+        for pattern in series.costume_patterns:
+            if not (match := pattern.match(self.name)):
+                continue
+
+            matched_count += 1
+            possible_parents = []
+
+            base_name = match.groupdict()["base_name"]
+            extra_qualifier = match.groupdict().get("extra_qualifier")
+            try:
+                qualifiers = re.findall(r"(\(.*?\))", match.groupdict()["qualifiers"])
+            except Exception as e:
+                raise NotImplementedError(self, pattern, match.groupdict()) from e
+
+            qualifiers = [q.strip("_") for q in [extra_qualifier, *qualifiers] if q]
+
+            series_qualifier_pattern = rf"_\({series.qualifiers_pattern}\)$"
+            if re.search(series_qualifier_pattern, self.name):
+                [*qualifiers, series_qualifier] = qualifiers
+            else:
+                series_qualifier = None
+
+            for index in range(len(qualifiers)):
+                partial_qualifier = "_".join(qualifiers[:index])
+
+                possible_parent = f"{base_name}_{partial_qualifier}"
+                if series_qualifier:
+                    possible_parent = f"{possible_parent}_{series_qualifier}"
+
+                possible_parent = re.sub(r"_+", "_", possible_parent).strip("_")
+                if possible_parent == self.name:
+                    continue
+
+                possible_parents.append(possible_parent)
+
+            if len(possible_parents) == 0:
+                matched_count -= 1
+            all_possible_parents += possible_parents
+
+        if not matched_count:
+            return False
+
+        return sorted(
+            dict.fromkeys(all_possible_parents),
+            key=lambda t: len(t),
+            reverse=True,
+        )
+
+    @cached_property
+    def related_copyrights(self) -> list[str]:
+        related_tags = danbooru_api.danbooru_request(
+            "GET",
+            "related_tag.json",
+            params=kwargs_to_include(
+                category="Copyright",
+                query=self.name,
+                limit=10,
+            ),
+        )["related_tags"]
+        related_tags = [r["tag"]["name"] for r in related_tags if r["frequency"] > 0.9]
+        return related_tags
 
 
 class Series(BaseModel):
     name: str
     topic_id: int
 
+    wiki_id: int | None = None
+
     extra_costume_patterns: list[re.Pattern]
+    extra_qualifiers: list[str] = Field(default_factory=list)
 
     blacklist: dict[str, list[str]] = Field(default_factory=dict)
 
@@ -90,139 +189,183 @@ class Series(BaseModel):
         return [*self.extra_costume_patterns, DEFAULT_COSTUME_PATTERN]
 
     @property
+    def series_qualifiers(self) -> list[str]:
+        return [self.name, *self.extra_qualifiers]
+
+    @cached_property
+    def qualifiers_pattern(self) -> str:
+        all_qualifiers = "|".join([re.escape(n) for n in self.series_qualifiers])
+
+        qualifier_group = rf"(?:{all_qualifiers})"
+        return qualifier_group
+
+    @property
     def topic_url(self) -> str:
         return f"https://danbooru.donmai.us/forum_topics/{self.topic_id}"
 
     @cached_property
     def series_burs(self) -> list[DanbooruBulkUpdateRequest]:
-        total_burs = []
-        page = 1
-        while True:
-            burs = danbooru_api.bulk_update_requests(script_ilike=f"*_({self.name})*", limit=1000, page=page)
-            total_burs += burs
+        results = danbooru_api.get_all(
+            DanbooruBulkUpdateRequest,
+            script_ilike=f"*_({self.name})*",
+        )
+        return results
 
-            if len(burs) < 1000:
-                if not total_burs:
-                    raise NotImplementedError
-                return total_burs
-            page += 1
+    @cached_property
+    def topic_burs(self) -> list[DanbooruBulkUpdateRequest]:
+        return danbooru_api.get_all(
+            DanbooruBulkUpdateRequest,
+            forum_topic_id=self.topic_id,
+        )
 
     @property
     def remaining_bur_slots(self) -> int:
-        return self.MAX_BURS_PER_TOPIC - self.topic_bur_count - self.POSTED_BURS
+        return self.MAX_BURS_PER_TOPIC - len([t for t in self.topic_burs if t.status == "pending"]) - self.POSTED_BURS
 
     @cached_property
-    def topic_bur_count(self) -> int:
-        burs = danbooru_api.bulk_update_requests(forum_topic_id=self.topic_id,
-                                                 limit=self.MAX_BURS_PER_TOPIC,
-                                                 status="pending")
-        return len(burs)
+    def existing_implication_requests(self) -> dict[str, list[str]]:
+        burs = self.series_burs
+        known_bur_ids = [b.id for b in burs]
+        burs += [b for b in self.topic_burs if b.id not in known_bur_ids]
+
+        parsed: dict[str, list[str]] = defaultdict(list)
+        for bur in burs:
+            for bur_line in bur.script.lower().split("\n"):
+                if not bur_line.startswith(("create implication", "imply")):
+                    continue
+
+                line = re.sub(r" +", " ", bur_line).strip()
+                if not line:
+                    continue
+
+                line = line.removeprefix("create implication").removeprefix("imply")
+                antecedent, consequent = line.strip().split(" -> ")
+                if " " in antecedent or " " in consequent:
+                    raise NotImplementedError(antecedent, consequent, bur_line)
+                parsed[antecedent] += [consequent]
+
+        return parsed
 
     @cached_property
-    def existing_tag_scripts(self) -> str:
-        return "\n".join(re.sub(r" +", " ", bur.script.lower()) for bur in self.series_burs)
+    def all_tags_from_search(self) -> list[DanbooruTagData]:
+        tags = []
+        for qualifier in self.series_qualifiers:
+            tags += danbooru_api.get_all(
+                DanbooruTag,
+                to_model=DanbooruTagData,
+                name_matches=f"*_({qualifier})",
+                category=4,
+                order="id",
+                hide_empty=True,
+                only="id,name,post_count,antecedent_implications,wiki_page,is_deprecated",
+            )
+
+        return tags
 
     @cached_property
-    def all_tags(self) -> list[DanbooruTagData]:
-        tag_list = []
-        page = 1
-        while True:
-            logger.info(f"Fetching all tags for {self.name} (page {page})...")
+    def all_tags_from_wiki(self) -> list[DanbooruTagData]:
+        if not self.wiki_id:
+            return []
 
-            results = danbooru_api.danbooru_request(
-                "GET",
-                "tags.json",
-                params=kwargs_to_include(
-                    name_matches=f"*_({self.name})",
-                    category=4,
-                    order="id",
-                    limit=1000,
-                    page=page,
-                    hide_empty=True,
-                    only="id,name,antecedent_implications,wiki_page,is_deprecated",
-                ))
-            tag_list += [DanbooruTagData(**r) for r in results]
-            if len(results) < 1000:
-                logger.info(f"Finished fetching tags for {self.name}. Total: {len(tag_list)}")
-                return tag_list
-            page += 1
+        wiki = danbooru_api.wiki_pages(id=self.wiki_id)[0]
+        logger.info(f"Fetched all tags for {self.name} from wiki page {wiki.url}...")
+
+        tag_names = wiki.get_linked_tags()
+        assert tag_names
+        tag_names = [t for t in tag_names if t not in [t.name for t in self.all_tags_from_search]]
+        if not tag_names:
+            return []
+        tags = BigqueryTag.get_db_tags(tag_names)
+
+        child_ids = []
+        processed_tags = []
+        logger.info("Filtering out extraneous tags...")
+        known_saved = TagCopyright.copyright_map([t.name for t in tags])
+
+        for tag in tags:
+            if tag.post_count < 5:  # skip small tags
+                continue
+            if not tag.belongs_to_series(self, known_saved):
+                logger.debug(f"Tag {tag.name} does not belong to {self.name}. Skipping...")
+                continue
+            processed_tags += [tag]
+
+        clauses = [BigqueryTag.name.startswith(tag.name) for tag in processed_tags]
+        for batch in batched(clauses, 50):
+            children = BigqueryTag.select() \
+                .where(BigqueryTag.category == 4) \
+                .where(reduce(operator.or_, batch)) \
+                .where(~(BigqueryTag.name << [t.name for t in processed_tags]))
+            child_ids += [child["id"] for child in children.dicts()]
+
+        if child_ids:
+            processed_tags += BigqueryTag.get_db_tags(
+                tag_ids=child_ids,
+                has_antecedent_implications=False,
+            )
+
+        return processed_tags
 
     @cached_property
-    def costume_tags(self) -> list[DanbooruTagData]:
-        filtered = filter(lambda tag: any(p.match(tag.name) for p in self.costume_patterns), self.all_tags)
-        if self.grep:
-            filtered = filter(lambda tag: self.grep in tag.name, filtered)  # type: ignore[arg-type] # stfu
-        return list(filtered)
+    def all_tag_map(self) -> dict[str, DanbooruTagData]:
+        return {t.name: t for t in self.all_tags_from_wiki + self.all_tags_from_search}
 
-    @cached_property
-    def tags_without_implications(self) -> list[DanbooruTagData]:
-        tags_without_implications = [
-            tag for tag in self.costume_tags
-            if not tag.antecedent_implications
-        ]
-        logger.info(f"Found <r>{len(tags_without_implications)}</r> tags without an implication (pending or otherwise).")
-        return tags_without_implications
+    def get_parent_for_tag(self, tag: DanbooruTagData) -> DanbooruTagData | None:
+        if tag.antecedent_implications:
+            return None
 
-    @cached_property
-    def implicable_tags_without_wiki(self) -> list[DanbooruTagData]:
-        return [t for ig in self.implication_groups for t in ig.tags_without_wiki]
+        possible_parents = tag.possible_parents(self)
 
-    def get_possible_parents(self, name: str) -> list[str]:
-        possible_parents = []
+        if possible_parents is False:
+            return None
 
-        for pattern in self.costume_patterns:
-            if match := pattern.match(name):
-                base_name = match.groupdict()["base_name"]
-                series_qualifier = match.groupdict()["series_qualifier"]
+        if not possible_parents:
+            logger.trace(f"Could not determine a parent for {tag.name}")
+            return None
 
-                qualifiers = re.findall(r"(\(.*?\))", match.groupdict()["qualifiers"])
+        for parent_name in possible_parents:
+            if parent_name in self.blacklist.get(tag.name, []):
+                logger.trace(f"Skipping {tag.name} -> {parent_name} because this implication was blacklisted.")
+                continue
 
-                for index in range(len(qualifiers)):
-                    partial_qualifier = "_".join(qualifiers[:index])
-                    possible_parents.append(f"{base_name}_{partial_qualifier}_{series_qualifier}")
+            if not (parent := self.all_tag_map.get(parent_name)):
+                continue
 
-                possible_parents.append(f"{base_name}_{series_qualifier}")
+            if parent.is_deprecated:
+                continue
 
-        return list({re.sub(r"_+", "_", p) for p in possible_parents})
+            return parent
 
-    def search_for_main_tag(self, subtag_name: str) -> DanbooruTagData | None:
-        potential_parents = sorted(self.get_possible_parents(subtag_name), key=lambda t: len(t), reverse=True)
-        logger.trace(f"Found potential parents for {subtag_name}: {potential_parents}")
-        for potential_parent in potential_parents:
-            logger.trace(f"Checking if {potential_parent} for {subtag_name} exists.")
-            for candidate in self.all_tags:
-                if candidate.name == potential_parent:
-                    if candidate.is_deprecated:
-                        continue
-
-                    if candidate.name in self.blacklist.get(subtag_name, []):
-                        continue
-
-                    logger.trace(f"> Parent tag name for {subtag_name} seems to be {candidate.name}.")
-                    return candidate
-
-            logger.trace("It did not.")
-
-        logger.info(f"Could not determine parent for {subtag_name}, skipping.")
+        logger.trace(f"Could not find an existing parent for {tag.name}")
         return None
 
-    @property
-    def implication_groups(self) -> list[ImplicationGroup]:
-        relationships = defaultdict(list)
-        for tag in self.tags_without_implications:
-            if parent_tag := self.search_for_main_tag(tag.name):
-                if f"{tag.name} -> {parent_tag.name}" in self.existing_tag_scripts:
-                    continue  # this implication was already requested at some point
-                relationships[parent_tag].append(tag)
+    def should_skip_implication(self, _from: DanbooruTagData, to: DanbooruTagData) -> bool:
+        if to.name in self.existing_implication_requests.get(_from.name, []):
+            logger.trace(f"Skipping {_from.name} -> {to.name} because this implication was already requested.")
+            return True
 
-        implication_groups = [
-            ImplicationGroup(main_tag=main_tag, subtags=list(subtags), series=self)
-            for main_tag, subtags in relationships.items()
+        return False
+
+    @cached_property
+    def implication_groups(self) -> list[ImplicationGroup]:
+        logger.debug(f"{len(self.all_tags_from_wiki)} + {len(self.all_tags_from_search)} tags to process.")
+
+        implication_groups: defaultdict[DanbooruTagData, list[DanbooruTagData]] = defaultdict(list)
+        for tag in self.all_tag_map.values():
+            if not (parent := self.get_parent_for_tag(tag)):
+                continue
+
+            if self.should_skip_implication(_from=tag, to=parent):
+                continue
+
+            implication_groups[parent] += [tag]
+
+        return [
+            ImplicationGroup(main_tag=main_tag, subtags=subtags, series=self)
+            for main_tag, subtags in implication_groups.items()
         ]
 
-        return sorted(implication_groups, key=lambda i: i.main_tag.name)
-
-    @property
+    @cached_property
     def grouped_groups(self) -> list[list[ImplicationGroup]]:
         # attempt to group implication groups by qualifier if they're single-tag groups
         grouped_by_qualified: list[list[ImplicationGroup]] = []
@@ -238,9 +381,8 @@ class Series(BaseModel):
 
             inserted = False
             for qualifier in group.subtags[0].qualifiers:
-                if self.name.strip("*") in qualifier:
+                if qualifier in self.series_qualifiers:
                     continue
-
                 qualifier_map[group].append(qualifier)
                 qualifier_count[qualifier] += 1
                 inserted = True
@@ -267,9 +409,14 @@ class Series(BaseModel):
         total = grouped_by_qualified + sorted(grouped_by_character, key=lambda g: g[0].main_tag.name)
         return total
 
+    @cached_property
+    def implicable_tags_without_wiki(self) -> list[DanbooruTagData]:
+        return [t for ig in self.implication_groups for t in ig.tags_without_wiki]
+
     def scan_and_post(self, max_lines_per_bur: int = 1, post_to_danbooru: bool = False) -> None:
         logger.info(f"Processing series: {self.name}. Topic: {self.topic_url}.")
-        logger.info(f"There are {len(self.implication_groups)} implication groups. Max lines per BUR: {max_lines_per_bur}.")
+        logger.info(f"There are {len([ig for gg in self.grouped_groups for ig in gg])} implication groups. "
+                    f"Max lines per BUR: {max_lines_per_bur}.")
         logger.info(f"Remaining amount of BURs that can be posted {self.topic_url}: {self.remaining_bur_slots}.")
 
         counter = max_lines_per_bur
@@ -304,7 +451,7 @@ class Series(BaseModel):
             send_bur(self, bur_script, bur_reason, post_to_danbooru=post_to_danbooru)
             posted += [bur_script]
 
-        logger.info(f"In total, {len(posted)} BURs have been submitted.")
+        logger.info(f"In total, {len(posted)} BURs {"would " if not post_to_danbooru else ""}have been submitted.")
         if len(posted):
             for index, bur in enumerate(posted):
                 logger.info(f"BUR #{index+1}:\n{"\n".join(sorted(bur.splitlines()))}\n")
@@ -420,6 +567,68 @@ def series_from_config(grep: str | None = None) -> list[Series]:
     return series_list
 
 
+tag_database = SqliteDatabase(settings.BASE_FOLDER / "data" / "bigquery_tags.sqlite")
+
+
+class TagCopyright(Model):
+    class Meta:
+        database = tag_database
+
+    name = CharField(index=True)
+    copyrights = CharField(index=True)
+
+    @staticmethod
+    def copyright_map(tag_names: list[str]) -> dict[str, list[str]]:
+        tags = TagCopyright.select()\
+            .where(TagCopyright.name << tag_names)\
+            .dicts()
+
+        return {tag["name"]: tag["copyrights"].split(",") for tag in tags}
+
+
+class BigqueryTag(Model):
+    class Meta:
+        database = tag_database
+
+    id = IntegerField(primary_key=True)
+    name = CharField(index=True)
+    post_count = IntegerField(index=True)
+    category = IntegerField(index=True)
+    created_at = DateTimeField(index=True)
+    updated_at = DateTimeField(index=True)
+    is_deprecated = BooleanField(index=True)
+
+    @staticmethod
+    def get_db_tags(tag_names: list[str] | None = None, tag_ids: list[int] | None = None, **kwargs) -> list[DanbooruTagData]:
+        if not tag_ids:
+            if not tag_names:
+                raise ValueError("Tag names are required.")
+
+            chartags = BigqueryTag.select(BigqueryTag.id)\
+                .where(BigqueryTag.name << tag_names)\
+                .where(BigqueryTag.category == 4)\
+                .dicts()
+
+            tag_ids = [chartag["id"] for chartag in chartags]
+            if not tag_ids:
+                return []
+
+        tags = danbooru_api.get_all(
+            DanbooruTag,
+            to_model=DanbooruTagData,
+            id=",".join(map(str, tag_ids)),
+            category=4,
+            order="id",
+            hide_empty=True,
+            only="id,name,post_count,antecedent_implications,wiki_page,is_deprecated",
+            **kwargs,
+        )
+        return tags
+
+
+BigqueryTag.add_index(BigqueryTag.name, BigqueryTag.category)
+
+
 @click.command()
 @click.option("-s", "--series", nargs=1)
 @click.option("-m", "--max-lines-per-bur", nargs=1, default=1, type=click.IntRange(1, 100))
@@ -429,6 +638,11 @@ def main(series: str | None = None,
          max_lines_per_bur: int = 1,
          post_to_danbooru: bool = False,
          grep: str | None = None) -> None:
+
+    logger.info("Updating the tags db...")
+    with tag_database:
+        tag_database.create_tables([TagCopyright])
+    clone_bigquery_table("tags", model=BigqueryTag, database=tag_database)
 
     if series:
         logger.info(f"<r>Running only for series {series}.</r>")

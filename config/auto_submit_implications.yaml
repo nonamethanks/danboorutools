@@ -1,41 +1,65 @@
+# how to test regexes:
+# * go to https://regex101.com/
+# * select "Python" for flavor on the left sidebar
+# * insert a costume pattern in the "regular expression" field (without the r"")
+# * insert chartags one per line in the "test string" field
+# * special qualifiers like arknights_the_costume or kancolle_kai_ni should be captured in the named group extra_qualifier for ease of parsing
+
+
+# TODO: split qualifier from series name to fix related tags for qualifiers different from series name (kancolle, Codename: Bakery Girl)
 series:
   - name: "arknights"
     topic_id: 19647
+    wiki_id: 111571
     extra_costume_patterns:
-      - r"(?P<base_name>\w+?)_(?P<qualifiers>the_.*)_(?P<series_qualifier>\(arknights\))"
+      - r"^(?P<base_name>[^(]+?)(?P<extra_qualifier>the_\w+)(?P<qualifiers>(?:_\(.*\)))*$"
 
   - name: "azur_lane"
     topic_id: 23519
+    wiki_id: 91126
 
   - name: "blue_archive"
     topic_id: 21341
+    wiki_id: 136349
     blacklist:
       "kei_(amas)_(blue_archive)": ["kei_(blue_archive)"]
 
-  - name: "fire_emblem*"
+  - name: "cookie_run"
+    topic_id: 28362
+    wiki_id: 203490
+
+  - name: "fire_emblem"
     topic_id: 22728
+    extra_qualifiers:
+      - fire_emblem_fates
 
   - name: "genshin_impact"
     topic_id: 19285
+    wiki_id: 121439
     blacklist:
       "nadia_(melusine)_(genshin_impact)": ["nadia_(genshin_impact)"]
 
-  - name: "girls'_frontline*"
+  - name: "girls'_frontline"
     topic_id: 23293
-
-  - name: "neural_cloud"
-    topic_id: 23293
+    wiki_id: 78438
+    extra_qualifiers:
+      - girls'_frontline_2
+      - neural_cloud
+      - reverse_collapse
 
   - name: "honkai:_star_rail"
     topic_id: 24117
 
   - name: "identity_v"
     topic_id: 32035
+    wiki_id: 164998
 
   - name: "kancolle"
     topic_id: 26671
     extra_costume_patterns:
-      - r"(?P<base_name>.*?)_(?P<qualifiers>(?:kai_ni|kai)(?:_\(.*\))?)_(?P<series_qualifier>\(kancolle\))"
+      - r"^(?P<base_name>[^(]+?)(?P<extra_qualifier>kai_ni|kai)(?P<qualifiers>(?:_\(.*\)))*$"
+    blacklist:
+      "amagi_(battlecruiser)_(kancolle)": ["amagi_(kancolle)"]
 
   - name: "nikke"
     topic_id: 25272

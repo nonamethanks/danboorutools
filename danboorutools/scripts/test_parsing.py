@@ -10,6 +10,7 @@ from danboorutools import logger, settings
 from danboorutools.logical.progress_tracker import ProgressTracker
 from danboorutools.logical.url_parser import ParsableUrl, UrlParser, parsers
 from danboorutools.models.url import UnknownUrl, UnsupportedUrl, Url, UselessUrl
+from danboorutools.util.bigquery import execute_bigquery_query
 
 log_file = logger.log_to_file()
 
@@ -44,20 +45,19 @@ def main(times: int = 0, resume: bool = False, unparsed: bool = False, update: b
 
 
 def update_urls() -> None:
-    from google.cloud import bigquery
-
-    client = bigquery.Client()
+    logger.info("Fetching artist urls.")
 
     artist_query = "SELECT artist_id, url FROM `danbooru1.danbooru_public.artist_urls` "
-    logger.info("Fetching artist urls.")
-    artist_urls = tuple((f"https://danbooru.donmai.us/artists/{row.artist_id}", row.url) for row in client.query(artist_query).result())
+    artist_query_result = execute_bigquery_query(artist_query)
+    artist_urls = tuple((f"https://danbooru.donmai.us/artists/{row.artist_id}", row.url) for row in artist_query_result)
     logger.info(f"Found {len(artist_urls)} artist urls.")
     ARTIST_URLS_FILE.write_text("\n".join(",".join(map(str, a)) for a in artist_urls), encoding="utf-8")
 
     source_query = "SELECT id, source FROM `danbooru1.danbooru_public.posts` where source like 'http%'"
+    source_query_result = execute_bigquery_query(source_query)
     logger.info("Fetching source urls.")
     source_urls: list[tuple[str, str]] = []
-    for index, row in enumerate(client.query(source_query).result()):
+    for index, row in enumerate(source_query_result):
         if index % 200_000 == 0:
             logger.info(f"At {index:_}")
         if not row.source.startswith(("http://", "https://")):

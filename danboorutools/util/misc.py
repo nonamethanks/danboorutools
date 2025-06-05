@@ -83,6 +83,7 @@ def remove_indent(string: str) -> str:
 
 
 class BaseModel(BadBaseModel):
+
     _raw_data: dict[str, Any] = PrivateAttr()
 
     def __init__(self, **data):

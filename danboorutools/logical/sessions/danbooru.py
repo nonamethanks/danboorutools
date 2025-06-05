@@ -4,10 +4,11 @@ import os
 import random
 import time
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Literal, TypeVar
+from typing import TYPE_CHECKING, Literal, TypeVar, overload
 
 from backoff import expo, on_exception
 from cloudscraper.exceptions import CloudflareChallengeError
+from pydantic import BaseModel
 from requests import JSONDecodeError
 from requests.exceptions import ReadTimeout
 
@@ -24,7 +25,8 @@ if TYPE_CHECKING:
 
     from danboorutools.models.file import File
 
-GenericModel = TypeVar("GenericModel", bound=models.DanbooruModel)
+GenericDanbooruModel = TypeVar("GenericDanbooruModel", bound=models.DanbooruModel)
+GenericModel = TypeVar("GenericModel", bound=BaseModel)
 
 
 class DanbooruApi(Session):
@@ -68,6 +70,7 @@ class DanbooruApi(Session):
         "tag_implication": "id,reason,creator,approver,antecedent_tag,consequent_tag,created_at,updated_at",
         "user": "id,name,created_at,level,level_string,post_update_count,note_update_count,post_upload_count,is_banned,is_deleted,bans,last_ip_addr",  # noqa: E501
         "user_feedback": "id,category,body,user,creator,created_at,updated_at,is_deleted",
+        "wiki_page": "id,created_at,updated_at,title,body,is_locked,other_names"
     }
     only_string_defaults["user_event"] = f"id,created_at,category,user_session,user[{only_string_defaults["user"]}]"
 
@@ -171,7 +174,7 @@ class DanbooruApi(Session):
             lowest_id = min(found_posts, key=lambda post: post.id).id
             page = f"b{lowest_id}"
 
-    def _generic_endpoint(self, model_type: type[GenericModel], **kwargs) -> list[GenericModel]:
+    def _generic_endpoint(self, model_type: type[GenericDanbooruModel], **kwargs) -> list[GenericDanbooruModel]:
         assert model_type.danbooru_model_name
         only_string = self.only_string_defaults.get(model_type.danbooru_model_name)
         params = kwargs_to_include(**kwargs, only=only_string)
@@ -231,6 +234,38 @@ class DanbooruApi(Session):
 
     def user_events(self, **kwargs) -> list[models.DanbooruUserEvent]:
         return self._generic_endpoint(models.DanbooruUserEvent, **kwargs)
+
+    def wiki_pages(self, **kwargs) -> list[models.DanbooruWikiPage]:
+        return self._generic_endpoint(models.DanbooruWikiPage, **kwargs)
+
+    @overload
+    def get_all(self, model: type[GenericDanbooruModel], to_model: type[GenericModel], **kwargs) -> list[GenericModel]: ...
+
+    @overload
+    def get_all(self, model: type[GenericDanbooruModel], to_model: None = None, **kwargs) -> list[GenericDanbooruModel]: ...
+
+    def get_all(self,
+                model: type[GenericDanbooruModel],
+                to_model: type[GenericModel] | None = None,
+                **kwargs,
+                ) -> list[GenericDanbooruModel] | list[GenericModel]:
+
+        object_list: list[GenericDanbooruModel] | list[GenericModel] = []
+        return_model = to_model or model
+        kwargs["page"] = 1
+
+        assert (model_name := model.danbooru_model_name)
+        kwargs["limit"] = 200 if model == models.DanbooruPost else 1000
+
+        while True:
+            logger.debug(f"Fetching all {model_name}s (page {kwargs["page"]})...")
+
+            results = danbooru_api.danbooru_request("GET", f"{model_name}s.json", params=kwargs_to_include(**kwargs))
+            object_list += [return_model(**r) for r in results]  # type: ignore[assignment]
+            if len(results) < kwargs["limit"]:
+                logger.info(f"Finished fetching {model_name}s. Total: {len(object_list)}")
+                return object_list
+            kwargs["page"] += 1
 
     def create_artist(self, name: str, other_names: list[str], urls: Sequence[Url | str]) -> None:
         url_string = self._generate_url_string_for_artist(urls)
@@ -411,12 +446,13 @@ class DanbooruApi(Session):
 
 def kwargs_to_include(**kwargs) -> dict:
     """Turn kwargs into url parameters that Rails can understand."""
+    parameters = kwargs.copy()
     params = {}
     for named_parameter in ["only", "page", "limit"]:
-        if n_p := kwargs.pop(named_parameter, None):
+        if n_p := parameters.pop(named_parameter, None):
             params[named_parameter] = n_p
 
-    for _key, _value in kwargs.items():
+    for _key, _value in parameters.items():
         parsed_key = f"search[{_key}]"
         for extra_key, parsed_value in _parse_to_include(_value):
             params[parsed_key + extra_key] = parsed_value
