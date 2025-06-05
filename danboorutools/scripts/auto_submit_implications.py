@@ -87,11 +87,13 @@ class DanbooruTagData(BaseModel):
             return False  # don't bother trying for small tags
 
         if not (known_copyrights := known_saved.get(self.name)):
-            logger.debug(f"Copyrights for tag {self.name} are not known. Searching...")
+            logger.debug(f"Searching for copyright for tag {self.name}...")
             tag_series = self.related_copyrights
-            assert tag_series, self
+            if not tag_series:
+                logger.error(f"Copyrights for tag {self.name} could not be determined.")
+                return False
             saved = TagCopyright(name=self.name, copyrights=",".join(tag_series))
-            logger.debug("Saving to DB...")
+            logger.debug(f"Saving copyright for {self.name} to DB...")
             saved.save()
             known_copyrights = saved.copyrights.split(",")  # type: ignore[attr-defined]
             assert known_copyrights
@@ -174,9 +176,11 @@ class Series(BaseModel):
     extra_costume_patterns: list[re.Pattern]
     extra_qualifiers: list[str] = Field(default_factory=list)
 
-    blacklist: dict[str, list[str]] = Field(default_factory=dict)
+    blacklist: list[str] = Field(default_factory=list)
 
     grep: str | None = None
+
+    autopost: bool = False
 
     MAX_BURS_PER_TOPIC: int = 10
     POSTED_BURS: int = 0
@@ -324,7 +328,7 @@ class Series(BaseModel):
             return None
 
         for parent_name in possible_parents:
-            if parent_name in self.blacklist.get(tag.name, []):
+            if f"{tag.name} -> {parent_name}" in self.blacklist:
                 logger.trace(f"Skipping {tag.name} -> {parent_name} because this implication was blacklisted.")
                 continue
 
@@ -544,6 +548,7 @@ def wikiless_tags_to_dtext(tags: list[DanbooruTagData]) -> str:
     body += "\n[/expand]\n"
 
     will_be_batched = len(tags) > 100
+    tags = sorted(tags, key=lambda x: x.name)
 
     for index, tag_batch in enumerate(batched(tags, 100)):
         link = f"/tags?search[has_wiki_page]=no&limit=100&search[id]={",".join(map(str, (t.id for t in tag_batch)))}"
@@ -648,7 +653,7 @@ def main(series: str | None = None,
         logger.info(f"<r>Running only for series {series}.</r>")
 
     for config_series in series_from_config(grep=grep):
-        if series and series.lower() != config_series.name.lower().strip("*"):
+        if series and series.lower() not in [config_series.name.lower(), *config_series.extra_qualifiers]:
             continue
 
         try:
