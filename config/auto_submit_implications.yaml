@@ -10,34 +10,34 @@
 series:
   - name: "arknights"
     topic_id: 19647
-    wiki_id: 111571
+    wiki_ids: [111571]
     extra_costume_patterns:
       - r"^(?P<base_name>[^(]+?)(?P<extra_qualifier>the_\w+)(?P<qualifiers>(?:_\(.*\)))*$"
 
   - name: "azur_lane"
     topic_id: 23519
-    wiki_id: 91126
+    wiki_ids: [91126]
 
   - name: "blue_archive"
     topic_id: 21341
-    wiki_id: 136349
+    wiki_ids: [136349]
     blacklist:
       - "kei_(amas)_(blue_archive) -> kei_(blue_archive)"
 
   - name: "cookie_run"
     topic_id: 28362
-    wiki_id: 203490
+    wiki_ids: [203490]
 
   - name: "fate_(series)"
     autopost: false
     topic_id: 26405
-    wiki_id: 218559
+    wiki_ids: [74111, 139382, 218559]
     extra_qualifiers:
       - fate
 
   - name: "fire_emblem"
     topic_id: 22728
-    wiki_id: 24408
+    wiki_ids: [24408]
     extra_qualifiers:
       - fire_emblem_fates
       - fire_emblem_heroes
@@ -48,13 +48,13 @@ series:
 
   - name: "genshin_impact"
     topic_id: 19285
-    wiki_id: 121439
+    wiki_ids: [121439]
     blacklist:
       - "nadia_(melusine)_(genshin_impact) -> nadia_(genshin_impact)"
 
   - name: "girls'_frontline"
     topic_id: 23293
-    wiki_id: 78438
+    wiki_ids: [78438]
     extra_qualifiers:
       - girls'_frontline_2
       - neural_cloud
@@ -62,15 +62,15 @@ series:
 
   - name: "honkai:_star_rail"
     topic_id: 24117
-    wiki_id: 148987
+    wiki_ids: [148987]
 
   - name: "identity_v"
     topic_id: 32035
-    wiki_id: 164998
+    wiki_ids: [164998]
 
   - name: "kantai_collection"
     topic_id: 26671
-    wiki_id: 62620
+    wiki_ids: [62620]
     extra_qualifiers:
       - kancolle
     extra_costume_patterns:
@@ -80,13 +80,13 @@ series:
 
   - name: "goddess_of_victory:_nikke"
     topic_id: 25272
-    wiki_id: 186316
+    wiki_ids: [186316]
     extra_qualifiers:
       - nikke
 
   - name: "pokemon"
     topic_id: 22703
-    wiki_id: 12042
+    wiki_ids: [12042]
     extra_qualifiers:
       - pokemon_conquest
       - pokemon_go
@@ -96,20 +96,20 @@ series:
 
   - name: "princess_connect!"
     topic_id: 25913
-    wiki_id: 188656
+    wiki_ids: [188656]
 
   - name: "reverse:1999"
     topic_id: 24504
-    wiki_id: 170517
+    wiki_ids: [170517]
 
   - name: "umamusume"
     topic_id: 29925
-    wiki_id: 126524
+    wiki_ids: [126524]
 
   - name: "wuthering_waves"
     topic_id: 27205
-    wiki_id: 192114
+    wiki_ids: [192114]
 
   - name: "xenoblade"
     topic_id: 26163
-    wiki_id: 137054
+    wiki_ids: [137054]

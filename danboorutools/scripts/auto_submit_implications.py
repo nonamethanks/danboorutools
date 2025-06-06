@@ -171,7 +171,7 @@ class Series(BaseModel):
     name: str
     topic_id: int
 
-    wiki_id: int | None = None
+    wiki_ids: list[int] = Field(default_factory=list)
 
     extra_costume_patterns: list[re.Pattern]
     extra_qualifiers: list[str] = Field(default_factory=list)
@@ -268,17 +268,19 @@ class Series(BaseModel):
 
     @cached_property
     def all_tags_from_wiki(self) -> list[DanbooruTagData]:
-        if not self.wiki_id:
+        if not self.wiki_ids:
             return []
 
-        wiki = danbooru_api.wiki_pages(id=self.wiki_id)[0]
-        logger.info(f"Fetched all tags for {self.name} from wiki page {wiki.url}...")
+        wiki_pages = danbooru_api.wiki_pages(id=",".join(map(str, self.wiki_ids)))
+        logger.info(f"Fetched all tags for {self.name} from wiki pages {[wiki.url for wiki in wiki_pages]}...")
 
-        tag_names = wiki.get_linked_tags()
-        assert tag_names
-        tag_names = [t for t in tag_names if t not in [t.name for t in self.all_tags_from_search]]
-        if not tag_names:
-            return []
+        tag_names = []
+        for wiki in wiki_pages:
+            tag_names += wiki.get_linked_tags()
+            assert tag_names
+            tag_names = [t for t in tag_names if t not in [t.name for t in self.all_tags_from_search]]
+            if not tag_names:
+                return []
         tags = BigqueryTag.get_db_tags(tag_names)
 
         child_ids = []
