@@ -185,6 +185,8 @@ class Series(BaseModel):
     MAX_BURS_PER_TOPIC: int = 10
     POSTED_BURS: int = 0
 
+    group_by_qualifier: bool = True
+
     def __hash__(self) -> int:
         return hash(f"{self.topic_id}-{self.name}")
 
@@ -356,7 +358,7 @@ class Series(BaseModel):
     def implication_groups(self) -> list[ImplicationGroup]:
         logger.debug(f"{len(self.all_tags_from_wiki)} + {len(self.all_tags_from_search)} tags to process.")
 
-        implication_groups: defaultdict[DanbooruTagData, list[DanbooruTagData]] = defaultdict(list)
+        parent_children_map: defaultdict[DanbooruTagData, list[DanbooruTagData]] = defaultdict(list)
         for tag in self.all_tag_map.values():
             if not (parent := self.get_parent_for_tag(tag)):
                 continue
@@ -364,15 +366,16 @@ class Series(BaseModel):
             if self.should_skip_implication(_from=tag, to=parent):
                 continue
 
-            implication_groups[parent] += [tag]
+            parent_children_map[parent] += [tag]
 
-        return [
-            ImplicationGroup(main_tag=main_tag, subtags=subtags, series=self)
-            for main_tag, subtags in implication_groups.items()
-        ]
+        implication_groups = [ImplicationGroup(main_tag=main_tag, subtags=subtags, series=self)
+                              for main_tag, subtags in parent_children_map.items()]
+        implication_groups.sort(key=lambda x: x.main_tag.name)
+
+        return implication_groups
 
     @cached_property
-    def grouped_groups(self) -> list[list[ImplicationGroup]]:
+    def implication_groups_by_qualifier(self) -> list[list[ImplicationGroup]]:
         # attempt to group implication groups by qualifier if they're single-tag groups
         grouped_by_qualified: list[list[ImplicationGroup]] = []
         grouped_by_character: list[list[ImplicationGroup]] = []
@@ -417,11 +420,13 @@ class Series(BaseModel):
 
     @cached_property
     def implicable_tags_without_wiki(self) -> list[DanbooruTagData]:
-        return [t for ig in self.implication_groups for t in ig.tags_without_wiki]
+        tags = [t for ig in self.implication_groups for t in ig.tags_without_wiki]
+        tags.sort(key=lambda tag: tag.name)
+        return tags
 
     def scan_and_post(self, max_lines_per_bur: int = 1, post_to_danbooru: bool = False) -> None:
         logger.info(f"Processing series: {self.name}. Topic: {self.topic_url}.")
-        logger.info(f"There are {len([ig for gg in self.grouped_groups for ig in gg])} implication groups. "
+        logger.info(f"There are {len(self.implication_groups)} implication groups. "
                     f"Max lines per BUR: {max_lines_per_bur}.")
         logger.info(f"Remaining amount of BURs that can be posted {self.topic_url}: {self.remaining_bur_slots}.")
 
@@ -433,8 +438,11 @@ class Series(BaseModel):
 
         bur_reason = BOT_IMPLICATION_REASON + "\n" + wikiless_tags_to_dtext(self.implicable_tags_without_wiki) + "\n" + BOT_DISCLAIMER
 
-        for grouped_groups in self.grouped_groups:
-            for group in grouped_groups:
+        groups_by_qualifier = self.implication_groups_by_qualifier if self.group_by_qualifier \
+            else [[group] for group in self.implication_groups]
+
+        for qualifier_groups in groups_by_qualifier:
+            for group in qualifier_groups:
                 logger.debug(f"Found implication group: {", ".join(tag.name for tag in group.subtags)} -> {group.main_tag.name} ")
                 if group.tags_without_wiki:
                     logger.debug(f"There are {len(group.tags_without_wiki)} tags without a wiki here: {group.tags_without_wiki}.")
@@ -550,7 +558,6 @@ def wikiless_tags_to_dtext(tags: list[DanbooruTagData]) -> str:
     body += "\n[/expand]\n"
 
     will_be_batched = len(tags) > 100
-    tags = sorted(tags, key=lambda x: x.name)
 
     for index, tag_batch in enumerate(batched(tags, 100)):
         link = f"/tags?search[has_wiki_page]=no&limit=100&search[id]={",".join(map(str, (t.id for t in tag_batch)))}"
