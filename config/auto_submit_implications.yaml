@@ -5,8 +5,15 @@
 # * insert chartags one per line in the "test string" field
 # * special qualifiers like arknights_the_costume or kancolle_kai_ni should be captured in the named group extra_qualifier for ease of parsing
 
+# options:
+# topic_id: integer, mandatory
+# wiki_ids: array of integers, optional
+# extra costume patterns: array of regexes, optional
+# extra qualifier: array of strings, optional
+# blacklist: array of strings (blacklists specific implication requests)
+# group_by_qualifier: boolean, default true, optional (whether single-line BURs are grouped by qualifier)
+# allow_sub_implications: boolean, default true (allow costumes to imply other costumes)
 
-# TODO: split qualifier from series name to fix related tags for qualifiers different from series name (kancolle, Codename: Bakery Girl)
 series:
   - name: "arknights"
     topic_id: 19647
@@ -101,6 +108,15 @@ series:
   - name: "princess_connect!"
     topic_id: 25913
     wiki_ids: [188656]
+
+  - name: "punishing: gray raven"
+    topic_id: 25165
+    wiki_ids: [171594]
+    extra_qualifiers:
+      - pgr
+    allow_sub_implications: false
+    extra_costume_patterns:
+      - r"^(?P<base_name>[^(]+?)(?P<extra_qualifier>:\w+)(?P<qualifiers>(?:_\(.*\)))*$"
 
   - name: "reverse:1999"
     topic_id: 24504

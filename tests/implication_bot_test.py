@@ -30,6 +30,9 @@ TEST_CASES = {
     "identity_v": [
         ("florian_brand_(spirit_fox)", "florian_brand"),
     ],
+    "pgr": [
+        ("sophia:_silverfang_(starry_desert)_(pgr)", "sophia_(pgr)"),
+    ],
 }
 TEST_CASES_PARSED = [[series, subtag, expected_parent] for series in TEST_CASES for (subtag, expected_parent) in TEST_CASES[series]]
 
@@ -38,7 +41,7 @@ TEST_CASES_PARSED = [[series, subtag, expected_parent] for series in TEST_CASES 
 @pytest.mark.parametrize("series_name,subtag,expected_parent", TEST_CASES_PARSED)
 def test_parsing(series_name: str, subtag: str, expected_parent: str, series_list: list[Series]) -> None:
     try:
-        series = next(s for s in series_list if s.name == series_name)
+        series = next(s for s in series_list if s.matches(series_name))
     except StopIteration:
         series = Series(name=series_name, topic_id=0, extra_costume_patterns=[])
 

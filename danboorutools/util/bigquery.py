@@ -42,7 +42,7 @@ def clone_bigquery_table(table_name: str, model: type[peewee.Model], database: p
 
     query = f"SELECT {",".join(column_names)} FROM `danbooru1.danbooru_public.{table_name}`"  # noqa: S608
     if last_checked:
-        query += f" WHERE updated_at > TIMESTAMP_MILLIS({int(last_checked.timestamp() * 1000)})"
+        query += f" WHERE updated_at >= TIMESTAMP_MILLIS({int(last_checked.timestamp() * 1000)})"
     query += " ORDER BY updated_at ASC, id"
 
     tags = execute_bigquery_query(query)

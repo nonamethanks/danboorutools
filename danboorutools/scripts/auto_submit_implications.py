@@ -146,11 +146,7 @@ class DanbooruTagData(BaseModel):
         if not matched_count:
             return False
 
-        return sorted(
-            dict.fromkeys(all_possible_parents),
-            key=lambda t: len(t),
-            reverse=True,
-        )
+        return list(dict.fromkeys(all_possible_parents))
 
     @cached_property
     def related_copyrights(self) -> list[str]:
@@ -186,6 +182,7 @@ class Series(BaseModel):
     POSTED_BURS: int = 0
 
     group_by_qualifier: bool = True
+    allow_sub_implications: bool = True
 
     def __hash__(self) -> int:
         return hash(f"{self.topic_id}-{self.name}")
@@ -263,6 +260,7 @@ class Series(BaseModel):
                 category=4,
                 order="id",
                 hide_empty=True,
+                is_deprecated=False,
                 only="id,name,post_count,antecedent_implications,wiki_page,is_deprecated",
             )
 
@@ -331,6 +329,7 @@ class Series(BaseModel):
             logger.trace(f"Could not determine a parent for {tag.name}")
             return None
 
+        possible_parents.sort(key=lambda t: len(t), reverse=self.allow_sub_implications)
         for parent_name in possible_parents:
             if f"{tag.name} -> {parent_name}" in self.blacklist:
                 logger.trace(f"Skipping {tag.name} -> {parent_name} because this implication was blacklisted.")
@@ -467,11 +466,15 @@ class Series(BaseModel):
 
         logger.info(f"In total, {len(posted)} BURs {"would " if not post_to_danbooru else ""}have been submitted.")
         if len(posted):
-            for index, bur in enumerate(posted):
-                logger.info(f"BUR #{index+1}:\n{"\n".join(sorted(bur.splitlines()))}\n")
+            burs = [f"[expand BUR #{index+1}]\n{"\n".join(sorted(bur.splitlines()))}\n[/expand]"
+                    for index, bur in enumerate(posted)]
+            logger.info("\n\n" + "\n\n".join(burs))
 
         logger.info(f"Topic of submission: {self.topic_url}")
         logger.info(f"Reason for BURs: {bur_reason}")
+
+    def matches(self, name: str) -> bool:
+        return name in [self.name, *self.extra_qualifiers]
 
 
 class ImplicationGroup(BaseModel):
@@ -634,6 +637,7 @@ class BigqueryTag(Model):
             category=4,
             order="id",
             hide_empty=True,
+            is_deprecated=False,
             only="id,name,post_count,antecedent_implications,wiki_page,is_deprecated",
             **kwargs,
         )
@@ -662,7 +666,7 @@ def main(series: str | None = None,
         logger.info(f"<r>Running only for series {series}.</r>")
 
     for config_series in series_from_config(grep=grep):
-        if series and series.lower() not in [config_series.name.lower(), *config_series.extra_qualifiers]:
+        if series and not config_series.matches(series):
             continue
 
         try:
