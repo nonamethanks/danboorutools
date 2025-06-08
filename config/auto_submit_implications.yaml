@@ -13,6 +13,7 @@
 # blacklist: array of strings (blacklists specific implication requests)
 # group_by_qualifier: boolean, default true, optional (whether single-line BURs are grouped by qualifier)
 # allow_sub_implications: boolean, default true (allow costumes to imply other costumes)
+# autopost: bool, default true
 
 series:
   - name: "arknights"
