@@ -142,7 +142,8 @@ class DanbooruApi(Session):
 
     def _save_count(self, tags: list[str], count: int) -> None:
         tag_str = " ".join(sorted(t.strip() for t in tags))
-        ProgressTracker(f"DANBOORU_TAG_COUNTS_{tag_str}", "").value = f"{time.time()},{count}"
+        pt = ProgressTracker(f"DANBOORU_TAG_COUNTS_{tag_str}", "")
+        pt.value = f"{time.time()},{count}"
 
     def _was_saved_recently(self, timestamp: str, max_hours: int = 1) -> bool:
         if not timestamp:
@@ -440,8 +441,14 @@ class DanbooruApi(Session):
         assert isinstance(response, dict) and response["id"]
 
     @staticmethod
-    def db_datetime(value: datetime) -> str:
-        return value.strftime("%Y-%m-%dT%H:%M:%SZ00")
+    def db_datetime(value: datetime, precision: str | None = None) -> str:
+        if not precision:
+            format_string = "%Y-%m-%dT%H:%M:%SZ00"
+        elif precision == "day":
+            format_string = "%Y-%m-%dT00:00:00Z00"
+        else:
+            raise NotImplementedError
+        return value.strftime(format_string)
 
 
 def kwargs_to_include(**kwargs) -> dict:

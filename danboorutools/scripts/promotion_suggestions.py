@@ -19,8 +19,8 @@ from danboorutools.util.misc import remove_indent
 
 f_path = logger.log_to_file()
 
-END_DATE = datetime.now(tz=UTC)
-START_DATE = END_DATE - timedelta(days=60)
+END_DATE = datetime.now(tz=UTC) + timedelta(days=1)
+START_DATE = datetime.now(tz=UTC) - timedelta(days=60)
 
 MIN_CONTRIBUTOR_UPLOADS_IN_RANGE = 20
 MIN_UPLOADS_WITH_EDITS = 500
@@ -501,7 +501,7 @@ class Candidate:
 
     def refresh(self, hard_refresh: bool = False) -> None:
         logger.info(f"Refreshing data for user {self.name}...")
-        date_tag = f"date:{danbooru_api.db_datetime(START_DATE)}..{danbooru_api.db_datetime(END_DATE)}"
+        date_tag = f"date:{danbooru_api.db_datetime(START_DATE, precision="day")}..{danbooru_api.db_datetime(END_DATE, precision="day")}"
         tags = [f"user:{self.name}", date_tag]
         self.last_edit_date = danbooru_api.get_last_edit_time(user_name=self.name)
         if self.last_edit_date < START_DATE:
