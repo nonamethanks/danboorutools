@@ -697,6 +697,7 @@ class HTMLUser(Candidate):
             classes.append("banned")
         elif self.is_deleted:
             classes.append("deleted")
+        classes.append(self.level_string.lower())
         return " ".join(classes)
 
     @property
