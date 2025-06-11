@@ -10,7 +10,7 @@ from typing import Literal
 from urllib.parse import quote_plus
 
 import click
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from danboorutools import logger, settings
 from danboorutools.logical.sessions.danbooru import danbooru_api, kwargs_to_include
@@ -125,7 +125,7 @@ def main(user_url: str | None,
                            min_uploads=min_uploads, ignore_ignored=ignore_ignored, level=level)
     else:
         user = DanbooruUser.get_from_id(DanbooruUser.id_from_url(user_url))
-        candidate = Candidate(name=user.name, recent_uploads=None, recent_deleted=None)
+        candidate = HTMLUser(name=user.name, recent_uploads=None, recent_deleted=None)
         merge_candidate(candidate, user)
         candidate.refresh()
         manual_loop([candidate])
@@ -184,7 +184,7 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = F
         for match in biggest_non_uploaders.values():
             # remaining gardeners that weren't caught with the previous pop
             if match.post_update_count > MIN_STANDALONE_EDITS or match.note_update_count > MIN_NOTES:
-                candidate = Candidate(
+                candidate = HTMLUser(
                     name=match.name,
                     recent_uploads=None,
                     recent_deleted=None,
@@ -223,15 +223,17 @@ def suggest_promotions(skip_to: int = 0, manual: bool = False, reverse: bool = F
         manual_loop(candidates, index=skip_to)
 
 
-def generate_html(*candidates: Candidate) -> None:
-    env = Environment(loader=FileSystemLoader(settings.BASE_FOLDER / "danboorutools" / "templates"))  # noqa: S701
+def generate_html(*candidates: HTMLUser) -> None:
+    env = Environment(  # noqa: S701
+        loader=FileSystemLoader(settings.BASE_FOLDER / "danboorutools" / "templates"),
+        undefined=StrictUndefined,
+    )
     template = env.get_template("promotions.jinja2")
 
     generation_date = datetime.now(tz=UTC)
 
     sorted_candidates = sorted({user.name: user for user in candidates}.values(), key=lambda c: c.sorted_weight, reverse=True)
     output_from_parsed_template = template.render(
-        row_header=Candidate.html_header,
         generated_on=f"{generation_date:%Y-%m-%d at %T}",
         generated_on_unix=int(generation_date.timestamp() * 1000),
         builder_to_contributor=[c for c in sorted_candidates if c.for_contributor and c.level >= 32],
@@ -247,7 +249,7 @@ def generate_html(*candidates: Candidate) -> None:
     Path("promotions.html").write_text(output_from_parsed_template, encoding="utf-8")
 
 
-def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
+def manual_loop(candidates: list[HTMLUser], index: int = 0) -> None:
     index = index - 1 if index else 0
     while True:
         if not candidates:
@@ -313,7 +315,7 @@ def manual_loop(candidates: list[Candidate], index: int = 0) -> None:
                 logger.error("Invalid output.")
 
 
-def merge_candidate(candidate: Candidate, user: DanbooruUser) -> None:
+def merge_candidate(candidate: HTMLUser | Candidate, user: DanbooruUser) -> None:
     candidate.id = user.id
     candidate.total_uploads = user.post_upload_count
     candidate.total_edits = user.post_update_count
@@ -324,7 +326,7 @@ def merge_candidate(candidate: Candidate, user: DanbooruUser) -> None:
     candidate.is_banned = user.is_banned
 
 
-def get_recent_uploaders() -> list[Candidate]:
+def get_recent_uploaders() -> list[HTMLUser]:
     query = {
         "from": START_DATE.strftime("%Y-%m-%d"),
         "to": END_DATE.strftime("%Y-%m-%d"),
@@ -344,11 +346,11 @@ def get_recent_uploaders() -> list[Candidate]:
 
     deleted_map = {d["uploader"]: d["posts"] for d in recent_deleted_data}
 
-    recent_uploaders: list[Candidate] = []
+    recent_uploaders: list[HTMLUser] = []
 
     for uploader_data in recent_uploaders_data:
         name = uploader_data["uploader"]
-        recent_uploaders.append(Candidate(
+        recent_uploaders.append(HTMLUser(
             name=name.replace(" ", "_"),
             recent_uploads=uploader_data["posts"],
             recent_deleted=deleted_map.get(name, 0)),
@@ -673,65 +675,6 @@ class Candidate:
     def level_color(self) -> str:
         return level_color_for(self.level)
 
-    html_header = """
-        <tr>
-            <th>ID</th>
-            <th>User</th>
-            <th>Uploads</th>
-            <th data-sort-default aria-sort="ascending">Recent Uploads</th>
-            <th>Recent Deleted</th>
-            <th>Recent %</th>
-            <th>Notes</th>
-            <th>Edits</th>
-            <th>Last Edit</th>
-        </tr>
-    """
-
-    @property
-    def html_properties(self) -> str:
-        days_ago = self.days_ago_html  # force refresh
-        del_ratio = f"{self.delete_ratio:.2f}" if self.recent_uploads else "n/a"
-        sort_ratio = self.delete_ratio if self.recent_uploads else 1000
-        last_edit_timestamp = int(self.last_edit_date.timestamp())  # type: ignore[union-attr]
-
-        name_string = self.name
-        classes = ["user"]
-        if self.is_banned:
-            classes.append("banned")
-            name_string = f"{self.name} (BANNED)"
-        elif self.is_deleted:
-            classes.append("deleted")
-            name_string = f"{self.name} (DELETED)"
-        classes.append(self.level_string.lower())  # type: ignore[union-attr]
-
-        return f"""
-        <tr class="{" ".join(classes)}">
-            <td class="userid">{self.id}</td>
-            <td class="username"><a href="{self.url}" target="_blank">{name_string}</a></td>
-            <td class="totalUploaded">{self.total_uploads}</td>
-            <td class="recentUploaded"><a href="{self.uploads_url}" target="_blank">{self.recent_uploads or 0}</a></td>
-            <td class="recentDeleted"><a href="{self.deleted_url}" target="_blank">{self.recent_deleted or 0}</a></td>
-            <td class="recentRatio" data-sort="{sort_ratio}">{del_ratio}</td>
-            <td class="notes">{self.total_notes}</td>
-            <td class="totalEdits"><a href="{self.edits_url}" target="_blank">{self.total_edits}</a></td>
-            <td class="lastEdit" data-sort="{last_edit_timestamp}">{days_ago}</td>
-        </tr>
-    """
-
-    @property
-    def days_ago_html(self) -> str:
-        days_ago = self.last_edit_days_ago
-        if days_ago == 0:
-            days_ago_str = "today"
-        elif days_ago > 365:
-            days_ago_str = f"{days_ago//365} years ago"
-        elif days_ago > 30:
-            days_ago_str = f"{days_ago//30} months ago"
-        else:
-            days_ago_str = f"{days_ago} days ago"
-
-        return f"{self.last_edit_date:%Y-%m-%d} ({days_ago_str})"
-
 
 def level_color_for(level_number: int) -> str:
     return {
@@ -744,3 +687,51 @@ def level_color_for(level_number: int) -> str:
 
 class NoRecentEditsError(Exception):
     pass
+
+
+class HTMLUser(Candidate):
+    @property
+    def html_classes(self) -> str:
+        classes = ["user"]
+        if self.is_banned:
+            classes.append("banned")
+        elif self.is_deleted:
+            classes.append("deleted")
+        return " ".join(classes)
+
+    @property
+    def html_name(self) -> str:
+        if self.is_banned:
+            return f"{self.name} (BANNED)"
+        elif self.is_deleted:
+            return f"{self.name} (DELETED)"
+        else:
+            return self.name
+
+    @property
+    def html_sort_ratio(self) -> int:
+        return self.delete_ratio if self.recent_uploads else 1000
+
+    @property
+    def html_deletion_ratio(self) -> str:
+        return f"{self.delete_ratio:.2f}" if self.recent_uploads else "n/a"
+
+    @property
+    def html_days_ago(self) -> str:
+        days_ago = self.last_edit_days_ago
+        if days_ago == 0:
+            days_ago_str = "today"
+        elif days_ago > 365:
+            days_ago_str = f"{days_ago//365} years ago"
+        elif days_ago > 30:
+            days_ago_str = f"{days_ago//30} months ago"
+        else:
+            days_ago_str = f"{days_ago} days ago"
+
+        return f"{self.last_edit_date:%Y-%m-%d} ({days_ago_str})"
+
+    @property
+    def last_edit_timestamp(self) -> int:
+        if not self.last_edit_date:
+            self.refresh()
+        return int(self.last_edit_date.timestamp())  # type: ignore[union-attr]

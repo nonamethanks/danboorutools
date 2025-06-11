@@ -1,3 +1,5 @@
+{% import "user_macros.jinja2" as user_macros %}
+
 <!DOCTYPE html>
 <html>
 
@@ -103,7 +105,7 @@
         .sticky-widget {
             position: fixed;
             right: 1rem;
-            top: 3rem;
+            top: 4rem;
             transform: translateY(-50%);
             z-index: 1000;
             padding: 20px;
@@ -119,21 +121,27 @@
         <input type="number" id="minDays" min="0" style="width: 60px;" value="60" />
         <label> days</label>
         <div id="hiddenCount" style="margin-top:8px; color:#b00; font-weight:bold; display:none;"></div>
+        <div id="ignoredCount" style="margin-top:8px; color:#b00; font-weight:bold; display:none;"></div>
+        <div style="margin-top:8px;">
+            <input type="checkbox" id="showIgnored" checked="false" />
+            <label for="showIgnored">Show ignored users</label>
+        </div>
     </div>
 
     <h1>Promotion Candidates for week {{week}} of {{year}}</h2>
         <p class="small" id="generatedAt" data-generated-at="{{generated_on_unix}}">Generated on {{ generated_on }}.</p>
         <p class="small">Recent means within the last two months from generation time.</p>
         <p class="small"><a href="/promotion_archives/" target="_blank">Click here to see the previous weeks.</a></p>
+        <p class="small">"Hide" will ignore a user across all reports for one month.</a></p>
 
         <h2>Builders for Contributor</h2>
         <table id="contrib-builder">
             <thead>
-                {{ row_header }}
+                {{user_macros.user_header()|indent(10, True) }}
             </thead>
             <tbody>
                 {% for c in builder_to_contributor %}
-                {{ c.html_properties }}
+                {{ user_macros.user_row(c)|indent(10, True) }}
                 {% endfor %}
             </tbody>
         </table>
@@ -141,11 +149,11 @@
         <h2>Non-Builders for Contributor</h2>
         <table id="contrib-member">
             <thead>
-                {{ row_header }}
+                {{user_macros.user_header()|indent(10, True) }}
             </thead>
             <tbody>
                 {% for c in member_to_contributor %}
-                {{ c.html_properties }}
+                {{ user_macros.user_row(c)|indent(10, True) }}
                 {% endfor %}
             </tbody>
         </table>
@@ -154,12 +162,12 @@
 
         <table id="builder">
             <thead>
-                {{ row_header }}
+                {{user_macros.user_header()|indent(10, True) }}
             </thead>
 
             <tbody>
                 {% for c in rest %}
-                {{ c.html_properties }}
+                {{ user_macros.user_row(c)|indent(10, True) }}
                 {% endfor %}
             </tbody>
 
@@ -167,6 +175,7 @@
 
 
         <script>
+            // let tables be sortable
             new Tablesort(document.querySelector('table#contrib-builder'));
             new Tablesort(document.querySelector('table#contrib-member'));
             new Tablesort(document.querySelector('table#builder'));
@@ -175,7 +184,6 @@
             let max_ratio_for_builder = {{ builder_max_del_perc }};
             let deleted_bad = {{ max_deleted_bad }};
             let deleted_warning = {{ max_deleted_warning }};
-
 
             document.querySelectorAll("tr.user").forEach(row => {
                 recentRatio = row.querySelector("td.recentRatio")
@@ -222,6 +230,10 @@
                     if (!show) hidden++;
                 });
 
+                updateHiddenCounter(hidden);
+            }
+
+            function updateHiddenCounter(hidden) {
                 const counter = document.getElementById('hiddenCount');
                 if (hidden > 0) {
                     counter.textContent = `${hidden} user${hidden !== 1 ? 's' : ''} hidden`;
@@ -231,8 +243,100 @@
                 }
             }
 
+
             document.getElementById('minDays').addEventListener('input', filterByDays);
             filterByDays();
+
+
+            // let users be hidden
+            const HIDE_DURATION = 1000 * 60 * 60 * 24 * 30; // 2 months in ms
+
+            function getIgnoredUsers() {
+                const now = Date.now();
+                let hiddenUsers = JSON.parse(localStorage.getItem('hiddenUsers') || '{}');
+                let changed = false;
+                for (const [userId, timestamp] of Object.entries(hiddenUsers)) {
+                    if (now - timestamp >= HIDE_DURATION) {
+                        delete hiddenUsers[userId];
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    localStorage.setItem('hiddenUsers', JSON.stringify(hiddenUsers));
+                }
+                return hiddenUsers;
+            }
+
+            function setIgnoredUsers(obj) {
+                localStorage.setItem('hiddenUsers', JSON.stringify(obj));
+            }
+
+            function hideRow(userId) {
+                const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+                if (row) row.style.display = 'none';
+            }
+
+            function showRow(userId) {
+                const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+                if (row) row.style.display = '';
+            }
+
+            function updateIgnoredCount() {
+                const ignoredUsers = getIgnoredUsers();
+                const ignoredCount = Object.keys(ignoredUsers).length;
+                const counter = document.getElementById('ignoredCount');
+                if (ignoredCount > 0) {
+                    counter.textContent = `${ignoredCount} user${ignoredCount !== 1 ? 's' : ''} ignored`;
+                    counter.style.display = '';
+                } else {
+                    counter.style.display = 'none';
+                }
+            }
+
+            // Call this after hiding/showing rows and on page load
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+
+                const ignoredUsers = getIgnoredUsers();
+                for (const [userId, timestamp] of Object.entries(ignoredUsers)) {
+                    if (!document.getElementById("showIgnored").checked) hideRow(userId);
+                    const checkbox = document.querySelector(`.user-checkbox[data-user-id="${userId}"]`);
+                    if (checkbox) checkbox.checked = true;
+                }
+                updateIgnoredCount();
+            });
+
+            // Show/hide ignored users based on checkbox
+            document.getElementById('showIgnored').addEventListener('change', function (e) {
+                const show = e.target.checked;
+                const ignoredUsers = getIgnoredUsers();
+                for (const userId of Object.keys(ignoredUsers)) {
+                    if (show) {
+                        showRow(userId);
+                    } else {
+                        hideRow(userId);
+                    }
+                }
+            });
+
+            // Update count when checkboxes change
+            document.addEventListener('change', function (e) {
+                if (e.target.classList.contains('user-checkbox')) {
+                    const userId = e.target.getAttribute('data-user-id');
+                    let ignoredUsers = getIgnoredUsers();
+
+                    if (e.target.checked) {
+                        if (!document.getElementById("showIgnored").checked) hideRow(userId);
+                        ignoredUsers[userId] = Date.now();
+                    } else {
+                        showRow(userId);
+                        delete ignoredUsers[userId];
+                    }
+                    setIgnoredUsers(ignoredUsers);
+                    updateIgnoredCount();
+                }
+            });
+
         </script>
 
 </html>

@@ -1,0 +1,30 @@
+{% macro user_header() %}
+<tr>
+    <th>Hide</th>
+    <th>ID</th>
+    <th>User</th>
+    <th>Uploads</th>
+    <th data-sort-default aria-sort="ascending">Recent Uploads</th>
+    <th>Recent Deleted</th>
+    <th>Recent %</th>
+    <th>Notes</th>
+    <th>Edits</th>
+    <th>Last Edit</th>
+</tr>
+{% endmacro %}
+
+{% macro user_row(user) %}
+
+<tr class="{{ user.html_classes }}" data-user-id="{{ user.id }}">
+    <td><input type="checkbox" class="user-checkbox" data-user-id="{{ user.id }}"></td>
+    <td class="userid">{{ user.id }}</td>
+    <td class="username"><a href="{{ user.url }}" target="_blank">{{ user.html_name }}</a></td>
+    <td class="totalUploaded">{{user.total_uploads}}</td>
+    <td class="recentUploaded"><a href="{{ user.uploads_url }}" target="_blank">{{ user.recent_uploads or 0 }}</a></td>
+    <td class="recentDeleted"><a href="{{ user.deleted_url }}" target="_blank">{{ user.recent_deleted or 0 }}</a></td>
+    <td class="recentRatio" data-sort="{{ user.html_sort_ratio }}">{{ user.html_deletion_ratio }}</td>
+    <td class="notes">{{ user.total_notes }}</td>
+    <td class="totalEdits"><a href="{{ user.edits_url }}" target="_blank">{{ user.total_edits }}</a></td>
+    <td class="lastEdit" data-sort="{{ user.last_edit_timestamp }}">{{ user.html_days_ago }}</td>
+</tr>
+{% endmacro %}
