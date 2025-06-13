@@ -22,6 +22,12 @@ series:
     extra_costume_patterns:
       - r"^(?P<base_name>[^(]+?)(?P<extra_qualifier>the_\w+)(?P<qualifiers>(?:_\(.*\)))*$"
 
+  - name: "atelier_(series)"
+    topic_id: 26873
+    wiki_ids: [109224]
+    extra_qualifiers:
+      - atelier
+
   - name: "azur_lane"
     topic_id: 23519
     wiki_ids: [91126]
@@ -72,6 +78,12 @@ series:
       - neural_cloud
       - reverse_collapse
 
+  - name: honkai_impact_3rd
+    topic_id: 25459
+    wiki_ids: [181862]
+    extra_qualifiers:
+      - honkai_impact
+
   - name: "honkai:_star_rail"
     topic_id: 24117
     wiki_ids: [148987]
@@ -98,7 +110,7 @@ series:
 
   - name: "pokemon"
     topic_id: 22703
-    wiki_ids: [12042]
+    wiki_ids: [12042, 29014]
     extra_qualifiers:
       - pokemon_conquest
       - pokemon_go

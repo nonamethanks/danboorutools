@@ -237,12 +237,17 @@ class Series(BaseModel):
                 if not bur_line.startswith(("create implication", "imply")):
                     continue
 
-                line = re.sub(r" +", " ", bur_line).strip()
+                line = re.sub(r"\s+", " ", bur_line).strip()
                 if not line:
                     continue
 
-                line = line.removeprefix("create implication").removeprefix("imply")
-                antecedent, consequent = line.strip().split(" -> ")
+                line = line.removeprefix("create implication").removeprefix("imply").strip()
+                try:
+                    antecedent, consequent = line.split(" -> ")
+                except ValueError as e:
+                    breakpoint()
+                    e.add_note(f"On '{line}'")
+                    raise
                 if " " in antecedent or " " in consequent:
                     raise NotImplementedError(antecedent, consequent, bur_line)
                 parsed[antecedent] += [consequent]
@@ -271,16 +276,24 @@ class Series(BaseModel):
         if not self.wiki_ids:
             return []
 
+        all_tags_from_search = self.all_tags_from_search
+
         wiki_pages = danbooru_api.wiki_pages(id=",".join(map(str, self.wiki_ids)))
-        logger.info(f"Fetched all tags for {self.name} from wiki pages {[wiki.url for wiki in wiki_pages]}...")
+        logger.info(f"Fetching tags for {self.name} from wiki pages {[wiki.url for wiki in wiki_pages]}...")
 
         tag_names = []
         for wiki in wiki_pages:
+            logger.info(f"Processing wiki page '{wiki.title}'")
             tag_names += wiki.get_linked_tags()
             assert tag_names
-            tag_names = [t for t in tag_names if t not in [t.name for t in self.all_tags_from_search]]
+            tag_names = [t for t in tag_names if t not in [t.name for t in all_tags_from_search]]
             if not tag_names:
-                return []
+                continue
+            logger.info(f"Found {len(tag_names)} in wikis so far.")
+
+        if not tag_names:
+            return []
+
         tags = BigqueryTag.get_db_tags(tag_names)
 
         child_ids = []
@@ -295,6 +308,7 @@ class Series(BaseModel):
                 logger.debug(f"Tag {tag.name} does not belong to {self.name}. Skipping...")
                 continue
             processed_tags += [tag]
+        logger.info(f"Remaining: {len(processed_tags)}.")
 
         clauses = [BigqueryTag.name.startswith(tag.name) for tag in processed_tags]
         for batch in batched(clauses, 50):
@@ -310,6 +324,7 @@ class Series(BaseModel):
                 has_antecedent_implications=False,
             )
 
+        logger.info(f"Done processing tags from wikis, {len(processed_tags)} found.")
         return processed_tags
 
     @cached_property
@@ -355,7 +370,10 @@ class Series(BaseModel):
 
     @cached_property
     def implication_groups(self) -> list[ImplicationGroup]:
-        logger.debug(f"{len(self.all_tags_from_wiki)} + {len(self.all_tags_from_search)} tags to process.")
+        logger.debug(
+            f"{len(self.all_tags_from_wiki)} (from wiki) + {len(self.all_tags_from_search)} (from search) = "
+            f"{len(self.all_tags_from_wiki) + len(self.all_tags_from_search)} tags to process.",
+        )
 
         parent_children_map: defaultdict[DanbooruTagData, list[DanbooruTagData]] = defaultdict(list)
         for tag in self.all_tag_map.values():
@@ -423,7 +441,7 @@ class Series(BaseModel):
         tags.sort(key=lambda tag: tag.name)
         return tags
 
-    def scan_and_post(self, max_lines_per_bur: int = 1, post_to_danbooru: bool = False) -> None:
+    def scan_and_post(self, max_lines_per_bur: int = 1) -> None:
         logger.info(f"Processing series: {self.name}. Topic: {self.topic_url}.")
         logger.info(f"There are {len(self.implication_groups)} implication groups. "
                     f"Max lines per BUR: {max_lines_per_bur}.")
@@ -455,16 +473,16 @@ class Series(BaseModel):
                 bur_script += group.script + "\n"
 
             if counter <= 0:
-                send_bur(self, bur_script, bur_reason, post_to_danbooru=post_to_danbooru)
+                self.send_bur(bur_script, bur_reason)
                 posted += [bur_script]
                 bur_script = ""
                 counter = max_lines_per_bur
 
         if bur_script:
-            send_bur(self, bur_script, bur_reason, post_to_danbooru=post_to_danbooru)
+            self.send_bur(bur_script, bur_reason)
             posted += [bur_script]
 
-        logger.info(f"In total, {len(posted)} BURs {"would " if not post_to_danbooru else ""}have been submitted.")
+        logger.info(f"In total, {len(posted)} BURs {"would " if not self.autopost else ""}have been submitted.")
         if len(posted):
             burs = [f"[expand BUR #{index+1}]\n{"\n".join(sorted(bur.splitlines()))}\n[/expand]"
                     for index, bur in enumerate(posted)]
@@ -475,6 +493,24 @@ class Series(BaseModel):
 
     def matches(self, name: str) -> bool:
         return name in [self.name, *self.extra_qualifiers]
+
+    def send_bur(self, script: str, reason: str) -> None:
+
+        logger.info("Submitting implications:")
+
+        script = "\n".join(sorted(script.splitlines()))
+
+        logger.info(f"\n<c>{script}</c>")
+
+        if self.autopost:
+            if self.remaining_bur_slots <= 0:
+                raise TooManyBursError
+            danbooru_api.create_bur(
+                topic_id=self.topic_id,
+                script=script,
+                reason=reason,
+            )
+            self.POSTED_BURS += 1
 
 
 class ImplicationGroup(BaseModel):
@@ -513,25 +549,6 @@ class ImplicationGroup(BaseModel):
     #     """
     #
     #     return remove_indent(body)
-
-
-def send_bur(series: Series, script: str, reason: str, post_to_danbooru: bool) -> None:
-
-    logger.info("Submitting implications:")
-
-    script = "\n".join(sorted(script.splitlines()))
-
-    logger.info(f"\n<c>{script}</c>")
-
-    if post_to_danbooru:
-        if series.remaining_bur_slots <= 0:
-            raise TooManyBursError
-        danbooru_api.create_bur(
-            topic_id=series.topic_id,
-            script=script,
-            reason=reason,
-        )
-        series.POSTED_BURS += 1
 
 
 def post_tags_without_wikis(tags: list[DanbooruTagData], topic_id: int, post_to_danbooru: bool = False) -> None:
@@ -630,17 +647,19 @@ class BigqueryTag(Model):
             if not tag_ids:
                 return []
 
-        tags = danbooru_api.get_all(
-            DanbooruTag,
-            to_model=DanbooruTagData,
-            id=",".join(map(str, tag_ids)),
-            category=4,
-            order="id",
-            hide_empty=True,
-            is_deprecated=False,
-            only="id,name,post_count,antecedent_implications,wiki_page,is_deprecated",
-            **kwargs,
-        )
+        tags: list[DanbooruTagData] = []
+        for tag_id_group in batched(tag_ids, 100):
+            tags += danbooru_api.get_all(
+                DanbooruTag,
+                to_model=DanbooruTagData,
+                id=",".join(map(str, tag_id_group)),
+                category=4,
+                order="id",
+                hide_empty=True,
+                is_deprecated=False,
+                only="id,name,post_count,antecedent_implications,wiki_page,is_deprecated",
+                **kwargs,
+            )
         return tags
 
 
@@ -669,8 +688,8 @@ def main(series: str | None = None,
         if series and not config_series.matches(series):
             continue
 
+        config_series.autopost = post_to_danbooru
         try:
-            config_series.scan_and_post(max_lines_per_bur=max_lines_per_bur,
-                                        post_to_danbooru=post_to_danbooru)
+            config_series.scan_and_post(max_lines_per_bur=max_lines_per_bur)
         except TooManyBursError:
             logger.error(f"Too many BURs for '{config_series.name}' in {config_series.topic_url}. Stopping now. Go approve some!")
