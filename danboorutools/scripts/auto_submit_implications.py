@@ -79,14 +79,11 @@ class DanbooruTagData(BaseModel):
     def has_series_qualifier(self, qualifiers: list[str]) -> bool:
         return bool(self.qualifiers and self.qualifiers[-1] in qualifiers)
 
-    def belongs_to_series(self, series: Series, known_saved: dict[str, list[str]]) -> bool:
+    def belongs_to_series(self, series: Series) -> bool:
         if self.has_series_qualifier(series.series_qualifiers):
             return True
 
-        if self.post_count < 5:
-            return False  # don't bother trying for small tags
-
-        if not (known_copyrights := known_saved.get(self.name)):
+        if not (known_copyrights := COPYRIGHT_MAP.get(self.name)):
             logger.debug(f"Searching for copyright for tag {self.name}...")
             tag_series = self.related_copyrights
             if not tag_series:
@@ -96,6 +93,7 @@ class DanbooruTagData(BaseModel):
             logger.debug(f"Saving copyright for {self.name} to DB...")
             saved.save()
             known_copyrights = saved.copyrights.split(",")  # type: ignore[attr-defined]
+            COPYRIGHT_MAP[self.name] = known_copyrights
             assert known_copyrights
 
         return any(qualifier in known_copyrights for qualifier in series.series_qualifiers)
@@ -296,36 +294,50 @@ class Series(BaseModel):
 
         tags = BigqueryTag.get_db_tags(tag_names)
 
-        child_ids = []
         processed_tags = []
         logger.info("Filtering out extraneous tags...")
-        known_saved = TagCopyright.copyright_map([t.name for t in tags])
 
         for tag in tags:
             if tag.post_count < 5:  # skip small tags
                 continue
-            if not tag.belongs_to_series(self, known_saved):
+            if not tag.belongs_to_series(self):
                 logger.debug(f"Tag {tag.name} does not belong to {self.name}. Skipping...")
                 continue
             processed_tags += [tag]
         logger.info(f"Remaining: {len(processed_tags)}.")
 
-        clauses = [BigqueryTag.name.startswith(tag.name) for tag in processed_tags]
+        processed_tags += self.get_child_tags_from_db(processed_tags)
+
+        logger.info(f"Done processing tags from wikis, {len(processed_tags)} found.")
+        return processed_tags
+
+    def get_child_tags_from_db(self, parent_tags: list[DanbooruTagData]) -> list[DanbooruTagData]:
+        child_ids: list[int] = []
+        clauses = [BigqueryTag.name.startswith(tag.name) for tag in parent_tags]
         for batch in batched(clauses, 50):
             children = BigqueryTag.select() \
                 .where(BigqueryTag.category == 4) \
                 .where(reduce(operator.or_, batch)) \
-                .where(~(BigqueryTag.name << [t.name for t in processed_tags]))
+                .where(~(BigqueryTag.name << [t.name for t in parent_tags]))
             child_ids += [child["id"] for child in children.dicts()]
 
-        if child_ids:
-            processed_tags += BigqueryTag.get_db_tags(
-                tag_ids=child_ids,
-                has_antecedent_implications=False,
-            )
+        if not child_ids:
+            return []
 
-        logger.info(f"Done processing tags from wikis, {len(processed_tags)} found.")
-        return processed_tags
+        child_tags = BigqueryTag.get_db_tags(
+            tag_ids=child_ids,
+            has_antecedent_implications=False,
+        )
+
+        vetted_child_tags = []
+
+        for child_tag in child_tags:
+            if not child_tag.belongs_to_series(self):
+                logger.debug(f"Potential child tag {child_tag.name} does not belong to {self.name}. Skipping...")
+                continue
+            vetted_child_tags += [child_tag]
+
+        return vetted_child_tags
 
     @cached_property
     def all_tag_map(self) -> dict[str, DanbooruTagData]:
@@ -608,16 +620,15 @@ class TagCopyright(Model):
     class Meta:
         database = tag_database
 
-    name = CharField(index=True)
+        indexes = (
+            (("name",), True),
+        )
+
+    name = CharField(index=True, unique=True)
     copyrights = CharField(index=True)
 
-    @staticmethod
-    def copyright_map(tag_names: list[str]) -> dict[str, list[str]]:
-        tags = TagCopyright.select()\
-            .where(TagCopyright.name << tag_names)\
-            .dicts()
 
-        return {tag["name"]: tag["copyrights"].split(",") for tag in tags}
+COPYRIGHT_MAP = {tag["name"]: tag["copyrights"].split(",") for tag in TagCopyright.select().dicts()}
 
 
 class BigqueryTag(Model):
