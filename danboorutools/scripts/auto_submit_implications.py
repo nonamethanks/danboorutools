@@ -170,7 +170,8 @@ class Series(BaseModel):
     extra_costume_patterns: list[re.Pattern]
     extra_qualifiers: list[str] = Field(default_factory=list)
 
-    blacklist: list[str] = Field(default_factory=list)
+    line_blacklist: list[str] = Field(default_factory=list)
+    qualifier_blacklist: list[str] = Field(default_factory=list)
 
     grep: str | None = None
 
@@ -232,6 +233,7 @@ class Series(BaseModel):
         parsed: dict[str, list[str]] = defaultdict(list)
         for bur in burs:
             for bur_line in bur.script.lower().split("\n"):
+
                 if not bur_line.startswith(("create implication", "imply")):
                     continue
 
@@ -243,7 +245,6 @@ class Series(BaseModel):
                 try:
                     antecedent, consequent = line.split(" -> ")
                 except ValueError as e:
-                    breakpoint()
                     e.add_note(f"On '{line}'")
                     raise
                 if " " in antecedent or " " in consequent:
@@ -347,6 +348,9 @@ class Series(BaseModel):
         if tag.antecedent_implications:
             return None
 
+        if set(tag.qualifiers) & set(self.qualifier_blacklist):
+            return None
+
         possible_parents = tag.possible_parents(self)
 
         if possible_parents is False:
@@ -358,7 +362,7 @@ class Series(BaseModel):
 
         possible_parents.sort(key=lambda t: len(t), reverse=self.allow_sub_implications)
         for parent_name in possible_parents:
-            if f"{tag.name} -> {parent_name}" in self.blacklist:
+            if f"{tag.name} -> {parent_name}" in self.line_blacklist:
                 logger.trace(f"Skipping {tag.name} -> {parent_name} because this implication was blacklisted.")
                 continue
 

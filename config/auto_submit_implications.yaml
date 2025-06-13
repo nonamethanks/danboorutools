@@ -10,7 +10,8 @@
 # wiki_ids: array of integers, optional
 # extra costume patterns: array of regexes, optional
 # extra qualifier: array of strings, optional
-# blacklist: array of strings (blacklists specific implication requests)
+# line_blacklist: array of strings (blacklists specific implication requests)
+# qualifier_blacklist: array of strings (blacklists specific qualifiers from ever being implicated)
 # group_by_qualifier: boolean, default true, optional (whether single-line BURs are grouped by qualifier)
 # allow_sub_implications: boolean, default true (allow costumes to imply other costumes)
 # autopost: bool, default true
@@ -35,7 +36,7 @@ series:
   - name: "blue_archive"
     topic_id: 21341
     wiki_ids: [136349]
-    blacklist:
+    line_blacklist:
       - "kei_(amas)_(blue_archive) -> kei_(blue_archive)"
 
   - name: "cookie_run"
@@ -67,7 +68,7 @@ series:
   - name: "genshin_impact"
     topic_id: 19285
     wiki_ids: [121439]
-    blacklist:
+    line_blacklist:
       - "nadia_(melusine)_(genshin_impact) -> nadia_(genshin_impact)"
 
   - name: "girls'_frontline"
@@ -99,7 +100,7 @@ series:
       - kancolle
     extra_costume_patterns:
       - r"^(?P<base_name>[^(]+?)(?P<extra_qualifier>kai_ni|kai)(?P<qualifiers>(?:_\(.*\)))*$"
-    blacklist:
+    line_blacklist:
       - "amagi_(battlecruiser)_(kancolle) -> amagi_(kancolle)"
 
   - name: "goddess_of_victory:_nikke"
@@ -115,8 +116,9 @@ series:
       - pokemon_conquest
       - pokemon_go
       - pokemon_heroes
-    blacklist:
-      - "hex_maniac_(prototype)_(pokemon) -> hex_maniac_(pokemon)"
+    qualifier_blacklist:
+      - prototype # we don't want pokemon prototypes to imply their official form
+
 
   - name: "princess_connect!"
     topic_id: 25913
