@@ -146,3 +146,7 @@ series:
   - name: "xenoblade"
     topic_id: 26163
     wiki_ids: [137054]
+
+  - name: zenless_zone_zero
+    topic_id: 30085
+    wiki_ids: [149060]
