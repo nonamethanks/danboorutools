@@ -508,7 +508,12 @@ class Series(BaseModel):
         logger.info(f"Reason for BURs: {bur_reason}")
 
     def matches(self, name: str) -> bool:
-        return name in [self.name, *self.extra_qualifiers]
+        bad_chars = "!?."
+        matches = [
+            name.strip(bad_chars).replace("_", " ")
+            for name in [self.name, *self.extra_qualifiers]
+        ]
+        return name.strip(bad_chars).replace("_", " ") in matches
 
     def send_bur(self, script: str, reason: str) -> None:
 

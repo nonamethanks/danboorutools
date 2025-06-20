@@ -103,6 +103,10 @@ series:
     line_blacklist:
       - "amagi_(battlecruiser)_(kancolle) -> amagi_(kancolle)"
 
+  - name: "love_live!"
+    topic_id: 27717
+    wiki_ids: [246964]
+
   - name: "goddess_of_victory:_nikke"
     topic_id: 25272
     wiki_ids: [186316]
