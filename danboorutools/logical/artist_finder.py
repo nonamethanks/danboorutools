@@ -166,16 +166,16 @@ class ArtistFinder:
             logger.debug(f"Skipping reverse searching {post} because it's a video.")
             return None
 
-        if post.media_asset.image_width > 10_000 or post.media_asset.image_height > 10_000:
-            logger.debug(f"Skipping reverse searching {post} on Ascii2D because it's too big.")
-        else:
-            logger.debug("Checking Ascii2d...")
-            result = self.ascii2d.find_gallery(post.file_url, original_url=post.source, original_post=post)
-            if result:
-                logger.debug(f"Extracted {result} for {post} from Ascii2d")
-                return result
+        # if post.media_asset.image_width > 10_000 or post.media_asset.image_height > 10_000:
+        #     logger.debug(f"Skipping reverse searching {post} on Ascii2D because it's too big.")
+        # else:
+        #     logger.debug("Checking Ascii2d...")
+        #     result = self.ascii2d.find_gallery(post.file_url, original_url=post.source, original_post=post)
+        #     if result:
+        #         logger.debug(f"Extracted {result} for {post} from Ascii2d")
+        #         return result
 
-            logger.debug("No result from Ascii2d. Checking Saucenao...")
+        #     logger.debug("No result from Ascii2d. Checking Saucenao...")
 
         result = self.saucenao.find_gallery(post.file_url, original_url=post.source, original_post=post)
         if result:
