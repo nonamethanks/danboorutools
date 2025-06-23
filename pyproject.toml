@@ -17,7 +17,6 @@ tag_paid_rewards_on_gelbooru = "danboorutools.scripts.tag_paid_rewards_on_gelboo
 sockpuppet_discord_monitor = "danboorutools.scripts.sockpuppet_discord_monitor:main"
 promotions = "danboorutools.scripts.promotion_suggestions:main"
 raffle = "danboorutools.scripts.raffle_picker:main"
-auto_submit_implications = "danboorutools.scripts.auto_submit_implications:main"
 
 create_url_template = "danboorutools.scripts.create_url_template:main"
 
