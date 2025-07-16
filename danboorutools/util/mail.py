@@ -5,14 +5,13 @@ from email.message import EmailMessage
 def send_email(*,
                send_to: str,
                message: str,
-               subject: str | None = None,
-               send_from: str = "danboorutools@danboorutools") -> None:
+               subject: str | None = None) -> None:
     """Send an email."""
 
     email = EmailMessage()
     email.set_content(message)
     email["Subject"] = subject
-    email["From"] = send_from
+    email["From"] = send_to
     email["To"] = send_to
 
     server = smtplib.SMTP("mail", 25)
