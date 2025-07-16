@@ -383,16 +383,10 @@ class DanbooruUserEvent(DanbooruModel):
     danbooru_model_name = "user_event"
 
     category: str
-    user_session: DanbooruUserSession
-    user: DanbooruUser
-
-
-class DanbooruUserSession(DanbooruModel):
-    danbooru_model_name = "user_session"
-
     ip_addr: str
     session_id: str
     user_agent: str
+    user: DanbooruUser
 
 
 class DanbooruBan(DanbooruModel):

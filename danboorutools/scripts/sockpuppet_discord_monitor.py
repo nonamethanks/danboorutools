@@ -193,7 +193,7 @@ class SockpuppetDetector:
 
             events = self.dapi.user_events(
                 category_not="50,400,500,600",
-                user_session={"session_id": signup.user_session.session_id},
+                session_id=signup.session_id,
             )
 
             if not (other_events := [e for e in events if e.user.name != signup.user.name]):
@@ -226,7 +226,7 @@ class SockpuppetDetector:
 
             found.append({
                 "sock": signup.user,
-                "session_id": signup.user_session.session_id,
+                "session_id": signup.session_id,
                 "other_users": other_users,
             })
 
@@ -263,7 +263,7 @@ class SockpuppetDetector:
         first_sock, *other_socks = other_users
         embed.description = f"[Sock of {first_sock.name}"
         embed.description += f" and at least {len(other_socks)} other users" if other_socks else ""
-        embed.description += f"]({self.dapi.base_url}/user_events?search[user_session][session_id]={session_id})"
+        embed.description += f"]({self.dapi.base_url}/user_events?search[session_id]={session_id})"
 
         if any(banned_users := [user for user in other_users if user.is_banned]):
             embed.color = 15158332
